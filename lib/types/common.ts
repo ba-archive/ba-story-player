@@ -40,6 +40,23 @@ export interface Effect {
     args: Array<string>
 }
 
+export interface StoryRawUnit{
+    GroupId: number
+    SelectionGroup: number
+    BGMId: number
+    Sound: string
+    Transition: string
+    BGName: number
+    BGEffect: number
+    PopupFileName: string
+    ScriptKr: string
+    TextJp: string 
+    TextCN?: string
+    TextTw?: string
+    TextEn?: string
+    VoiceJp: string
+}
+
 export interface StoryUnit {
     GroupId: number,
     SelectionGroup: number,
