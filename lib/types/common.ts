@@ -23,9 +23,9 @@ export interface Option {
     SelectionGroup: number,
     text: {
         TextJp: string,
-        TextCn: string,
-        TextTw: string,
-        TextEn: string
+        TextCn?: string,
+        TextTw?: string,
+        TextEn?: string
     }
 }
 
@@ -64,22 +64,22 @@ export interface StoryUnit {
     Sound: string,
     Transition: number,
     BGName: number,
-    BGEffect: string[]
+    BGEffect: number
     PopupFileName: string,
     type: StoryType,
     menuState: boolean,
     characters: Character[],
     characterEffect: CharacterEffect[],
-    options: Option[],
+    options?: Option[],
     textEffect: TextEffect[],
     text: {
         TextJp: Text[],
-        TextCn: Text[],
-        TextTw: Text[],
-        TextEN: Text[]
+        TextCn?: Text[],
+        TextTw?: Text[],
+        TextEN?: Text[]
     },
     VoiceJp: string,
-    stArgs?: string[],
+    stArgs?: [number[],string,number],
     nextChapterName?: string,
     fight?: number,
     clear?: "st" | "all",

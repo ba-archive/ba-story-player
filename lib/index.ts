@@ -1,6 +1,10 @@
 import { storeToRefs } from "pinia";
 import { Application } from "pixi.js";
+import { textInit } from "./layers/textLayer";
 import { usePlayerStore } from "./stores";
+import {bgInit} from "@/layers/bgLayer"
+import { characterInit } from "./layers/characterLayer";
+import { soundInit } from "./layers/soundLayer";
 
 /**
  * 调用各层的初始化函数
@@ -9,6 +13,10 @@ export async function init(elementID:string,height:number,width:number){
     let playerStore=usePlayerStore()
     let {app}=storeToRefs(playerStore)
     app.value=new Application({height,width})
+    textInit()
+    bgInit()
+    characterInit()
+    soundInit()
 
     document.querySelector(`#${elementID}`)?.appendChild(app.value.view)
 }
