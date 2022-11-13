@@ -14,6 +14,7 @@ export async function init(elementID:string,height:number,width:number){
     let playerStore=usePlayerStore()
     let {app,eventBus,currentStoryUnit,allStoryUnit,effectDone,characterDone,loadRes}=storeToRefs(playerStore)
     app.value=new Application({height,width})
+    playerStore.characterName
     
     app.value!.loader.add('bg_park_night.jpg','/bg/BG_Park_Night.jpg')
                     .add('LobbyCH0186','/l2d/LobbyCH0184/CH0184_home.skel')

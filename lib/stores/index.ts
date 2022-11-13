@@ -1,31 +1,32 @@
 import { CharacterInstance, Dict, StoryUnit } from '@/types/common'
 import { defineStore } from 'pinia'
-import type { Sprite, Application, LoaderResource } from 'pixi.js'
-import mitt from 'mitt'
+import { Sprite, Application, LoaderResource } from 'pixi.js'
+import mitt, { Emitter } from 'mitt'
 import { Events } from '@/types/events'
 import { BGNameExcelTableItem, CharacterNameExcelTableItem } from '@/types/excels'
+import { Actions, Getters, State } from '@/types/store'
 
-export const usePlayerStore = defineStore('PlayerStore', {
+export const usePlayerStore = defineStore<'PlayerStore', State, Getters, Actions>('PlayerStore', {
     state: () => {
         return {
             //通用
-            app: null as Application | null,
-            currentStoryUnit: null as StoryUnit | null,
-            allStoryUnit: [] as StoryUnit[],
+            app: null,
+            currentStoryUnit: null,
+            allStoryUnit: [],
             eventBus: mitt<Events>(),
             characterNameTable: {
                 '유우카 체육복ND': 4179367264
-            } as { [index: string]: number },
-            loadRes: null as null | Dict<LoaderResource>,
+            },
+            loadRes: null,
 
             //人物层
-            currentCharacterList: [] as CharacterInstance[],
+            currentCharacterList: [],
 
             //背景层
-            bgInstance: null as Sprite | null,
+            bgInstance: null,
 
             //文字层
-            logText: [] as string[],
+            logText: [],
 
             //保证特效播放完成
             effectDone: false,
@@ -44,7 +45,7 @@ export const usePlayerStore = defineStore('PlayerStore', {
                     "SpineLocalPosX": 0,
                     "SpineLocalPosY": 0
                 }
-            } as { [index: number]: BGNameExcelTableItem },
+            },
             CharacterNameExcelTable: {
                 4179367264: {
                     "CharacterName": 4179367264,
@@ -57,40 +58,29 @@ export const usePlayerStore = defineStore('PlayerStore', {
                     "SpinePrefabName": "UIs/03_Scenario/02_Character/CharacterSpine_CH0184",
                     "SmallPortrait": "UIs/01_Common/01_Character/Student_Portrait_CH0184"
                 }
-            } as { [index: number]: CharacterNameExcelTableItem }
+            },
         }
     },
-    actions: {
-        nextInit() {
-            this.effectDone = this.characterDone = false
-        },
-
-        /**
-         * 获取学生CharacterName 
-         * @param name scriptKr原文名字
-         */
-        getCharacterName(name: string) {
-            return this.characterNameTable[name]
+    getters: {
+        
+        CharacterName:({ characterNameTable }) => (name: string) => {
+            return characterNameTable[name]
         },
 
 
-        /**
-         *  获取学生立绘spienData 
-         * @param CharacterName 
-         */
-        getCharacterSpineData(CharacterName: number) {
-            let item = this.CharacterNameExcelTable[CharacterName]
+        characterSpineData: ({ CharacterNameExcelTable, loadRes }) => (CharacterName: number) => {
+            let item = CharacterNameExcelTable[CharacterName]
             let temp = String(item.SpinePrefabName).split('/')
             temp = temp[temp.length - 1].split('_')
             let id = temp[temp.length - 1]
-            return this.loadRes![`${id}_spr`].spineData
+            return loadRes![`${id}_spr`].spineData
         },
 
         /**
          * 获取背景图片的url, 如果对应的BGName不是背景图片则返回空字符串 
          */
-        getBGUrl() {
-            let item = this.BGNameExcelTable[this.currentStoryUnit!.BGName]
+        bgUrl: ({ BGNameExcelTable, currentStoryUnit }) => {
+            let item = BGNameExcelTable[currentStoryUnit!.BGName]
             if (item.BGType == 'Image') {
                 let temp = String(item.BGFileName).split('/')
                 return `bg/${temp.pop()}.jpg`
@@ -103,11 +93,11 @@ export const usePlayerStore = defineStore('PlayerStore', {
         /**
          * 获取L2D资源
          */
-        getL2DSpineData() {
-            let item = this.BGNameExcelTable[this.currentStoryUnit!.BGName]
+        l2dSpineData: ({ BGNameExcelTable, currentStoryUnit, loadRes }) => {
+            let item = BGNameExcelTable[currentStoryUnit!.BGName]
             if (item.BGType == 'Spine') {
                 let temp = String(item.BGFileName).split('/')
-                return this.loadRes![temp.pop()!.split('_')[1]].spineData
+                return loadRes![temp.pop()!.split('_')[1]].spineData
 
             }
         },
@@ -115,8 +105,8 @@ export const usePlayerStore = defineStore('PlayerStore', {
         /**
          * 获取L2D动作名 
          */
-        getL2DAnimation() {
-            let item = this.BGNameExcelTable[this.currentStoryUnit!.BGName]
+        l2dAnimationName: ({ BGNameExcelTable, currentStoryUnit }) => {
+            let item = BGNameExcelTable[currentStoryUnit!.BGName]
             if (item.BGType == 'Spine') {
                 return item.AnimationName
             }
@@ -124,6 +114,13 @@ export const usePlayerStore = defineStore('PlayerStore', {
                 return ''
             }
         }
+    },
+    actions: {
+        nextInit() {
+            this.effectDone = this.characterDone = false
+        },
+
+
     }
 })
 
