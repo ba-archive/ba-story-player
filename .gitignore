@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+src/data
+!src/data/prologue1.1.json
+!src/data/yuuka.json
