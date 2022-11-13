@@ -1,6 +1,11 @@
 import type {Spine} from 'pixi-spine'
 export type StoryType = "title" | "place" | "text" | "option" | "st" | "effectOnly" | 'continue'
 
+export type Dict<T> = {
+    [key: string]: T;
+};
+
+
 export interface Text {
     content: string
     waitTime?: number

@@ -1,18 +1,27 @@
 import { storeToRefs } from "pinia";
-import { Application } from "pixi.js";
+import { Application, Loader } from "pixi.js";
 import { textInit } from "./layers/textLayer";
 import { usePlayerStore } from "./stores";
 import {bgInit} from "@/layers/bgLayer"
 import { characterInit } from "./layers/characterLayer";
 import { soundInit } from "./layers/soundLayer";
+import { Spine } from "pixi-spine";
 
 /**
  * 调用各层的初始化函数
  */
 export async function init(elementID:string,height:number,width:number){
     let playerStore=usePlayerStore()
-    let {app,eventBus,currentStoryUnit,allStoryUnit,effectDone,characterDone}=storeToRefs(playerStore)
+    let {app,eventBus,currentStoryUnit,allStoryUnit,effectDone,characterDone,loadRes}=storeToRefs(playerStore)
     app.value=new Application({height,width})
+    
+    app.value!.loader.add('bg_park_night.jpg','/bg/BG_Park_Night.jpg')
+                    .add('LobbyCH0186','/l2d/LobbyCH0184/CH0184_home.skel')
+                    .add('CH0184_spr','/spr/CH0184/CH0184_spr.skel')
+                    .load((loader,res)=>{
+                        loadRes.value=res
+                    })
+
     eventBus.value.on('next',()=>{
         if(characterDone.value && effectDone.value){
             next()

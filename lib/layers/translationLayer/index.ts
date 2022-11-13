@@ -18,7 +18,6 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
         }
 
         let ScriptKr = String(i.ScriptKr)
-        console.log( ScriptKr.split('\n'))
     }
     //测试用数据
     let tempResult: StoryUnit[] = [
