@@ -5,8 +5,6 @@ import { usePlayerStore } from "./stores";
 import {bgInit} from "@/layers/bgLayer"
 import { characterInit } from "./layers/characterLayer";
 import { soundInit } from "./layers/soundLayer";
-import mitt from 'mitt'
-import { Events } from "./types/events";
 
 /**
  * 调用各层的初始化函数

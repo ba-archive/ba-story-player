@@ -4,6 +4,22 @@ import { StoryRawUnit, StoryUnit } from "@/types/common";
  * 将原始剧情结构翻译成标准剧情结构
  */
 export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
+    let result: StoryUnit[] = []
+    for (let i of rawStory) {
+        let { GroupId, BGMId, BGName, BGEffect, SelectionGroup, Sound, Transition, VoiceJp, PopupFileName } = i
+        let unit: StoryUnit = {
+            GroupId, BGMId, BGName, BGEffect, SelectionGroup, Sound, Transition, VoiceJp, PopupFileName,
+            type: 'text', 
+            menuState: true,
+            characters: [],
+            characterEffect: [],
+            text: { TextJp: [] },
+            textEffect: []
+        }
+
+        let ScriptKr = String(i.ScriptKr)
+        console.log( ScriptKr.split('\n'))
+    }
     //测试用数据
     let tempResult: StoryUnit[] = [
         {

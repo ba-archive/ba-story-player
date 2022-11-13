@@ -12,6 +12,9 @@ export const usePlayerStore = defineStore('PlayerStore', {
             currentStoryUnit: null as StoryUnit | null,
             allStoryUnit: [] as StoryUnit[],
             eventBus: mitt<Events>(),
+            characterNameTable:{
+                '유우카 체육복ND':4179367264
+            } as {[index:string]:number},
 
             //人物层
             currentCharacterList: [] as CharacterInstance[],
@@ -30,6 +33,13 @@ export const usePlayerStore = defineStore('PlayerStore', {
     actions:{
         nextInit(){
             this.effectDone=this.characterDone=false
+        },
+        /**
+         * 获取学生CharacterName 
+         * @param name 剧情原文名字
+         */
+        getCharacterName(name:string){
+            return this.characterNameTable[name] 
         }
     }
 })

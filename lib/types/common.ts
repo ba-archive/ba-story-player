@@ -45,7 +45,7 @@ export interface StoryRawUnit{
     SelectionGroup: number
     BGMId: number
     Sound: string
-    Transition: string
+    Transition: number 
     BGName: number
     BGEffect: number
     PopupFileName: string
