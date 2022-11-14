@@ -9,8 +9,9 @@ import { BGNameExcelTableItem, CharacterNameExcelTableItem } from "./excels"
 export interface State {
   _app: null | Application
   _eventBus: Emitter<Events>
-  currentStoryUnit: null | StoryUnit
+  language:'Cn'|'Jp'
   allStoryUnit: StoryUnit[]
+  currentStoryIndex:number
   characterNameTable: { [index: string]: number },
   loadRes: null | Dict<LoaderResource>,
 
@@ -36,6 +37,7 @@ type GetterState = UnwrapRef<State> & UnwrapRef<PiniaCustomStateProperties<State
 export interface Getters extends _GettersTree<State> {
   app: (state: GetterState) => Application
   eventBus: (state: GetterState) => Emitter<Events>
+  currentStoryUnit:(state:GetterState)=>StoryUnit
 
   bgInstance: (state: GetterState) => Sprite | null
   logText: (state: GetterState) => ShowText[]

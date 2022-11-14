@@ -12,9 +12,10 @@ export const usePlayerStore = defineStore<'PlayerStore', State, Getters, Actions
       //通用
       _app: null,
       _eventBus: mitt<Events>(),
+      language:'Cn',
 
-      currentStoryUnit: null,
       allStoryUnit: [],
+      currentStoryIndex: -1,
       characterNameTable: {
         '유우카 체육복ND': 4179367264
       },
@@ -65,6 +66,7 @@ export const usePlayerStore = defineStore<'PlayerStore', State, Getters, Actions
   getters: {
     app: ({ _app }) => _app as Application,
     eventBus: ({ _eventBus }) => _eventBus,
+    currentStoryUnit: ({ currentStoryIndex, allStoryUnit }) => allStoryUnit[currentStoryIndex],
 
     bgInstance: ({ _bgInstance }) => _bgInstance as Sprite,
 
@@ -92,8 +94,8 @@ export const usePlayerStore = defineStore<'PlayerStore', State, Getters, Actions
     /**
      * 获取背景图片的url, 如果对应的BGName不是背景图片则返回空字符串 
      */
-    bgUrl: ({ BGNameExcelTable, currentStoryUnit }) => {
-      let item = BGNameExcelTable[currentStoryUnit!.BGName]
+    bgUrl({ BGNameExcelTable }) {
+      let item = BGNameExcelTable[this.currentStoryUnit!.BGName]
       if (item.BGType == 'Image') {
         let temp = String(item.BGFileName).split('/')
         return `bg/${temp.pop()}.jpg`
@@ -106,8 +108,8 @@ export const usePlayerStore = defineStore<'PlayerStore', State, Getters, Actions
     /**
      * 获取L2D资源
      */
-    l2dSpineData: ({ BGNameExcelTable, currentStoryUnit, loadRes }) => {
-      let item = BGNameExcelTable[currentStoryUnit!.BGName]
+    l2dSpineData({ BGNameExcelTable, loadRes }) {
+      let item = BGNameExcelTable[this.currentStoryUnit!.BGName]
       if (item.BGType == 'Spine') {
         let temp = String(item.BGFileName).split('/')
         return loadRes![temp.pop()!.split('_')[1]].spineData
@@ -118,8 +120,8 @@ export const usePlayerStore = defineStore<'PlayerStore', State, Getters, Actions
     /**
      * 获取L2D动作名 
      */
-    l2dAnimationName: ({ BGNameExcelTable, currentStoryUnit }) => {
-      let item = BGNameExcelTable[currentStoryUnit!.BGName]
+    l2dAnimationName({ BGNameExcelTable }) {
+      let item = BGNameExcelTable[this.currentStoryUnit!.BGName]
       if (item.BGType == 'Spine') {
         return item.AnimationName
       }

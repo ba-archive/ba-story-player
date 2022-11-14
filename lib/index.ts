@@ -5,7 +5,6 @@ import { usePlayerStore } from "./stores";
 import { bgInit } from "@/layers/bgLayer"
 import { characterInit } from "./layers/characterLayer";
 import { soundInit } from "./layers/soundLayer";
-import { Spine } from "pixi-spine";
 
 /**
  * 调用各层的初始化函数
@@ -48,7 +47,44 @@ export async function init(elementID: string, height: number, width: number) {
  * 下一剧情语句
  */
 export async function next() {
+  let playerStore = usePlayerStore()
+  let { currentStoryIndex, currentStoryUnit, allStoryUnit, eventBus, language } = storeToRefs(playerStore)
+  currentStoryIndex.value += 1
+  if (currentStoryIndex.value >= allStoryUnit.value.length) {
+    end()
+    return
+  }
+  if (currentStoryUnit.value.type == 'title') {
+    if (checkLanguage()) {
+      eventBus.value.emit('showTitle', currentStoryUnit.value.text[`Text${language.value}`]![0].content)
+    }
+    else {
+      eventBus.value.emit('showTitle', currentStoryUnit.value.text.TextJp[0].content)
+    }
+  }
+  else if (currentStoryUnit.value.type == 'place') {
+    if (checkLanguage()) {
+      eventBus.value.emit('showPlace', currentStoryUnit.value.text[`Text${language.value}`]![0].content)
+    }
+    else {
+      eventBus.value.emit('showPlace', currentStoryUnit.value.text.TextJp[0].content)
+    }
+  }
+  else if(currentStoryUnit.value.type=='text'){
 
+  }
+  else if(currentStoryUnit.value.type=='option'){
+
+  }
+  else if(currentStoryUnit.value.type=='st'){
+
+  }
+  else if(currentStoryUnit.value.type=='effectOnly'){
+
+  }
+  else if(currentStoryUnit.value.type=='continue'){
+
+  }
 }
 
 /**
@@ -58,9 +94,15 @@ export async function select(option: number) {
 
 }
 
-/**
- * 调用各层的清屏完成清屏
- */
-export async function clear() {
 
+/**
+ * 结束播放
+ */
+export function end() {
+  console.log('end!')
+}
+
+function checkLanguage() {
+  let playerStore = usePlayerStore()
+  return playerStore.currentStoryUnit.text[`Text${playerStore.language}`] != undefined
 }
