@@ -14,11 +14,12 @@ export interface Text {
 export interface Character {
   position: number,
   CharacterName: number,
-  face: number,
+  face: string,
   highlight: boolean
 }
 
 export interface CharacterEffect {
+  type:'emotion'|'action'
   target: number,
   effect: string,
   async: boolean
@@ -56,7 +57,7 @@ export interface StoryRawUnit {
   PopupFileName: string
   ScriptKr: string
   TextJp: string
-  TextCN?: string
+  TextCn?: string
   TextTw?: string
   TextEn?: string
   VoiceJp: string
@@ -72,7 +73,6 @@ export interface StoryUnit {
   BGEffect: number
   PopupFileName: string,
   type: StoryType,
-  menuState: boolean,
   characters: Character[],
   characterEffect: CharacterEffect[],
   options?: Option[],
@@ -87,7 +87,8 @@ export interface StoryUnit {
   stArgs?: [number[], string, number],
   nextChapterName?: string,
   fight?: number,
-  clear?: "st" | "all",
+  clearSt?: boolean,
+  hide?:'menu'|'all'
   otherEffect?: Effect[]
 }
 

@@ -105,7 +105,8 @@
         "Transition": 0,
         "BGName": 0,
         "BGEffect": 0,
-        "PopupFileName": "\n#3;a\n#wait;1000",
+        "PopupFileName": "",
+        "ScriptKr": "3;유우카 체육복ND;05\n#3;a\n#wait;1000",
         "TextJp": "",
         "TextCn": "",
         "VoiceJp": ""

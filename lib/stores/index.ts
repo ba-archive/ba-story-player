@@ -12,7 +12,7 @@ export const usePlayerStore = defineStore<'PlayerStore', State, Getters, Actions
       //通用
       _app: null,
       _eventBus: mitt<Events>(),
-      _language:'Cn',
+      language: 'Cn',
 
       allStoryUnit: [],
       currentStoryIndex: -1,
@@ -67,7 +67,6 @@ export const usePlayerStore = defineStore<'PlayerStore', State, Getters, Actions
     app: ({ _app }) => _app as Application,
     eventBus: ({ _eventBus }) => _eventBus,
     currentStoryUnit: ({ currentStoryIndex, allStoryUnit }) => allStoryUnit[currentStoryIndex],
-    language:({_language})=>_language,
 
     bgInstance: ({ _bgInstance }) => _bgInstance as Sprite,
 
@@ -97,13 +96,14 @@ export const usePlayerStore = defineStore<'PlayerStore', State, Getters, Actions
      */
     bgUrl({ BGNameExcelTable }) {
       let item = BGNameExcelTable[this.currentStoryUnit!.BGName]
-      if (item.BGType == 'Image') {
-        let temp = String(item.BGFileName).split('/')
-        return `bg/${temp.pop()}.jpg`
+      if (item) {
+        if (item.BGType == 'Image') {
+          let temp = String(item.BGFileName).split('/')
+          return `bg/${temp.pop()}.jpg`
+        }
       }
-      else {
-        return ''
-      }
+
+      return ''
     },
 
     /**
@@ -111,10 +111,12 @@ export const usePlayerStore = defineStore<'PlayerStore', State, Getters, Actions
      */
     l2dSpineData({ BGNameExcelTable, loadRes }) {
       let item = BGNameExcelTable[this.currentStoryUnit!.BGName]
-      if (item.BGType == 'Spine') {
-        let temp = String(item.BGFileName).split('/')
-        return loadRes![temp.pop()!.split('_')[1]].spineData
+      if (item) {
+        if (item.BGType == 'Spine') {
+          let temp = String(item.BGFileName).split('/')
+          return loadRes![temp.pop()!.split('_')[1]].spineData
 
+        }
       }
     },
 

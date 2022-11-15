@@ -6,6 +6,7 @@ import { bgInit } from "@/layers/bgLayer"
 import { characterInit } from "./layers/characterLayer";
 import { soundInit } from "./layers/soundLayer";
 
+
 /**
  * 调用各层的初始化函数
  */
@@ -14,6 +15,7 @@ export async function init(elementID: string, height: number, width: number) {
   let { _app, _eventBus, currentStoryUnit, allStoryUnit, effectDone, characterDone, loadRes } = storeToRefs(playerStore)
   _app.value = new Application({ height, width })
   playerStore.characterName
+  
 
   _app.value!.loader.add('bg_park_night.jpg', '/bg/BG_Park_Night.jpg')
     .add('LobbyCH0186', '/l2d/LobbyCH0184/CH0184_home.skel')
@@ -27,13 +29,10 @@ export async function init(elementID: string, height: number, width: number) {
       next()
       playerStore.nextInit()
     }
-  })
+  }) 
   _eventBus.value.on('select', e => select(e))
   _eventBus.value.on('effectDone', () => effectDone.value = true)
   _eventBus.value.on('characterDone', () => characterDone.value = true)
-
-  //翻译层没有完成时可手动改设置播饭哪个剧情语句
-  currentStoryUnit.value = allStoryUnit.value[0]
 
   textInit()
   bgInit()
@@ -41,6 +40,7 @@ export async function init(elementID: string, height: number, width: number) {
   soundInit()
 
   document.querySelector(`#${elementID}`)?.appendChild(_app.value.view)
+  next()
 }
 
 /**

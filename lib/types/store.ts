@@ -9,7 +9,7 @@ import { BGNameExcelTableItem, CharacterNameExcelTableItem } from "./excels"
 export interface State {
   _app: null | Application
   _eventBus: Emitter<Events>
-  _language:'Cn'|'Jp'
+  language:'Cn'|'Jp'
   allStoryUnit: StoryUnit[]
   currentStoryIndex:number
   characterNameTable: { [index: string]: number },
@@ -38,7 +38,6 @@ export interface Getters extends _GettersTree<State> {
   app: (state: GetterState) => Application
   eventBus: (state: GetterState) => Emitter<Events>
   currentStoryUnit:(state:GetterState)=>StoryUnit
-  language:(state:GetterState)=>'Cn'|'Jp'
 
   bgInstance: (state: GetterState) => Sprite | null
   logText: (state: GetterState) => ShowText[]
