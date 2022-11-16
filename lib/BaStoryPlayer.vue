@@ -5,7 +5,6 @@ import { StoryRawUnit, StoryUnit } from '@/types/common';
 import { translate } from '@/layers/translationLayer';
 import { usePlayerStore } from '@/stores';
 import { storeToRefs } from 'pinia';
-import mitt from 'mitt';
 let { story } = defineProps<{
   story: StoryRawUnit[]
 }>()
@@ -16,7 +15,7 @@ allStoryUnit.value = translate(story)
 
 
 
-onMounted(() => { init('player', 550, 900) })
+onMounted(() => { init('player', 550, 900);})
 </script>
 
 <template>

@@ -5,6 +5,7 @@ import { usePlayerStore } from "./stores";
 import { bgInit } from "@/layers/bgLayer"
 import { characterInit } from "./layers/characterLayer";
 import { soundInit } from "./layers/soundLayer";
+import eventBus from "@/eventBus";
 
 
 /**
@@ -12,7 +13,7 @@ import { soundInit } from "./layers/soundLayer";
  */
 export async function init(elementID: string, height: number, width: number) {
   let playerStore = usePlayerStore()
-  let { _app, _eventBus, currentStoryUnit, allStoryUnit, effectDone, characterDone, loadRes } = storeToRefs(playerStore)
+  let { _app,  currentStoryUnit, allStoryUnit, effectDone, characterDone, loadRes } = storeToRefs(playerStore)
   _app.value = new Application({ height, width })
   playerStore.characterName
   
@@ -24,15 +25,16 @@ export async function init(elementID: string, height: number, width: number) {
       loadRes.value = res
     })
 
-  _eventBus.value.on('next', () => {
+  eventBus.on('next', () => {
     if (characterDone.value && effectDone.value) {
       next()
       playerStore.nextInit()
     }
   }) 
-  _eventBus.value.on('select', e => select(e))
-  _eventBus.value.on('effectDone', () => effectDone.value = true)
-  _eventBus.value.on('characterDone', () => characterDone.value = true)
+  eventBus.on('select', e => select(e))
+  eventBus.on('effectDone', () => effectDone.value = true)
+  eventBus.on('characterDone', () => characterDone.value = true)
+  eventBus.on('auto',()=>console.log('auto!'))
 
   textInit()
   bgInit()
@@ -48,7 +50,7 @@ export async function init(elementID: string, height: number, width: number) {
  */
 export async function next() {
   let playerStore = usePlayerStore()
-  let { currentStoryIndex, currentStoryUnit, allStoryUnit, eventBus, language } = storeToRefs(playerStore)
+  let { currentStoryIndex, currentStoryUnit, allStoryUnit,  language } = storeToRefs(playerStore)
   currentStoryIndex.value += 1
   if (currentStoryIndex.value >= allStoryUnit.value.length) {
     end()
@@ -56,18 +58,18 @@ export async function next() {
   }
   if (currentStoryUnit.value.type == 'title') {
     if (checkLanguage()) {
-      eventBus.value.emit('showTitle', currentStoryUnit.value.text[`Text${language.value}`]![0].content)
+      eventBus.emit('showTitle', currentStoryUnit.value.text[`Text${language.value}`]![0].content)
     }
     else {
-      eventBus.value.emit('showTitle', currentStoryUnit.value.text.TextJp[0].content)
+      eventBus.emit('showTitle', currentStoryUnit.value.text.TextJp[0].content)
     }
   }
   else if (currentStoryUnit.value.type == 'place') {
     if (checkLanguage()) {
-      eventBus.value.emit('showPlace', currentStoryUnit.value.text[`Text${language.value}`]![0].content)
+      eventBus.emit('showPlace', currentStoryUnit.value.text[`Text${language.value}`]![0].content)
     }
     else {
-      eventBus.value.emit('showPlace', currentStoryUnit.value.text.TextJp[0].content)
+      eventBus.emit('showPlace', currentStoryUnit.value.text.TextJp[0].content)
     }
   }
   else if(currentStoryUnit.value.type=='text'){

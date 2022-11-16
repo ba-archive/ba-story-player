@@ -11,7 +11,6 @@ export const usePlayerStore = defineStore<'PlayerStore', State, Getters, Actions
     return {
       //通用
       _app: null,
-      _eventBus: mitt<Events>(),
       language: 'Cn',
 
       allStoryUnit: [],
@@ -65,7 +64,6 @@ export const usePlayerStore = defineStore<'PlayerStore', State, Getters, Actions
   },
   getters: {
     app: ({ _app }) => _app as Application,
-    eventBus: ({ _eventBus }) => _eventBus,
     currentStoryUnit: ({ currentStoryIndex, allStoryUnit }) => allStoryUnit[currentStoryIndex],
 
     bgInstance: ({ _bgInstance }) => _bgInstance as Sprite,
