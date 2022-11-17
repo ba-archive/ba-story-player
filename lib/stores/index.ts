@@ -12,11 +12,20 @@ export const usePlayerStore = defineStore<'PlayerStore', State, Getters, Actions
       //通用
       _app: null,
       language: 'Cn',
+      userName:'',
 
       allStoryUnit: [],
       currentStoryIndex: -1,
       characterNameTable: {
-        '유우카 체육복ND': 4179367264
+        '유우카 체육복ND': 4179367264,
+        '???':0,
+        '린':2690570743,
+        '유우카':4283125014,
+        '하스미':3571276574,
+        '치나츠':1867911819,
+        '스즈미':1034441153,
+        '통신모모카':3025942184
+        
       },
       loadRes: null,
 

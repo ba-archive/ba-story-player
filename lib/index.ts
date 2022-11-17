@@ -6,17 +6,19 @@ import { bgInit } from "@/layers/bgLayer"
 import { characterInit } from "./layers/characterLayer";
 import { soundInit } from "./layers/soundLayer";
 import eventBus from "@/eventBus";
+import axios from 'axios'
+import { StoryRawUnit } from "./types/common";
+import {translate} from '@/layers/translationLayer'
 
 
 /**
  * 调用各层的初始化函数
  */
-export async function init(elementID: string, height: number, width: number) {
+export async function init(elementID: string, height: number, width: number,story:StoryRawUnit[]) {
   let playerStore = usePlayerStore()
-  let { _app,  currentStoryUnit, allStoryUnit, effectDone, characterDone, loadRes } = storeToRefs(playerStore)
+  let { _app, currentStoryUnit, allStoryUnit, effectDone, characterDone, loadRes, BGNameExcelTable, CharacterNameExcelTable } = storeToRefs(playerStore)
   _app.value = new Application({ height, width })
-  playerStore.characterName
-  
+
 
   _app.value!.loader.add('bg_park_night.jpg', '/bg/BG_Park_Night.jpg')
     .add('LobbyCH0186', '/l2d/LobbyCH0184/CH0184_home.skel')
@@ -25,17 +27,27 @@ export async function init(elementID: string, height: number, width: number) {
       loadRes.value = res
     })
 
+  await axios.get('/data/ScenarioBGNameExcelTable.json').then(res => {
+    for (let i of res.data['DataList']) {
+      BGNameExcelTable.value[i['Name']] = i
+    }
+  })
+  await axios.get('/data/ScenarioCharacterNameExcelTable.json').then(res => {
+    for (let i of res.data['DataList']) {
+      CharacterNameExcelTable.value[i['CharacterName']] = i
+    }
+  })
   eventBus.on('next', () => {
     if (characterDone.value && effectDone.value) {
       next()
       playerStore.nextInit()
     }
-  }) 
+  })
   eventBus.on('select', e => select(e))
   eventBus.on('effectDone', () => effectDone.value = true)
   eventBus.on('characterDone', () => characterDone.value = true)
-  eventBus.on('auto',()=>console.log('auto!'))
-
+  eventBus.on('auto', () => console.log('auto!'))
+  allStoryUnit.value = translate(story)
   textInit()
   bgInit()
   characterInit()
@@ -50,7 +62,7 @@ export async function init(elementID: string, height: number, width: number) {
  */
 export async function next() {
   let playerStore = usePlayerStore()
-  let { currentStoryIndex, currentStoryUnit, allStoryUnit,  language } = storeToRefs(playerStore)
+  let { currentStoryIndex, currentStoryUnit, allStoryUnit, language } = storeToRefs(playerStore)
   currentStoryIndex.value += 1
   if (currentStoryIndex.value >= allStoryUnit.value.length) {
     end()
@@ -72,19 +84,19 @@ export async function next() {
       eventBus.emit('showPlace', currentStoryUnit.value.text.TextJp[0].content)
     }
   }
-  else if(currentStoryUnit.value.type=='text'){
+  else if (currentStoryUnit.value.type == 'text') {
 
   }
-  else if(currentStoryUnit.value.type=='option'){
+  else if (currentStoryUnit.value.type == 'option') {
 
   }
-  else if(currentStoryUnit.value.type=='st'){
+  else if (currentStoryUnit.value.type == 'st') {
 
   }
-  else if(currentStoryUnit.value.type=='effectOnly'){
+  else if (currentStoryUnit.value.type == 'effectOnly') {
 
   }
-  else if(currentStoryUnit.value.type=='continue'){
+  else if (currentStoryUnit.value.type == 'continue') {
 
   }
 }

@@ -1,4 +1,4 @@
-import { Character, StoryRawUnit, StoryUnit, Text } from "@/types/common";
+import { Character, StoryRawUnit, StoryUnit, Text, TextEffect } from "@/types/common";
 import { usePlayerStore } from '@/stores'
 
 /**
@@ -15,10 +15,13 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
       type: 'text',
       characters: [],
       characterEffect: [],
+      otherEffect:[],
       text: { TextJp: [] },
-      textEffect: []
+      textEffect: {
+        TextJp: []
+      }
     }
-    if (i.TextJp == '') {
+    if (i.TextJp == '' || i.TextJp == null) {
       unit.type = 'effectOnly'
     }
 
@@ -26,6 +29,7 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
     let strs = ScriptKr.split('\n')
     for (let [index, j] of strs.entries()) {
       let smallJ = j.split(';')
+      let optionIndex = 0
       if (smallJ[0] == '#title') {
         unit.type = 'title'
         unit = setOneText(unit, i)
@@ -39,34 +43,60 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
       else if (smallJ[0] == '#na') {
         unit.type = 'text'
         unit = setOneText(unit, i)
-        break
+        if(smallJ.length==3){
+          unit.naName=smallJ[1]
+        }
       }
       else if (smallJ[0] == '#st') {
-        unit.type='st'
+        unit.type = 'st'
+        unit.stArgs = smallJ.slice(1)
         if (smallJ.length == 3) {
           break
         }
         //当st有文字时
         else {
-          unit.text.TextJp=generateText(i.TextJp)
-          if(i.TextCn){
-            unit.text.TextCn=generateText(i.TextCn)
+          unit.text.TextJp = generateText(i.TextJp)
+          if (i.TextCn) {
+            unit.text.TextCn = generateText(i.TextCn)
           }
         }
       }
+      else if (smallJ[0] == '#stm') {
+        unit.type = 'st'
+
+        let jp = generateTextEffect(i.TextJp)
+        unit.text.TextJp = jp.text
+        unit.textEffect.TextJp = jp.textEffects
+        if (i.TextCn) {
+          let cn = generateTextEffect(i.TextCn)
+          unit.text.TextCn = cn.text
+          unit.textEffect.TextCn = cn.textEffects
+        }
+      }
       else if (smallJ[0] == '#clearST') {
-        unit.clearSt=true
+        unit.clearSt = true
       }
       else if (smallJ[0] == '#wait') {
-        unit.otherEffect = [{ type: 'wait', args: [smallJ[1]] }]
+        unit.otherEffect.push({ type: 'wait', args: [smallJ[1]] })
       }
       else if (isDigit(smallJ[0])) {
+        let CharacterName=playStore.characterNameTable[smallJ[1]]
         unit.characters.push({
-          CharacterName: playStore.characterNameTable[smallJ[1]],
+          CharacterName,
           position: Number(smallJ[0]),
           face: smallJ[2],
           highlight: smallJ.length == 4
         })
+        if('Shape' in playStore.CharacterNameExcelTable[CharacterName]
+          && 
+          playStore.CharacterNameExcelTable[CharacterName].Shape=='Signal'){
+          unit.characterEffect.push({
+            type:'signal',
+            target:Number(smallJ[0]),
+            effect:'',
+            async:false
+          })
+        }
         if (smallJ.length == 4) {
           setOneText(unit, i)
         }
@@ -80,23 +110,30 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
             async: false
           })
         }
-        else {
+        else if(smallJ[1]=='em'){
           unit.characterEffect.push({
             type: 'emotion',
             target: Number(smallJ[0][1]),
             effect: smallJ[2],
             async: false
           })
-
+        }
+        else if(smallJ[1]=='fx'){
+          unit.characterEffect.push({
+            type:'fx',
+            target: Number(smallJ[0][1]),
+            effect: smallJ[2],
+            async: false
+          })
         }
       }
       else if (isOption(smallJ[0])) {
         unit.type = 'option'
-        let TextJp = String(i.TextJp).split('\n')[index]
+        let TextJp = String(i.TextJp).split('\n')[optionIndex]
         TextJp = TextJp.slice(4)
         let TextCn
         if (i.TextCn) {
-          TextCn = String(i.TextCn).split('\n')[index]
+          TextCn = String(i.TextCn).split('\n')[optionIndex]
           TextCn = TextCn.slice(4)
         }
         //[ns]或[s]
@@ -117,14 +154,35 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
             unit.options = [{ SelectionGroup: Number(smallJ[0][2]), text: { TextJp, TextCn } }]
           }
         }
+        optionIndex++
       }
       else if (smallJ[0] == '#fontsize') {
-        unit.textEffect.push({ textIndex: 0, name: 'fontsize', value: [smallJ[1]] })
+        unit.textEffect.TextJp.push({ textIndex: 0, name: 'fontsize', value: [smallJ[1]] })
+        if (i.TextCn) {
+          if (unit.textEffect.TextCn) {
+            unit.textEffect.TextCn.push({ textIndex: 0, name: 'fontsize', value: [smallJ[1]] })
+          }
+          else {
+            unit.textEffect.TextCn = [{ textIndex: 0, name: 'fontsize', value: [smallJ[1]] }]
+          }
+        }
       }
       else if (smallJ[0] == '#all') {
-        if (smallJ[1] == 'hide') {
-          unit.hide='all'
+        if (smallJ[1] == 'hide' || smallJ[1]=='HIDE') {
+          unit.hide = 'all'
         }
+      }
+      else if (smallJ[0] == '#hidemenu') {
+        unit.hide = 'menu'
+      }
+      else if (smallJ[0] == '#showmenu') {
+        unit.show='menu'
+      }
+      else if(smallJ[0]=='#zmc'){
+        unit.otherEffect.push({type:'zmc',args:smallJ.slice(1)})
+      }
+      else if(smallJ[0]=='#bgshake'){
+        unit.otherEffect.push({type:'bgshake',args:[]})
       }
     }
     result.push(unit)
@@ -137,9 +195,10 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
  * 当只需要一行语句时填充unit
  */
 function setOneText(unit: StoryUnit, i: StoryRawUnit) {
-  unit.text.TextJp = [{ content: i.TextJp }]
+  let playStore = usePlayerStore()
+  unit.text.TextJp = [{ content: String(i.TextJp).replace('[USERNAME]', playStore.userName).replace('#n','\n') }]
   if (i.TextCn) {
-    unit.text.TextCn = [{ content: i.TextCn }]
+    unit.text.TextCn = [{ content: String(i.TextCn).replace('[USERNAME]', playStore.userName).replace('#n','\n') }]
   }
 
   return unit
@@ -181,4 +240,30 @@ function generateText(s: string): Text[] {
   }
 
   return result
+}
+
+/**
+ * 生成Text和TextEffect
+ */
+function generateTextEffect(s: string) {
+  s = String(s)
+  s = s.replace('[/ruby]', '')
+  let texts = s.split('[-]')
+  let text: Text[] = []
+  let textEffects: TextEffect[] = []
+  for (let [index, i] of texts.entries()) {
+    if (i.startsWith('[FF')) {
+      let temp = i.split(']')
+      text.push({ content: temp[1] })
+      textEffects.push({ name: 'color', value: [temp[0].slice(1)], textIndex: index })
+    }
+    else if (i.startsWith('[ruby')) {
+      let temp = i.split(']')
+      text.push({ content: temp[2] })
+      textEffects.push({ name: 'color', value: [temp[1].slice(1)], textIndex: index })
+      textEffects.push({ name: 'ruby', value: [temp[0].slice(6)], textIndex: index })
+    }
+  }
+
+  return { text, textEffects }
 }

@@ -8,6 +8,7 @@ import { BGNameExcelTableItem, CharacterNameExcelTableItem } from "./excels"
 
 export interface State {
   _app: null | Application
+  userName:string
   language:'Cn'|'Jp'
   allStoryUnit: StoryUnit[]
   currentStoryIndex:number

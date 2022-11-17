@@ -19,7 +19,7 @@ export interface Character {
 }
 
 export interface CharacterEffect {
-  type:'emotion'|'action'
+  type:'emotion'|'action'|'signal'|'fx'
   target: number,
   effect: string,
   async: boolean
@@ -36,13 +36,13 @@ export interface Option {
 }
 
 export interface TextEffect {
-  name: string,
+  name: 'color'|'fontsize'|'ruby',
   value: string[],
   textIndex: number
 }
 
 export interface Effect {
-  type: string
+  type: 'wait'|'zmc' |'bgshake'
   args: Array<string>
 }
 
@@ -76,7 +76,12 @@ export interface StoryUnit {
   characters: Character[],
   characterEffect: CharacterEffect[],
   options?: Option[],
-  textEffect: TextEffect[],
+  textEffect:{
+    TextJp: TextEffect[],
+    TextCn?: TextEffect[],
+    TextTw?: TextEffect[],
+    TextEN?: TextEffect[]
+  },
   text: {
     TextJp: Text[],
     TextCn?: Text[],
@@ -84,12 +89,14 @@ export interface StoryUnit {
     TextEN?: Text[]
   },
   VoiceJp: string,
-  stArgs?: [number[], string, number],
+  stArgs?: string[]
   nextChapterName?: string,
   fight?: number,
   clearSt?: boolean,
   hide?:'menu'|'all'
-  otherEffect?: Effect[]
+  show?:'menu'
+  otherEffect: Effect[]
+  naName?:string
 }
 
 export interface CharacterInstance {
