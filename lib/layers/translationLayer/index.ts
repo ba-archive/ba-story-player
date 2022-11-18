@@ -55,6 +55,7 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
         }
         //当st有文字时
         else {
+          unit.stArgs=smallJ.slice(1,smallJ.length-1)
           unit.text.TextJp = generateText(i.TextJp)
           if (i.TextCn) {
             unit.text.TextCn = generateText(i.TextCn)
