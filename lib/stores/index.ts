@@ -1,8 +1,8 @@
-import { CharacterInstance, Dict, StoryUnit } from '@/types/common'
+import { Character, CharacterInstance, Dict, StoryUnit } from '@/types/common'
 import { defineStore } from 'pinia'
 import { Sprite, Application, LoaderResource } from 'pixi.js'
 import mitt, { Emitter } from 'mitt'
-import { Events } from '@/types/events'
+import { Events, ShowOption } from '@/types/events'
 import { BGNameExcelTableItem, CharacterNameExcelTableItem } from '@/types/excels'
 import { Actions, Getters, State } from '@/types/store'
 
@@ -12,20 +12,21 @@ export const usePlayerStore = defineStore<'PlayerStore', State, Getters, Actions
       //通用
       _app: null,
       language: 'Cn',
-      userName:'',
+      userName: '',
+      dataUrl: '',
 
       allStoryUnit: [],
-      currentStoryIndex: -1,
+      currentStoryIndex: 0,
       characterNameTable: {
         '유우카 체육복ND': 4179367264,
-        '???':0,
-        '린':2690570743,
-        '유우카':4283125014,
-        '하스미':3571276574,
-        '치나츠':1867911819,
-        '스즈미':1034441153,
-        '통신모모카':3025942184
-        
+        '???': 0,
+        '린': 2690570743,
+        '유우카': 4283125014,
+        '하스미': 3571276574,
+        '치나츠': 1867911819,
+        '스즈미': 1034441153,
+        '통신모모카': 3025942184
+
       },
       loadRes: null,
 
@@ -43,32 +44,12 @@ export const usePlayerStore = defineStore<'PlayerStore', State, Getters, Actions
       characterDone: false,
 
       //资源管理
-      BGNameExcelTable: {
-        527011333: {
-          "Name": 527011333,
-          "ProductionStep": "Release",
-          "BGFileName": "UIs/03_Scenario/01_Background/BG_Park_Night",
-          "BGType": "Image",
-          "AnimationRoot": "",
-          "AnimationName": "",
-          "SpineScale": -0,
-          "SpineLocalPosX": 0,
-          "SpineLocalPosY": 0
-        }
-      },
-      CharacterNameExcelTable: {
-        4179367264: {
-          "CharacterName": 4179367264,
-          "ProductionStep": "Release",
-          "NameKR": "유우카",
-          "NicknameKR": "세미나",
-          "NameJP": "ユウカ",
-          "NicknameJP": "セミナー",
-          "Shape": "None",
-          "SpinePrefabName": "UIs/03_Scenario/02_Character/CharacterSpine_CH0184",
-          "SmallPortrait": "UIs/01_Common/01_Character/Student_Portrait_CH0184"
-        }
-      },
+      BGNameExcelTable: {},
+      CharacterNameExcelTable: {},
+      BGMExcelTable: {},
+
+      //
+      l2dCharacterName:''
     }
   },
   getters: {
@@ -77,9 +58,66 @@ export const usePlayerStore = defineStore<'PlayerStore', State, Getters, Actions
 
     bgInstance: ({ _bgInstance }) => _bgInstance as Sprite,
 
-    nameAndNickName: ({ CharacterNameExcelTable }) => (CharacterName: number) => {
-      let nameInfo = CharacterNameExcelTable[CharacterName]
-      return { name: nameInfo.NameJP, nickName: nameInfo.NicknameJP }
+    currentSpeakerCharacterName() {
+      if (this.currentStoryUnit.characters.length > 0) {
+        for (let i of this.currentStoryUnit.characters) {
+          if (i.highlight) {
+            return i.CharacterName
+          }
+        }
+        return 0
+      }
+      else {
+        return 0
+      }
+    },
+    speaker({ CharacterNameExcelTable }) {
+      if (this.currentSpeakerCharacterName == 0) {
+        return undefined
+      }
+      let nameInfo = CharacterNameExcelTable[this.currentSpeakerCharacterName]
+      if (nameInfo[`Name${this.language.toUpperCase() as 'CN' | 'JP'}`]) {
+        return {
+          name: nameInfo[`Name${this.language.toUpperCase() as 'CN' | 'JP'}`]!,
+          nickName: nameInfo[`Nickname${this.language.toUpperCase() as 'CN' | 'JP'}`]!
+        }
+      }
+      else {
+        return { name: nameInfo.NameJP, nickName: nameInfo.NicknameJP }
+      }
+    },
+
+    text() {
+      if (this.currentStoryUnit.text[`Text${this.language}`] != undefined) {
+        return this.currentStoryUnit.text[`Text${this.language}`]!
+      }
+      else {
+        return this.currentStoryUnit.text.TextJp
+      }
+    },
+    textEffect() {
+      if (this.currentStoryUnit.text[`Text${this.language}`] != undefined) {
+        return this.currentStoryUnit.textEffect[`Text${this.language}`]!
+      }
+      else {
+        return this.currentStoryUnit.textEffect.TextJp
+      }
+    },
+    option() {
+      let option: ShowOption[] = []
+      if (this.currentStoryUnit.options) {
+        for (let i of this.currentStoryUnit.options) {
+          if (i.text[`Text${this.language}`]) {
+            option.push({ text: i.text[`Text${this.language}`]!, SelectionGroup: i.SelectionGroup })
+          }
+          else {
+            option.push({ text: i.text.TextJp, SelectionGroup: i.SelectionGroup })
+          }
+
+        }
+      }
+
+      return option
     },
 
     storySummary: () => '',
@@ -106,13 +144,49 @@ export const usePlayerStore = defineStore<'PlayerStore', State, Getters, Actions
       if (item) {
         if (item.BGType == 'Image') {
           let temp = String(item.BGFileName).split('/')
-          return `bg/${temp.pop()}.jpg`
+          return `${this.dataUrl}/bg/${temp.pop()}.jpg`
         }
       }
 
       return ''
     },
 
+
+    /**
+     * 获取bgm的url
+     */
+    bgmUrl({ BGMExcelTable }) {
+      let item = BGMExcelTable[this.currentStoryUnit.BGMId]
+      if (item) {
+        return `${this.dataUrl}/${item.Path}.mp3`
+      }
+
+      return ''
+    },
+
+    /**
+         * 获取sound的url
+         */
+    soundUrl() {
+      if (this.currentStoryUnit.Sound != '') {
+        return `${this.dataUrl}/Audio/Sound/${this.currentStoryUnit.Sound}.mp3`
+      }
+
+      return ''
+    },
+
+
+    isL2d(){
+      let item = this.BGNameExcelTable[this.currentStoryUnit!.BGName]
+      if (item) {
+        if (item.BGType == 'Spine') {
+          let temp = String(item.BGFileName).split('/')
+          this.l2dCharacterName=temp.pop()!.split('_').pop()?.replace('Lobby','')!
+          return true
+        }
+      }
+      return false
+    },
     /**
      * 获取L2D资源
      */
@@ -132,12 +206,12 @@ export const usePlayerStore = defineStore<'PlayerStore', State, Getters, Actions
      */
     l2dAnimationName({ BGNameExcelTable }) {
       let item = BGNameExcelTable[this.currentStoryUnit!.BGName]
-      if (item.BGType == 'Spine') {
-        return item.AnimationName
+      if (item) {
+        if (item.BGType == 'Spine') {
+          return item.AnimationName
+        }
       }
-      else {
-        return ''
-      }
+      return ''
     }
   },
   actions: {

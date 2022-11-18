@@ -17,7 +17,20 @@ export interface CharacterNameExcelTableItem {
   "NicknameKR": string
   "NameJP": string
   "NicknameJP": string
+  "NameCN"?: string
+  "NicknameCN"?: string
   "Shape": string
   "SpinePrefabName": string
   "SmallPortrait": string
+}
+
+export interface BGMExcelTableItem {
+  "Id": number,
+  "ProductionStep": string,
+  "Path": string,
+  "Volume": number,
+  "LoopStartTime": number,
+  "LoopEndTime": number,
+  "LoopTranstionTime": number,
+  "LoopOffsetTime": number
 }

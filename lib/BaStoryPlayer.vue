@@ -3,15 +3,15 @@ import { onMounted } from 'vue';
 import { init } from '@/index';
 import { StoryRawUnit, StoryUnit } from '@/types/common';
 import { usePlayerStore } from '@/stores';
-let { story } = defineProps<{
+let { story ,dataUrl} = defineProps<{
   story: StoryRawUnit[]
+  dataUrl:string
 }>()
 
-let playStore = usePlayerStore()
 
 
 
-onMounted(() => { init('player', 550, 900,story)})
+onMounted(() => { init('player', 550, 900,story,dataUrl)})
 </script>
 
 <template>

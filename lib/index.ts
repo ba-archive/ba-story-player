@@ -1,5 +1,5 @@
 import { storeToRefs } from "pinia";
-import { Application, Loader } from "pixi.js";
+import { Application } from "pixi.js";
 import { textInit } from "./layers/textLayer";
 import { usePlayerStore } from "./stores";
 import { bgInit } from "@/layers/bgLayer"
@@ -7,43 +7,60 @@ import { characterInit } from "./layers/characterLayer";
 import { soundInit } from "./layers/soundLayer";
 import eventBus from "@/eventBus";
 import axios from 'axios'
-import { StoryRawUnit } from "./types/common";
-import {translate} from '@/layers/translationLayer'
+import { StoryRawUnit, Text } from "./types/common";
+import { translate } from '@/layers/translationLayer'
+import { PlayAudio } from "./types/events";
 
-
+let playerStore:ReturnType<typeof usePlayerStore>
+let l2dPlaying=false 
+let voiceIndex=1
+let playL2dVoice=true
 /**
  * 调用各层的初始化函数
  */
-export async function init(elementID: string, height: number, width: number,story:StoryRawUnit[]) {
-  let playerStore = usePlayerStore()
-  let { _app, currentStoryUnit, allStoryUnit, effectDone, characterDone, loadRes, BGNameExcelTable, CharacterNameExcelTable } = storeToRefs(playerStore)
+export async function init(elementID: string, height: number, width: number, story: StoryRawUnit[],dataUrl:string) {
+  playerStore = usePlayerStore()
+  let { _app, allStoryUnit, effectDone, characterDone, loadRes, BGNameExcelTable, CharacterNameExcelTable, currentStoryIndex 
+  ,BGMExcelTable,dataUrl:url
+  } = storeToRefs(playerStore)
+  url.value=dataUrl
   _app.value = new Application({ height, width })
 
 
-  _app.value!.loader.add('bg_park_night.jpg', '/bg/BG_Park_Night.jpg')
-    .add('LobbyCH0186', '/l2d/LobbyCH0184/CH0184_home.skel')
-    .add('CH0184_spr', '/spr/CH0184/CH0184_spr.skel')
+  // @ts-ignore
+  _app.value!.loader
+    .add('bg_park_night.jpg', `${dataUrl}/bg/BG_Park_Night.jpg`)
+    .add('LobbyCH0184', `${dataUrl}/spine/CH0184_home/CH0184_home.skel`)
+    .add('CH0184_spr', `${dataUrl}/spine/CH0184_spr/CH0184_spr.skel`)
     .load((loader, res) => {
       loadRes.value = res
     })
 
-  await axios.get('/data/ScenarioBGNameExcelTable.json').then(res => {
+  await axios.get(`${dataUrl}/data/ScenarioBGNameExcelTable.json`).then(res => {
     for (let i of res.data['DataList']) {
       BGNameExcelTable.value[i['Name']] = i
     }
   })
-  await axios.get('/data/ScenarioCharacterNameExcelTable.json').then(res => {
+  await axios.get(`${dataUrl}/data/ScenarioCharacterNameExcelTable.json`).then(res => {
     for (let i of res.data['DataList']) {
       CharacterNameExcelTable.value[i['CharacterName']] = i
     }
   })
-  eventBus.on('next', () => {
-    if (characterDone.value && effectDone.value) {
-      next()
-      playerStore.nextInit()
+  await axios.get(`${dataUrl}/data/BGMExcelTable.json`).then(res => {
+    for (let i of res.data['DataList']) {
+      BGMExcelTable.value[i['Id']] = i
     }
   })
-  eventBus.on('select', e => select(e))
+  eventBus.on('next', () => {
+    if (characterDone.value && effectDone.value) {
+      currentStoryIndex.value++
+      emitEvents()
+    }
+  })
+  eventBus.on('select', e => {
+    select(e)
+    emitEvents()
+  })
   eventBus.on('effectDone', () => effectDone.value = true)
   eventBus.on('characterDone', () => characterDone.value = true)
   eventBus.on('auto', () => console.log('auto!'))
@@ -54,58 +71,75 @@ export async function init(elementID: string, height: number, width: number,stor
   soundInit()
 
   document.querySelector(`#${elementID}`)?.appendChild(_app.value.view)
-  next()
+  eventBus.on('*', (type,e) => console.log(type,e))
+  emitEvents()
 }
 
 /**
- * 下一剧情语句
+ * 根据当前剧情发送事件 
  */
-export async function next() {
-  let playerStore = usePlayerStore()
-  let { currentStoryIndex, currentStoryUnit, allStoryUnit, language } = storeToRefs(playerStore)
-  currentStoryIndex.value += 1
+export async function emitEvents() {
+  let { currentStoryIndex, currentStoryUnit, allStoryUnit } = storeToRefs(playerStore)
   if (currentStoryIndex.value >= allStoryUnit.value.length) {
     end()
     return
   }
+  showBg()
+  showCharacter()
+  playAudio()
+  playL2d()
+  hide()
   if (currentStoryUnit.value.type == 'title') {
-    if (checkLanguage()) {
-      eventBus.emit('showTitle', currentStoryUnit.value.text[`Text${language.value}`]![0].content)
-    }
-    else {
-      eventBus.emit('showTitle', currentStoryUnit.value.text.TextJp[0].content)
-    }
+    eventBus.emit('showTitle', playerStore.text[0].content)
   }
   else if (currentStoryUnit.value.type == 'place') {
-    if (checkLanguage()) {
-      eventBus.emit('showPlace', currentStoryUnit.value.text[`Text${language.value}`]![0].content)
-    }
-    else {
-      eventBus.emit('showPlace', currentStoryUnit.value.text.TextJp[0].content)
-    }
+    eventBus.emit('showPlace', playerStore.text[0].content)
   }
   else if (currentStoryUnit.value.type == 'text') {
-
+    eventBus.emit('showText', {
+      text: playerStore.text,
+      textEffect: playerStore.textEffect,
+      speaker: playerStore.speaker
+    })
   }
   else if (currentStoryUnit.value.type == 'option') {
-
+    eventBus.emit('option', playerStore.option)
   }
   else if (currentStoryUnit.value.type == 'st') {
-
+    eventBus.emit('st', {
+      text: playerStore.text,
+      textEffect: playerStore.textEffect,
+      stArgs: playerStore.currentStoryUnit.stArgs!
+    })
+    if(l2dPlaying && playL2dVoice){
+      eventBus.emit('playAudio',{
+        voiceJPUrl:`${playerStore.dataUrl}/Audio/VoiceJp/${playerStore.l2dCharacterName}_MemorialLobby/${voiceIndex}.wav`
+      })
+      playL2dVoice=false
+    }
   }
   else if (currentStoryUnit.value.type == 'effectOnly') {
-
+    if(currentStoryUnit.value.clearSt){
+      eventBus.emit('clearSt')
+      if(l2dPlaying){
+        voiceIndex++
+        playL2dVoice=true
+      }
+    }
   }
   else if (currentStoryUnit.value.type == 'continue') {
-
   }
+  playerStore.nextInit()
 }
 
 /**
  * 根据选择支加入下一语句
  */
 export async function select(option: number) {
-
+  let { currentStoryIndex } = storeToRefs(playerStore)
+  while (playerStore.currentStoryUnit.SelectionGroup != option) {
+    currentStoryIndex.value++
+  }
 }
 
 
@@ -116,7 +150,67 @@ export function end() {
   console.log('end!')
 }
 
-function checkLanguage() {
-  let playerStore = usePlayerStore()
-  return playerStore.currentStoryUnit.text[`Text${playerStore.language}`] != undefined
+/**
+ * 显示背景
+ */
+function showBg() {
+  if (playerStore.bgUrl != '') {
+    eventBus.emit('showBg', playerStore.bgUrl)
+    if(l2dPlaying){
+      eventBus.emit('endL2D')
+      l2dPlaying=false
+    }
+  }
+}
+
+/**
+ * 显示角色
+ */
+function showCharacter() {
+  if (playerStore.currentStoryUnit.characters.length != 0) {
+    eventBus.emit('showCharacter', {
+      characters: playerStore.currentStoryUnit.characters,
+      characterEffects: playerStore.currentStoryUnit.characterEffect
+    })
+  }
+}
+
+/**
+ * 播放声音
+ */
+function playAudio() {
+  let audio:PlayAudio={}
+  if(playerStore.bgmUrl!=''){
+    audio.bgmUrl=playerStore.bgmUrl
+  }
+  if(playerStore.soundUrl!=''){
+    audio.soundUrl=playerStore.soundUrl
+  }
+  if(Object.keys(audio).length!=0){
+    eventBus.emit('playAudio',audio)
+  }
+}
+
+
+function playL2d(){
+  if(playerStore.isL2d){
+    if(playerStore.l2dAnimationName=='Idle_01'){
+      eventBus.emit('playL2D')
+      l2dPlaying=true
+    }
+    else{
+      eventBus.emit('changeAnimation',playerStore.l2dAnimationName)
+    }
+  }
+}
+
+function hide(){
+  if(playerStore.currentStoryUnit.hide){
+    if(playerStore.currentStoryUnit.hide=='all'){
+      eventBus.emit('hidemenu')
+    }
+    else{
+      eventBus.emit('hide')
+    }
+  }
 }

@@ -1,13 +1,14 @@
-import { Emitter } from "mitt"
 import { PiniaCustomStateProperties, _GettersTree } from "pinia"
 import { Application, LoaderResource, Sprite } from "pixi.js"
 import { UnwrapRef } from "vue"
-import { CharacterInstance, Dict, StoryUnit, ShowText, NameAndNickName } from "./common"
-import { Events } from "./events"
-import { BGNameExcelTableItem, CharacterNameExcelTableItem } from "./excels"
+import { CharacterInstance, Dict, StoryUnit, ShowText, Speaker } from "./common"
+import { BGMExcelTableItem, BGNameExcelTableItem, CharacterNameExcelTableItem } from "./excels"
+import {Text,TextEffect} from '@/types/common'
+import {ShowOption} from '@/types/events'
 
 export interface State {
   _app: null | Application
+  dataUrl:string
   userName:string
   language:'Cn'|'Jp'
   allStoryUnit: StoryUnit[]
@@ -30,6 +31,10 @@ export interface State {
   //资源管理
   BGNameExcelTable: { [index: number]: BGNameExcelTableItem },
   CharacterNameExcelTable: { [index: number]: CharacterNameExcelTableItem }
+  BGMExcelTable: { [index: number]: BGMExcelTableItem }
+  
+  //
+  l2dCharacterName:string
 }
 
 type GetterState = UnwrapRef<State> & UnwrapRef<PiniaCustomStateProperties<State>>
@@ -40,12 +45,19 @@ export interface Getters extends _GettersTree<State> {
 
   bgInstance: (state: GetterState) => Sprite | null
   logText: (state: GetterState) => ShowText[]
-  nameAndNickName: (state: GetterState) => (CharacterName: number) => NameAndNickName
+  speaker: (state: GetterState) =>  Speaker|undefined 
 
   storySummary: (state: GetterState) => string
 
   CharacterName: (state: GetterState) => (name: string) => number
 
+  text:(state:GetterState)=>Text[]
+  
+  textEffect:(state:GetterState)=>TextEffect[]
+
+  option:(state:GetterState)=>ShowOption[]
+
+  currentSpeakerCharacterName:(state:GetterState)=>number
 
   /**
    * 获取角色spineData
@@ -56,10 +68,13 @@ export interface Getters extends _GettersTree<State> {
    * 获取背景图片的url, 如果对应的BGName不是背景图片则返回空字符串 
    */
   bgUrl: (state: GetterState) => string
+  bgmUrl: (state: GetterState) => string
+  soundUrl: (state: GetterState) => string
   /**
    * 获取L2D资源
    */
   l2dSpineData: (state: GetterState) => import('@pixi-spine/base').ISkeletonData | undefined,
+  isL2d:(state:GetterState)=>boolean
   /**
    * 获取L2D动作名 
    */

@@ -109,7 +109,7 @@ export interface ShowText {
   CharacterName: number
 }
 
-export interface NameAndNickName {
+export interface Speaker {
   name: string
   nickName: string
 }

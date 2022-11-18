@@ -1,11 +1,11 @@
-import { Character, CharacterEffect, Option, TextEffect } from "./common"
+import { Character, CharacterEffect, Option, TextEffect, Text, Speaker } from "./common"
 
 export type Events = {
   //通用
   /**
    * 清除当前内容
    */
-  clear: undefined
+  hide: undefined
   /**
    * 特效播放完毕
    */
@@ -14,7 +14,7 @@ export type Events = {
   /**
    * 播饭特效
    */
-  playEffect:undefined
+  playEffect: undefined
   effectDone: undefined
   /**
    * 人物完成展示
@@ -24,7 +24,7 @@ export type Events = {
   /**
    * 展示人物
    */
-  showCharacter:ShowCharacter
+  showCharacter: ShowCharacter
   /**
    * 人物已处理完毕
    */
@@ -34,53 +34,54 @@ export type Events = {
   /**
    * 展示背景图片
    */
-  showBg:string
+  showBg: string
 
   //声音层
   /**
    * 播放bgm, sound或voiceJP
    */
-  playAudio:PlayAudio
+  playAudio: PlayAudio
   /**
    * 播放人物情绪动作特效音
    */
-  playEmotionAudio:string
-  
+  playEmotionAudio: string
+
   //UI层
   /**
    * 跳过剧情
    */
-  skip:undefined
+  skip: undefined
   /**
    * 自动模式切换
    */
-  auto:undefined
+  auto: undefined
+  hidemenu:undefined
 
   //文字层
   /**
    * 展示标题
    */
-  showTitle:string
+  showTitle: string
   /**
    * 展示地点
    */
-  showPlace:string
+  showPlace: string
   /**
    * 显示普通对话框文字
    */
-  showText:ShowText
+  showText: ShowText
   /**
    * 显示无对话框文字
    */
-  st:StText
+  st: StText
   /**
    * 清除无对话框文字和对话框
    */
-  clearSt:undefined
+  clearSt: undefined
   /**
    * 显示选项
    */
-  option:Option[]
+  option: ShowOption[]
   /**
    * 进入下一剧情语句
    */
@@ -94,32 +95,38 @@ export type Events = {
   /**
    * 加载L2D
    */
-  playL2D:undefined
+  playL2D: undefined
   /**
    * 更换动画
    */
-  changeAnimation:string
+  changeAnimation: string
+  endL2D:undefined
 }
 
-export interface ShowCharacter{
-  characters:Character[]
-  characterEffects:CharacterEffect[]
+export interface ShowCharacter {
+  characters: Character[]
+  characterEffects: CharacterEffect[]
 }
 
-export interface PlayAudio{
-  bgmUrl?:string
-  soundUrl?:string
-  voiceJPUrl?:string
+export interface PlayAudio {
+  bgmUrl?: string
+  soundUrl?: string
+  voiceJPUrl?: string
 }
 
-export interface ShowText{
-  text:Text[]
-  textEffect:TextEffect[]
-  CharacterName:number
+export interface ShowText {
+  text: Text[]
+  textEffect: TextEffect[]
+  speaker?: Speaker
 }
 
-export interface StText{
-  text:Text[]
-  textEffect:TextEffect[]
-  stArgs:string[]
+export interface StText {
+  text: Text[]
+  textEffect: TextEffect[]
+  stArgs: string[]
+}
+
+export interface ShowOption {
+  SelectionGroup: number,
+  text: string
 }
