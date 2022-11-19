@@ -1,9 +1,6 @@
-import { Character, CharacterInstance, Dict, StoryUnit } from '@/types/common'
 import { defineStore } from 'pinia'
-import { Sprite, Application, LoaderResource } from 'pixi.js'
-import mitt, { Emitter } from 'mitt'
-import { Events, ShowOption } from '@/types/events'
-import { BGNameExcelTableItem, CharacterNameExcelTableItem } from '@/types/excels'
+import { Sprite, Application  } from 'pixi.js'
+import {  ShowOption } from '@/types/events'
 import { Actions, Getters, State } from '@/types/store'
 
 export const usePlayerStore = defineStore<'PlayerStore', State, Getters, Actions>('PlayerStore', {
@@ -40,8 +37,8 @@ export const usePlayerStore = defineStore<'PlayerStore', State, Getters, Actions
       _logText: [],
 
       //保证特效播放完成
-      effectDone: false,
-      characterDone: false,
+      effectDone: true,
+      characterDone: true,
 
       //资源管理
       BGNameExcelTable: {},

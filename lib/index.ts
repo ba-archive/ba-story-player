@@ -7,9 +7,9 @@ import { characterInit } from "./layers/characterLayer";
 import { soundInit } from "./layers/soundLayer";
 import eventBus from "@/eventBus";
 import axios from 'axios'
-import { StoryRawUnit, Text } from "./types/common";
+import { StoryRawUnit  } from "./types/common";
 import { translate } from '@/layers/translationLayer'
-import { PlayAudio } from "./types/events";
+import { PlayAudio, PlayEffect } from "./types/events";
 
 let playerStore:ReturnType<typeof usePlayerStore>
 let l2dPlaying=false 
@@ -89,6 +89,9 @@ export async function emitEvents() {
   playAudio()
   playL2d()
   hide()
+  show()
+  playEffect()
+
   if (currentStoryUnit.value.type == 'title') {
     eventBus.emit('showTitle', playerStore.text[0].content)
   }
@@ -112,6 +115,7 @@ export async function emitEvents() {
       stArgs: playerStore.currentStoryUnit.stArgs!
     })
     if(l2dPlaying && playL2dVoice){
+      //判断并播放l2d语音, 根据clearST增加语音的下标
       eventBus.emit('playAudio',{
         voiceJPUrl:`${playerStore.dataUrl}/Audio/VoiceJp/${playerStore.l2dCharacterName}_MemorialLobby/${voiceIndex}.wav`
       })
@@ -129,7 +133,6 @@ export async function emitEvents() {
   }
   else if (currentStoryUnit.value.type == 'continue') {
   }
-  playerStore.nextInit()
 }
 
 /**
@@ -168,6 +171,7 @@ function showBg() {
  */
 function showCharacter() {
   if (playerStore.currentStoryUnit.characters.length != 0) {
+    playerStore.characterDone=false
     eventBus.emit('showCharacter', {
       characters: playerStore.currentStoryUnit.characters,
       characterEffects: playerStore.currentStoryUnit.characterEffect
@@ -204,6 +208,9 @@ function playL2d(){
   }
 }
 
+/**
+ * 控制隐藏事件的发送
+ */
 function hide(){
   if(playerStore.currentStoryUnit.hide){
     if(playerStore.currentStoryUnit.hide=='all'){
@@ -212,5 +219,36 @@ function hide(){
     else{
       eventBus.emit('hide')
     }
+  }
+}
+
+function show() {
+  if(playerStore.currentStoryUnit.show){
+    if(playerStore.currentStoryUnit.show=='menu'){
+      eventBus.emit('showmenu')
+    }
+  }
+}
+
+/**
+ * 播饭特效
+ */
+function playEffect(){
+  let {effectDone}=storeToRefs(playerStore)
+  effectDone.value=false
+  let effect:PlayEffect={}
+  let current=playerStore.currentStoryUnit
+  if(current.BGEffect!=0){
+    effect.BGEffect=current.BGEffect
+  }
+  if(current.Transition!=0){
+    effect.Transition=current.Transition
+  }
+  if(current.otherEffect.length!=0){
+    effect.otherEffect=current.otherEffect
+  }
+
+  if(Object.keys(effect).length!=0){
+    eventBus.emit('playEffect',effect)
   }
 }

@@ -1,4 +1,4 @@
-import { Character, CharacterEffect, Option, TextEffect, Text, Speaker } from "./common"
+import { Character, CharacterEffect, Option, TextEffect, Text, Speaker, Effect } from "./common"
 
 export type Events = {
   //通用
@@ -14,7 +14,7 @@ export type Events = {
   /**
    * 播饭特效
    */
-  playEffect: undefined
+  playEffect: PlayEffect 
   effectDone: undefined
   /**
    * 人物完成展示
@@ -55,7 +55,8 @@ export type Events = {
    * 自动模式切换
    */
   auto: undefined
-  hidemenu:undefined
+  hidemenu: undefined
+  showmenu:undefined
 
   //文字层
   /**
@@ -100,7 +101,7 @@ export type Events = {
    * 更换动画
    */
   changeAnimation: string
-  endL2D:undefined
+  endL2D: undefined
 }
 
 export interface ShowCharacter {
@@ -129,4 +130,10 @@ export interface StText {
 export interface ShowOption {
   SelectionGroup: number,
   text: string
+}
+
+export interface PlayEffect {
+  BGEffect?: number
+  Transition?: number
+  otherEffect?: Effect[]
 }
