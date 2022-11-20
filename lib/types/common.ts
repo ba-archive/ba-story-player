@@ -100,8 +100,10 @@ export interface StoryUnit {
 }
 
 export interface CharacterInstance {
-  CharacterName: string
-  instance: Spine
+  CharacterName: number;
+  instance: Spine;
+  isShow: () => boolean;
+  isOnStage: () => boolean;
 }
 
 export interface ShowText {

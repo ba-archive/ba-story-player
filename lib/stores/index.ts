@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { Sprite, Application  } from 'pixi.js'
 import {  ShowOption } from '@/types/events'
 import { Actions, Getters, State } from '@/types/store'
+import {CharacterInstance} from "@/types/common";
 
 export const usePlayerStore = defineStore<'PlayerStore', State, Getters, Actions>('PlayerStore', {
   state: () => {
@@ -28,7 +29,7 @@ export const usePlayerStore = defineStore<'PlayerStore', State, Getters, Actions
       loadRes: null,
 
       //人物层
-      currentCharacterList: [],
+      currentCharacterMap: new Map<number, CharacterInstance>(),
 
       //背景层
       _bgInstance: null,
@@ -124,6 +125,9 @@ export const usePlayerStore = defineStore<'PlayerStore', State, Getters, Actions
       return characterNameTable[name]
     },
 
+    CharacterNumber2Name: ({ CharacterNameExcelTable }) => (name: number) => {
+      return CharacterNameExcelTable[name]
+    },
 
     characterSpineData: ({ CharacterNameExcelTable, loadRes }) => (CharacterName: number) => {
       let item = CharacterNameExcelTable[CharacterName]
@@ -134,7 +138,7 @@ export const usePlayerStore = defineStore<'PlayerStore', State, Getters, Actions
     },
 
     /**
-     * 获取背景图片的url, 如果对应的BGName不是背景图片则返回空字符串 
+     * 获取背景图片的url, 如果对应的BGName不是背景图片则返回空字符串
      */
     bgUrl({ BGNameExcelTable }) {
       let item = BGNameExcelTable[this.currentStoryUnit!.BGName]
@@ -199,7 +203,7 @@ export const usePlayerStore = defineStore<'PlayerStore', State, Getters, Actions
     },
 
     /**
-     * 获取L2D动作名 
+     * 获取L2D动作名
      */
     l2dAnimationName({ BGNameExcelTable }) {
       let item = BGNameExcelTable[this.currentStoryUnit!.BGName]

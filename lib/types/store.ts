@@ -16,7 +16,7 @@ export interface State {
   characterNameTable: { [index: string]: number },
   loadRes: null | Dict<LoaderResource>,
 
-  currentCharacterList: CharacterInstance[]
+  currentCharacterMap: Map<number, CharacterInstance>
 
   //背景层
   _bgInstance: null | Sprite
@@ -32,7 +32,7 @@ export interface State {
   BGNameExcelTable: { [index: number]: BGNameExcelTableItem },
   CharacterNameExcelTable: { [index: number]: CharacterNameExcelTableItem }
   BGMExcelTable: { [index: number]: BGMExcelTableItem }
-  
+
   //
   l2dCharacterName:string
 }
@@ -45,14 +45,16 @@ export interface Getters extends _GettersTree<State> {
 
   bgInstance: (state: GetterState) => Sprite | null
   logText: (state: GetterState) => ShowText[]
-  speaker: (state: GetterState) =>  Speaker|undefined 
+  speaker: (state: GetterState) =>  Speaker|undefined
 
   storySummary: (state: GetterState) => string
 
   CharacterName: (state: GetterState) => (name: string) => number
 
+  CharacterNumber2Name: (state: GetterState) => (name: number) => string
+
   text:(state:GetterState)=>Text[]
-  
+
   textEffect:(state:GetterState)=>TextEffect[]
 
   option:(state:GetterState)=>ShowOption[]
@@ -65,7 +67,7 @@ export interface Getters extends _GettersTree<State> {
   characterSpineData: (state: GetterState) => (CharacterName: number) => import('@pixi-spine/base').ISkeletonData | undefined,
 
   /**
-   * 获取背景图片的url, 如果对应的BGName不是背景图片则返回空字符串 
+   * 获取背景图片的url, 如果对应的BGName不是背景图片则返回空字符串
    */
   bgUrl: (state: GetterState) => string
   bgmUrl: (state: GetterState) => string
@@ -76,7 +78,7 @@ export interface Getters extends _GettersTree<State> {
   l2dSpineData: (state: GetterState) => import('@pixi-spine/base').ISkeletonData | undefined,
   isL2d:(state:GetterState)=>boolean
   /**
-   * 获取L2D动作名 
+   * 获取L2D动作名
    */
   l2dAnimationName: (state: GetterState) => string
 }
