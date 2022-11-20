@@ -3,6 +3,7 @@ import { Sprite, Application  } from 'pixi.js'
 import {  ShowOption } from '@/types/events'
 import { Actions, Getters, State } from '@/types/store'
 import {CharacterInstance} from "@/types/common";
+import {getLoadRes} from '@/stores/spineLoader'
 
 export const usePlayerStore = defineStore<'PlayerStore', State, Getters, Actions>('PlayerStore', {
   state: () => {
@@ -26,10 +27,10 @@ export const usePlayerStore = defineStore<'PlayerStore', State, Getters, Actions
         '통신모모카': 3025942184
 
       },
-      loadRes: null,
 
       //人物层
       currentCharacterMap: new Map<number, CharacterInstance>(),
+      loadRes:null,
 
       //背景层
       _bgInstance: null,
@@ -138,12 +139,12 @@ export const usePlayerStore = defineStore<'PlayerStore', State, Getters, Actions
       return characterNameTable[name]
     },
 
-    characterSpineData: ({ CharacterNameExcelTable, loadRes }) => (CharacterName: number) => {
+    characterSpineData: ({ CharacterNameExcelTable }) => (CharacterName: number) => {
       let item = CharacterNameExcelTable[CharacterName]
       let temp = String(item.SpinePrefabName).split('/')
       temp = temp[temp.length - 1].split('_')
       let id = temp[temp.length - 1]
-      return loadRes![`${id}_spr`].spineData
+      return getLoadRes()[`${id}_spr`].spineData
     },
 
     /**
@@ -207,12 +208,12 @@ export const usePlayerStore = defineStore<'PlayerStore', State, Getters, Actions
     /**
      * 获取L2D资源
      */
-    l2dSpineData({ BGNameExcelTable, loadRes }) {
+    l2dSpineData({ BGNameExcelTable  }) {
       let item = BGNameExcelTable[this.currentStoryUnit!.BGName]
       if (item) {
         if (item.BGType == 'Spine') {
           let temp = String(item.BGFileName).split('/')
-          return loadRes![temp.pop()!.split('_')[1]].spineData
+          return getLoadRes()![temp.pop()!.split('_')[1]].spineData
 
         }
       }

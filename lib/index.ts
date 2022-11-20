@@ -1,5 +1,6 @@
 import { storeToRefs } from "pinia";
-import { Application } from "pixi.js";
+import { Application, Loader } from "pixi.js";
+import {SpineParser} from 'pixi-spine'
 import { textInit } from "./layers/textLayer";
 import { usePlayerStore } from "./stores";
 import { bgInit } from "@/layers/bgLayer"
@@ -10,6 +11,7 @@ import axios from 'axios'
 import { StoryRawUnit } from "./types/common";
 import { translate } from '@/layers/translationLayer'
 import { PlayAudio, PlayEffect } from "./types/events";
+import spineLoader ,{setLoadRes,getLoadRes}from '@/stores/spineLoader'
 
 let playerStore: ReturnType<typeof usePlayerStore>
 let l2dPlaying = false
@@ -20,8 +22,8 @@ let playL2dVoice = true
  */
 export async function init(elementID: string, height: number, width: number, story: StoryRawUnit[], dataUrl: string) {
   playerStore = usePlayerStore()
-  let { _app, allStoryUnit, effectDone, characterDone, loadRes, BGNameExcelTable, CharacterNameExcelTable, currentStoryIndex
-    , BGMExcelTable, dataUrl: url
+  let { _app, allStoryUnit, effectDone, characterDone,  BGNameExcelTable, CharacterNameExcelTable, currentStoryIndex
+    , BGMExcelTable, dataUrl: url,loadRes
   } = storeToRefs(playerStore)
   url.value = dataUrl
   _app.value = new Application({ height, width })
@@ -29,8 +31,11 @@ export async function init(elementID: string, height: number, width: number, sto
   // @ts-ignore
   _app.value!.loader
     .add('bg_park_night.jpg', `${dataUrl}/bg/BG_Park_Night.jpg`)
-    .add('LobbyCH0184', `${dataUrl}/spine/CH0184_home/CH0184_home.skel`)
+
+  Loader.registerPlugin(SpineParser);
+  spineLoader.add('LobbyCH0184', `${dataUrl}/spine/CH0184_home/CH0184_home.skel`)
     .add('CH0184_spr', `${dataUrl}/spine/CH0184_spr/CH0184_spr.skel`)
+    .load((loader,res)=>{setLoadRes(res);})
 
 
   await axios.get(`${dataUrl}/data/ScenarioBGNameExcelTable.json`).then(res => {
@@ -51,7 +56,6 @@ export async function init(elementID: string, height: number, width: number, sto
   allStoryUnit.value = translate(story)
   addEmotionResources()
   playerStore.app.loader.load((loader, res) => {
-    loadRes.value = res
   })
   eventBus.on('next', () => {
     if (characterDone.value && effectDone.value) {
@@ -263,13 +267,13 @@ function addLoadResources() {
  * 添加人物情绪相关资源
  */
 async function addEmotionResources() {
-  let allImages=new Set<string>()
+  let allImages = new Set<string>()
   for (let i of Object.values(playerStore.emotionResourecesTable)) {
     for (let j of i) {
       allImages.add(j)
     }
   }
-  for(let i of allImages){
+  for (let i of allImages) {
     playerStore.app.loader.add(i, `${playerStore.dataUrl}/emotions/${i}`)
   }
 }

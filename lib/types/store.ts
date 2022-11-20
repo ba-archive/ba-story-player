@@ -14,7 +14,6 @@ export interface State {
   allStoryUnit: StoryUnit[]
   currentStoryIndex:number
   characterNameTable: { [index: string]: number },
-  loadRes: null | Dict<LoaderResource>,
 
   currentCharacterMap: Map<number, CharacterInstance>
 
