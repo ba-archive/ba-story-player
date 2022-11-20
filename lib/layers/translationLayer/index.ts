@@ -14,15 +14,16 @@ let emotionWordTable:{[index:string]:string}={
   'u':'Sad',
   '[땀]':'Sweat',
   'w':'Sweat',
-  '[...]':'...',
-  '…':'…',
+  '[...]':'Dot',
+  '…':'Dot',
   'c':'Chat',
-  '[!]':'!',
+  '[!]':'Exclaim',
   '[빠직]':'Angry',
-  '[?!]':'?!',
-  '?!':'?!',
-  '[?]':'?',
+  '[?!]':'Surprise',
+  '?!':'Surprise',
+  '[?]':'Question',
   '[///]':'Shy'
+  // TODO: Upset, Music, Think, Bulb, Sigh, Steam, Zzz, Tear
 }
 
 /**

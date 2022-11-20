@@ -53,13 +53,14 @@ export const usePlayerStore = defineStore<'PlayerStore', State, Getters, Actions
         'Twinkle':['Emoticon_Twinkle.png'],
         'Anxiety':['Emoticon_Balloon_N.png','Emoticon_Anxiety.png'],
         'Sweat':['Emoticon_Sweat_1.png','Emoticon_Sweat_2.png'],
-        '...':['Emoticon_Balloon_N.png','Emoticon_Idea.png'],
-        '!':['Emoticon_ExclamationMark.png'],
-        '?!':['Emoticon_Exclamation.png','Emoticon_Question.png'],
-        '?':['Emoticon_QuestionMark.png'],
+        'Dot':['Emoticon_Balloon_N.png','Emoticon_Idea.png'],
+        'Exclaim':['Emoticon_ExclamationMark.png'],
+        'Surprise':['Emoticon_Exclamation.png','Emoticon_Question.png'],
+        'Question':['Emoticon_QuestionMark.png'],
         'Shy':['Emoticon_Balloon_N.png','Emoticon_Shy.png'],
         'Angry':['Emoticon_Aggro.png'],
         'Chat':['Emoticon_Chat.png']
+        // TODO: Upset, Music, Think, Bulb, Sigh, Steam, Zzz, Tear
       },
 
       //
