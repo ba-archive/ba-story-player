@@ -33,6 +33,7 @@ export interface State {
   CharacterNameExcelTable: { [index: number]: CharacterNameExcelTableItem }
   BGMExcelTable: { [index: number]: BGMExcelTableItem }
 
+  emotionResourecesTable:{[index:string]:string[]},
   //
   l2dCharacterName:string
 }
@@ -65,6 +66,7 @@ export interface Getters extends _GettersTree<State> {
    * 获取角色spineData
    */
   characterSpineData: (state: GetterState) => (CharacterName: number) => import('@pixi-spine/base').ISkeletonData | undefined,
+  emotionResources:(state:GetterState)=>(emotionName:string)=>string[]
 
   /**
    * 获取背景图片的url, 如果对应的BGName不是背景图片则返回空字符串
