@@ -25,17 +25,13 @@ export async function init(elementID: string, height: number, width: number, sto
   } = storeToRefs(playerStore)
   url.value = dataUrl
   _app.value = new Application({ height, width })
-  allStoryUnit.value = translate(story)
 
-  addEmotionResources()
   // @ts-ignore
   _app.value!.loader
     .add('bg_park_night.jpg', `${dataUrl}/bg/BG_Park_Night.jpg`)
     .add('LobbyCH0184', `${dataUrl}/spine/CH0184_home/CH0184_home.skel`)
     .add('CH0184_spr', `${dataUrl}/spine/CH0184_spr/CH0184_spr.skel`)
-    .load((loader, res) => {
-      loadRes.value = res
-    })
+
 
   await axios.get(`${dataUrl}/data/ScenarioBGNameExcelTable.json`).then(res => {
     for (let i of res.data['DataList']) {
@@ -51,6 +47,11 @@ export async function init(elementID: string, height: number, width: number, sto
     for (let i of res.data['DataList']) {
       BGMExcelTable.value[i['Id']] = i
     }
+  })
+  allStoryUnit.value = translate(story)
+  addEmotionResources()
+  playerStore.app.loader.load((loader, res) => {
+    loadRes.value = res
   })
   eventBus.on('next', () => {
     if (characterDone.value && effectDone.value) {
@@ -261,11 +262,15 @@ function addLoadResources() {
 /**
  * 添加人物情绪相关资源
  */
-function addEmotionResources() {
+async function addEmotionResources() {
+  let allImages=new Set<string>()
   for (let i of Object.values(playerStore.emotionResourecesTable)) {
     for (let j of i) {
-      playerStore.app.loader.add(j, `${playerStore.dataUrl}/emotions/${j}`)
+      allImages.add(j)
     }
+  }
+  for(let i of allImages){
+    playerStore.app.loader.add(i, `${playerStore.dataUrl}/emotions/${i}`)
   }
 }
 
