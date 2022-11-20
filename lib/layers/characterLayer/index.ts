@@ -50,7 +50,7 @@ const CharacterLayerInstance: CharacterLayer = {
     return true;
   },
   createSpineFromSpineData(characterNumber: number, spineData: ISkeletonData): Spine {
-    const instance = new Spine(spineData);
+    const instance = Object.seal(new Spine(spineData));
     const { currentCharacterMap } = usePlayerStore();
     const characterInstance: CharacterInstance = {
       CharacterName: characterNumber,
