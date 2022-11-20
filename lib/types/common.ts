@@ -104,6 +104,7 @@ export interface CharacterInstance {
   instance: Spine;
   isShow: () => boolean;
   isOnStage: () => boolean;
+  isHeightLight: () => boolean;
 }
 
 export interface ShowText {

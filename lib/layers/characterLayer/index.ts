@@ -16,6 +16,12 @@ const CharacterLayerInstance: CharacterLayer = {
   init() {
     document.addEventListener("resize", this.onWindowResize);
     eventBus.on("showCharacter", this.showCharacter);
+    this.createEffectMap();
+    return true;
+  },
+  dispose(): boolean {
+    eventBus.off("showCharacter", this.showCharacter);
+    //TODO 销毁各种sprite,spine实体
     return true;
   },
   hasCharacterInstance(characterNumber: number): Boolean {
@@ -24,9 +30,6 @@ const CharacterLayerInstance: CharacterLayer = {
   },
   hasCharacterInstanceCache(characterNumber: number): Boolean {
     return Boolean(this.characterSpineCache.get(characterNumber));
-  },
-  hasAnyCharacterInstance(characterNumber: number): Boolean {
-    return this.hasCharacterInstance(characterNumber) || this.hasCharacterInstanceCache(characterNumber);
   },
   getCharacterInstance(characterNumber: number): CharacterInstance | undefined {
     const { currentCharacterMap } = usePlayerStore();
@@ -39,7 +42,7 @@ const CharacterLayerInstance: CharacterLayer = {
     const { characterSpineData } = usePlayerStore();
     for (const item of characterMap) {
       const characterName = item.CharacterName;
-      if (!this.hasAnyCharacterInstance(characterName)) {
+      if (!this.hasCharacterInstanceCache(characterName)) {
         const spineData = characterSpineData(characterName);
         if (!spineData) {
           return false;
@@ -59,6 +62,9 @@ const CharacterLayerInstance: CharacterLayer = {
         return Boolean(instance.parent);
       },
       isShow() {
+        return this.isOnStage() && instance.alpha != 0;
+      },
+      isHeightLight() {
         return this.isOnStage() && instance.alpha != 0;
       }
     }
@@ -91,13 +97,23 @@ const CharacterLayerInstance: CharacterLayer = {
     })
     return false;
   },
+  //TODO 根据角色是否已经缩放(靠近老师)分类更新
   onWindowResize() {
     this.characterScale = undefined;
   },
+  //TODO fill mapping function
+  createEffectMap() {
+    this.actionMap.set("onWindowResize", this.onWindowResize)
+  },
   characterScale: undefined,
-  characterSpineCache: new Map<number, CharacterInstance>()
+  characterSpineCache: new Map<number, CharacterInstance>(),
+  actionMap: new Map<string, Function>()
 }
 
+/**
+ * 构建ShowCharacter到CharacterEffectMap的映射
+ * @param row 原始播放器数据
+ */
 function buildCharacterEffectMapping(row: ShowCharacter): CharacterEffectMap[] {
   return row.characters.map(item => {
     return {
