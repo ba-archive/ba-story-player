@@ -52,8 +52,6 @@ export interface Getters extends _GettersTree<State> {
 
   CharacterName: (state: GetterState) => (name: string) => number
 
-  CharacterNumber2Name: (state: GetterState) => (name: number) => string
-
   text:(state:GetterState)=>Text[]
 
   textEffect:(state:GetterState)=>TextEffect[]

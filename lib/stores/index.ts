@@ -138,10 +138,6 @@ export const usePlayerStore = defineStore<'PlayerStore', State, Getters, Actions
       return characterNameTable[name]
     },
 
-    CharacterNumber2Name: ({ CharacterNameExcelTable }) => (name: number) => {
-      return CharacterNameExcelTable[name]
-    },
-
     characterSpineData: ({ CharacterNameExcelTable, loadRes }) => (CharacterName: number) => {
       let item = CharacterNameExcelTable[CharacterName]
       let temp = String(item.SpinePrefabName).split('/')
