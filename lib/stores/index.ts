@@ -44,6 +44,19 @@ export const usePlayerStore = defineStore<'PlayerStore', State, Getters, Actions
       BGNameExcelTable: {},
       CharacterNameExcelTable: {},
       BGMExcelTable: {},
+      emotionResourecesTable:{
+        '[하트]':['Emoticon_Balloon_N.png','Emoticon_Heart.png'],
+        '[반응]':['Emoticon_Action.png'],
+        '[음표]':['Emoticon_Note.png'],
+        '[반짝]':['Emoticon_Twinkle.png'],
+        '[속상함]':['Emoticon_Balloon_N.png','Emoticon_Anxiety.png'],
+        '[땀]':['Emoticon_Sweat_1.png','Emoticon_Sweat_2.png'],
+        '[...]':['Emoticon_Balloon_N.png','Emoticon_Idea.png'],
+        '[!]':['Emoticon_ExclamationMark.png'],
+        '[?!]':['Emoticon_Exclamation.png','Emoticon_Question.png'],
+        '[?]':['Emoticon_QuestionMark.png'],
+        '[///]':['Emoticon_Balloon_N.png','Emoticon_Shy.png'],
+      },
 
       //
       l2dCharacterName:''
@@ -131,6 +144,13 @@ export const usePlayerStore = defineStore<'PlayerStore', State, Getters, Actions
       temp = temp[temp.length - 1].split('_')
       let id = temp[temp.length - 1]
       return loadRes![`${id}_spr`].spineData
+    },
+
+    /**
+     * 获取情绪动画的图片url, 按从底部到顶部, 从左到右排列资源.
+     */
+    emotionResources(){
+      return (emotionName)=>this.emotionResourecesTable[emotionName]
     },
 
     /**
