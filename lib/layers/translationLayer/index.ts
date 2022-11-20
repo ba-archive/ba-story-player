@@ -1,6 +1,30 @@
 import { Character, StoryRawUnit, StoryUnit, Text, TextEffect } from "@/types/common";
 import { usePlayerStore } from '@/stores'
 
+
+let emotionWordTable:{[index:string]:string}={
+  '[하트]':'Heart',
+  'h':'Heart',
+  '[반응]':'Respond',
+  '[음표]':'Note',
+  'm':'Note',
+  '[반짝]':'Twinkle',
+  'k':'Twinkle',
+  '[속상함]':'Sad',
+  'u':'Sad',
+  '[땀]':'Sweat',
+  'w':'Sweat',
+  '[...]':'...',
+  '…':'…',
+  'c':'Chat',
+  '[!]':'!',
+  '[빠직]':'Angry',
+  '[?!]':'?!',
+  '?!':'?!',
+  '[?]':'?',
+  '[///]':'Shy'
+}
+
 /**
  * 将原始剧情结构翻译成标准剧情结构
  */
@@ -115,7 +139,7 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
           unit.characterEffect.push({
             type: 'emotion',
             target: Number(smallJ[0][1]),
-            effect: smallJ[2],
+            effect: emotionWordTable[smallJ[2]],
             async: false
           })
         }
