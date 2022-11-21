@@ -70,10 +70,6 @@ export interface CharacterLayer {
    */
   onWindowResize(): void;
   /**
-   * 创建characterEffect不同type的处理map
-   */
-  createEffectMap(): void;
-  /**
    * 当前角色spine的缩放比例
    */
   characterScale: number | undefined;
@@ -83,8 +79,40 @@ export interface CharacterLayer {
    * @value CharacterInstance 包含spine对象的实例
    */
   characterSpineCache: Map<number, CharacterInstance>
-  //TODO 将string替换成effect enum
-  actionMap: Map<string, Function>
+}
+
+/**
+ * 对话特效处理
+ */
+export interface CharacterEmotionPlayer {
+  /**
+   * 初始化函数, player初始化时调用, 向为EffectWord准备处理函数映射表
+   */
+  init(): void;
+  /**
+   * 创建characterEffect不同type的处理map
+   */
+  createEffectMap(): void;
+  /**
+   * 处理针对某一角色的具体对话特效
+   * @param type 特效类型
+   * @param instance 角色信息实例
+   */
+  processEffect(type: EmotionWord, instance: CharacterEffectInstance): void;
+  emotionHeart(instance: CharacterEffectInstance): void;
+  emotionRespond(instance: CharacterEffectInstance): void;
+  emotionNote(instance: CharacterEffectInstance): void;
+  emotionTwinkle(instance: CharacterEffectInstance): void;
+  emotionSad(instance: CharacterEffectInstance): void;
+  emotionSweat(instance: CharacterEffectInstance): void;
+  emotionDot(instance: CharacterEffectInstance): void;
+  emotionChat(instance: CharacterEffectInstance): void;
+  emotionExclaim(instance: CharacterEffectInstance): void;
+  emotionAngry(instance: CharacterEffectInstance): void;
+  emotionSurprise(instance: CharacterEffectInstance): void;
+  emotionQuestion(instance: CharacterEffectInstance): void;
+  emotionShy(instance: CharacterEffectInstance): void;
+  actionMap: Map<EmotionWord, Function>
 }
 
 /**
@@ -93,3 +121,39 @@ export interface CharacterLayer {
 export interface CharacterEffectMap extends Character {
   effect: CharacterEffect[];
 }
+
+/**
+ * CharacterEmotionPlayer使用, 提供角色spine与施加在其身上的所有特效
+ */
+export interface CharacterEffectInstance extends Character {
+  effect: CharacterEffect;
+  instance: Spine;
+}
+
+/**
+ * 对话特效定义
+ */
+export type EmotionWord =
+  "Heart" | "Respond" | "Note" | "Twinkle" |
+  "Sad" | "Sweat" | "Dot" | "Chat" | "Exclaim" |
+  "Angry" | "Surprise" | "Question" | "Shy";
+
+/**
+ * 人物特效定义
+ */
+export type CharacterEffectWord =
+  "a" | "d" | "dl" | "dr" |
+  "ar" | "al" | "hophop" | "greeting" | "shake" |
+  "m1" | "m2" | "m3" | "m4" | "m5" |
+  "stiff" | "closeup" | "jump" |
+  "falldownR" | "hide";
+
+/**
+ * fx特效定义
+ */
+export type FXEffectWord = "shot";
+
+/**
+ * signal特效定义
+ */
+export type SignalEffectWord = "signal";

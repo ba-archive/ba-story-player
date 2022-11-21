@@ -1,7 +1,13 @@
 /**
  * 初始化人物层, 订阅player的剧情信息.
  */
-import {CharacterEffectMap, CharacterLayer} from "@/types/characterLayer";
+import {
+  CharacterEffectInstance,
+  CharacterEffectMap,
+  CharacterEmotionPlayer,
+  CharacterLayer,
+  EmotionWord
+} from "@/types/characterLayer";
 import {ISkeletonData, Spine} from "pixi-spine";
 import {ShowCharacter} from "@/types/events";
 import {usePlayerStore} from "@/stores";
@@ -16,7 +22,7 @@ const CharacterLayerInstance: CharacterLayer = {
   init() {
     document.addEventListener("resize", this.onWindowResize);
     eventBus.on("showCharacter", this.showCharacter);
-    this.createEffectMap();
+    CharacterEmotionPlayerInstance.init();
     return true;
   },
   dispose(): boolean {
@@ -25,21 +31,21 @@ const CharacterLayerInstance: CharacterLayer = {
     return true;
   },
   hasCharacterInstance(characterNumber: number): Boolean {
-    const { currentCharacterMap } = usePlayerStore();
+    const {currentCharacterMap} = usePlayerStore();
     return Boolean(currentCharacterMap.get(characterNumber));
   },
   hasCharacterInstanceCache(characterNumber: number): Boolean {
     return Boolean(this.characterSpineCache.get(characterNumber));
   },
   getCharacterInstance(characterNumber: number): CharacterInstance | undefined {
-    const { currentCharacterMap } = usePlayerStore();
+    const {currentCharacterMap} = usePlayerStore();
     return currentCharacterMap.get(characterNumber) ?? this.characterSpineCache.get(characterNumber);
   },
   getCharacterSpineInstance(characterNumber: number): Spine | undefined {
     return this.getCharacterInstance(characterNumber)?.instance ?? this.characterSpineCache.get(characterNumber)?.instance;
   },
   beforeProcessShowCharacterAction(characterMap: CharacterEffectMap[]): boolean {
-    const { characterSpineData } = usePlayerStore();
+    const {characterSpineData} = usePlayerStore();
     for (const item of characterMap) {
       const characterName = item.CharacterName;
       if (!this.hasCharacterInstanceCache(characterName)) {
@@ -54,7 +60,7 @@ const CharacterLayerInstance: CharacterLayer = {
   },
   createSpineFromSpineData(characterNumber: number, spineData: ISkeletonData): Spine {
     const instance = Object.seal(new Spine(spineData));
-    const { currentCharacterMap } = usePlayerStore();
+    const {currentCharacterMap} = usePlayerStore();
     const characterInstance: CharacterInstance = {
       CharacterName: characterNumber,
       instance,
@@ -73,7 +79,7 @@ const CharacterLayerInstance: CharacterLayer = {
     return instance;
   },
   putCharacterOnStage(characterNumber: number): boolean {
-    const { app } = usePlayerStore()
+    const {app} = usePlayerStore()
     const spine = this.getCharacterSpineInstance(characterNumber);
     if (!spine) {
       return false;
@@ -93,7 +99,14 @@ const CharacterLayerInstance: CharacterLayer = {
     }
     mapList.forEach(character => {
       const characterInstance = this.getCharacterInstance(character.CharacterName)!
-
+      character.effect.forEach((effect) => {
+        //TODO
+        CharacterEmotionPlayerInstance.processEffect(effect.effect as EmotionWord, {
+          ...character,
+          effect: effect,
+          instance: characterInstance.instance
+        })
+      })
     })
     return false;
   },
@@ -101,13 +114,50 @@ const CharacterLayerInstance: CharacterLayer = {
   onWindowResize() {
     this.characterScale = undefined;
   },
-  //TODO fill mapping function
-  createEffectMap() {
-    this.actionMap.set("onWindowResize", this.onWindowResize)
-  },
   characterScale: undefined,
   characterSpineCache: new Map<number, CharacterInstance>(),
-  actionMap: new Map<string, Function>()
+}
+
+const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
+  init() {
+    this.createEffectMap();
+  },
+  createEffectMap() {
+    this.actionMap.set("Heart", this.emotionHeart);
+    this.actionMap.set("Respond", this.emotionRespond);
+    this.actionMap.set("Note", this.emotionNote);
+    this.actionMap.set("Twinkle", this.emotionTwinkle);
+    this.actionMap.set("Sad", this.emotionSad);
+    this.actionMap.set("Sweat", this.emotionSweat);
+    this.actionMap.set("Dot", this.emotionDot);
+    this.actionMap.set("Chat", this.emotionChat);
+    this.actionMap.set("Exclaim", this.emotionExclaim);
+    this.actionMap.set("Angry", this.emotionAngry);
+    this.actionMap.set("Surprise", this.emotionSurprise);
+    this.actionMap.set("Question", this.emotionQuestion);
+    this.actionMap.set("Shy", this.emotionShy);
+  },
+  processEffect(type: EmotionWord, instance: CharacterEffectInstance) {
+    const fn = this.actionMap.get(type);
+    if (!fn) {
+      return;
+    }
+    fn(instance);
+  },
+  emotionHeart(instance: CharacterEffectInstance) {},
+  emotionRespond(instance: CharacterEffectInstance): void {},
+  emotionNote(instance: CharacterEffectInstance): void {},
+  emotionTwinkle(instance: CharacterEffectInstance): void {},
+  emotionSad(instance: CharacterEffectInstance): void {},
+  emotionSweat(instance: CharacterEffectInstance): void {},
+  emotionDot(instance: CharacterEffectInstance): void {},
+  emotionChat(instance: CharacterEffectInstance): void {},
+  emotionExclaim(instance: CharacterEffectInstance): void {},
+  emotionAngry(instance: CharacterEffectInstance): void {},
+  emotionSurprise(instance: CharacterEffectInstance): void {},
+  emotionQuestion(instance: CharacterEffectInstance): void {},
+  emotionShy(instance: CharacterEffectInstance): void {},
+  actionMap: new Map<EmotionWord, Function>()
 }
 
 /**

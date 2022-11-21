@@ -1,8 +1,9 @@
 import { Character, StoryRawUnit, StoryUnit, Text, TextEffect } from "@/types/common";
 import { usePlayerStore } from '@/stores'
+import {EmotionWord} from "@/types/characterLayer";
 
 
-let emotionWordTable:{[index:string]:string}={
+let emotionWordTable:{[index:string]:EmotionWord}={
   '[하트]':'Heart',
   'h':'Heart',
   '[반응]':'Respond',
@@ -114,7 +115,7 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
           highlight: smallJ.length == 4
         })
         if('Shape' in playStore.CharacterNameExcelTable[CharacterName]
-          && 
+          &&
           playStore.CharacterNameExcelTable[CharacterName].Shape=='Signal'){
           unit.characterEffect.push({
             type:'signal',

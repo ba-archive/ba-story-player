@@ -1,4 +1,5 @@
 import type { Spine } from 'pixi-spine'
+import {CharacterEffectWord, EmotionWord, FXEffectWord, SignalEffectWord} from "@/types/characterLayer";
 export type StoryType = "title" | "place" | "text" | "option" | "st" | "effectOnly" | 'continue'
 
 export type Dict<T> = {
@@ -19,9 +20,9 @@ export interface Character {
 }
 
 export interface CharacterEffect {
-  type:'emotion'|'action'|'signal'|'fx'
+  type:'emotion'|'action'|'fx'|'signal'
   target: number,
-  effect: string,
+  effect: EmotionWord | CharacterEffectWord | FXEffectWord | SignalEffectWord | string,
   async: boolean
 }
 
