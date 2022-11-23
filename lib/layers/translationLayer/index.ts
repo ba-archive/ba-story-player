@@ -1,29 +1,29 @@
 import { Character, StoryRawUnit, StoryUnit, Text, TextEffect } from "@/types/common";
 import { usePlayerStore } from '@/stores'
-import {EmotionWord} from "@/types/characterLayer";
+import { EmotionWord } from "@/types/characterLayer";
 
 
-let emotionWordTable:{[index:string]:EmotionWord}={
-  '[하트]':'Heart',
-  'h':'Heart',
-  '[반응]':'Respond',
-  '[음표]':'Note',
-  'm':'Note',
-  '[반짝]':'Twinkle',
-  'k':'Twinkle',
-  '[속상함]':'Sad',
-  'u':'Sad',
-  '[땀]':'Sweat',
-  'w':'Sweat',
-  '[...]':'Dot',
-  '…':'Dot',
-  'c':'Chat',
-  '[!]':'Exclaim',
-  '[빠직]':'Angry',
-  '[?!]':'Surprise',
-  '?!':'Surprise',
-  '[?]':'Question',
-  '[///]':'Shy'
+let emotionWordTable: { [index: string]: EmotionWord } = {
+  '[하트]': 'Heart',
+  'h': 'Heart',
+  '[반응]': 'Respond',
+  '[음표]': 'Note',
+  'm': 'Note',
+  '[반짝]': 'Twinkle',
+  'k': 'Twinkle',
+  '[속상함]': 'Sad',
+  'u': 'Sad',
+  '[땀]': 'Sweat',
+  'w': 'Sweat',
+  '[...]': 'Dot',
+  '…': 'Dot',
+  'c': 'Chat',
+  '[!]': 'Exclaim',
+  '[빠직]': 'Angry',
+  '[?!]': 'Surprise',
+  '?!': 'Surprise',
+  '[?]': 'Question',
+  '[///]': 'Shy'
   // TODO: Upset, Music, Think, Bulb, Sigh, Steam, Zzz, Tear
 }
 
@@ -41,7 +41,7 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
       type: 'text',
       characters: [],
       characterEffect: [],
-      otherEffect:[],
+      otherEffect: [],
       text: { TextJp: [] },
       textEffect: {
         TextJp: []
@@ -56,24 +56,24 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
     for (let [index, j] of strs.entries()) {
       let smallJ = j.split(';')
       let optionIndex = 0
-      if (smallJ[0] == '#title') {
+      if (compareCaseInsensive(smallJ[0],'#title')) {
         unit.type = 'title'
         unit = setOneText(unit, i)
         break
       }
-      else if (smallJ[0] == '#place') {
+      else if (compareCaseInsensive(smallJ[0],'#place')) {
         unit.type = 'place'
         unit = setOneText(unit, i)
         break
       }
-      else if (smallJ[0] == '#na') {
+      else if (compareCaseInsensive(smallJ[0],'#na')) {
         unit.type = 'text'
         unit = setOneText(unit, i)
-        if(smallJ.length==3){
-          unit.naName=smallJ[1]
+        if (smallJ.length == 3) {
+          unit.naName = smallJ[1]
         }
       }
-      else if (smallJ[0] == '#st') {
+      else if (compareCaseInsensive(smallJ[0],'#st')) {
         unit.type = 'st'
         unit.stArgs = smallJ.slice(1)
         if (smallJ.length == 3) {
@@ -81,14 +81,14 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
         }
         //当st有文字时
         else {
-          unit.stArgs=smallJ.slice(1,smallJ.length-1)
+          unit.stArgs = smallJ.slice(1, smallJ.length - 1)
           unit.text.TextJp = generateText(i.TextJp)
           if (i.TextCn) {
             unit.text.TextCn = generateText(i.TextCn)
           }
         }
       }
-      else if (smallJ[0] == '#stm') {
+      else if (compareCaseInsensive(smallJ[0],'#stm')) {
         unit.type = 'st'
 
         let jp = generateTextEffect(i.TextJp)
@@ -100,28 +100,28 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
           unit.textEffect.TextCn = cn.textEffects
         }
       }
-      else if (smallJ[0] == '#clearST') {
+      else if (compareCaseInsensive(smallJ[0],'#clearST')) {
         unit.clearSt = true
       }
-      else if (smallJ[0] == '#wait') {
+      else if (compareCaseInsensive(smallJ[0],'#wait')) {
         unit.otherEffect.push({ type: 'wait', args: [smallJ[1]] })
       }
       else if (isDigit(smallJ[0])) {
-        let CharacterName=playStore.characterNameTable[smallJ[1]]
+        let CharacterName = playStore.characterNameTable[smallJ[1]]
         unit.characters.push({
           CharacterName,
           position: Number(smallJ[0]),
           face: smallJ[2],
           highlight: smallJ.length == 4
         })
-        if('Shape' in playStore.CharacterNameExcelTable[CharacterName]
+        if ('Shape' in playStore.CharacterNameExcelTable[CharacterName]
           &&
-          playStore.CharacterNameExcelTable[CharacterName].Shape=='Signal'){
+          playStore.CharacterNameExcelTable[CharacterName].Shape == 'Signal') {
           unit.characterEffect.push({
-            type:'signal',
-            target:Number(smallJ[0]),
-            effect:'',
-            async:false
+            type: 'signal',
+            target: Number(smallJ[0]),
+            effect: '',
+            async: false
           })
         }
         if (smallJ.length == 4) {
@@ -137,7 +137,7 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
             async: false
           })
         }
-        else if(smallJ[1]=='em'){
+        else if (compareCaseInsensive(smallJ[1],'em')) {
           unit.characterEffect.push({
             type: 'emotion',
             target: Number(smallJ[0][1]),
@@ -145,9 +145,9 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
             async: false
           })
         }
-        else if(smallJ[1]=='fx'){
+        else if (compareCaseInsensive(smallJ[1],'fx')) {
           unit.characterEffect.push({
-            type:'fx',
+            type: 'fx',
             target: Number(smallJ[0][1]),
             effect: smallJ[2],
             async: false
@@ -183,7 +183,7 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
         }
         optionIndex++
       }
-      else if (smallJ[0] == '#fontsize') {
+      else if (compareCaseInsensive(smallJ[0],'#fontsize')) {
         unit.textEffect.TextJp.push({ textIndex: 0, name: 'fontsize', value: [smallJ[1]] })
         if (i.TextCn) {
           if (unit.textEffect.TextCn) {
@@ -194,22 +194,22 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
           }
         }
       }
-      else if (smallJ[0] == '#all') {
-        if (smallJ[1] == 'hide' || smallJ[1]=='HIDE') {
+      else if (compareCaseInsensive(smallJ[0],'#all')) {
+        if (compareCaseInsensive(smallJ[1],'hide')) {
           unit.hide = 'all'
         }
       }
-      else if (smallJ[0] == '#hidemenu') {
+      else if (compareCaseInsensive(smallJ[0],'#hidemenu')) {
         unit.hide = 'menu'
       }
-      else if (smallJ[0] == '#showmenu') {
-        unit.show='menu'
+      else if (compareCaseInsensive(smallJ[0],'#showmenu')) {
+        unit.show = 'menu'
       }
-      else if(smallJ[0]=='#zmc'){
-        unit.otherEffect.push({type:'zmc',args:smallJ.slice(1)})
+      else if (compareCaseInsensive(smallJ[0],'#zmc')) {
+        unit.otherEffect.push({ type: 'zmc', args: smallJ.slice(1) })
       }
-      else if(smallJ[0]=='#bgshake'){
-        unit.otherEffect.push({type:'bgshake',args:[]})
+      else if (compareCaseInsensive(smallJ[0],'#bgshake')) {
+        unit.otherEffect.push({ type: 'bgshake', args: [] })
       }
     }
     result.push(unit)
@@ -223,9 +223,9 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
  */
 function setOneText(unit: StoryUnit, i: StoryRawUnit) {
   let playStore = usePlayerStore()
-  unit.text.TextJp = [{ content: String(i.TextJp).replace('[USERNAME]', playStore.userName).replace('#n','\n') }]
+  unit.text.TextJp = [{ content: String(i.TextJp).replace('[USERNAME]', playStore.userName).replace('#n', '\n') }]
   if (i.TextCn) {
-    unit.text.TextCn = [{ content: String(i.TextCn).replace('[USERNAME]', playStore.userName).replace('#n','\n') }]
+    unit.text.TextCn = [{ content: String(i.TextCn).replace('[USERNAME]', playStore.userName).replace('#n', '\n') }]
   }
 
   return unit
@@ -293,4 +293,11 @@ function generateTextEffect(s: string) {
   }
 
   return { text, textEffects }
+}
+
+/**
+ * 在大小写不敏感的情况下比较字符串
+ */
+function compareCaseInsensive(s1: string, s2: string) {
+  return s1.localeCompare(s2, undefined, { sensitivity: 'accent' })==0;
 }
