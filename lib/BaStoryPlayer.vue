@@ -1,27 +1,25 @@
 <script lang="ts" setup>
 import { onMounted } from 'vue';
 import { init } from '@/index';
-import { StoryRawUnit, StoryUnit } from '@/types/common';
-import { usePlayerStore } from '@/stores';
-let { story ,dataUrl} = defineProps<{
+import { StoryRawUnit  } from '@/types/common';
+let { story, dataUrl, height, width } = defineProps<{
   story: StoryRawUnit[]
-  dataUrl:string
+  dataUrl: string
+  height: number
+  width: number
 }>()
 
-
-
-
-onMounted(() => { init('player', 550, 900,story,dataUrl)})
+onMounted(() => { init('player__main', height, width, story, dataUrl) })
 </script>
 
 <template>
-  <div id="player"></div>
+  <div id="player" :style="{height:`${height}px`}">
+    <div id="player__main"></div>
+  </div>
 </template>
 
 <style>
-#player {
-  width: 100%;
-  display: flex;
-  justify-content: center;
+#player{
+  background-color: red;
 }
 </style>

@@ -46,6 +46,7 @@ export const usePlayerStore = defineStore<'PlayerStore', State, Getters, Actions
       BGNameExcelTable: {},
       CharacterNameExcelTable: {},
       BGMExcelTable: {},
+      TransitionExcelTable: {},
       emotionResourecesTable:{
         'Heart':['Emoticon_Balloon_N.png','Emoticon_Heart.png'],
         'Respond':['Emoticon_Action.png'],

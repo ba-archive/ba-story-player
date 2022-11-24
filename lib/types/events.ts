@@ -1,4 +1,5 @@
 import { Character, CharacterEffect, Option, TextEffect, Text, Speaker, Effect } from "./common"
+import { TransitionTableItem } from "./excels"
 
 export type Events = {
   //通用
@@ -16,6 +17,8 @@ export type Events = {
    */
   playEffect: PlayEffect 
   effectDone: undefined
+  transitionIn:TransitionTableItem
+  transitionOut:TransitionTableItem
   /**
    * 人物完成展示
    */
@@ -134,6 +137,5 @@ export interface ShowOption {
 
 export interface PlayEffect {
   BGEffect?: number
-  Transition?: number
   otherEffect?: Effect[]
 }

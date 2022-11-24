@@ -34,3 +34,15 @@ export interface BGMExcelTableItem {
   "LoopTranstionTime": number,
   "LoopOffsetTime": number
 }
+
+export type TransitionTypes="bgoverlap"|"fade"|"fade_white"
+
+export interface TransitionTableItem {
+  "Name": number,
+  "TransitionOut": TransitionTypes,
+  "TransitionOutDuration": number,
+  "TransitionOutResource": null|string,
+  "TransitionIn": TransitionTypes,
+  "TransitionInDuration": number,
+  "TransitionInResource": null|string
+}

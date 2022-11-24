@@ -2,7 +2,7 @@ import { PiniaCustomStateProperties, _GettersTree } from "pinia"
 import { Application, LoaderResource, Sprite } from "pixi.js"
 import { UnwrapRef } from "vue"
 import { CharacterInstance, Dict, StoryUnit, ShowText, Speaker } from "./common"
-import { BGMExcelTableItem, BGNameExcelTableItem, CharacterNameExcelTableItem } from "./excels"
+import { BGMExcelTableItem, BGNameExcelTableItem, CharacterNameExcelTableItem, TransitionTableItem } from "./excels"
 import {Text,TextEffect} from '@/types/common'
 import {ShowOption} from '@/types/events'
 
@@ -31,6 +31,7 @@ export interface State {
   BGNameExcelTable: { [index: number]: BGNameExcelTableItem },
   CharacterNameExcelTable: { [index: number]: CharacterNameExcelTableItem }
   BGMExcelTable: { [index: number]: BGMExcelTableItem }
+  TransitionExcelTable: { [index: number]: TransitionTableItem }
 
   emotionResourecesTable:{[index:string]:string[]},
   //

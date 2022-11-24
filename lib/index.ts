@@ -11,6 +11,7 @@ import axios from 'axios'
 import { StoryRawUnit } from "./types/common";
 import { translate } from '@/layers/translationLayer'
 import { PlayAudio, PlayEffect } from "./types/events";
+import {effectInit} from '@/layers/effectLayer'
 import spineLoader ,{setLoadRes,getLoadRes}from '@/stores/spineLoader'
 
 let playerStore: ReturnType<typeof usePlayerStore>
@@ -23,7 +24,7 @@ let playL2dVoice = true
 export async function init(elementID: string, height: number, width: number, story: StoryRawUnit[], dataUrl: string) {
   playerStore = usePlayerStore()
   let { _app, allStoryUnit, effectDone, characterDone,  BGNameExcelTable, CharacterNameExcelTable, currentStoryIndex
-    , BGMExcelTable, dataUrl: url,loadRes
+    , BGMExcelTable, dataUrl: url,TransitionExcelTable
   } = storeToRefs(playerStore)
   url.value = dataUrl
   _app.value = new Application({ height, width })
@@ -53,6 +54,11 @@ export async function init(elementID: string, height: number, width: number, sto
       BGMExcelTable.value[i['Id']] = i
     }
   })
+  await axios.get(`${dataUrl}/data/ScenarioTransitionExcelTable.json`).then(res => {
+    for (let i of res.data['DataList']) {
+      TransitionExcelTable.value[i['Name']] = i
+    }
+  })
   allStoryUnit.value = translate(story)
   addEmotionResources()
   playerStore.app.loader.load((loader, res) => {
@@ -74,6 +80,7 @@ export async function init(elementID: string, height: number, width: number, sto
   bgInit()
   characterInit()
   soundInit()
+  effectInit()
 
   document.querySelector(`#${elementID}`)?.appendChild(_app.value.view)
   eventBus.on('*', (type, e) => console.log(type, e))
@@ -89,11 +96,13 @@ export async function emitEvents() {
     end()
     return
   }
+  await transitionIn()
+  hide()
   showBg()
+  await transitionOut()
   showCharacter()
   playAudio()
   playL2d()
-  hide()
   show()
   playEffect()
 
@@ -246,9 +255,6 @@ function playEffect() {
   if (current.BGEffect != 0) {
     effect.BGEffect = current.BGEffect
   }
-  if (current.Transition != 0) {
-    effect.Transition = current.Transition
-  }
   if (current.otherEffect.length != 0) {
     effect.otherEffect = current.otherEffect
   }
@@ -298,4 +304,29 @@ function addBGNameResources() {
       }
     }
   }
+}
+
+async function transitionIn(){
+  let name=playerStore.currentStoryUnit.Transition
+  if(name){
+    let item=playerStore.TransitionExcelTable[name]
+    eventBus.emit('transitionIn',item)
+    await wait(item.TransitionInDuration)
+  }
+}
+
+async function transitionOut(){
+  let name=playerStore.currentStoryUnit.Transition
+  if(name){
+    let item=playerStore.TransitionExcelTable[name]
+    eventBus.emit('transitionOut',item)
+    await wait(item.TransitionOutDuration)
+  }
+}
+
+/**
+ * wait in promise
+ */
+function wait(milliseconds:number) {
+  return new Promise(resolve => setTimeout(resolve, milliseconds));
 }
