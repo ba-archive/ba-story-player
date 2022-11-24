@@ -19,5 +19,8 @@ export function effectInit(){
       gsap.to(playerCanvas,{alpha:1,duration:transition.TransitionOutDuration/1000})
     }
   })
+  eventBus.on('playEffect',effects=>{
+    eventBus.emit('effectDone')
+  })
 
 }
