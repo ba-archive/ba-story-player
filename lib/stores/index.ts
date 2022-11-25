@@ -187,6 +187,16 @@ export const usePlayerStore = defineStore<'PlayerStore', State, Getters, Actions
     },
 
     /**
+     * 获取bgm的参数
+     */
+    bgmArgs({ BGMExcelTable }) {
+      let item = BGMExcelTable[this.currentStoryUnit.BGMId]
+      if(item){
+        return item
+      }
+    },
+
+    /**
          * 获取sound的url
          */
     soundUrl() {

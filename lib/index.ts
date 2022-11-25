@@ -78,7 +78,7 @@ export async function init(elementID: string, height: number, width: number, sto
   eventBus.on('auto', () => console.log('auto!'))
   textInit()
   bgInit()
-  characterInit()
+  // characterInit()
   soundInit()
   effectInit()
 
@@ -199,7 +199,10 @@ function showCharacter() {
 function playAudio() {
   let audio: PlayAudio = {}
   if (playerStore.bgmUrl != '') {
-    audio.bgmUrl = playerStore.bgmUrl
+    audio.bgm = {
+      url:playerStore.bgmUrl,
+      bgmArgs:playerStore.bgmArgs!
+    }
   }
   if (playerStore.soundUrl != '') {
     audio.soundUrl = playerStore.soundUrl
