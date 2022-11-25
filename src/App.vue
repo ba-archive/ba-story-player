@@ -16,8 +16,8 @@ window.next=()=>{
   <div style="display:flex;justify-content: center;">
     <BaStoryPlayer :story="yuuka" 
     data-url="https://yuuka.cdn.diyigemt.com/image/ba-all-data"
-    :height="550"
-    :width="900" 
+    :width="1800"
+    :height="1000"
     />
   </div>
 </template>
