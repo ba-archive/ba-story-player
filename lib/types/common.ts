@@ -8,14 +8,32 @@ export type Dict<T> = {
 
 
 export interface Text {
+  /**
+   * 文本
+   */
   content: string
+  /**
+   * 显示文本前等待的时间
+   */
   waitTime?: number
 }
 
 export interface Character {
+  /**
+   * 人物位置
+   */
   position: number,
+  /**
+   * 人物CharacterName, 请通过它获取人物spinedata
+   */
   CharacterName: number,
+  /**
+   * 人物表情
+   */
   face: string,
+  /**
+   * 人物是否高亮
+   */
   highlight: boolean
 }
 
@@ -37,8 +55,20 @@ export interface Option {
 }
 
 export interface TextEffect {
+  /**
+   * 特效类型, 
+   * `color`颜色
+   * `fontsize` 字体大小
+   * `ruby` 日文注音
+   */
   name: 'color'|'fontsize'|'ruby',
+  /**
+   * 特效参数
+   */
   value: string[],
+  /**
+   * 特效作用的text的index
+   */
   textIndex: number
 }
 
@@ -108,12 +138,13 @@ export interface CharacterInstance {
   isHeightLight: () => boolean;
 }
 
-export interface ShowText {
-  text: string
-  CharacterName: number
-}
-
 export interface Speaker {
+  /**
+   * 人物姓名
+   */
   name: string
+  /**
+   * 人物所属
+   */
   nickName: string
 }

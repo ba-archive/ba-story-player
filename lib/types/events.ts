@@ -3,6 +3,7 @@ import { TransitionTableItem } from "./excels"
 
 export type Events = {
   //通用
+
   /**
    * 清除当前内容
    */
@@ -12,18 +13,20 @@ export type Events = {
    */
 
   //特效层
+
   /**
    * 播饭特效
    */
-  playEffect: PlayEffect 
+  playEffect: PlayEffect
   effectDone: undefined
-  transitionIn:TransitionTableItem
-  transitionOut:TransitionTableItem
+  transitionIn: TransitionTableItem
+  transitionOut: TransitionTableItem
   /**
    * 人物完成展示
    */
 
   //人物层
+
   /**
    * 展示人物
    */
@@ -34,12 +37,14 @@ export type Events = {
   characterDone: undefined
 
   //背景层
+
   /**
    * 展示背景图片
    */
   showBg: string
 
   //声音层
+
   /**
    * 播放bgm, sound或voiceJP
    */
@@ -50,6 +55,7 @@ export type Events = {
   playEmotionAudio: string
 
   //UI层
+
   /**
    * 跳过剧情
    */
@@ -59,7 +65,7 @@ export type Events = {
    */
   auto: undefined
   hidemenu: undefined
-  showmenu:undefined
+  showmenu: undefined
 
   //文字层
   /**
@@ -104,11 +110,20 @@ export type Events = {
    * 更换动画
    */
   changeAnimation: string
+  /**
+   * 结束l2d播放
+   */
   endL2D: undefined
 }
 
 export interface ShowCharacter {
+  /**
+   * 角色列表
+   */
   characters: Character[]
+  /**
+   * 角色特效
+   */
   characterEffects: CharacterEffect[]
 }
 
@@ -119,19 +134,43 @@ export interface PlayAudio {
 }
 
 export interface ShowText {
+  /**
+   * 文本
+   */
   text: Text[]
+  /**
+   * 文本特效, 根据文本的index添加特效
+   */
   textEffect: TextEffect[]
+  /**
+   * 说话的人, 包括名字和所属
+   */
   speaker?: Speaker
 }
 
 export interface StText {
+  /**
+   * 文本
+   */
   text: Text[]
+  /**
+   * 文本特效, 根据文本的index添加特效
+   */
   textEffect: TextEffect[]
+  /**
+   * st的参数, 目前只需要注意第二个参数, serial打字机效果, instant立即全部显示.
+   */
   stArgs: string[]
 }
 
 export interface ShowOption {
+  /**
+   * 剧情原始结构SelectionGroup, 请作为next的参数
+   */
   SelectionGroup: number,
+  /**
+   * 选项文本
+   */
   text: string
 }
 
