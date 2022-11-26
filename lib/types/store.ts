@@ -85,4 +85,5 @@ export interface Getters extends _GettersTree<State> {
 
 export interface Actions {
   nextInit: () => void
+  setBgInstance: (sprite: Sprite) => void
 }
