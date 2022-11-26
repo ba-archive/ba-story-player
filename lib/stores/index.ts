@@ -166,7 +166,8 @@ export const usePlayerStore = defineStore<'PlayerStore', State, Getters, Actions
       if (item) {
         if (item.BGType == 'Image') {
           let temp = String(item.BGFileName).split('/')
-          return `${this.dataUrl}/bg/${temp.pop()}.jpg`
+          // return `${this.dataUrl}/bg/${temp.pop()}.jpg`
+          return temp.pop() as string
         }
       }
 
@@ -250,8 +251,9 @@ export const usePlayerStore = defineStore<'PlayerStore', State, Getters, Actions
     nextInit() {
       this.effectDone = this.characterDone = false
     },
-
-
+    setBgInstance(instance: Sprite) {
+      this._bgInstance = instance
+    },
   }
 })
 

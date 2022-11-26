@@ -29,10 +29,6 @@ export async function init(elementID: string, height: number, width: number, sto
   url.value = dataUrl
   _app.value = new Application({ height, width })
 
-  // @ts-ignore
-  _app.value!.loader
-    .add('bg_park_night.jpg', `${dataUrl}/bg/BG_Park_Night.jpg`)
-
   Loader.registerPlugin(SpineParser);
   spineLoader.add('LobbyCH0184', `${dataUrl}/spine/CH0184_home/CH0184_home.skel`)
     .add('CH0184_spr', `${dataUrl}/spine/CH0184_spr/CH0184_spr.skel`)
@@ -60,7 +56,7 @@ export async function init(elementID: string, height: number, width: number, sto
     }
   })
   allStoryUnit.value = translate(story)
-  addEmotionResources()
+  addLoadResources()
   playerStore.app.loader.load((loader, res) => {
   })
   eventBus.on('next', () => {
@@ -296,13 +292,17 @@ function addBGNameResources() {
       let item = playerStore.BGNameExcelTable[i.BGName]
       if (item.BGType == 'Image') {
         let filename = String(item.BGFileName).split('/').pop()
-        playerStore.app.loader.add(filename!, `${playerStore.dataUrl}/bg/${filename}.jpg`)
+        if (!playerStore.app.loader.resources[filename!]) {
+          playerStore.app.loader.add(filename!, `${playerStore.dataUrl}/bg/${filename}.jpg`);
+        }
       }
       else {
         if (item.AnimationName == 'Idle_01') {
           let filename = String(item.BGFileName).split('/').pop()?.replace('SpineBG_Lobby', '')
           filename = `${filename}_home`
-          playerStore.app.loader.add(filename, `${playerStore.dataUrl}/spine/${filename}/${filename}.skel`)
+          if (!playerStore.app.loader.resources[filename!]) {
+            playerStore.app.loader.add(filename, `${playerStore.dataUrl}/spine/${filename}/${filename}.skel`)
+          }
         }
       }
     }
