@@ -18,6 +18,9 @@ let playerStore: ReturnType<typeof usePlayerStore>
 let l2dPlaying = false
 let voiceIndex = 1
 let playL2dVoice = true
+let l2dVoiceExcelTable = {
+  'CH0184_MemorialLobby': [...Array(10).keys()].slice(1, 11).map(value => value.toString())
+} as { [index: string]: string[] }
 /**
  * 调用各层的初始化函数
  */
@@ -66,7 +69,7 @@ export async function init(elementID: string, height: number, width: number, sto
   let hasLoad = false
   spineLoader.load((loader, res) => {
     setLoadRes(res)
-    playerStore.app.loader.load((loader,res) => {
+    playerStore.app.loader.load((loader, res) => {
       //当chrome webgl inspector打开时可能导致callback被执行两次
       if (!hasLoad) {
         console.log(res)
@@ -267,6 +270,7 @@ function addLoadResources() {
   addEmotionResources()
   addBGNameResources()
   addBgmResources()
+  addSoundResources()
 }
 
 /**
@@ -274,11 +278,11 @@ function addLoadResources() {
  */
 function addCharacterSpineResources() {
   let dataUrl = playerStore.dataUrl
-  for(let unit of playerStore.allStoryUnit){
-    if(unit.characters.length!=0){
-      for(let character of unit.characters){
-        let filename=getCharacterFileName(character.CharacterName)
-        if(!spineLoader.resources[filename]){
+  for (let unit of playerStore.allStoryUnit) {
+    if (unit.characters.length != 0) {
+      for (let character of unit.characters) {
+        let filename = getCharacterFileName(character.CharacterName)
+        if (!spineLoader.resources[filename]) {
           spineLoader.add(filename, `${dataUrl}/spine/${filename}/${filename}.skel`)
         }
       }
@@ -313,22 +317,39 @@ async function addEmotionResources() {
 /**
  * 添加bgm资源
  */
-function addBgmResources(){
-  let loader=playerStore.app.loader
-  for(let unit of playerStore.allStoryUnit){
-    if(unit.BGMId!=0){
-      let path=getBgmPath(unit.BGMId)
-      console.log(path)
-      if(!loader.resources[path] && !path.includes('Mute')) {
-        loader.add(path,path)
+function addBgmResources() {
+  let loader = playerStore.app.loader
+  for (let unit of playerStore.allStoryUnit) {
+    if (unit.BGMId != 0) {
+      let path = getBgmPath(unit.BGMId)
+      if (!loader.resources[path]) {
+        loader.add(path, path)
       }
     }
   }
 }
 
-function getBgmPath(id:number){
+/**
+ * 获取bgm地址
+ */
+function getBgmPath(id: number) {
   let item = playerStore.BGMExcelTable[id]
-  return `${playerStore.dataUrl}/${item.Path}.mp3`
+  return `${playerStore.dataUrl}/${item.Path}.ogg`
+}
+
+/**
+ * 添加sound资源
+ */
+function addSoundResources() {
+  let loader = playerStore.app.loader
+  for (let unit of playerStore.allStoryUnit) {
+    if (unit.Sound != '') {
+      let path = `${playerStore.dataUrl}/Audio/Sound/${unit.Sound}.wav`
+      if (!loader.resources[path]) {
+        loader.add(path, path)
+      }
+    }
+  }
 }
 
 /**
@@ -350,10 +371,23 @@ function addBGNameResources() {
           filename = `${filename}_home`
           if (!spineLoader.resources[filename!]) {
             spineLoader.add(filename, `${playerStore.dataUrl}/spine/${filename}/${filename}.skel`)
+            addL2dVoice(filename.replace('_home',''))
           }
         }
       }
     }
+  }
+}
+
+/**
+ * 添加l2d语音
+ */
+function addL2dVoice(name: string) {
+  let voicePath = `${name}_MemorialLobby`
+  console.log(voicePath)
+  for (let voiceFileName of l2dVoiceExcelTable[voicePath]) {
+    playerStore.app.loader.add(voiceFileName,
+      `${playerStore.dataUrl}/Audio/VoiceJp/${voicePath}/${voiceFileName}.wav`)
   }
 }
 
