@@ -42,7 +42,7 @@ function TestDialog(){
 
 <style>
 #player{
-  background-color: red;
+  background-color: black;
 }
 
 .dialog{

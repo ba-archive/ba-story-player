@@ -1,6 +1,6 @@
 import { storeToRefs } from "pinia";
-import { Application, Loader } from "pixi.js";
-import {SpineParser} from 'pixi-spine'
+import { Application, Loader, Text } from "pixi.js";
+import { SpineParser } from 'pixi-spine'
 import { textInit } from "./layers/textLayer";
 import { usePlayerStore } from "./stores";
 import { bgInit } from "@/layers/bgLayer"
@@ -11,8 +11,8 @@ import axios from 'axios'
 import { StoryRawUnit } from "./types/common";
 import { translate } from '@/layers/translationLayer'
 import { PlayAudio, PlayEffect } from "./types/events";
-import {effectInit} from '@/layers/effectLayer'
-import spineLoader ,{setLoadRes,getLoadRes}from '@/stores/spineLoader'
+import { effectInit } from '@/layers/effectLayer'
+import spineLoader, { setLoadRes, getLoadRes } from '@/stores/spineLoader'
 
 let playerStore: ReturnType<typeof usePlayerStore>
 let l2dPlaying = false
@@ -23,42 +23,27 @@ let playL2dVoice = true
  */
 export async function init(elementID: string, height: number, width: number, story: StoryRawUnit[], dataUrl: string) {
   playerStore = usePlayerStore()
-  let { _app, allStoryUnit, effectDone, characterDone,  BGNameExcelTable, CharacterNameExcelTable, currentStoryIndex
-    , BGMExcelTable, dataUrl: url,TransitionExcelTable
+  let { _app, allStoryUnit, effectDone, characterDone, currentStoryIndex
+    , dataUrl: url
   } = storeToRefs(playerStore)
   url.value = dataUrl
   _app.value = new Application({ height, width })
+  let app = playerStore.app
+
+  document.querySelector(`#${elementID}`)?.appendChild(app.view)
+  let loadingText = new Text('loading...', { fill: ['white'] })
+  loadingText.y = app.screen.height - 50
+  loadingText.x = app.screen.width - 150
+  app.stage.addChild(loadingText)
+  eventBus.on('*', (type, e) => console.log(type, e))
 
   Loader.registerPlugin(SpineParser);
-  spineLoader.add('LobbyCH0184', `${dataUrl}/spine/CH0184_home/CH0184_home.skel`)
-    .add('CH0184_spr', `${dataUrl}/spine/CH0184_spr/CH0184_spr.skel`)
-    .load((loader,res)=>{setLoadRes(res);})
 
 
-  await axios.get(`${dataUrl}/data/ScenarioBGNameExcelTable.json`).then(res => {
-    for (let i of res.data['DataList']) {
-      BGNameExcelTable.value[i['Name']] = i
-    }
-  })
-  await axios.get(`${dataUrl}/data/ScenarioCharacterNameExcelTable.json`).then(res => {
-    for (let i of res.data['DataList']) {
-      CharacterNameExcelTable.value[i['CharacterName']] = i
-    }
-  })
-  await axios.get(`${dataUrl}/data/BGMExcelTable.json`).then(res => {
-    for (let i of res.data['DataList']) {
-      BGMExcelTable.value[i['Id']] = i
-    }
-  })
-  await axios.get(`${dataUrl}/data/ScenarioTransitionExcelTable.json`).then(res => {
-    for (let i of res.data['DataList']) {
-      TransitionExcelTable.value[i['Name']] = i
-    }
-  })
+  await loadExcels()
   allStoryUnit.value = translate(story)
   addLoadResources()
-  playerStore.app.loader.load((loader, res) => {
-  })
+
   eventBus.on('next', () => {
     if (characterDone.value && effectDone.value) {
       currentStoryIndex.value++
@@ -78,9 +63,20 @@ export async function init(elementID: string, height: number, width: number, sto
   soundInit()
   effectInit()
 
-  document.querySelector(`#${elementID}`)?.appendChild(_app.value.view)
-  eventBus.on('*', (type, e) => console.log(type, e))
-  emitEvents()
+  let hasLoad = false
+  spineLoader.load((loader, res) => {
+    setLoadRes(res)
+    playerStore.app.loader.load((loader,res) => {
+      //当chrome webgl inspector打开时可能导致callback被执行两次
+      if (!hasLoad) {
+        console.log(res)
+        app.stage.removeChild(loadingText)
+        emitEvents()
+        hasLoad = true
+      }
+    })
+  })
+
 }
 
 /**
@@ -196,8 +192,8 @@ function playAudio() {
   let audio: PlayAudio = {}
   if (playerStore.bgmUrl != '') {
     audio.bgm = {
-      url:playerStore.bgmUrl,
-      bgmArgs:playerStore.bgmArgs!
+      url: playerStore.bgmUrl,
+      bgmArgs: playerStore.bgmArgs!
     }
   }
   if (playerStore.soundUrl != '') {
@@ -244,7 +240,7 @@ function show() {
 }
 
 /**
- * 播饭特效
+ * 播放特效
  */
 function playEffect() {
   let { effectDone } = storeToRefs(playerStore)
@@ -263,28 +259,80 @@ function playEffect() {
   }
 }
 
+/**
+ * 添加所有资源
+ */
 function addLoadResources() {
+  addCharacterSpineResources()
   addEmotionResources()
   addBGNameResources()
+  addBgmResources()
+}
+
+/**
+ * 添加人物立绘资源
+ */
+function addCharacterSpineResources() {
+  let dataUrl = playerStore.dataUrl
+  for(let unit of playerStore.allStoryUnit){
+    if(unit.characters.length!=0){
+      for(let character of unit.characters){
+        let filename=getCharacterFileName(character.CharacterName)
+        if(!spineLoader.resources[filename]){
+          spineLoader.add(filename, `${dataUrl}/spine/${filename}/${filename}.skel`)
+        }
+      }
+    }
+  }
+}
+
+/**
+ * 获取人物立绘文件名
+ */
+function getCharacterFileName(CharacterName: number) {
+  let item = playerStore.CharacterNameExcelTable[CharacterName]
+  let temp = String(item.SpinePrefabName).split('/')
+  temp = temp[temp.length - 1].split('_')
+  let id = temp[temp.length - 1]
+  return `${id}_spr`
 }
 
 /**
  * 添加人物情绪相关资源
  */
 async function addEmotionResources() {
-  let allImages = new Set<string>()
-  for (let i of Object.values(playerStore.emotionResourecesTable)) {
-    for (let j of i) {
-      allImages.add(j)
+  for (let emotionResources of Object.values(playerStore.emotionResourecesTable)) {
+    for (let emotionResource of emotionResources) {
+      if (!playerStore.app.loader.resources[emotionResource]) {
+        playerStore.app.loader.add(emotionResource, `${playerStore.dataUrl}/emotions/${emotionResource}`)
+      }
     }
-  }
-  for (let i of allImages) {
-    playerStore.app.loader.add(i, `${playerStore.dataUrl}/emotions/${i}`)
   }
 }
 
 /**
- * 根据BGName添加资源
+ * 添加bgm资源
+ */
+function addBgmResources(){
+  let loader=playerStore.app.loader
+  for(let unit of playerStore.allStoryUnit){
+    if(unit.BGMId!=0){
+      let path=getBgmPath(unit.BGMId)
+      console.log(path)
+      if(!loader.resources[path] && !path.includes('Mute')) {
+        loader.add(path,path)
+      }
+    }
+  }
+}
+
+function getBgmPath(id:number){
+  let item = playerStore.BGMExcelTable[id]
+  return `${playerStore.dataUrl}/${item.Path}.mp3`
+}
+
+/**
+ * 根据BGName添加资源, 即加载背景和l2d资源
  */
 function addBGNameResources() {
   for (let i of playerStore.allStoryUnit) {
@@ -300,8 +348,8 @@ function addBGNameResources() {
         if (item.AnimationName == 'Idle_01') {
           let filename = String(item.BGFileName).split('/').pop()?.replace('SpineBG_Lobby', '')
           filename = `${filename}_home`
-          if (!playerStore.app.loader.resources[filename!]) {
-            playerStore.app.loader.add(filename, `${playerStore.dataUrl}/spine/${filename}/${filename}.skel`)
+          if (!spineLoader.resources[filename!]) {
+            spineLoader.add(filename, `${playerStore.dataUrl}/spine/${filename}/${filename}.skel`)
           }
         }
       }
@@ -309,20 +357,48 @@ function addBGNameResources() {
   }
 }
 
-async function transitionIn(){
-  let name=playerStore.currentStoryUnit.Transition
-  if(name){
-    let item=playerStore.TransitionExcelTable[name]
-    eventBus.emit('transitionIn',item)
+/**
+ * 加载原始数据资源
+ */
+async function loadExcels() {
+  let dataUrl = playerStore.dataUrl
+  let { BGNameExcelTable, CharacterNameExcelTable, BGMExcelTable, TransitionExcelTable } = storeToRefs(playerStore)
+  await axios.get(`${dataUrl}/data/ScenarioBGNameExcelTable.json`).then(res => {
+    for (let i of res.data['DataList']) {
+      BGNameExcelTable.value[i['Name']] = i
+    }
+  })
+  await axios.get(`${dataUrl}/data/ScenarioCharacterNameExcelTable.json`).then(res => {
+    for (let i of res.data['DataList']) {
+      CharacterNameExcelTable.value[i['CharacterName']] = i
+    }
+  })
+  await axios.get(`${dataUrl}/data/BGMExcelTable.json`).then(res => {
+    for (let i of res.data['DataList']) {
+      BGMExcelTable.value[i['Id']] = i
+    }
+  })
+  await axios.get(`${dataUrl}/data/ScenarioTransitionExcelTable.json`).then(res => {
+    for (let i of res.data['DataList']) {
+      TransitionExcelTable.value[i['Name']] = i
+    }
+  })
+}
+
+async function transitionIn() {
+  let name = playerStore.currentStoryUnit.Transition
+  if (name) {
+    let item = playerStore.TransitionExcelTable[name]
+    eventBus.emit('transitionIn', item)
     await wait(item.TransitionInDuration)
   }
 }
 
-async function transitionOut(){
-  let name=playerStore.currentStoryUnit.Transition
-  if(name){
-    let item=playerStore.TransitionExcelTable[name]
-    eventBus.emit('transitionOut',item)
+async function transitionOut() {
+  let name = playerStore.currentStoryUnit.Transition
+  if (name) {
+    let item = playerStore.TransitionExcelTable[name]
+    eventBus.emit('transitionOut', item)
     await wait(item.TransitionOutDuration)
   }
 }
@@ -330,6 +406,6 @@ async function transitionOut(){
 /**
  * wait in promise
  */
-function wait(milliseconds:number) {
+function wait(milliseconds: number) {
   return new Promise(resolve => setTimeout(resolve, milliseconds));
 }
