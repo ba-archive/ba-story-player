@@ -46,7 +46,6 @@ export async function init(elementID: string, height: number, width: number, sto
   await loadExcels()
   allStoryUnit.value = translate(story)
   addLoadResources()
-
   eventBus.on('next', () => {
     if (characterDone.value && effectDone.value) {
       currentStoryIndex.value++
