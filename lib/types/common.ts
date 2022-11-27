@@ -39,8 +39,8 @@ export interface Character {
 
 export interface CharacterEffect {
   type:'emotion'|'action'|'fx'|'signal'
-  target: number,
-  effect: EmotionWord | CharacterEffectWord | FXEffectWord | SignalEffectWord | string,
+  target: number;
+  effect: EmotionWord | CharacterEffectWord | FXEffectWord | SignalEffectWord | string;
   async: boolean
 }
 
@@ -56,7 +56,7 @@ export interface Option {
 
 export interface TextEffect {
   /**
-   * 特效类型, 
+   * 特效类型,
    * `color`颜色
    * `fontsize` 字体大小
    * `ruby` 日文注音
