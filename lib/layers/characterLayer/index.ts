@@ -126,7 +126,7 @@ const CharacterLayerInstance: CharacterLayer = {
   },
   characterScale: undefined,
   characterSpineCache: new Map<number, CharacterInstance>(),
-  effectPlayerMap: new Map<CharacterEffectType, CharacterEffectPlayer>(),
+  effectPlayerMap: new Map<CharacterEffectType, CharacterEffectPlayer<any>>(),
 }
 
 const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
