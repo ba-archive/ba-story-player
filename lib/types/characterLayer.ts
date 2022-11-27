@@ -90,15 +90,14 @@ export interface CharacterEmotionPlayer {
    */
   init(): void;
   /**
-   * 创建characterEffect不同type的处理map
-   */
-  createEffectMap(): void;
-  /**
-   * 处理针对某一角色的具体对话特效
-   * @param type 特效类型
-   * @param instance 角色信息实例
+   * 预处理, 检查是否能够播放对应特效
    */
   processEffect(type: EmotionWord, instance: CharacterEffectInstance): void;
+  /**
+   * 获取特效处理函数
+   * @param type 角色特效类型
+   */
+  getHandlerFunction(type: EmotionWord): (instance: CharacterEffectInstance) => void | undefined;
   emotionHeart(instance: CharacterEffectInstance): void;
   emotionRespond(instance: CharacterEffectInstance): void;
   emotionNote(instance: CharacterEffectInstance): void;
@@ -112,7 +111,6 @@ export interface CharacterEmotionPlayer {
   emotionSurprise(instance: CharacterEffectInstance): void;
   emotionQuestion(instance: CharacterEffectInstance): void;
   emotionShy(instance: CharacterEffectInstance): void;
-  actionMap: Map<EmotionWord, Function>
 }
 
 /**
@@ -141,19 +139,38 @@ export type EmotionWord =
 /**
  * 人物特效定义
  */
-export type CharacterEffectWord =
-  "a" | "d" | "dl" | "dr" |
-  "ar" | "al" | "hophop" | "greeting" | "shake" |
-  "m1" | "m2" | "m3" | "m4" | "m5" |
-  "stiff" | "closeup" | "jump" |
-  "falldownR" | "hide";
+export enum CharacterEffectWord {
+  "a" = "a",
+  "d" = "d",
+  "dl" = "dl",
+  "dr" = "dr",
+  "ar" = "ar",
+  "al" = "al",
+  "hophop" = "hophop",
+  "greeting" = "greeting",
+  "shake" = "shake",
+  "m1" = "m1",
+  "m2" = "m2",
+  "m3" = "m3",
+  "m4" = "m4",
+  "m5" = "m5",
+  "stiff" = "stiff",
+  "closeup" = "closeup",
+  "jump" = "jump",
+  "falldownR" = "falldownR",
+  "hide" = "hide",
+}
 
 /**
  * fx特效定义
  */
-export type FXEffectWord = "shot";
+export enum FXEffectWord {
+  "shot" = "shot"
+}
 
 /**
  * signal特效定义
  */
-export type SignalEffectWord = "signal";
+export enum SignalEffectWord {
+  "signal" = "signal"
+}

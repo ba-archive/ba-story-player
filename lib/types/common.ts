@@ -59,7 +59,7 @@ export interface Option {
 
 export interface TextEffect {
   /**
-   * 特效类型, 
+   * 特效类型,
    * `color`颜色
    * `fontsize` 字体大小
    * `ruby` 日文注音
