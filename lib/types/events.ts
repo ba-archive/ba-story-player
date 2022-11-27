@@ -1,5 +1,5 @@
 import { Character, CharacterEffect, Option, TextEffect, Text, Speaker, Effect } from "./common"
-import { TransitionTableItem } from "./excels"
+import { BGMExcelTableItem, TransitionTableItem } from "./excels"
 
 export type Events = {
   //通用
@@ -124,11 +124,14 @@ export interface ShowCharacter {
   /**
    * 角色特效
    */
-  characterEffects: CharacterEffect[]
+  // characterEffects: CharacterEffect[]
 }
 
 export interface PlayAudio {
-  bgmUrl?: string
+  bgm?:{
+    url?:string
+    bgmArgs:BGMExcelTableItem
+  } 
   soundUrl?: string
   voiceJPUrl?: string
 }

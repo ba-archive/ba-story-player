@@ -1,7 +1,8 @@
 import { PiniaCustomStateProperties, _GettersTree } from "pinia"
 import { Application, LoaderResource, Sprite } from "pixi.js"
 import { UnwrapRef } from "vue"
-import { CharacterInstance, Dict, StoryUnit, ShowText, Speaker } from "./common"
+import { CharacterInstance, Dict, StoryUnit,  Speaker } from "./common"
+import {ShowText} from './events'
 import { BGMExcelTableItem, BGNameExcelTableItem, CharacterNameExcelTableItem, TransitionTableItem } from "./excels"
 import {Text,TextEffect} from '@/types/common'
 import {ShowOption} from '@/types/events'
@@ -71,6 +72,7 @@ export interface Getters extends _GettersTree<State> {
    */
   bgUrl: (state: GetterState) => string
   bgmUrl: (state: GetterState) => string
+  bgmArgs: (state: GetterState) => BGMExcelTableItem|undefined
   soundUrl: (state: GetterState) => string
   /**
    * 获取L2D资源
