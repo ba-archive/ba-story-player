@@ -124,7 +124,7 @@ export interface ShowCharacter {
   /**
    * 角色特效
    */
-  characterEffects: CharacterEffect[]
+  // characterEffects: CharacterEffect[]
 }
 
 export interface PlayAudio {

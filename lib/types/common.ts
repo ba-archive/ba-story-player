@@ -35,13 +35,16 @@ export interface Character {
    * 人物是否高亮
    */
   highlight: boolean
+
+  effects:CharacterEffect[]
 }
 
 export interface CharacterEffect {
   type:'emotion'|'action'|'fx'|'signal'
-  target: number,
+  // target: number,
   effect: EmotionWord | CharacterEffectWord | FXEffectWord | SignalEffectWord | string,
   async: boolean
+  arg?:string
 }
 
 export interface Option {
@@ -105,7 +108,6 @@ export interface StoryUnit {
   PopupFileName: string,
   type: StoryType,
   characters: Character[],
-  characterEffect: CharacterEffect[],
   options?: Option[],
   textEffect:{
     TextJp: TextEffect[],

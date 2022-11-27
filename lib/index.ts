@@ -183,7 +183,7 @@ function showCharacter() {
     playerStore.characterDone = false
     eventBus.emit('showCharacter', {
       characters: playerStore.currentStoryUnit.characters,
-      characterEffects: playerStore.currentStoryUnit.characterEffect
+      // characterEffects: playerStore.currentStoryUnit.characterEffect
     })
   }
 }

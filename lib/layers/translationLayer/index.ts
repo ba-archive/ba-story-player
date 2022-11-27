@@ -34,13 +34,12 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
 
   let result: StoryUnit[] = []
   let playStore = usePlayerStore()
-  for (let i of rawStory) {
+  for (let [rawIndex, i] of rawStory.entries()) {
     let { GroupId, BGMId, BGName, BGEffect, SelectionGroup, Sound, Transition, VoiceJp, PopupFileName } = i
     let unit: StoryUnit = {
       GroupId, BGMId, BGName, BGEffect, SelectionGroup, Sound, Transition, VoiceJp, PopupFileName,
       type: 'text',
       characters: [],
-      characterEffect: [],
       otherEffect: [],
       text: { TextJp: [] },
       textEffect: {
@@ -56,24 +55,24 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
     for (let [index, j] of strs.entries()) {
       let smallJ = j.split(';')
       let optionIndex = 0
-      if (compareCaseInsensive(smallJ[0],'#title')) {
+      if (compareCaseInsensive(smallJ[0], '#title')) {
         unit.type = 'title'
         unit = setOneText(unit, i)
         break
       }
-      else if (compareCaseInsensive(smallJ[0],'#place')) {
+      else if (compareCaseInsensive(smallJ[0], '#place')) {
         unit.type = 'place'
         unit = setOneText(unit, i)
         break
       }
-      else if (compareCaseInsensive(smallJ[0],'#na')) {
+      else if (compareCaseInsensive(smallJ[0], '#na')) {
         unit.type = 'text'
         unit = setOneText(unit, i)
         if (smallJ.length == 3) {
           unit.naName = smallJ[1]
         }
       }
-      else if (compareCaseInsensive(smallJ[0],'#st')) {
+      else if (compareCaseInsensive(smallJ[0], '#st')) {
         unit.type = 'st'
         unit.stArgs = smallJ.slice(1)
         if (smallJ.length == 3) {
@@ -88,7 +87,7 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
           }
         }
       }
-      else if (compareCaseInsensive(smallJ[0],'#stm')) {
+      else if (compareCaseInsensive(smallJ[0], '#stm')) {
         unit.type = 'st'
 
         let jp = generateTextEffect(i.TextJp)
@@ -100,10 +99,10 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
           unit.textEffect.TextCn = cn.textEffects
         }
       }
-      else if (compareCaseInsensive(smallJ[0],'#clearST')) {
+      else if (compareCaseInsensive(smallJ[0], '#clearST')) {
         unit.clearSt = true
       }
-      else if (compareCaseInsensive(smallJ[0],'#wait')) {
+      else if (compareCaseInsensive(smallJ[0], '#wait')) {
         unit.otherEffect.push({ type: 'wait', args: [smallJ[1]] })
       }
       else if (isDigit(smallJ[0])) {
@@ -112,17 +111,22 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
           CharacterName,
           position: Number(smallJ[0]),
           face: smallJ[2],
-          highlight: smallJ.length == 4
+          highlight: smallJ.length == 4,
+          effects: []
         })
+        //添加全息人物特效
         if ('Shape' in playStore.CharacterNameExcelTable[CharacterName]
           &&
           playStore.CharacterNameExcelTable[CharacterName].Shape == 'Signal') {
-          unit.characterEffect.push({
-            type: 'signal',
-            target: Number(smallJ[0]),
-            effect: '',
-            async: false
-          })
+          for (let [index, character] of unit.characters.entries()) {
+            if (character.position === Number(smallJ[0])) {
+              unit.characters[index].effects.push({
+                type: 'signal',
+                effect: '',
+                async: false,
+              })
+            }
+          }
         }
         if (smallJ.length == 4) {
           setOneText(unit, i)
@@ -130,25 +134,25 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
       }
       else if (isCharacterEffect(smallJ[0])) {
         if (smallJ.length == 2) {
-          unit.characterEffect.push({
+          let characterIndex = getCharacterIndex(unit,Number(smallJ[0][1]),result,rawIndex)
+          unit.characters[characterIndex].effects.push({
             type: 'action',
-            target: Number(smallJ[0][1]),
             effect: smallJ[1],
             async: false
           })
         }
-        else if (compareCaseInsensive(smallJ[1],'em')) {
-          unit.characterEffect.push({
+        else if (compareCaseInsensive(smallJ[1], 'em')) {
+          let characterIndex = getCharacterIndex(unit,Number(smallJ[0][1]),result,rawIndex)
+          unit.characters[characterIndex].effects.push({
             type: 'emotion',
-            target: Number(smallJ[0][1]),
             effect: emotionWordTable[smallJ[2]],
             async: false
           })
         }
-        else if (compareCaseInsensive(smallJ[1],'fx')) {
-          unit.characterEffect.push({
+        else if (compareCaseInsensive(smallJ[1], 'fx')) {
+          let characterIndex = getCharacterIndex(unit,Number(smallJ[0][1]),result,rawIndex)
+          unit.characters[characterIndex].effects.push({
             type: 'fx',
-            target: Number(smallJ[0][1]),
             effect: smallJ[2],
             async: false
           })
@@ -183,7 +187,7 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
         }
         optionIndex++
       }
-      else if (compareCaseInsensive(smallJ[0],'#fontsize')) {
+      else if (compareCaseInsensive(smallJ[0], '#fontsize')) {
         unit.textEffect.TextJp.push({ textIndex: 0, name: 'fontsize', value: [smallJ[1]] })
         if (i.TextCn) {
           if (unit.textEffect.TextCn) {
@@ -194,21 +198,21 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
           }
         }
       }
-      else if (compareCaseInsensive(smallJ[0],'#all')) {
-        if (compareCaseInsensive(smallJ[1],'hide')) {
+      else if (compareCaseInsensive(smallJ[0], '#all')) {
+        if (compareCaseInsensive(smallJ[1], 'hide')) {
           unit.hide = 'all'
         }
       }
-      else if (compareCaseInsensive(smallJ[0],'#hidemenu')) {
+      else if (compareCaseInsensive(smallJ[0], '#hidemenu')) {
         unit.hide = 'menu'
       }
-      else if (compareCaseInsensive(smallJ[0],'#showmenu')) {
+      else if (compareCaseInsensive(smallJ[0], '#showmenu')) {
         unit.show = 'menu'
       }
-      else if (compareCaseInsensive(smallJ[0],'#zmc')) {
+      else if (compareCaseInsensive(smallJ[0], '#zmc')) {
         unit.otherEffect.push({ type: 'zmc', args: smallJ.slice(1) })
       }
-      else if (compareCaseInsensive(smallJ[0],'#bgshake')) {
+      else if (compareCaseInsensive(smallJ[0], '#bgshake')) {
         unit.otherEffect.push({ type: 'bgshake', args: [] })
       }
     }
@@ -237,10 +241,6 @@ function isDigit(s: string) {
 
 function isCharacterEffect(s: string) {
   return /#\d/.test(s)
-}
-
-function findCharacterNameByPosition(characters: Character[], position: number) {
-  return characters.filter(value => value.position == position)[0].CharacterName
 }
 
 function isOption(s: string) {
@@ -299,5 +299,25 @@ function generateTextEffect(s: string) {
  * 在大小写不敏感的情况下比较字符串
  */
 function compareCaseInsensive(s1: string, s2: string) {
-  return s1.localeCompare(s2, undefined, { sensitivity: 'accent' })==0;
+  return s1.localeCompare(s2, undefined, { sensitivity: 'accent' }) == 0;
+}
+
+/**
+ * 获取角色的character index, 当不存在时会自动往unit加入该角色
+ */
+function getCharacterIndex(unit:StoryUnit,initPosition:number,result:StoryUnit[],rawIndex:number) {
+  let characterIndex = unit.characters.findIndex(value => value.position === initPosition)
+  let tempIndex = rawIndex
+  while (characterIndex == -1) {
+    tempIndex--
+    characterIndex = result[tempIndex].characters.findIndex(value => value.position === initPosition)
+    if (characterIndex != -1) {
+      let preCharacter = { ...result[tempIndex].characters[characterIndex] }
+      preCharacter.effects = []
+      unit.characters.push(preCharacter)
+      characterIndex = unit.characters.length - 1
+    }
+  }
+
+  return characterIndex
 }
