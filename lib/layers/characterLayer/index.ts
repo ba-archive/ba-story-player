@@ -2,8 +2,8 @@
  * 初始化人物层, 订阅player的剧情信息.
  */
 import {
-  CharacterEffectInstance,
-  CharacterEffectMap, CharacterEffectWord,
+  CharacterEffectInstance, CharacterEffectPlayer,
+  CharacterEffectWord,
   CharacterEmotionPlayer,
   CharacterLayer,
   EmotionWord, FXEffectWord, SignalEffectWord
@@ -11,7 +11,7 @@ import {
 import {ISkeletonData, Spine} from "pixi-spine";
 import {ShowCharacter} from "@/types/events";
 import {usePlayerStore} from "@/stores";
-import {CharacterInstance} from "@/types/common";
+import {Character, CharacterEffectType, CharacterInstance} from "@/types/common";
 import eventBus from "@/eventBus";
 
 export function characterInit(): boolean {
@@ -22,6 +22,7 @@ const CharacterLayerInstance: CharacterLayer = {
   init() {
     document.addEventListener("resize", this.onWindowResize);
     eventBus.on("showCharacter", this.showCharacter);
+    this.effectPlayerMap.set("emotion", CharacterEmotionPlayerInstance);
     CharacterEmotionPlayerInstance.init();
     return true;
   },
@@ -45,8 +46,8 @@ const CharacterLayerInstance: CharacterLayer = {
   getCharacterSpineInstance(characterNumber: number): Spine | undefined {
     return this.getCharacterInstance(characterNumber)?.instance ?? this.characterSpineCache.get(characterNumber)?.instance;
   },
-  beforeProcessShowCharacterAction(characterMap: CharacterEffectMap[]): boolean {
-    const {characterSpineData} = usePlayerStore();
+  beforeProcessShowCharacterAction(characterMap: Character[]): boolean {
+    const { characterSpineData } = usePlayerStore();
     for (const item of characterMap) {
       const characterName = item.CharacterName;
       if (!this.hasCharacterInstanceCache(characterName)) {
@@ -93,30 +94,28 @@ const CharacterLayerInstance: CharacterLayer = {
     app.stage.addChild(spine);
     return true;
   },
+  buildCharacterEffectInstance(row: ShowCharacter): CharacterEffectInstance[] {
+    return row.characters.map(item => {
+      return {
+        ...item,
+        instance: this.getCharacterSpineInstance(item.CharacterName)!
+      };
+    })
+  },
   showCharacter(data: ShowCharacter): Boolean {
-    const mapList = buildCharacterEffectMapping(data);
-    if (!this.beforeProcessShowCharacterAction(mapList)) {
+    if (!this.beforeProcessShowCharacterAction(data.characters)) {
       return false;
     }
+    const mapList = this.buildCharacterEffectInstance(data);
     // 处理sync情况
-
     mapList.forEach(character => {
-      const characterInstance = this.getCharacterInstance(character.CharacterName)!
-      character.effect.forEach((effect) => {
-        // 分发效果器
-        if (effect.effect in EmotionWord) {
-          CharacterEmotionPlayerInstance.processEffect(effect.effect as EmotionWord, {
-            ...character,
-            effect: effect,
-            instance: characterInstance.instance
-          })
-        } else if (effect.effect in CharacterEffectWord) {
-
-        } else if (effect.effect in FXEffectWord) {
-
-        } else if (effect.effect in SignalEffectWord) {
-
+      character.effects.forEach((effect) => {
+        const effectPlayer = this.effectPlayerMap.get(effect.type);
+        if (!effectPlayer) {
+          // TODO error handle
+          return;
         }
+        effectPlayer.processEffect(effect.effect as EmotionWord, character);
       })
     })
     return false;
@@ -127,16 +126,15 @@ const CharacterLayerInstance: CharacterLayer = {
   },
   characterScale: undefined,
   characterSpineCache: new Map<number, CharacterInstance>(),
+  effectPlayerMap: new Map<CharacterEffectType, CharacterEffectPlayer>(),
 }
-
-const EmotionHandlerKey = "emotion";
 
 const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
   init() {
     return;
   },
   getHandlerFunction(type: EmotionWord): (instance: CharacterEffectInstance) => void | undefined {
-    return Reflect.get(this, EmotionHandlerKey + type)
+    return Reflect.get(this, type)
   },
   processEffect(type: EmotionWord, instance: CharacterEffectInstance) {
     const fn = this.getHandlerFunction(type);
@@ -145,30 +143,32 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
     }
     fn(instance);
   },
-  emotionHeart(instance: CharacterEffectInstance) {},
-  emotionRespond(instance: CharacterEffectInstance): void {},
-  emotionNote(instance: CharacterEffectInstance): void {},
-  emotionTwinkle(instance: CharacterEffectInstance): void {},
-  emotionSad(instance: CharacterEffectInstance): void {},
-  emotionSweat(instance: CharacterEffectInstance): void {},
-  emotionDot(instance: CharacterEffectInstance): void {},
-  emotionChat(instance: CharacterEffectInstance): void {},
-  emotionExclaim(instance: CharacterEffectInstance): void {},
-  emotionAngry(instance: CharacterEffectInstance): void {},
-  emotionSurprise(instance: CharacterEffectInstance): void {},
-  emotionQuestion(instance: CharacterEffectInstance): void {},
-  emotionShy(instance: CharacterEffectInstance): void {},
+  Angry(): Promise<void> {
+    return Promise.resolve(undefined);
+  }, Chat(): Promise<void> {
+    return Promise.resolve(undefined);
+  }, Dot(): Promise<void> {
+    return Promise.resolve(undefined);
+  }, Exclaim(): Promise<void> {
+    return Promise.resolve(undefined);
+  }, Heart(): Promise<void> {
+    return Promise.resolve(undefined);
+  }, Note(): Promise<void> {
+    return Promise.resolve(undefined);
+  }, Question(): Promise<void> {
+    return Promise.resolve(undefined);
+  }, Respond(): Promise<void> {
+    return Promise.resolve(undefined);
+  }, Sad(): Promise<void> {
+    return Promise.resolve(undefined);
+  }, Shy(): Promise<void> {
+    return Promise.resolve(undefined);
+  }, Surprise(): Promise<void> {
+    return Promise.resolve(undefined);
+  }, Sweat(): Promise<void> {
+    return Promise.resolve(undefined);
+  }, Twinkle(): Promise<void> {
+    return Promise.resolve(undefined);
+  }
 }
 
-/**
- * 构建ShowCharacter到CharacterEffectMap的映射
- * @param row 原始播放器数据
- */
-function buildCharacterEffectMapping(row: ShowCharacter): CharacterEffectMap[] {
-  return row.characters.map(item => {
-    return {
-      ...item,
-      effect: row.characterEffects.filter(effect => effect.target === item.position)
-    };
-  })
-}

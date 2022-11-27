@@ -1,6 +1,6 @@
 import type {ISkeletonData, Spine} from 'pixi-spine'
 import {ShowCharacter} from "@/types/events";
-import {Character, CharacterEffect, CharacterInstance} from "@/types/common";
+import {Character, CharacterEffect, CharacterEffectType, CharacterInstance} from "@/types/common";
 
 /**
  * 角色层定义
@@ -58,7 +58,12 @@ export interface CharacterLayer {
    * @param characterMap 需要处理的资源
    * @return 创建过程顺利: true
    */
-  beforeProcessShowCharacterAction(characterMap: CharacterEffectMap[]): boolean;
+  beforeProcessShowCharacterAction(characterMap: Character[]): boolean;
+  /**
+   * 为特效层构建特效操作实例
+   * @param row 传递给showCharacter的原始数据
+   */
+  buildCharacterEffectInstance(row: ShowCharacter): CharacterEffectInstance[];
   /**
    * 将角色spine放到app的stage中, 并修改对应的状态
    * @param characterNumber 要放置的角色的characterNumber
@@ -78,54 +83,41 @@ export interface CharacterLayer {
    * @key number 角色唯一key
    * @value CharacterInstance 包含spine对象的实例
    */
-  characterSpineCache: Map<number, CharacterInstance>
+  characterSpineCache: Map<number, CharacterInstance>,
+  effectPlayerMap: Map<CharacterEffectType, CharacterEffectPlayer<any>>,
 }
 
-/**
- * 对话特效处理
- */
-export interface CharacterEmotionPlayer {
+export interface CharacterEffectPlayer<T extends EmotionWord | CharacterEffectWord | FXEffectWord | SignalEffectWord> {
   /**
-   * 初始化函数, player初始化时调用, 向为EffectWord准备处理函数映射表
+   * 初始化函数, player初始化时调用
    */
   init(): void;
   /**
    * 预处理, 检查是否能够播放对应特效
    */
-  processEffect(type: EmotionWord, instance: CharacterEffectInstance): void;
+  processEffect(type: T, instance: CharacterEffectInstance): void;
+}
+
+/**
+ * 对话特效处理
+ */
+export interface CharacterEmotionPlayer extends EffectFunction<EmotionWord>, CharacterEffectPlayer<EmotionWord> {
   /**
    * 获取特效处理函数
    * @param type 角色特效类型
    */
   getHandlerFunction(type: EmotionWord): (instance: CharacterEffectInstance) => void | undefined;
-  emotionHeart(instance: CharacterEffectInstance): void;
-  emotionRespond(instance: CharacterEffectInstance): void;
-  emotionNote(instance: CharacterEffectInstance): void;
-  emotionTwinkle(instance: CharacterEffectInstance): void;
-  emotionSad(instance: CharacterEffectInstance): void;
-  emotionSweat(instance: CharacterEffectInstance): void;
-  emotionDot(instance: CharacterEffectInstance): void;
-  emotionChat(instance: CharacterEffectInstance): void;
-  emotionExclaim(instance: CharacterEffectInstance): void;
-  emotionAngry(instance: CharacterEffectInstance): void;
-  emotionSurprise(instance: CharacterEffectInstance): void;
-  emotionQuestion(instance: CharacterEffectInstance): void;
-  emotionShy(instance: CharacterEffectInstance): void;
-}
-
-/**
- * showCharacter方法使用, 保存一个角色与施加在其身上的所有特效
- */
-export interface CharacterEffectMap extends Character {
-  effect: CharacterEffect[];
 }
 
 /**
  * CharacterEmotionPlayer使用, 提供角色spine与施加在其身上的所有特效
  */
 export interface CharacterEffectInstance extends Character {
-  effect: CharacterEffect;
   instance: Spine;
+}
+
+export type EffectFunction<T extends string> = {
+  [key in T]: () => Promise<void>;
 }
 
 /**
@@ -139,38 +131,19 @@ export type EmotionWord =
 /**
  * 人物特效定义
  */
-export enum CharacterEffectWord {
-  "a" = "a",
-  "d" = "d",
-  "dl" = "dl",
-  "dr" = "dr",
-  "ar" = "ar",
-  "al" = "al",
-  "hophop" = "hophop",
-  "greeting" = "greeting",
-  "shake" = "shake",
-  "m1" = "m1",
-  "m2" = "m2",
-  "m3" = "m3",
-  "m4" = "m4",
-  "m5" = "m5",
-  "stiff" = "stiff",
-  "closeup" = "closeup",
-  "jump" = "jump",
-  "falldownR" = "falldownR",
-  "hide" = "hide",
-}
+export type CharacterEffectWord =
+  "a" | "d" | "dl" | "dr" |
+  "ar" | "al" | "hophop" | "greeting" |
+  "shake" | "m1" | "m2" | "m3" |
+  "m4" | "m5" | "stiff" | "closeup" |
+  "jump" | "falldownR" | "hide";
 
 /**
  * fx特效定义
  */
-export enum FXEffectWord {
-  "shot" = "shot"
-}
+export type FXEffectWord = "shot";
 
 /**
  * signal特效定义
  */
-export enum SignalEffectWord {
-  "signal" = "signal"
-}
+export type SignalEffectWord = "signal";
