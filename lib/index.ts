@@ -82,7 +82,7 @@ export async function init(elementID: string, height: number, width: number, sto
 }
 
 /**
- * 根据当前剧情发送事件 
+ * 根据当前剧情发送事件
  */
 export async function emitEvents() {
   let { currentStoryIndex, currentStoryUnit, allStoryUnit } = storeToRefs(playerStore)
@@ -304,7 +304,7 @@ function getCharacterFileName(CharacterName: number) {
  * 添加人物情绪相关资源
  */
 async function addEmotionResources() {
-  for (let emotionResources of Object.values(playerStore.emotionResourecesTable)) {
+  for (let emotionResources of Object.values(playerStore.emotionResourcesTable)) {
     for (let emotionResource of emotionResources) {
       if (!playerStore.app.loader.resources[emotionResource]) {
         playerStore.app.loader.add(emotionResource, `${playerStore.dataUrl}/emotions/${emotionResource}`)

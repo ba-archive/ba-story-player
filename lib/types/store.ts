@@ -34,7 +34,7 @@ export interface State {
   BGMExcelTable: { [index: number]: BGMExcelTableItem }
   TransitionExcelTable: { [index: number]: TransitionTableItem }
 
-  emotionResourecesTable:{[index:string]:string[]},
+  emotionResourcesTable:{[index:string]:string[]},
   //
   l2dCharacterName:string
 }
