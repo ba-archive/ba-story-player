@@ -13,21 +13,20 @@ export interface CharacterLayer {
   init(): boolean;
   /**
    * 销毁函数, player退出时调用, 取消对事件总线的监听
-   * @return 初始化成功: true, 初始化失败: false
    */
-  dispose(): boolean;
+  dispose(): void;
   /**
    * 判断当前显示在player中的角色sprite/spine是否有给定的characterNumber对应的角色
    * @param characterNumber 要判断的角色
    * @return 具有对应的角色: true
    */
-  hasCharacterInstance(characterNumber: number): Boolean;
+  hasCharacterInstance(characterNumber: number): boolean;
   /**
    * 判断在cache中是否已经创建了给定的characterNumber对应的角色sprite/spine
    * @param characterNumber 要判断的角色
    * @return 具有对应的角色: true
    */
-  hasCharacterInstanceCache(characterNumber: number): Boolean;
+  hasCharacterInstanceCache(characterNumber: number): boolean;
   /**
    * 根据给定的characterNumber获取对应的角色实例
    * @param characterNumber  要获取的角色
@@ -45,7 +44,7 @@ export interface CharacterLayer {
    * @param data 要处理的数据
    * @return 事件响应成功: true
    */
-  showCharacter(data: ShowCharacter): Boolean;
+  showCharacter(data: ShowCharacter): boolean;
   /**
    * 从打包好的spine数据中创建pixi-spine对象
    * @param characterNumber 要创建的角色的characterNumber
@@ -84,10 +83,13 @@ export interface CharacterLayer {
    * @value CharacterInstance 包含spine对象的实例
    */
   characterSpineCache: Map<number, CharacterInstance>,
-  effectPlayerMap: Map<CharacterEffectType, CharacterEffectPlayer<any>>,
+  effectPlayerMap: Map<CharacterEffectType, CharacterEffectPlayer<EmotionWord | CharacterEffectWord | FXEffectWord | SignalEffectWord>>,
 }
 
-export interface CharacterEffectPlayer<T extends EmotionWord | CharacterEffectWord | FXEffectWord | SignalEffectWord> {
+/**
+ * 所有角色特效基础接口
+ */
+export interface CharacterEffectPlayerBase<T extends EmotionWord | CharacterEffectWord | FXEffectWord | SignalEffectWord> {
   /**
    * 初始化函数, player初始化时调用
    */
@@ -96,12 +98,22 @@ export interface CharacterEffectPlayer<T extends EmotionWord | CharacterEffectWo
    * 预处理, 检查是否能够播放对应特效
    */
   processEffect(type: T, instance: CharacterEffectInstance): void;
+  /**
+   * 销毁函数, player退出时调用, 取消对事件总线的监听
+   */
+  dispose(): void;
 }
+
+/**
+ * 所有角色特效统一接口
+ */
+export type CharacterEffectPlayer<T extends EmotionWord | CharacterEffectWord | FXEffectWord | SignalEffectWord>
+  = CharacterEffectPlayerBase<T> & EffectFunction<T>
 
 /**
  * 对话特效处理
  */
-export interface CharacterEmotionPlayer extends EffectFunction<EmotionWord>, CharacterEffectPlayer<EmotionWord> {
+export interface CharacterEmotionPlayer extends CharacterEffectPlayer<EmotionWord> {
   /**
    * 获取特效处理函数
    * @param type 角色特效类型

@@ -126,12 +126,14 @@ const CharacterLayerInstance: CharacterLayer = {
   },
   characterScale: undefined,
   characterSpineCache: new Map<number, CharacterInstance>(),
-  effectPlayerMap: new Map<CharacterEffectType, CharacterEffectPlayer<any>>(),
+  effectPlayerMap: new Map<CharacterEffectType, CharacterEffectPlayer<EmotionWord | CharacterEffectWord | FXEffectWord | SignalEffectWord>>(),
 }
 
 const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
   init() {
     return;
+  },
+  dispose(): void {
   },
   getHandlerFunction(type: EmotionWord): (instance: CharacterEffectInstance) => void | undefined {
     return Reflect.get(this, type)
