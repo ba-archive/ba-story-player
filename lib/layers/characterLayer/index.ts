@@ -2,7 +2,7 @@
  * 初始化人物层, 订阅player的剧情信息.
  */
 import {
-  CharacterEffectInstance, CharacterEffectPlayer,
+  CharacterEffectInstance, CharacterEffectPlayer, CharacterEffectPlayerBase,
   CharacterEffectWord,
   CharacterEmotionPlayer,
   CharacterLayer,
@@ -32,11 +32,11 @@ const CharacterLayerInstance: CharacterLayer = {
     //TODO 销毁各种sprite,spine实体
     return true;
   },
-  hasCharacterInstance(characterNumber: number): Boolean {
+  hasCharacterInstance(characterNumber: number): boolean {
     const {currentCharacterMap} = usePlayerStore();
     return Boolean(currentCharacterMap.get(characterNumber));
   },
-  hasCharacterInstanceCache(characterNumber: number): Boolean {
+  hasCharacterInstanceCache(characterNumber: number): boolean {
     return Boolean(this.characterSpineCache.get(characterNumber));
   },
   getCharacterInstance(characterNumber: number): CharacterInstance | undefined {
@@ -102,7 +102,7 @@ const CharacterLayerInstance: CharacterLayer = {
       };
     })
   },
-  showCharacter(data: ShowCharacter): Boolean {
+  showCharacter(data: ShowCharacter): boolean {
     if (!this.beforeProcessShowCharacterAction(data.characters)) {
       return false;
     }
@@ -115,7 +115,7 @@ const CharacterLayerInstance: CharacterLayer = {
           // TODO error handle
           return;
         }
-        effectPlayer.processEffect(effect.effect as EmotionWord, character);
+        effectPlayer.processEffect(effect.effect, character);
       })
     })
     return false;
@@ -126,7 +126,7 @@ const CharacterLayerInstance: CharacterLayer = {
   },
   characterScale: undefined,
   characterSpineCache: new Map<number, CharacterInstance>(),
-  effectPlayerMap: new Map<CharacterEffectType, CharacterEffectPlayer<EmotionWord | CharacterEffectWord | FXEffectWord | SignalEffectWord>>(),
+  effectPlayerMap: new Map<CharacterEffectType, CharacterEffectPlayerBase<EmotionWord | CharacterEffectWord | FXEffectWord | SignalEffectWord>>(),
 }
 
 const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {

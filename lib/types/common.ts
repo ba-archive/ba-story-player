@@ -44,7 +44,7 @@ export type CharacterEffectType = 'emotion'|'action'|'fx'|'signal';
 export interface CharacterEffect {
   type: CharacterEffectType;
   // target: number,
-  effect: EmotionWord | CharacterEffectWord | FXEffectWord | SignalEffectWord | string,
+  effect: EmotionWord | CharacterEffectWord | FXEffectWord | SignalEffectWord;
   async: boolean
   arg?:string
 }

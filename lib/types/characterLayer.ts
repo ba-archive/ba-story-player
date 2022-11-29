@@ -83,7 +83,7 @@ export interface CharacterLayer {
    * @value CharacterInstance 包含spine对象的实例
    */
   characterSpineCache: Map<number, CharacterInstance>,
-  effectPlayerMap: Map<CharacterEffectType, CharacterEffectPlayer<EmotionWord | CharacterEffectWord | FXEffectWord | SignalEffectWord>>,
+  effectPlayerMap: Map<CharacterEffectType, CharacterEffectPlayerBase<EmotionWord | CharacterEffectWord | FXEffectWord | SignalEffectWord>>,
 }
 
 /**
