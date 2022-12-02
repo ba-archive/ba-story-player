@@ -1,9 +1,9 @@
-import { StoryRawUnit, StoryUnit ,Text, TextEffect} from "@/types/common"
+import { StoryRawUnit, StoryUnit, Text, TextEffect } from "@/types/common"
 
 /**
- * 当只需要一行语句时填充unit, Text数组只有一个成员的情况
+ * 当只需要一行语句时填充unit, 即Text数组只有一个成员的情况
  */
-export function setOneText(unit: StoryUnit, i: StoryRawUnit,userName:string) {
+export function setOneText(unit: StoryUnit, i: StoryRawUnit, userName: string) {
   unit.text.TextJp = [{ content: String(i.TextJp).replace('[USERNAME]', userName).replace('#n', '\n') }]
   if (i.TextCn) {
     unit.text.TextCn = [{ content: String(i.TextCn).replace('[USERNAME]', userName).replace('#n', '\n') }]
@@ -15,7 +15,8 @@ export function setOneText(unit: StoryUnit, i: StoryRawUnit,userName:string) {
  * 判断是否是角色
  * @param s 
  */
-export function isDigit(s: string) {
+export function isCharacter(s: string) {
+  //类似#3
   return /^\d+$/.test(s)
 }
 
@@ -30,20 +31,19 @@ export function isCharacterEffect(s: string) {
 /**
  * 判断当前字符串是否是选项 
  * @param s 判断的字符串
- * 
- * 选项字符串示例: '[s1] \"我正想着稍微散散步来着。\"\n[s2] \"优香在做什么？\"'
- * , 除此之外还有[ns], [s]等情况
  */
 export function isOption(s: string) {
+  // 选项字符串示例: '[s1] \"我正想着稍微散散步来着。\"\n[s2] \"优香在做什么？\"'
+  //除此之外还有[ns], [s]等情况
   return /\[ns\]|\[s\d?\]/.test(s)
 }
 
 /**
  * 根据原始文字生成Text数组
- * 
- * 原始文字示例: "― （いや[wa:200]いや、[wa:900]いくら[wa:300]そういう[wa:300]状況だからって"
+ * @param s 判断的字符串
  */
 export function generateText(s: string): Text[] {
+  //原始文字示例: "― （いや[wa:200]いや、[wa:900]いくら[wa:300]そういう[wa:300]状況だからって"
   let strs = s.split('[')
   let result: Text[] = []
   for (let i of strs) {
@@ -64,6 +64,7 @@ export function generateText(s: string): Text[] {
 
 /**
  * 生成Text和TextEffect
+ * @param s 字符串
  */
 export function generateTextEffect(s: string) {
   s = String(s)
@@ -98,7 +99,7 @@ export function compareCaseInsensive(s1: string, s2: string) {
 /**
  * 获取角色在unit的characters里的index, 当不存在时会自动往unit的character里加入该角色
  */
-export function getCharacterIndex(unit:StoryUnit,initPosition:number,result:StoryUnit[],rawIndex:number) {
+export function getCharacterIndex(unit: StoryUnit, initPosition: number, result: StoryUnit[], rawIndex: number) {
   let characterIndex = unit.characters.findIndex(value => value.position === initPosition)
   let tempIndex = rawIndex
   while (characterIndex === -1) {
