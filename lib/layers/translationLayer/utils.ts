@@ -1,7 +1,7 @@
 import { StoryRawUnit, StoryUnit ,Text, TextEffect} from "@/types/common"
 
 /**
- * 当只需要一行语句时填充unit
+ * 当只需要一行语句时填充unit, Text数组只有一个成员的情况
  */
 export function setOneText(unit: StoryUnit, i: StoryRawUnit,userName:string) {
   unit.text.TextJp = [{ content: String(i.TextJp).replace('[USERNAME]', userName).replace('#n', '\n') }]
@@ -11,21 +11,37 @@ export function setOneText(unit: StoryUnit, i: StoryRawUnit,userName:string) {
 
   return unit
 }
-
+/**
+ * 判断是否是角色
+ * @param s 
+ */
 export function isDigit(s: string) {
   return /^\d+$/.test(s)
 }
 
+/**
+ * 判断是否角色特效 
+ * @param s
+ */
 export function isCharacterEffect(s: string) {
   return /#\d/.test(s)
 }
 
+/**
+ * 判断当前字符串是否是选项 
+ * @param s 判断的字符串
+ * 
+ * 选项字符串示例: '[s1] \"我正想着稍微散散步来着。\"\n[s2] \"优香在做什么？\"'
+ * , 除此之外还有[ns], [s]等情况
+ */
 export function isOption(s: string) {
   return /\[ns\]|\[s\d?\]/.test(s)
 }
 
 /**
  * 根据原始文字生成Text数组
+ * 
+ * 原始文字示例: "― （いや[wa:200]いや、[wa:900]いくら[wa:300]そういう[wa:300]状況だからって"
  */
 export function generateText(s: string): Text[] {
   let strs = s.split('[')
@@ -80,15 +96,15 @@ export function compareCaseInsensive(s1: string, s2: string) {
 }
 
 /**
- * 获取角色的character index, 当不存在时会自动往unit加入该角色
+ * 获取角色在unit的characters里的index, 当不存在时会自动往unit的character里加入该角色
  */
 export function getCharacterIndex(unit:StoryUnit,initPosition:number,result:StoryUnit[],rawIndex:number) {
   let characterIndex = unit.characters.findIndex(value => value.position === initPosition)
   let tempIndex = rawIndex
-  while (characterIndex == -1) {
+  while (characterIndex === -1) {
     tempIndex--
     characterIndex = result[tempIndex].characters.findIndex(value => value.position === initPosition)
-    if (characterIndex != -1) {
+    if (characterIndex !== -1) {
       let preCharacter = { ...result[tempIndex].characters[characterIndex] }
       preCharacter.effects = []
       unit.characters.push(preCharacter)
