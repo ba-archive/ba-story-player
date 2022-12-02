@@ -30,13 +30,15 @@ let emotionWordTable: { [index: string]: EmotionWord } = {
 
 /**
  * 将原始剧情结构翻译成标准剧情结构
+ * @param rawStory: 原始剧情
  */
 export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
 
   let result: StoryUnit[] = []
   let playStore = usePlayerStore()
-  for (let [rawIndex, i] of rawStory.entries()) {
-    let { GroupId, BGMId, BGName, BGEffect, SelectionGroup, Sound, Transition, VoiceJp, PopupFileName } = i
+  for (let [rawIndex, rawStoryUnit] of rawStory.entries()) {
+    //初始化unit, 并将需要的原始属性填入unit
+    let { GroupId, BGMId, BGName, BGEffect, SelectionGroup, Sound, Transition, VoiceJp, PopupFileName } = rawStoryUnit
     let unit: StoryUnit = {
       GroupId, BGMId, BGName, BGEffect, SelectionGroup, Sound, Transition, VoiceJp, PopupFileName,
       type: 'text',
@@ -47,72 +49,82 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
         TextJp: []
       }
     }
-    if (i.TextJp === '' || i.TextJp === null) {
+
+    //当没有文字时初步判断为effectOnly类型
+    if (rawStoryUnit.TextJp === '' || rawStoryUnit.TextJp === null) {
       unit.type = 'effectOnly'
     }
 
-    let ScriptKr = String(i.ScriptKr)
-    let strs = ScriptKr.split('\n')
-    for (let [index, j] of strs.entries()) {
-      let smallJ = j.split(';')
+    let ScriptKr = String(rawStoryUnit.ScriptKr)
+    let scripts = ScriptKr.split('\n')
+    for (let script of scripts) {
+      //根据';'将script分为更小的单元
+      let scriptUnits = script.split(';')
+      /**
+       * 当前script类型, 小写字母
+       */
+      let scriptType=scriptUnits[0].toLocaleLowerCase()
       let optionIndex = 0
-      if (utils.compareCaseInsensive(smallJ[0], '#title')) {
+
+      if (utils.compareCaseInsensive(scriptType, '#title')) {
         unit.type = 'title'
-        unit = utils.setOneText(unit, i,playStore.userName)
+        unit = utils.setOneText(unit, rawStoryUnit,playStore.userName)
         break
       }
-      else if (utils.compareCaseInsensive(smallJ[0], '#place')) {
+      else if (utils.compareCaseInsensive(scriptType, '#place')) {
         unit.type = 'place'
-        unit = utils.setOneText(unit, i,playStore.userName)
+        unit = utils.setOneText(unit, rawStoryUnit,playStore.userName)
         break
       }
-      else if (utils.compareCaseInsensive(smallJ[0], '#na')) {
+      else if (utils.compareCaseInsensive(scriptType, '#na')) {
+        //无立绘时的对话框对话, 可能有名字
         unit.type = 'text'
-        unit = utils.setOneText(unit, i, playStore.userName)
-        if (smallJ.length === 3) {
-          unit.naName = smallJ[1]
+        unit = utils.setOneText(unit, rawStoryUnit, playStore.userName)
+        if (scriptUnits.length === 3) {
+          unit.naName = scriptUnits[1]
         }
       }
-      else if (utils.compareCaseInsensive(smallJ[0], '#st')) {
+      else if (utils.compareCaseInsensive(scriptType, '#st')) {
         unit.type = 'st'
-        unit.stArgs = smallJ.slice(1)
-        if (smallJ.length === 3) {
+        unit.stArgs = scriptUnits.slice(1)
+        if (scriptUnits.length === 3) {
           break
         }
         //当st有文字时
         else {
-          unit.stArgs = smallJ.slice(1, smallJ.length - 1)
-          unit.text.TextJp = utils.generateText(i.TextJp)
-          if (i.TextCn) {
-            unit.text.TextCn = utils.generateText(i.TextCn)
+          unit.stArgs = scriptUnits.slice(1, scriptUnits.length - 1)
+          unit.text.TextJp = utils.generateText(rawStoryUnit.TextJp)
+          if (rawStoryUnit.TextCn) {
+            unit.text.TextCn = utils.generateText(rawStoryUnit.TextCn)
           }
         }
       }
-      else if (utils.compareCaseInsensive(smallJ[0], '#stm')) {
+      else if (utils.compareCaseInsensive(scriptType, '#stm')) {
+        //有特效的st
         unit.type = 'st'
 
-        let jp = utils.generateTextEffect(i.TextJp)
+        let jp = utils.generateTextEffect(rawStoryUnit.TextJp)
         unit.text.TextJp = jp.text
         unit.textEffect.TextJp = jp.textEffects
-        if (i.TextCn) {
-          let cn = utils.generateTextEffect(i.TextCn)
+        if (rawStoryUnit.TextCn) {
+          let cn = utils.generateTextEffect(rawStoryUnit.TextCn)
           unit.text.TextCn = cn.text
           unit.textEffect.TextCn = cn.textEffects
         }
       }
-      else if (utils.compareCaseInsensive(smallJ[0], '#clearST')) {
+      else if (utils.compareCaseInsensive(scriptType, '#clearST')) {
         unit.clearSt = true
       }
-      else if (utils.compareCaseInsensive(smallJ[0], '#wait')) {
-        unit.otherEffect.push({ type: 'wait', args: [smallJ[1]] })
+      else if (utils.compareCaseInsensive(scriptType, '#wait')) {
+        unit.otherEffect.push({ type: 'wait', args: [scriptUnits[1]] })
       }
-      else if (utils.isDigit(smallJ[0])) {
-        let CharacterName = playStore.characterNameTable[smallJ[1]]
+      else if (utils.isCharacter(scriptType)) {
+        let CharacterName = playStore.characterNameTable[scriptUnits[1]]
         unit.characters.push({
           CharacterName,
-          position: Number(smallJ[0]),
-          face: smallJ[2],
-          highlight: smallJ.length === 4,
+          position: Number(scriptType),
+          face: scriptUnits[2],
+          highlight: scriptUnits.length === 4,
           effects: []
         })
         //添加全息人物特效
@@ -120,7 +132,7 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
           &&
           playStore.CharacterNameExcelTable[CharacterName].Shape === 'Signal') {
           for (let [index, character] of unit.characters.entries()) {
-            if (character.position === Number(smallJ[0])) {
+            if (character.position === Number(scriptType)) {
               unit.characters[index].effects.push({
                 type: 'signal',
                 effect: '',
@@ -129,47 +141,49 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
             }
           }
         }
-        if (smallJ.length === 4) {
-          utils.setOneText(unit, i,playStore.userName)
+        //有立绘人物对话
+        if (scriptUnits.length === 4) {
+          unit.type='text'
+          utils.setOneText(unit, rawStoryUnit,playStore.userName)
         }
       }
-      else if (utils.isCharacterEffect(smallJ[0])) {
-        if (smallJ.length === 2) {
-          let characterIndex = utils.getCharacterIndex(unit,Number(smallJ[0][1]),result,rawIndex)
+      else if (utils.isCharacterEffect(scriptType)) {
+        if (scriptUnits.length === 2) {
+          let characterIndex = utils.getCharacterIndex(unit,Number(scriptType[1]),result,rawIndex)
           unit.characters[characterIndex].effects.push({
             type: 'action',
-            effect: smallJ[1],
+            effect: scriptUnits[1],
             async: false
           })
         }
-        else if (utils.compareCaseInsensive(smallJ[1], 'em')) {
-          let characterIndex = utils.getCharacterIndex(unit,Number(smallJ[0][1]),result,rawIndex)
+        else if (utils.compareCaseInsensive(scriptUnits[1], 'em')) {
+          let characterIndex = utils.getCharacterIndex(unit,Number(scriptType[1]),result,rawIndex)
           unit.characters[characterIndex].effects.push({
             type: 'emotion',
-            effect: emotionWordTable[smallJ[2]],
+            effect: emotionWordTable[scriptUnits[2]],
             async: false
           })
         }
-        else if (utils.compareCaseInsensive(smallJ[1], 'fx')) {
-          let characterIndex = utils.getCharacterIndex(unit,Number(smallJ[0][1]),result,rawIndex)
+        else if (utils.compareCaseInsensive(scriptUnits[1], 'fx')) {
+          let characterIndex = utils.getCharacterIndex(unit,Number(scriptType[1]),result,rawIndex)
           unit.characters[characterIndex].effects.push({
             type: 'fx',
-            effect: smallJ[2],
+            effect: scriptUnits[2],
             async: false
           })
         }
       }
-      else if (utils.isOption(smallJ[0])) {
+      else if (utils.isOption(scriptType)) {
         unit.type = 'option'
-        let TextJp = String(i.TextJp).split('\n')[optionIndex]
+        let TextJp = String(rawStoryUnit.TextJp).split('\n')[optionIndex]
         TextJp = TextJp.slice(4)
         let TextCn
-        if (i.TextCn) {
-          TextCn = String(i.TextCn).split('\n')[optionIndex]
+        if (rawStoryUnit.TextCn) {
+          TextCn = String(rawStoryUnit.TextCn).split('\n')[optionIndex]
           TextCn = TextCn.slice(4)
         }
         //[ns]或[s]
-        if (smallJ[0][2] === 's' || smallJ[0][2] === ']') {
+        if (scriptType[2] === 's' || scriptType[2] === ']') {
           if (unit.options) {
             unit.options.push({ SelectionGroup: 0, text: { TextJp, TextCn } })
           }
@@ -180,40 +194,40 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
         else {
           //[s1]
           if (unit.options) {
-            unit.options.push({ SelectionGroup: Number(smallJ[0][2]), text: { TextJp, TextCn } })
+            unit.options.push({ SelectionGroup: Number(scriptType[2]), text: { TextJp, TextCn } })
           }
           else {
-            unit.options = [{ SelectionGroup: Number(smallJ[0][2]), text: { TextJp, TextCn } }]
+            unit.options = [{ SelectionGroup: Number(scriptType[2]), text: { TextJp, TextCn } }]
           }
         }
         optionIndex++
       }
-      else if (utils.compareCaseInsensive(smallJ[0], '#fontsize')) {
-        unit.textEffect.TextJp.push({ textIndex: 0, name: 'fontsize', value: [smallJ[1]] })
-        if (i.TextCn) {
+      else if (utils.compareCaseInsensive(scriptType, '#fontsize')) {
+        unit.textEffect.TextJp.push({ textIndex: 0, name: 'fontsize', value: [scriptUnits[1]] })
+        if (rawStoryUnit.TextCn) {
           if (unit.textEffect.TextCn) {
-            unit.textEffect.TextCn.push({ textIndex: 0, name: 'fontsize', value: [smallJ[1]] })
+            unit.textEffect.TextCn.push({ textIndex: 0, name: 'fontsize', value: [scriptUnits[1]] })
           }
           else {
-            unit.textEffect.TextCn = [{ textIndex: 0, name: 'fontsize', value: [smallJ[1]] }]
+            unit.textEffect.TextCn = [{ textIndex: 0, name: 'fontsize', value: [scriptUnits[1]] }]
           }
         }
       }
-      else if (utils.compareCaseInsensive(smallJ[0], '#all')) {
-        if (utils.compareCaseInsensive(smallJ[1], 'hide')) {
+      else if (utils.compareCaseInsensive(scriptType, '#all')) {
+        if (utils.compareCaseInsensive(scriptUnits[1], 'hide')) {
           unit.hide = 'all'
         }
       }
-      else if (utils.compareCaseInsensive(smallJ[0], '#hidemenu')) {
+      else if (utils.compareCaseInsensive(scriptType, '#hidemenu')) {
         unit.hide = 'menu'
       }
-      else if (utils.compareCaseInsensive(smallJ[0], '#showmenu')) {
+      else if (utils.compareCaseInsensive(scriptType, '#showmenu')) {
         unit.show = 'menu'
       }
-      else if (utils.compareCaseInsensive(smallJ[0], '#zmc')) {
-        unit.otherEffect.push({ type: 'zmc', args: smallJ.slice(1) })
+      else if (utils.compareCaseInsensive(scriptType, '#zmc')) {
+        unit.otherEffect.push({ type: 'zmc', args: scriptUnits.slice(1) })
       }
-      else if (utils.compareCaseInsensive(smallJ[0], '#bgshake')) {
+      else if (utils.compareCaseInsensive(scriptType, '#bgshake')) {
         unit.otherEffect.push({ type: 'bgshake', args: [] })
       }
     }
