@@ -47,7 +47,7 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
         TextJp: []
       }
     }
-    if (i.TextJp == '' || i.TextJp == null) {
+    if (i.TextJp === '' || i.TextJp === null) {
       unit.type = 'effectOnly'
     }
 
@@ -69,14 +69,14 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
       else if (utils.compareCaseInsensive(smallJ[0], '#na')) {
         unit.type = 'text'
         unit = utils.setOneText(unit, i, playStore.userName)
-        if (smallJ.length == 3) {
+        if (smallJ.length === 3) {
           unit.naName = smallJ[1]
         }
       }
       else if (utils.compareCaseInsensive(smallJ[0], '#st')) {
         unit.type = 'st'
         unit.stArgs = smallJ.slice(1)
-        if (smallJ.length == 3) {
+        if (smallJ.length === 3) {
           break
         }
         //当st有文字时
@@ -112,13 +112,13 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
           CharacterName,
           position: Number(smallJ[0]),
           face: smallJ[2],
-          highlight: smallJ.length == 4,
+          highlight: smallJ.length === 4,
           effects: []
         })
         //添加全息人物特效
         if ('Shape' in playStore.CharacterNameExcelTable[CharacterName]
           &&
-          playStore.CharacterNameExcelTable[CharacterName].Shape == 'Signal') {
+          playStore.CharacterNameExcelTable[CharacterName].Shape === 'Signal') {
           for (let [index, character] of unit.characters.entries()) {
             if (character.position === Number(smallJ[0])) {
               unit.characters[index].effects.push({
@@ -129,12 +129,12 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
             }
           }
         }
-        if (smallJ.length == 4) {
+        if (smallJ.length === 4) {
           utils.setOneText(unit, i,playStore.userName)
         }
       }
       else if (utils.isCharacterEffect(smallJ[0])) {
-        if (smallJ.length == 2) {
+        if (smallJ.length === 2) {
           let characterIndex = utils.getCharacterIndex(unit,Number(smallJ[0][1]),result,rawIndex)
           unit.characters[characterIndex].effects.push({
             type: 'action',
@@ -169,7 +169,7 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
           TextCn = TextCn.slice(4)
         }
         //[ns]或[s]
-        if (smallJ[0][2] == 's' || smallJ[0][2] == ']') {
+        if (smallJ[0][2] === 's' || smallJ[0][2] === ']') {
           if (unit.options) {
             unit.options.push({ SelectionGroup: 0, text: { TextJp, TextCn } })
           }
