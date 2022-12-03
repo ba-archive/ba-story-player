@@ -11,7 +11,7 @@ import {
 import {ISkeletonData, Spine} from "pixi-spine";
 import {ShowCharacter} from "@/types/events";
 import {usePlayerStore} from "@/stores";
-import {Character, CharacterEffectType, CharacterInstance} from "@/types/common";
+import {Character, CharacterEffect, CharacterEffectType, CharacterInstance} from "@/types/common";
 import eventBus from "@/eventBus";
 
 export function characterInit(): boolean {
@@ -108,17 +108,65 @@ const CharacterLayerInstance: CharacterLayer = {
     }
     const mapList = this.buildCharacterEffectInstance(data);
     // 处理sync情况
-    mapList.forEach(character => {
-      character.effects.forEach((effect) => {
+    Promise
+      .allSettled(
+        mapList.map(character => this.showOneCharacter(character))
+      )
+      .then(this.characterDone)
+      .catch(this.characterDone);
+    return true;
+  },
+  showOneCharacter(data: CharacterEffectInstance): Promise<void> {
+    let count = 0;
+    const effectListLength = data.effects.length;
+    const reason: any[] = [];
+    const resolveHandler = (
+      resolve: (value: (void | PromiseLike<void>)) => void,
+      reject: (reason?: any) => void
+    ) => {
+      if (count !== effectListLength) {
+        return;
+      }
+      if (reason.length !== 0) {
+        reject(reason);
+      } else {
+        resolve();
+      }
+    }
+    return new Promise<void>(async (resolve, reject) => {
+      for (const index in data.effects) {
+        const effect = data.effects[index];
         const effectPlayer = this.effectPlayerMap.get(effect.type);
         if (!effectPlayer) {
           // TODO error handle
+          reject(`获取特效类型{${effect.type}}时失败`);
           return;
         }
-        effectPlayer.processEffect(effect.effect, character);
-      })
+        count++;
+        if (effect.async) {
+          await effectPlayer.processEffect(effect.effect, data)
+            .then(() => {
+              resolveHandler(resolve, reject);
+            })
+            .catch((err) => {
+              reason.push(err);
+            })
+        } else {
+          setTimeout(() => {
+            effectPlayer.processEffect(effect.effect, data)
+              .then(() => {
+                resolveHandler(resolve, reject);
+              })
+              .catch((err) => {
+                reason.push(err);
+              })
+          })
+        }
+      }
     })
-    return false;
+  },
+  characterDone() {
+    eventBus.emit("characterDone");
   },
   //TODO 根据角色是否已经缩放(靠近老师)分类更新
   onWindowResize() {
@@ -135,42 +183,44 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
   },
   dispose(): void {
   },
-  getHandlerFunction(type: EmotionWord): (instance: CharacterEffectInstance) => void | undefined {
+  getHandlerFunction(type: EmotionWord): (instance: CharacterEffectInstance) => Promise<void> | undefined {
     return Reflect.get(this, type)
   },
-  processEffect(type: EmotionWord, instance: CharacterEffectInstance) {
+  processEffect(type: EmotionWord, instance: CharacterEffectInstance): Promise<void> {
     const fn = this.getHandlerFunction(type);
     if (!fn) {
-      return;
+      return new Promise((resolve, reject) => {
+        reject();
+      });
     }
-    fn(instance);
+    return fn(instance) as Promise<void>;
   },
   Angry(): Promise<void> {
-    return Promise.resolve(undefined);
+    return Promise.resolve();
   }, Chat(): Promise<void> {
-    return Promise.resolve(undefined);
+    return Promise.resolve();
   }, Dot(): Promise<void> {
-    return Promise.resolve(undefined);
+    return Promise.resolve();
   }, Exclaim(): Promise<void> {
-    return Promise.resolve(undefined);
+    return Promise.resolve();
   }, Heart(): Promise<void> {
-    return Promise.resolve(undefined);
+    return Promise.resolve();
   }, Note(): Promise<void> {
-    return Promise.resolve(undefined);
+    return Promise.resolve();
   }, Question(): Promise<void> {
-    return Promise.resolve(undefined);
+    return Promise.resolve();
   }, Respond(): Promise<void> {
-    return Promise.resolve(undefined);
+    return Promise.resolve();
   }, Sad(): Promise<void> {
-    return Promise.resolve(undefined);
+    return Promise.resolve();
   }, Shy(): Promise<void> {
-    return Promise.resolve(undefined);
+    return Promise.resolve();
   }, Surprise(): Promise<void> {
-    return Promise.resolve(undefined);
+    return Promise.resolve();
   }, Sweat(): Promise<void> {
-    return Promise.resolve(undefined);
+    return Promise.resolve();
   }, Twinkle(): Promise<void> {
-    return Promise.resolve(undefined);
+    return Promise.resolve();
   }
 }
 

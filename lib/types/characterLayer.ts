@@ -46,6 +46,16 @@ export interface CharacterLayer {
    */
   showCharacter(data: ShowCharacter): boolean;
   /**
+   * 单独一个角色的处理函数, 接收showCharacter方法传入的单个信息并作处理, 返回Promise用以标识全部处理完毕
+   * @param data 要处理的数据
+   * @return resolve :该角色的特效全部处理完毕
+   */
+  showOneCharacter(data: CharacterEffectInstance): Promise<void>;
+  /**
+   * 所有人物特效已处理完成时调用, 向总线发送characterDone事件
+   */
+  characterDone(): void;
+  /**
    * 从打包好的spine数据中创建pixi-spine对象
    * @param characterNumber 要创建的角色的characterNumber
    * @param spineData 打包好的spine数据
@@ -95,9 +105,9 @@ export interface CharacterEffectPlayerBase<T extends EmotionWord | CharacterEffe
    */
   init(): void;
   /**
-   * 预处理, 检查是否能够播放对应特效
+   * 播放对应特效
    */
-  processEffect(type: T, instance: CharacterEffectInstance): void;
+  processEffect(type: T, instance: CharacterEffectInstance): Promise<void>;
   /**
    * 销毁函数, player退出时调用, 取消对事件总线的监听
    */
@@ -118,7 +128,7 @@ export interface CharacterEmotionPlayer extends CharacterEffectPlayer<EmotionWor
    * 获取特效处理函数
    * @param type 角色特效类型
    */
-  getHandlerFunction(type: EmotionWord): (instance: CharacterEffectInstance) => void | undefined;
+  getHandlerFunction(type: EmotionWord): (instance: CharacterEffectInstance) => Promise<void> | undefined;
 }
 
 /**
