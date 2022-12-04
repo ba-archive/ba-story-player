@@ -50,9 +50,9 @@ export const usePlayerStore = defineStore<'PlayerStore', State, Getters, Actions
       emotionResourcesTable:{
         'Heart':['Emoticon_Balloon_N.png','Emoticon_Heart.png'],
         'Respond':['Emoticon_Action.png'],
-        'Note':['Emoticon_Note.png'],
+        'Music':['Emoticon_Note.png'],
         'Twinkle':['Emoticon_Twinkle.png'],
-        'Anxiety':['Emoticon_Balloon_N.png','Emoticon_Anxiety.png'],
+        'Upset':['Emoticon_Balloon_N.png','Emoticon_Anxiety.png'],
         'Sweat':['Emoticon_Sweat_1.png','Emoticon_Sweat_2.png'],
         'Dot':['Emoticon_Balloon_N.png','Emoticon_Idea.png'],
         'Exclaim':['Emoticon_ExclamationMark.png'],
@@ -156,6 +156,13 @@ export const usePlayerStore = defineStore<'PlayerStore', State, Getters, Actions
      */
     emotionResources(){
       return (emotionName)=>this.emotionResourcesTable[emotionName]
+    },
+
+    /**
+     * 获取emotion的对应声音资源的url, 传入的参数是emotion的名字
+     */
+    emotionSoundUrl() {
+        return (emotionName)=>`${this.dataUrl}/Audio/Sound/SFX_Emoticon_Motion_${emotionName}.wav` 
     },
 
     /**

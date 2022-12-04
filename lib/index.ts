@@ -301,7 +301,7 @@ function getCharacterFileName(CharacterName: number) {
 }
 
 /**
- * 添加人物情绪相关资源
+ * 添加人物情绪相关资源(图片和声音)
  */
 async function addEmotionResources() {
   for (let emotionResources of Object.values(playerStore.emotionResourcesTable)) {
@@ -309,6 +309,12 @@ async function addEmotionResources() {
       if (!playerStore.app.loader.resources[emotionResource]) {
         playerStore.app.loader.add(emotionResource, `${playerStore.dataUrl}/emotions/${emotionResource}`)
       }
+    }
+  }
+  for (let emotionName of Object.keys(playerStore.emotionResourcesTable)) {
+    let emotionSoundName = `SFX_Emoticon_Motion_${emotionName}`
+    if (!playerStore.app.loader.resources[emotionSoundName]) {
+      playerStore.app.loader.add(emotionSoundName, `${playerStore.dataUrl}/Audio/Sound/${emotionSoundName}.wav`)
     }
   }
 }
@@ -370,7 +376,7 @@ function addBGNameResources() {
           filename = `${filename}_home`
           if (!spineLoader.resources[filename!]) {
             spineLoader.add(filename, `${playerStore.dataUrl}/spine/${filename}/${filename}.skel`)
-            addL2dVoice(filename.replace('_home',''))
+            addL2dVoice(filename.replace('_home', ''))
           }
         }
       }

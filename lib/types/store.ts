@@ -74,6 +74,7 @@ export interface Getters extends _GettersTree<State> {
   bgmUrl: (state: GetterState) => string
   bgmArgs: (state: GetterState) => BGMExcelTableItem|undefined
   soundUrl: (state: GetterState) => string
+  emotionSoundUrl: (state: GetterState) =>(emotionName:string)=>string 
   /**
    * 获取L2D资源
    */

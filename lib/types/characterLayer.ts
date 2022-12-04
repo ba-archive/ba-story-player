@@ -134,9 +134,9 @@ export interface CharacterEffectInstance extends Character {
  * 对话特效定义
  */
 export type EmotionWord =
-  "Heart" | "Respond" | "Note" | "Twinkle" |
+  "Heart" | "Respond" | "Music" | "Twinkle" |
   "Sad" | "Sweat" | "Dot" | "Chat" | "Exclaim" |
-  "Angry" | "Surprise" | "Question" | "Shy";
+  "Angry" | "Surprise" | "Question" | "Shy"|"Upset";
 
 /**
  * 人物特效定义
