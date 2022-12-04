@@ -70,7 +70,7 @@ export async function init(elementID: string, height: number, width: number, sto
 
   textInit()
   bgInit()
-  // characterInit()
+  characterInit()
   soundInit()
   effectInit()
 
@@ -84,6 +84,22 @@ export async function init(elementID: string, height: number, width: number, sto
         app.stage.removeChild(loadingText)
         emitEvents()
         hasLoad = true
+        // window.app = app;
+        // eventBus.emit("showCharacter", {
+        //   characters: [{
+        //     "CharacterName": 4179367264,
+        //     "position": 3,
+        //     "face": "05",
+        //     "highlight": false,
+        //     "effects": [
+        //       {
+        //         "type": "action",
+        //         "effect": "a",
+        //         "async": false
+        //       }
+        //     ]
+        //   }]
+        // })
       }
     })
   })

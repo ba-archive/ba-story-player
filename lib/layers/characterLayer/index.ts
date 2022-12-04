@@ -2,33 +2,48 @@
  * 初始化人物层, 订阅player的剧情信息.
  */
 import {
-  CharacterEffectInstance, CharacterEffectPlayer, CharacterEffectPlayerBase,
+  CharacterEffectInstance, BaseCharacterEffectPlayer, CharacterEffectPlayerInterface,
   CharacterEffectWord,
   CharacterEmotionPlayer,
   CharacterLayer,
-  EmotionWord, FXEffectWord, SignalEffectWord
+  EmotionWord, FXEffectWord, SignalEffectWord, CharacterEffectPlayer, Position
 } from "@/types/characterLayer";
 import {ISkeletonData, Spine} from "pixi-spine";
 import {ShowCharacter} from "@/types/events";
 import {usePlayerStore} from "@/stores";
 import {Character, CharacterEffect, CharacterEffectType, CharacterInstance} from "@/types/common";
 import eventBus from "@/eventBus";
+import gsap from "gsap";
+
+const AnimationIdleTrack = 0; // 光环动画track index
+const AnimationFaceTrack = 1; // 差分切换
+const AnimationEyeCloseTrack = 2; // TODO 眨眼动画
 
 export function characterInit(): boolean {
   return CharacterLayerInstance.init();
 }
 
+function showCharacter(data: ShowCharacter) {
+  CharacterLayerInstance.showCharacter(data);
+}
+
 const CharacterLayerInstance: CharacterLayer = {
   init() {
+    const { app } = usePlayerStore();
+    // 将stage的sort设置为true,此时sprite将按照zIndex属性进行显示的排序,而是不按照children array的顺序
+    app.stage.sortableChildren = true;
     document.addEventListener("resize", this.onWindowResize);
-    eventBus.on("showCharacter", this.showCharacter);
+    eventBus.on("showCharacter", showCharacter);
     this.effectPlayerMap.set("emotion", CharacterEmotionPlayerInstance);
-    CharacterEmotionPlayerInstance.init();
+    this.effectPlayerMap.set("action", CharacterEffectPlayerInstance);
+    this.effectPlayerMap.forEach((value) => {
+      value.init();
+    })
     return true;
   },
   dispose(): boolean {
     document.removeEventListener("resize", this.onWindowResize);
-    eventBus.off("showCharacter", this.showCharacter);
+    eventBus.off("showCharacter", showCharacter);
     //TODO 销毁各种sprite,spine实体
     return true;
   },
@@ -47,7 +62,7 @@ const CharacterLayerInstance: CharacterLayer = {
     return this.getCharacterInstance(characterNumber)?.instance ?? this.characterSpineCache.get(characterNumber)?.instance;
   },
   beforeProcessShowCharacterAction(characterMap: Character[]): boolean {
-    const { characterSpineData } = usePlayerStore();
+    const {characterSpineData} = usePlayerStore();
     for (const item of characterMap) {
       const characterName = item.CharacterName;
       if (!this.hasCharacterInstanceCache(characterName)) {
@@ -56,12 +71,13 @@ const CharacterLayerInstance: CharacterLayer = {
           return false;
         }
         this.createSpineFromSpineData(characterName, spineData);
+        this.putCharacterOnStage(characterName);
       }
     }
     return true;
   },
   createSpineFromSpineData(characterNumber: number, spineData: ISkeletonData): Spine {
-    const instance = Object.seal(new Spine(spineData));
+    const instance = new Spine(spineData);
     const {currentCharacterMap} = usePlayerStore();
     const characterInstance: CharacterInstance = {
       CharacterName: characterNumber,
@@ -87,10 +103,16 @@ const CharacterLayerInstance: CharacterLayer = {
       return false;
     }
     if (!this.characterScale) {
-      this.characterScale = window.innerHeight / (spine.height - window.innerHeight);
+      const { screenHeight } = getStageSize();
+      this.characterScale = screenHeight / (spine.height - screenHeight);
     }
+    // 设置锚点到左上角
+    spine.pivot.set(-spine.width / 2, -spine.height / 2,);
+    // 设置缩放比列
     spine.scale.set(this.characterScale);
+    // 不显示
     spine.alpha = 0
+    spine.visible = false;
     app.stage.addChild(spine);
     return true;
   },
@@ -117,48 +139,45 @@ const CharacterLayerInstance: CharacterLayer = {
     return true;
   },
   showOneCharacter(data: CharacterEffectInstance): Promise<void> {
-    let count = 0;
-    const effectListLength = data.effects.length;
-    const reason: any[] = [];
-    const resolveHandler = (
-      resolve: (value: (void | PromiseLike<void>)) => void,
-      reject: (reason?: any) => void
-    ) => {
-      if (count !== effectListLength) {
-        return;
-      }
-      if (reason.length !== 0) {
-        reject(reason);
-      } else {
-        resolve();
-      }
-    }
+    // 表情
+    data.instance.state.setAnimation(AnimationFaceTrack, data.face, true);
     return new Promise<void>(async (resolve, reject) => {
+      let count = 0;
+      const effectListLength = data.effects.length;
+      const reason: any[] = [];
+      const resolveHandler = () => {
+        if (count !== effectListLength) {
+          return;
+        }
+        if (reason.length !== 0) {
+          reject(reason);
+        } else {
+          resolve();
+        }
+      }
       for (const index in data.effects) {
         const effect = data.effects[index];
         const effectPlayer = this.effectPlayerMap.get(effect.type);
         if (!effectPlayer) {
           // TODO error handle
-          reject(`获取特效类型{${effect.type}}时失败`);
+          reject(`获取特效类型{${effect.type}}对应的播放器时失败`);
           return;
         }
         count++;
         if (effect.async) {
           await effectPlayer.processEffect(effect.effect, data)
-            .then(() => {
-              resolveHandler(resolve, reject);
-            })
+            .then(resolveHandler)
             .catch((err) => {
               reason.push(err);
+              resolveHandler();
             })
         } else {
           setTimeout(() => {
             effectPlayer.processEffect(effect.effect, data)
-              .then(() => {
-                resolveHandler(resolve, reject);
-              })
+              .then(resolveHandler)
               .catch((err) => {
                 reason.push(err);
+                resolveHandler();
               })
           })
         }
@@ -174,7 +193,81 @@ const CharacterLayerInstance: CharacterLayer = {
   },
   characterScale: undefined,
   characterSpineCache: new Map<number, CharacterInstance>(),
-  effectPlayerMap: new Map<CharacterEffectType, CharacterEffectPlayerBase<EmotionWord | CharacterEffectWord | FXEffectWord | SignalEffectWord>>(),
+  effectPlayerMap: new Map<CharacterEffectType, CharacterEffectPlayerInterface<EmotionWord | CharacterEffectWord | FXEffectWord | SignalEffectWord>>(),
+}
+
+const CharacterEffectPlayerInstance: CharacterEffectPlayer = {
+  init() {
+    return;
+  },
+  dispose(): void {
+  },
+  getHandlerFunction(type: CharacterEffectWord): (instance: CharacterEffectInstance) => Promise<void> | undefined {
+    return Reflect.get(this, type)
+  },
+  processEffect(type: CharacterEffectWord, instance: CharacterEffectInstance): Promise<void> {
+    const fn = this.getHandlerFunction(type);
+    if (!fn) {
+      return new Promise((resolve, reject) => {
+        reject();
+      });
+    }
+    return fn(instance) as Promise<void>;
+  },
+  a(instance: CharacterEffectInstance): Promise<void> {
+    const characterInstance = instance.instance;
+    const { x, y } = calcSpineStagePosition(characterInstance, instance.position);
+    characterInstance.x = x;
+    characterInstance.y = y;
+    characterInstance.zIndex = Reflect.get(POS_INDEX_MAP, instance.position);
+    characterInstance.state.setAnimation(AnimationIdleTrack, 'Idle_01', true);
+    return new Promise((resolve) => {
+      characterInstance.alpha = 0;
+      characterInstance.visible = true;
+      const timeLine = gsap.timeline();
+      timeLine.to(characterInstance, {
+        alpha: 1,
+        duration: 1,
+        onComplete: resolve
+      });
+    })
+  }, al(instance: CharacterEffectInstance): Promise<void> {
+    return Promise.resolve(undefined);
+  }, ar(instance: CharacterEffectInstance): Promise<void> {
+    return Promise.resolve(undefined);
+  }, closeup(instance: CharacterEffectInstance): Promise<void> {
+    return Promise.resolve(undefined);
+  }, d(instance: CharacterEffectInstance): Promise<void> {
+    return Promise.resolve(undefined);
+  }, dl(instance: CharacterEffectInstance): Promise<void> {
+    return Promise.resolve(undefined);
+  }, dr(instance: CharacterEffectInstance): Promise<void> {
+    return Promise.resolve(undefined);
+  }, falldownR(instance: CharacterEffectInstance): Promise<void> {
+    return Promise.resolve(undefined);
+  }, greeting(instance: CharacterEffectInstance): Promise<void> {
+    return Promise.resolve(undefined);
+  }, hide(instance: CharacterEffectInstance): Promise<void> {
+    return Promise.resolve(undefined);
+  }, hophop(instance: CharacterEffectInstance): Promise<void> {
+    return Promise.resolve(undefined);
+  }, jump(instance: CharacterEffectInstance): Promise<void> {
+    return Promise.resolve(undefined);
+  }, m1(instance: CharacterEffectInstance): Promise<void> {
+    return Promise.resolve(undefined);
+  }, m2(instance: CharacterEffectInstance): Promise<void> {
+    return Promise.resolve(undefined);
+  }, m3(instance: CharacterEffectInstance): Promise<void> {
+    return Promise.resolve(undefined);
+  }, m4(instance: CharacterEffectInstance): Promise<void> {
+    return Promise.resolve(undefined);
+  }, m5(instance: CharacterEffectInstance): Promise<void> {
+    return Promise.resolve(undefined);
+  }, shake(instance: CharacterEffectInstance): Promise<void> {
+    return Promise.resolve(undefined);
+  }, stiff(instance: CharacterEffectInstance): Promise<void> {
+    return Promise.resolve(undefined);
+  }
 }
 
 const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
@@ -195,32 +288,70 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
     }
     return fn(instance) as Promise<void>;
   },
-  Angry(): Promise<void> {
-    return Promise.resolve();
-  }, Chat(): Promise<void> {
-    return Promise.resolve();
-  }, Dot(): Promise<void> {
-    return Promise.resolve();
-  }, Exclaim(): Promise<void> {
-    return Promise.resolve();
-  }, Heart(): Promise<void> {
-    return Promise.resolve();
-  }, Note(): Promise<void> {
-    return Promise.resolve();
-  }, Question(): Promise<void> {
-    return Promise.resolve();
-  }, Respond(): Promise<void> {
-    return Promise.resolve();
-  }, Sad(): Promise<void> {
-    return Promise.resolve();
-  }, Shy(): Promise<void> {
-    return Promise.resolve();
-  }, Surprise(): Promise<void> {
-    return Promise.resolve();
-  }, Sweat(): Promise<void> {
-    return Promise.resolve();
-  }, Twinkle(): Promise<void> {
-    return Promise.resolve();
+  Angry(instance: CharacterEffectInstance): Promise<void> {
+    return Promise.resolve(undefined);
+  }, Chat(instance: CharacterEffectInstance): Promise<void> {
+    return Promise.resolve(undefined);
+  }, Dot(instance: CharacterEffectInstance): Promise<void> {
+    return Promise.resolve(undefined);
+  }, Exclaim(instance: CharacterEffectInstance): Promise<void> {
+    return Promise.resolve(undefined);
+  }, Heart(instance: CharacterEffectInstance): Promise<void> {
+    return Promise.resolve(undefined);
+  }, Note(instance: CharacterEffectInstance): Promise<void> {
+    return Promise.resolve(undefined);
+  }, Question(instance: CharacterEffectInstance): Promise<void> {
+    return Promise.resolve(undefined);
+  }, Respond(instance: CharacterEffectInstance): Promise<void> {
+    return Promise.resolve(undefined);
+  }, Sad(instance: CharacterEffectInstance): Promise<void> {
+    return Promise.resolve(undefined);
+  }, Shy(instance: CharacterEffectInstance): Promise<void> {
+    return Promise.resolve(undefined);
+  }, Surprise(instance: CharacterEffectInstance): Promise<void> {
+    return Promise.resolve(undefined);
+  }, Sweat(instance: CharacterEffectInstance): Promise<void> {
+    return Promise.resolve(undefined);
+  }, Twinkle(instance: CharacterEffectInstance): Promise<void> {
+    return Promise.resolve(undefined);
   }
 }
 
+/**
+ * 角色position对应的覆盖关系
+ */
+const POS_INDEX_MAP = {
+  "1": 2,
+  "2": 3,
+  "3": 4,
+  "4": 3,
+  "5": 2,
+};
+
+/**
+ * 根据position: 0~5 计算出角色的原点位置
+ * @param character 要显示的角色
+ * @param position 角色所在位置
+ */
+function calcSpineStagePosition(character: Spine, position: number): Position {
+  const { screenWidth, screenHeight } = getStageSize();
+  return {
+    x: screenWidth / 5 * (position - 1) - (character.width * character.scale.x / 2),
+    y: screenHeight * 0.3
+  };
+}
+
+/**
+ * 获取显示区域的大小
+ * @return screenWidth 容器的宽 screenHeight 容器的高
+ */
+function getStageSize() {
+  const { app } = usePlayerStore();
+  const screen = app.screen;
+  const screenWidth = screen.width;
+  const screenHeight = screen.height;
+  return {
+    screenWidth,
+    screenHeight
+  };
+}

@@ -93,13 +93,13 @@ export interface CharacterLayer {
    * @value CharacterInstance 包含spine对象的实例
    */
   characterSpineCache: Map<number, CharacterInstance>,
-  effectPlayerMap: Map<CharacterEffectType, CharacterEffectPlayerBase<EmotionWord | CharacterEffectWord | FXEffectWord | SignalEffectWord>>,
+  effectPlayerMap: Map<CharacterEffectType, CharacterEffectPlayerInterface<EmotionWord | CharacterEffectWord | FXEffectWord | SignalEffectWord>>,
 }
 
 /**
  * 所有角色特效基础接口
  */
-export interface CharacterEffectPlayerBase<T extends EmotionWord | CharacterEffectWord | FXEffectWord | SignalEffectWord> {
+export interface CharacterEffectPlayerInterface<T extends EmotionWord | CharacterEffectWord | FXEffectWord | SignalEffectWord> {
   /**
    * 初始化函数, player初始化时调用
    */
@@ -117,18 +117,29 @@ export interface CharacterEffectPlayerBase<T extends EmotionWord | CharacterEffe
 /**
  * 所有角色特效统一接口
  */
-export type CharacterEffectPlayer<T extends EmotionWord | CharacterEffectWord | FXEffectWord | SignalEffectWord>
-  = CharacterEffectPlayerBase<T> & EffectFunction<T>
+export type BaseCharacterEffectPlayer<T extends EmotionWord | CharacterEffectWord | FXEffectWord | SignalEffectWord>
+  = CharacterEffectPlayerInterface<T> & EffectFunction<T>
 
 /**
  * 对话特效处理
  */
-export interface CharacterEmotionPlayer extends CharacterEffectPlayer<EmotionWord> {
+export interface CharacterEmotionPlayer extends BaseCharacterEffectPlayer<EmotionWord> {
   /**
    * 获取特效处理函数
    * @param type 角色特效类型
    */
   getHandlerFunction(type: EmotionWord): (instance: CharacterEffectInstance) => Promise<void> | undefined;
+}
+
+/**
+ * 人物特效处理
+ */
+export interface CharacterEffectPlayer extends BaseCharacterEffectPlayer<CharacterEffectWord> {
+  /**
+   * 获取特效处理函数
+   * @param type 人物特效类型
+   */
+  getHandlerFunction(type: CharacterEffectWord): (instance: CharacterEffectInstance) => Promise<void> | undefined;
 }
 
 /**
@@ -139,7 +150,15 @@ export interface CharacterEffectInstance extends Character {
 }
 
 export type EffectFunction<T extends string> = {
-  [key in T]: () => Promise<void>;
+  [key in T]: (instance: CharacterEffectInstance) => Promise<void>;
+}
+
+/**
+ * 标识角色在stage上的位置
+ */
+export interface Position {
+  x: number;
+  y: number;
 }
 
 /**
