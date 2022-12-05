@@ -8,10 +8,10 @@ import {
   CharacterLayer,
   EmotionWord, FXEffectWord, SignalEffectWord, CharacterEffectPlayer, Position
 } from "@/types/characterLayer";
-import {ISkeletonData, Spine} from "pixi-spine";
-import {ShowCharacter} from "@/types/events";
-import {usePlayerStore} from "@/stores";
-import {Character, CharacterEffect, CharacterEffectType, CharacterInstance} from "@/types/common";
+import { ISkeletonData, Spine } from "pixi-spine";
+import { ShowCharacter } from "@/types/events";
+import { usePlayerStore } from "@/stores";
+import { Character, CharacterEffect, CharacterEffectType, CharacterInstance } from "@/types/common";
 import eventBus from "@/eventBus";
 import gsap from "gsap";
 
@@ -48,21 +48,21 @@ const CharacterLayerInstance: CharacterLayer = {
     return true;
   },
   hasCharacterInstance(characterNumber: number): boolean {
-    const {currentCharacterMap} = usePlayerStore();
+    const { currentCharacterMap } = usePlayerStore();
     return Boolean(currentCharacterMap.get(characterNumber));
   },
   hasCharacterInstanceCache(characterNumber: number): boolean {
     return Boolean(this.characterSpineCache.get(characterNumber));
   },
   getCharacterInstance(characterNumber: number): CharacterInstance | undefined {
-    const {currentCharacterMap} = usePlayerStore();
+    const { currentCharacterMap } = usePlayerStore();
     return currentCharacterMap.get(characterNumber) ?? this.characterSpineCache.get(characterNumber);
   },
   getCharacterSpineInstance(characterNumber: number): Spine | undefined {
     return this.getCharacterInstance(characterNumber)?.instance ?? this.characterSpineCache.get(characterNumber)?.instance;
   },
   beforeProcessShowCharacterAction(characterMap: Character[]): boolean {
-    const {characterSpineData} = usePlayerStore();
+    const { characterSpineData } = usePlayerStore();
     for (const item of characterMap) {
       const characterName = item.CharacterName;
       if (!this.hasCharacterInstanceCache(characterName)) {
@@ -78,7 +78,7 @@ const CharacterLayerInstance: CharacterLayer = {
   },
   createSpineFromSpineData(characterNumber: number, spineData: ISkeletonData): Spine {
     const instance = new Spine(spineData);
-    const {currentCharacterMap} = usePlayerStore();
+    const { currentCharacterMap } = usePlayerStore();
     const characterInstance: CharacterInstance = {
       CharacterName: characterNumber,
       instance,
@@ -97,7 +97,7 @@ const CharacterLayerInstance: CharacterLayer = {
     return instance;
   },
   putCharacterOnStage(characterNumber: number): boolean {
-    const {app} = usePlayerStore()
+    const { app } = usePlayerStore()
     const spine = this.getCharacterSpineInstance(characterNumber);
     if (!spine) {
       return false;
@@ -298,7 +298,7 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
     return Promise.resolve(undefined);
   }, Heart(instance: CharacterEffectInstance): Promise<void> {
     return Promise.resolve(undefined);
-  }, Note(instance: CharacterEffectInstance): Promise<void> {
+  }, Music(instance: CharacterEffectInstance): Promise<void> {
     return Promise.resolve(undefined);
   }, Question(instance: CharacterEffectInstance): Promise<void> {
     return Promise.resolve(undefined);
@@ -313,6 +313,8 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
   }, Sweat(instance: CharacterEffectInstance): Promise<void> {
     return Promise.resolve(undefined);
   }, Twinkle(instance: CharacterEffectInstance): Promise<void> {
+    return Promise.resolve(undefined);
+  }, Upset(instance: CharacterEffectInstance): Promise<void> {
     return Promise.resolve(undefined);
   }
 }
