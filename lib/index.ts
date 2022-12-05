@@ -13,6 +13,7 @@ import { translate } from '@/layers/translationLayer'
 import { PlayAudio, PlayEffect } from "./types/events";
 import { effectInit } from '@/layers/effectLayer'
 import spineLoader, { setLoadRes, getLoadRes } from '@/stores/spineLoader'
+import { initApp} from "@/stores/pixi";
 
 let playerStore: ReturnType<typeof usePlayerStore>
 let l2dPlaying = false
@@ -26,11 +27,12 @@ let l2dVoiceExcelTable = {
  */
 export async function init(elementID: string, height: number, width: number, story: StoryRawUnit[], dataUrl: string) {
   playerStore = usePlayerStore()
-  let { _app, allStoryUnit, effectDone, characterDone, currentStoryIndex
+  let {  allStoryUnit, effectDone, characterDone, currentStoryIndex
     , dataUrl: url
   } = storeToRefs(playerStore)
   url.value = dataUrl
-  _app.value = new Application({ height, width })
+  initApp(height,width)
+
   let app = playerStore.app
 
   document.querySelector(`#${elementID}`)?.appendChild(app.view)
@@ -389,7 +391,6 @@ function addBGNameResources() {
  */
 function addL2dVoice(name: string) {
   let voicePath = `${name}_MemorialLobby`
-  console.log(voicePath)
   for (let voiceFileName of l2dVoiceExcelTable[voicePath]) {
     playerStore.app.loader.add(voiceFileName,
       `${playerStore.dataUrl}/Audio/VoiceJp/${voicePath}/${voiceFileName}.wav`)

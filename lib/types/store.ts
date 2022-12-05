@@ -8,7 +8,6 @@ import {Text,TextEffect} from '@/types/common'
 import {ShowOption} from '@/types/events'
 
 export interface State {
-  _app: null | Application
   dataUrl:string
   userName:string
   language:'Cn'|'Jp'

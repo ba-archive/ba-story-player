@@ -4,12 +4,12 @@ import {  ShowOption } from '@/types/events'
 import { Actions, Getters, State } from '@/types/store'
 import {CharacterInstance} from "@/types/common";
 import {getLoadRes} from '@/stores/spineLoader'
+import { getApp} from "@/stores/pixi";
 
 export const usePlayerStore = defineStore<'PlayerStore', State, Getters, Actions>('PlayerStore', {
   state: () => {
     return {
       //通用
-      _app: null,
       language: 'Cn',
       userName: '',
       dataUrl: '',
@@ -69,7 +69,7 @@ export const usePlayerStore = defineStore<'PlayerStore', State, Getters, Actions
     }
   },
   getters: {
-    app: ({ _app }) => _app as Application,
+    app: () => getApp(),
     currentStoryUnit: ({ currentStoryIndex, allStoryUnit }) => allStoryUnit[currentStoryIndex],
 
     bgInstance: ({ _bgInstance }) => _bgInstance as Sprite,
