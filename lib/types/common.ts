@@ -135,7 +135,11 @@ export interface StoryUnit {
   hide?: 'menu' | 'all'
   show?: 'menu'
   otherEffect: Effect[]
-  naName?: string
+  naName?:string
+  video?:{
+    videoPath:string
+    soundPath:string
+  }
 }
 
 export interface CharacterInstance {
