@@ -1,6 +1,6 @@
-import type {ISkeletonData, Spine} from 'pixi-spine'
-import {ShowCharacter} from "@/types/events";
-import {Character, CharacterEffect, CharacterEffectType, CharacterInstance} from "@/types/common";
+import type { ISkeletonData, Spine } from 'pixi-spine'
+import { ShowCharacter } from "@/types/events";
+import { Character, CharacterEffect, CharacterEffectType, CharacterInstance } from "@/types/common";
 import { Sprite } from 'pixi.js';
 
 /**
@@ -129,7 +129,7 @@ export interface CharacterEmotionPlayer extends BaseCharacterEffectPlayer<Emotio
    * 获取特效处理函数
    * @param type 角色特效类型
    */
-  getHandlerFunction(type: EmotionWord): (instance: CharacterEffectInstance,sprites:Sprite[]) => Promise<void> | undefined;
+  getHandlerFunction(type: EmotionWord): (instance: CharacterEffectInstance, sprites: Sprite[]) => Promise<void> | undefined;
 }
 
 /**
@@ -151,7 +151,7 @@ export interface CharacterEffectInstance extends Character {
 }
 
 export type EffectFunction<T extends string> = {
-  [key in T]: (instance: CharacterEffectInstance,sprites:Sprite[]) => Promise<void>;
+  [key in T]: (instance: CharacterEffectInstance, sprites: Sprite[]) => Promise<void>;
 }
 
 /**
@@ -168,7 +168,7 @@ export interface Position {
 export type EmotionWord =
   "Heart" | "Respond" | "Music" | "Twinkle" |
   "Sad" | "Sweat" | "Dot" | "Chat" | "Exclaim" |
-  "Angry" | "Surprise" | "Question" | "Shy"|"Upset";
+  "Angry" | "Surprise" | "Question" | "Shy" | "Upset";
 
 /**
  * 人物特效定义
@@ -189,3 +189,70 @@ export type FXEffectWord = "shot";
  * signal特效定义
  */
 export type SignalEffectWord = "signal";
+
+/**
+ * 每个参数需要遵循的格式
+ */
+export interface OptionUnit<ValueType> {
+  /**
+   * 参数值
+   */
+  value: ValueType
+  /**
+   * 该参数功能描述
+   */
+  description: string
+}
+
+export type BaseOptions<T extends string> = Record<T, Record<string, OptionUnit<any>>>
+
+/**
+ * 情绪动作的具体参数
+ */
+export interface EmotionOptions extends BaseOptions<EmotionWord> {
+  Heart: {
+  },
+  Respond: {},
+  Music: {
+    startPositionOffset: OptionUnit<{
+      x: number,
+      y: number
+    }>
+    rotateAngle: OptionUnit<number>
+    animationXOffset: OptionUnit<number>
+    animationYOffset: OptionUnit<number>
+  },
+  Twinkle: {},
+  Sad: {},
+  Sweat: {},
+  Dot: {},
+  Chat: {},
+  Exclaim: {},
+  Angry: {},
+  Surprise: {},
+  Question: {},
+  Shy: {},
+  Upset: {}
+}
+
+export interface ActionOptions extends BaseOptions<CharacterEffectWord> {
+  a: {},
+  d: {},
+  dl: {},
+  dr: {},
+  ar: {},
+  al: {},
+  hophop: {},
+  greeting: {},
+  shake: {},
+  m1: {},
+  m2: {},
+  m3: {},
+  m4: {},
+  m5: {},
+  stiff: {},
+  closeup: {},
+  jump: {},
+  falldownR: {},
+  hide: {}
+}

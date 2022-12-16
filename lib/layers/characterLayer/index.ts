@@ -15,6 +15,7 @@ import { Character, CharacterEffect, CharacterEffectType, CharacterInstance } fr
 import eventBus from "@/eventBus";
 import gsap from "gsap";
 import { Sprite } from "pixi.js";
+import emotionOptions from "./emotionOptions";
 
 const AnimationIdleTrack = 0; // 光环动画track index
 const AnimationFaceTrack = 1; // 差分切换
@@ -282,46 +283,70 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
   },
   processEffect(type: EmotionWord, instance: CharacterEffectInstance): Promise<void> {
     const fn = this.getHandlerFunction(type);
-    const { emotionResources } = usePlayerStore()
-    let emotionImageSprites:Sprite[]=[]
-    for(let imageResource of emotionResources(type)){
-      emotionImageSprites.push(Sprite.from(imageResource))
+    const { emotionResources,app } = usePlayerStore()
+    let emotionImageSprites: Sprite[] = []
+    for (let imageResource of emotionResources(type)) {
+      let tempSprite=Sprite.from(imageResource)
+      tempSprite.visible=false
+      app.stage.addChild(tempSprite)
+      emotionImageSprites.push(tempSprite)
     }
     if (!fn) {
       return new Promise((resolve, reject) => {
         reject();
       });
     }
-    eventBus.emit('playEmotionAudio',type)
-    return fn(instance,emotionImageSprites) as Promise<void>;
+    eventBus.emit('playEmotionAudio', type)
+    return fn(instance, emotionImageSprites) as Promise<void>;
   },
-  Angry(instance: CharacterEffectInstance, sprites:Sprite[]): Promise<void> {
+  Angry(instance: CharacterEffectInstance, sprites: Sprite[]): Promise<void> {
     return Promise.resolve(undefined);
-  }, Chat(instance: CharacterEffectInstance, sprites:Sprite[]): Promise<void> {
+  }, Chat(instance: CharacterEffectInstance, sprites: Sprite[]): Promise<void> {
     return Promise.resolve(undefined);
-  }, Dot(instance: CharacterEffectInstance, sprites:Sprite[]): Promise<void> {
+  }, Dot(instance: CharacterEffectInstance, sprites: Sprite[]): Promise<void> {
     return Promise.resolve(undefined);
-  }, Exclaim(instance: CharacterEffectInstance, sprites:Sprite[]): Promise<void> {
+  }, Exclaim(instance: CharacterEffectInstance, sprites: Sprite[]): Promise<void> {
     return Promise.resolve(undefined);
-  }, Heart(instance: CharacterEffectInstance, sprites:Sprite[]): Promise<void> {
+  }, Heart(instance: CharacterEffectInstance, sprites: Sprite[]): Promise<void> {
     return Promise.resolve(undefined);
-  }, Music(instance: CharacterEffectInstance, sprites:Sprite[]): Promise<void> {
+  }, Music(instance: CharacterEffectInstance, sprites: Sprite[]): Promise<void> {
+    let options=emotionOptions['Music']
+    let note = sprites[0]
+    console.log(options)
+    note.scale.set(0.3)
+    note.x=instance.instance.x+options.startPositionOffset.value.x
+    note.y=instance.instance.y+options.startPositionOffset.value.y
+    note.visible=true
+
+    let tl = gsap.timeline()
+    let x = note.x
+    let y = note.y
+    while (note.scale.x <= 0.3) {
+      note.scale.set(note.scale.x + 0.001)
+    }
+
+    tl.add('start').to(note, { x: x + options.animationXOffset.value, duration: 1.2 }, 0)
+    tl.to(note, { y: y + options.animationYOffset.value, angle: options.rotateAngle.value, duration: 0.3 }, 0)
+      .to(note, { y: y, angle: 0, duration: 0.3 }, 0.3)
+      .to(note, { y: y + options.animationYOffset.value, angle: options.rotateAngle.value, duration: 0.4 }, 0.6)
+      .to(note, { y: y, angle: 0, duration: 0.4 }, 1.0).then(() => { note.visible = false })
+
     return Promise.resolve(undefined);
-  }, Question(instance: CharacterEffectInstance, sprites:Sprite[]): Promise<void> {
+  }, Question(instance: CharacterEffectInstance, sprites: Sprite[]): Promise<void> {
     return Promise.resolve(undefined);
-  }, Respond(instance: CharacterEffectInstance, sprites:Sprite[]): Promise<void> {
+  }, Respond(instance: CharacterEffectInstance, sprites: Sprite[]): Promise<void> {
     return Promise.resolve(undefined);
-  }, Sad(instance: CharacterEffectInstance, sprites:Sprite[]): Promise<void> {
+  }, Sad(instance: CharacterEffectInstance, sprites: Sprite[]): Promise<void> {
     return Promise.resolve(undefined);
-  }, Shy(instance: CharacterEffectInstance, sprites:Sprite[]): Promise<void> {
+  }, Shy(instance: CharacterEffectInstance, sprites: Sprite[]): Promise<void> {
     return Promise.resolve(undefined);
-  }, Surprise(instance: CharacterEffectInstance, sprites:Sprite[]): Promise<void> {
+  }, Surprise(instance: CharacterEffectInstance, sprites: Sprite[]): Promise<void> {
     return Promise.resolve(undefined);
-  }, Sweat(instance: CharacterEffectInstance, sprites:Sprite[]): Promise<void> {
+  }, Sweat(instance: CharacterEffectInstance, sprites: Sprite[]): Promise<void> {
     return Promise.resolve(undefined);
-  }, Twinkle(instance: CharacterEffectInstance, sprites:Sprite[]): Promise<void> {
+  }, Twinkle(instance: CharacterEffectInstance, sprites: Sprite[]): Promise<void> {
     return Promise.resolve(undefined);
-  }, Upset(instance: CharacterEffectInstance, sprites:Sprite[]): Promise<void> {
+  }, Upset(instance: CharacterEffectInstance, sprites: Sprite[]): Promise<void> {
     return Promise.resolve(undefined);
   }
 }
