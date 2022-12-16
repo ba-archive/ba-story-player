@@ -130,6 +130,10 @@ export interface StoryUnit {
   show?:'menu'
   otherEffect: Effect[]
   naName?:string
+  video?:{
+    videoPath:string
+    soundPath:string
+  }
 }
 
 export interface CharacterInstance {

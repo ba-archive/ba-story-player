@@ -230,6 +230,13 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
       else if (utils.compareCaseInsensive(scriptType, '#bgshake')) {
         unit.otherEffect.push({ type: 'bgshake', args: [] })
       }
+      else if (scriptType==='#video'){
+        //处理情况为 #video;Scenario/Main/22000_MV_Video;Scenario/Main/22000_MV_Sound
+        unit.video={
+          videoPath:scriptUnits[1],
+          soundPath:scriptUnits[2]
+        }
+      }
     }
     result.push(unit)
   }
