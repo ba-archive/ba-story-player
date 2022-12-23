@@ -1,6 +1,6 @@
 import type { ISkeletonData, Spine } from 'pixi-spine'
 import { ShowCharacter } from "@/types/events";
-import { Character, CharacterEffect, CharacterEffectType, CharacterInstance } from "@/types/common";
+import { Character,  CharacterEffectType, CharacterInstance } from "@/types/common";
 import { Sprite } from 'pixi.js';
 
 /**
@@ -129,7 +129,7 @@ export interface CharacterEmotionPlayer extends BaseCharacterEffectPlayer<Emotio
    * 获取特效处理函数
    * @param type 角色特效类型
    */
-  getHandlerFunction(type: EmotionWord): (instance: CharacterEffectInstance, sprites: Sprite[]) => Promise<void> | undefined;
+  getHandlerFunction(type: EmotionWord): (instance: CharacterEffectInstance, sprites: Sprite[], options: EmotionOptions[EmotionWord]) => Promise<void> | undefined;
 }
 
 /**
@@ -151,7 +151,7 @@ export interface CharacterEffectInstance extends Character {
 }
 
 export type EffectFunction<T extends string> = {
-  [key in T]: (instance: CharacterEffectInstance, sprites: Sprite[]) => Promise<void>;
+  [key in T]: (instance: CharacterEffectInstance, sprites: Sprite[], options: any) => Promise<void>;
 }
 
 /**

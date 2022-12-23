@@ -2,11 +2,11 @@
  * 初始化人物层, 订阅player的剧情信息.
  */
 import {
-  CharacterEffectInstance, BaseCharacterEffectPlayer, CharacterEffectPlayerInterface,
+  CharacterEffectInstance, CharacterEffectPlayerInterface,
   CharacterEffectWord,
   CharacterEmotionPlayer,
   CharacterLayer,
-  EmotionWord, FXEffectWord, SignalEffectWord, CharacterEffectPlayer, Position
+  EmotionWord, FXEffectWord, SignalEffectWord, CharacterEffectPlayer, Position, EmotionOptions,
 } from "@/types/characterLayer";
 import { ISkeletonData, Spine } from "pixi-spine";
 import { ShowCharacter } from "@/types/events";
@@ -283,11 +283,11 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
   },
   processEffect(type: EmotionWord, instance: CharacterEffectInstance): Promise<void> {
     const fn = this.getHandlerFunction(type);
-    const { emotionResources,app } = usePlayerStore()
+    const { emotionResources, app } = usePlayerStore()
     let emotionImageSprites: Sprite[] = []
     for (let imageResource of emotionResources(type)) {
-      let tempSprite=Sprite.from(imageResource)
-      tempSprite.visible=false
+      let tempSprite = Sprite.from(imageResource)
+      tempSprite.visible = false
       app.stage.addChild(tempSprite)
       emotionImageSprites.push(tempSprite)
     }
@@ -297,26 +297,25 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
       });
     }
     eventBus.emit('playEmotionAudio', type)
-    return fn(instance, emotionImageSprites) as Promise<void>;
+    return fn(instance, emotionImageSprites, emotionOptions[type]) as Promise<void>;
   },
-  Angry(instance: CharacterEffectInstance, sprites: Sprite[]): Promise<void> {
+  Angry(instance: CharacterEffectInstance, sprites: Sprite[], options: EmotionOptions['Angry']): Promise<void> {
     return Promise.resolve(undefined);
-  }, Chat(instance: CharacterEffectInstance, sprites: Sprite[]): Promise<void> {
+  }, Chat(instance: CharacterEffectInstance, sprites: Sprite[], options: EmotionOptions['Chat']): Promise<void> {
     return Promise.resolve(undefined);
-  }, Dot(instance: CharacterEffectInstance, sprites: Sprite[]): Promise<void> {
+  }, Dot(instance: CharacterEffectInstance, sprites: Sprite[], options: EmotionOptions['Dot']): Promise<void> {
     return Promise.resolve(undefined);
-  }, Exclaim(instance: CharacterEffectInstance, sprites: Sprite[]): Promise<void> {
+  }, Exclaim(instance: CharacterEffectInstance, sprites: Sprite[], options: EmotionOptions['Exclaim']): Promise<void> {
     return Promise.resolve(undefined);
-  }, Heart(instance: CharacterEffectInstance, sprites: Sprite[]): Promise<void> {
+  }, Heart(instance: CharacterEffectInstance, sprites: Sprite[], options: EmotionOptions['Heart']): Promise<void> {
     return Promise.resolve(undefined);
-  }, Music(instance: CharacterEffectInstance, sprites: Sprite[]): Promise<void> {
-    let options=emotionOptions['Music']
+  }, Music(instance: CharacterEffectInstance, sprites: Sprite[], options: EmotionOptions['Music']): Promise<void> {
     let note = sprites[0]
     console.log(options)
     note.scale.set(0.3)
-    note.x=instance.instance.x+options.startPositionOffset.value.x
-    note.y=instance.instance.y+options.startPositionOffset.value.y
-    note.visible=true
+    note.x = instance.instance.x + options.startPositionOffset.value.x
+    note.y = instance.instance.y + options.startPositionOffset.value.y
+    note.visible = true
 
     let tl = gsap.timeline()
     let x = note.x
@@ -332,21 +331,21 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
       .to(note, { y: y, angle: 0, duration: 0.4 }, 1.0).then(() => { note.visible = false })
 
     return Promise.resolve(undefined);
-  }, Question(instance: CharacterEffectInstance, sprites: Sprite[]): Promise<void> {
+  }, Question(instance: CharacterEffectInstance, sprites: Sprite[], options: EmotionOptions['Question']): Promise<void> {
     return Promise.resolve(undefined);
-  }, Respond(instance: CharacterEffectInstance, sprites: Sprite[]): Promise<void> {
+  }, Respond(instance: CharacterEffectInstance, sprites: Sprite[], options: EmotionOptions['Respond']): Promise<void> {
     return Promise.resolve(undefined);
-  }, Sad(instance: CharacterEffectInstance, sprites: Sprite[]): Promise<void> {
+  }, Sad(instance: CharacterEffectInstance, sprites: Sprite[], options: EmotionOptions['Sad']): Promise<void> {
     return Promise.resolve(undefined);
-  }, Shy(instance: CharacterEffectInstance, sprites: Sprite[]): Promise<void> {
+  }, Shy(instance: CharacterEffectInstance, sprites: Sprite[], options: EmotionOptions['Shy']): Promise<void> {
     return Promise.resolve(undefined);
-  }, Surprise(instance: CharacterEffectInstance, sprites: Sprite[]): Promise<void> {
+  }, Surprise(instance: CharacterEffectInstance, sprites: Sprite[], options: EmotionOptions['Surprise']): Promise<void> {
     return Promise.resolve(undefined);
-  }, Sweat(instance: CharacterEffectInstance, sprites: Sprite[]): Promise<void> {
+  }, Sweat(instance: CharacterEffectInstance, sprites: Sprite[], options: EmotionOptions['Sweat']): Promise<void> {
     return Promise.resolve(undefined);
-  }, Twinkle(instance: CharacterEffectInstance, sprites: Sprite[]): Promise<void> {
+  }, Twinkle(instance: CharacterEffectInstance, sprites: Sprite[], options: EmotionOptions['Twinkle']): Promise<void> {
     return Promise.resolve(undefined);
-  }, Upset(instance: CharacterEffectInstance, sprites: Sprite[]): Promise<void> {
+  }, Upset(instance: CharacterEffectInstance, sprites: Sprite[], options: EmotionOptions['Upset']): Promise<void> {
     return Promise.resolve(undefined);
   }
 }
