@@ -228,7 +228,18 @@ export interface EmotionOptions extends BaseOptions<EmotionWord> {
   Sad: {},
   Sweat: {},
   Dot: {},
-  Chat: {},
+  Chat: {
+    position:OptionUnit<{
+      x:number
+      y:number
+    }>,
+    rotateAngle:OptionUnit<number>,
+    rotateTime:OptionUnit<number>,
+    rotatePivot:OptionUnit<{
+      x:number
+      y:number
+    }>
+  },
   Exclaim: {},
   Angry: {},
   Surprise: {},
