@@ -8,7 +8,6 @@ specifiers:
   easy-typer-js: ^2.1.0
   gsap: ^3.11.3
   mitt: ^3.0.0
-  pinia: ^2.0.23
   pixi-spine: ^3.1.0
   pixi.js: ^6.0.0
   typescript: ^4.6.4
@@ -22,7 +21,6 @@ dependencies:
   easy-typer-js: 2.1.0
   gsap: registry.npmmirror.com/gsap/3.11.3
   mitt: registry.npmmirror.com/mitt/3.0.0
-  pinia: registry.npmmirror.com/pinia/2.0.23_zwu2zepfy3m6u2gunxlolp35gi
   pixi-spine: registry.npmmirror.com/pixi-spine/3.1.0
   pixi.js: registry.npmmirror.com/pixi.js/6.5.8
   vue: registry.npmmirror.com/vue/3.2.45
@@ -1091,12 +1089,6 @@ packages:
       '@vue/compiler-dom': registry.npmmirror.com/@vue/compiler-dom/3.2.45
       '@vue/shared': registry.npmmirror.com/@vue/shared/3.2.45
 
-  registry.npmmirror.com/@vue/devtools-api/6.4.5:
-    resolution: {integrity: sha512-JD5fcdIuFxU4fQyXUu3w2KpAJHzTVdN+p4iOX2lMWSHMOoQdMAcpFLZzm9Z/2nmsoZ1a96QEhZ26e50xLBsgOQ==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/@vue/devtools-api/-/devtools-api-6.4.5.tgz}
-    name: '@vue/devtools-api'
-    version: 6.4.5
-    dev: false
-
   registry.npmmirror.com/@vue/reactivity-transform/3.2.45:
     resolution: {integrity: sha512-BHVmzYAvM7vcU5WmuYqXpwaBHjsS8T63jlKGWVtHxAHIoMIlmaMyurUSEs1Zcg46M4AYT5MtB1U274/2aNzjJQ==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/@vue/reactivity-transform/-/reactivity-transform-3.2.45.tgz}
     name: '@vue/reactivity-transform'
@@ -1385,27 +1377,6 @@ packages:
     name: picocolors
     version: 1.0.0
 
-  registry.npmmirror.com/pinia/2.0.23_zwu2zepfy3m6u2gunxlolp35gi:
-    resolution: {integrity: sha512-N15hFf4o5STrxpNrib1IEb1GOArvPYf1zPvQVRGOO1G1d74Ak0J0lVyalX/SmrzdT4Q0nlEFjbURsmBmIGUR5Q==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/pinia/-/pinia-2.0.23.tgz}
-    id: registry.npmmirror.com/pinia/2.0.23
-    name: pinia
-    version: 2.0.23
-    peerDependencies:
-      '@vue/composition-api': ^1.4.0
-      typescript: '>=4.4.4'
-      vue: ^2.6.14 || ^3.2.0
-    peerDependenciesMeta:
-      '@vue/composition-api':
-        optional: true
-      typescript:
-        optional: true
-    dependencies:
-      '@vue/devtools-api': registry.npmmirror.com/@vue/devtools-api/6.4.5
-      typescript: registry.npmmirror.com/typescript/4.8.4
-      vue: registry.npmmirror.com/vue/3.2.45
-      vue-demi: registry.npmmirror.com/vue-demi/0.13.11_vue@3.2.45
-    dev: false
-
   registry.npmmirror.com/pixi-spine/3.1.0:
     resolution: {integrity: sha512-pcNgpq+ltULSenzLCqbdO0eH5NRhNcMXkXJw4Zdec+vfciUctXj5Ho/aDdTt0b5PlW4TzTYRfaHdu5ZhTv77ew==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/pixi-spine/-/pixi-spine-3.1.0.tgz}
     name: pixi-spine
@@ -1570,6 +1541,7 @@ packages:
     version: 4.8.4
     engines: {node: '>=4.2.0'}
     hasBin: true
+    dev: true
 
   registry.npmmirror.com/url/0.11.0:
     resolution: {integrity: sha512-kbailJa29QrtXnxgq+DdCEGlbTeYM2eJUxsz6vjZavrCYPMIFHMKQmSKYAIuUK2i7hgPm28a8piX5NTUtM/LKQ==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/url/-/url-0.11.0.tgz}
@@ -1616,24 +1588,6 @@ packages:
     optionalDependencies:
       fsevents: 2.3.2
     dev: true
-
-  registry.npmmirror.com/vue-demi/0.13.11_vue@3.2.45:
-    resolution: {integrity: sha512-IR8HoEEGM65YY3ZJYAjMlKygDQn25D5ajNFNoKh9RSDMQtlzCxtfQjdQgv9jjK+m3377SsJXY8ysq8kLCZL25A==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/vue-demi/-/vue-demi-0.13.11.tgz}
-    id: registry.npmmirror.com/vue-demi/0.13.11
-    name: vue-demi
-    version: 0.13.11
-    engines: {node: '>=12'}
-    hasBin: true
-    requiresBuild: true
-    peerDependencies:
-      '@vue/composition-api': ^1.0.0-rc.1
-      vue: ^3.0.0-0 || ^2.6.0
-    peerDependenciesMeta:
-      '@vue/composition-api':
-        optional: true
-    dependencies:
-      vue: registry.npmmirror.com/vue/3.2.45
-    dev: false
 
   registry.npmmirror.com/vue-template-compiler/2.7.14:
     resolution: {integrity: sha512-zyA5Y3ArvVG0NacJDkkzJuPQDF8RFeRlzV2vLeSnhSpieO6LK2OVbdLPi5MPPs09Ii+gMO8nY4S3iKQxBxDmWQ==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/vue-template-compiler/-/vue-template-compiler-2.7.14.tgz}
