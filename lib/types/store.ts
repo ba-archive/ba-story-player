@@ -5,17 +5,22 @@ import { BGMExcelTableItem, BGNameExcelTableItem, CharacterNameExcelTableItem, T
 import { Text, TextEffect } from '@/types/common'
 import { ShowOption } from '@/types/events'
 
+export type Language = 'Cn' | 'Jp'
+
 /**
  * 仅可通过函数修改的state
  */
 export interface PrivateStates {
   app: Application | null
+  /**
+   * 后端资源前缀
+   */
   dataUrl: string
   /**
    * 用户名, 如xx老师
    */
   userName: string
-  language: 'Cn' | 'Jp'
+  language: Language
   /**
    * 当前故事, 由一个个单元结合而成
    */
@@ -78,6 +83,7 @@ export interface PublicStates {
 
 
 export interface BasicGetters {
+  app: Application
   currentStoryUnit: StoryUnit
 
   speaker: Speaker | undefined
@@ -133,8 +139,19 @@ export interface BasicGetters {
   l2dAnimationName: string
 }
 
+export type GetterFunctions = {
+  [Getter in keyof BasicGetters]: () => BasicGetters[Getter]
+}
 export type Getters = Readonly<BasicGetters>
 
 export interface Actions {
   setBgInstance: (sprite: Sprite) => void
+  /**
+   * 直接进入相邻的故事节点, 到最后则返回false
+   */
+  storyIndexIncrement: () => boolean
+  /**
+   *  根据选项结果进入下一个故事节点, 不存在该节点则返回false
+   */
+  select: (option: number) => boolean
 }

@@ -1,5 +1,5 @@
 import { ShowOption } from '@/types/events'
-import { Actions, Getters, PrivateStates, PublicStates } from '@/types/store'
+import { Actions, GetterFunctions, Getters, PrivateStates, PublicStates } from '@/types/store'
 
 let privateState: PrivateStates = {
   language: 'Cn',
@@ -48,14 +48,21 @@ let privateState: PrivateStates = {
   },
 }
 
-let getters: Getters = {
-  get currentStoryUnit() {
+let getterFunctions: GetterFunctions = {
+  app() {
+    if (privateState === null) {
+      throw new Error('app实例不存在')
+    }
+    return privateState.app!
+  },
+
+  currentStoryUnit() {
     return privateState.allStoryUnit[privateState.currentStoryIndex]
   },
 
-  get currentSpeakerCharacterName() {
-    if (this.currentStoryUnit.characters.length > 0) {
-      for (let i of this.currentStoryUnit.characters) {
+  currentSpeakerCharacterName() {
+    if (this.currentStoryUnit().characters.length > 0) {
+      for (let i of this.currentStoryUnit().characters) {
         if (i.highlight) {
           return i.CharacterName
         }
@@ -67,11 +74,11 @@ let getters: Getters = {
     }
   },
 
-  get speaker() {
-    if (this.currentSpeakerCharacterName === 0) {
+  speaker() {
+    if (this.currentSpeakerCharacterName() === 0) {
       return undefined
     }
-    let nameInfo = privateState.CharacterNameExcelTable[this.currentSpeakerCharacterName]
+    let nameInfo = privateState.CharacterNameExcelTable[this.currentSpeakerCharacterName()]
     if (nameInfo[`Name${privateState.language.toUpperCase() as 'CN' | 'JP'}`]) {
       return {
         name: nameInfo[`Name${privateState.language.toUpperCase() as 'CN' | 'JP'}`]!,
@@ -83,28 +90,28 @@ let getters: Getters = {
     }
   },
 
-  get text() {
-    if (this.currentStoryUnit.text[`Text${privateState.language}`] != undefined) {
-      return this.currentStoryUnit.text[`Text${privateState.language}`]!
+  text() {
+    if (this.currentStoryUnit().text[`Text${privateState.language}`] != undefined) {
+      return this.currentStoryUnit().text[`Text${privateState.language}`]!
     }
     else {
-      return this.currentStoryUnit.text.TextJp
+      return this.currentStoryUnit().text.TextJp
     }
   },
 
-  get textEffect() {
-    if (this.currentStoryUnit.text[`Text${privateState.language}`] != undefined) {
-      return this.currentStoryUnit.textEffect[`Text${privateState.language}`]!
+  textEffect() {
+    if (this.currentStoryUnit().text[`Text${privateState.language}`] != undefined) {
+      return this.currentStoryUnit().textEffect[`Text${privateState.language}`]!
     }
     else {
-      return this.currentStoryUnit.textEffect.TextJp
+      return this.currentStoryUnit().textEffect.TextJp
     }
   },
 
-  get option() {
+  option() {
     let option: ShowOption[] = []
-    if (this.currentStoryUnit.options) {
-      for (let i of this.currentStoryUnit.options) {
+    if (this.currentStoryUnit().options) {
+      for (let i of this.currentStoryUnit().options!) {
         if (i.text[`Text${privateState.language}`]) {
           option.push({ text: i.text[`Text${privateState.language}`]!, SelectionGroup: i.SelectionGroup })
         }
@@ -118,16 +125,16 @@ let getters: Getters = {
     return option
   },
 
-  get storySummary() {
+  storySummary() {
     return ''
   },
 
 
-  CharacterName(name: string) {
+  CharacterName: () => (name: string) => {
     return privateState.characterNameTable[name]
   },
 
-  characterSpineData(CharacterName: number) {
+  characterSpineData: () => (CharacterName: number) => {
     if (privateState.loadRes === null) {
       throw new Error('spine资源未加载')
     }
@@ -141,19 +148,19 @@ let getters: Getters = {
   /**
    * 获取情绪动画的图片url, 按从底部到顶部, 从左到右排列资源.
    */
-  emotionResources(emotionName: string) {
+  emotionResources: () => (emotionName: string) => {
     return privateState.emotionResourcesTable[emotionName]
   },
 
   /**
    * 获取emotion的对应声音资源的url, 传入的参数是emotion的名字
    */
-  emotionSoundUrl(emotionName) {
+  emotionSoundUrl: () => (emotionName) => {
     return `${privateState.dataUrl}/Audio/Sound/SFX_Emoticon_Motion_${emotionName}.wav`
   },
 
-  get bgUrl() {
-    let item = privateState.BGNameExcelTable[this.currentStoryUnit!.BGName]
+  bgUrl() {
+    let item = privateState.BGNameExcelTable[this.currentStoryUnit()!.BGName]
     if (item) {
       if (item.BGType === 'Image') {
         let temp = String(item.BGFileName).split('/')
@@ -169,8 +176,8 @@ let getters: Getters = {
   /**
    * 获取bgm的url
    */
-  get bgmUrl() {
-    let item = privateState.BGMExcelTable[this.currentStoryUnit.BGMId]
+  bgmUrl() {
+    let item = privateState.BGMExcelTable[this.currentStoryUnit().BGMId]
     if (item) {
       return `${privateState.dataUrl}/${item.Path}.mp3`
     }
@@ -181,8 +188,8 @@ let getters: Getters = {
   /**
    * 获取bgm的参数
    */
-  get bgmArgs() {
-    let item = privateState.BGMExcelTable[this.currentStoryUnit.BGMId]
+  bgmArgs() {
+    let item = privateState.BGMExcelTable[this.currentStoryUnit().BGMId]
     if (item) {
       return item
     }
@@ -191,16 +198,16 @@ let getters: Getters = {
   /**
    * 获取sound的url
    */
-  get soundUrl() {
-    if (this.currentStoryUnit.Sound != '') {
-      return `${privateState.dataUrl}/Audio/Sound/${this.currentStoryUnit.Sound}.mp3`
+  soundUrl() {
+    if (this.currentStoryUnit().Sound != '') {
+      return `${privateState.dataUrl}/Audio/Sound/${this.currentStoryUnit().Sound}.mp3`
     }
 
     return ''
   },
 
-  get l2dCharacterName() {
-    let item = privateState.BGNameExcelTable[this.currentStoryUnit!.BGName]
+  l2dCharacterName() {
+    let item = privateState.BGNameExcelTable[this.currentStoryUnit()!.BGName]
     if (item) {
       if (item.BGType === 'Spine') {
         let temp = String(item.BGFileName).split('/')
@@ -210,14 +217,12 @@ let getters: Getters = {
 
     return ''
   },
-  /**
-   * 获取L2D资源
-   */
-  get l2dSpineData() {
+
+  l2dSpineData() {
     if (privateState.loadRes === null) {
       throw new Error('spine资源未加载')
     }
-    let item = privateState.BGNameExcelTable[this.currentStoryUnit!.BGName]
+    let item = privateState.BGNameExcelTable[this.currentStoryUnit()!.BGName]
     if (item) {
       if (item.BGType === 'Spine') {
         let temp = String(item.BGFileName).split('/')
@@ -227,11 +232,8 @@ let getters: Getters = {
     }
   },
 
-  /**
-   * 获取L2D动作名
-   */
-  get l2dAnimationName() {
-    let item = privateState.BGNameExcelTable[this.currentStoryUnit!.BGName]
+  l2dAnimationName() {
+    let item = privateState.BGNameExcelTable[this.currentStoryUnit()!.BGName]
     if (item) {
       if (item.BGType === 'Spine') {
         return item.AnimationName
@@ -245,20 +247,44 @@ let actions: Actions = {
   setBgInstance(instance) {
     privateState.bgInstance = instance
   },
+  storyIndexIncrement() {
+    if (privateState.currentStoryIndex < privateState.allStoryUnit.length) {
+      privateState.currentStoryIndex++
+      return true
+    }
+
+    return false
+  },
+  select(option) {
+    while (getterFunctions.currentStoryUnit().SelectionGroup != option) {
+      if (!this.storyIndexIncrement()) {
+        return false
+      }
+    }
+
+    return true
+  }
 }
 
 export let usePlayerStore = () => {
   let store = {
     logText: [],
     currentCharacterMap: new Map(),
-    ...getters,
     ...actions
   }
 
-  for (let state of Object.keys(privateState) as Array<keyof PrivateStates>) {
-    Reflect.defineProperty(store, state, {
-      get: () => privateState[state]
+  for (let getter of Object.keys(getterFunctions) as Array<keyof GetterFunctions>) {
+    Reflect.defineProperty(store, getter, {
+      get: () => getterFunctions[getter]()
     })
+  }
+
+  for (let state of Object.keys(privateState) as Array<keyof PrivateStates>) {
+    if (!['app'].includes(state)) {
+      Reflect.defineProperty(store, state, {
+        get: () => privateState[state]
+      })
+    }
   }
 
   return store as unknown as PublicStates & Getters & Readonly<PrivateStates> & Actions

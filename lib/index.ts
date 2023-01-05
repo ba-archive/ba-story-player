@@ -1,8 +1,7 @@
-import { storeToRefs } from "pinia";
 import { Application, Loader, Text } from "pixi.js";
 import { SpineParser } from 'pixi-spine'
 import { textInit } from "./layers/textLayer";
-import { usePlayerStore } from "./stores";
+import { usePlayerStore, initPrivateState } from "./stores";
 import { bgInit } from "@/layers/bgLayer"
 import { characterInit } from "./layers/characterLayer";
 import { soundInit } from "./layers/soundLayer";
@@ -10,32 +9,36 @@ import eventBus from "@/eventBus";
 import axios from 'axios'
 import { StoryRawUnit } from "./types/common";
 import { translate } from '@/layers/translationLayer'
-import { PlayAudio, PlayEffect } from "./types/events";
+import { PlayAudio, PlayEffect } from "@/types/events";
 import { effectInit } from '@/layers/effectLayer'
-import spineLoader, { setLoadRes, getLoadRes } from '@/stores/spineLoader'
-import { initApp} from "@/stores/pixi";
+import { Language } from "./types/store";
 
 let playerStore: ReturnType<typeof usePlayerStore>
+let privateState: ReturnType<typeof initPrivateState>
 let l2dPlaying = false
 let voiceIndex = 1
 let playL2dVoice = true
 let l2dVoiceExcelTable = {
   'CH0184_MemorialLobby': [...Array(10).keys()].slice(1, 11).map(value => value.toString())
 } as { [index: string]: string[] }
+let characterDone = true
+let effectDone = true
+let app: Application
+
 /**
  * 调用各层的初始化函数
  */
-export async function init(elementID: string, height: number, width: number, story: StoryRawUnit[], dataUrl: string) {
+export async function init(elementID: string, height: number, width: number, story: StoryRawUnit[], dataUrl: string, language: Language) {
   playerStore = usePlayerStore()
-  let {  allStoryUnit, effectDone, characterDone, currentStoryIndex
-    , dataUrl: url
-  } = storeToRefs(playerStore)
-  url.value = dataUrl
-  initApp(height,width)
+  privateState = initPrivateState()
+  privateState.dataUrl = dataUrl
+  privateState.language=language
+  privateState.app = new Application({ height, width })
 
-  let app = playerStore.app
+  app = playerStore.app
 
   document.querySelector(`#${elementID}`)?.appendChild(app.view)
+  //添加提示加载文字
   let loadingText = new Text('loading...', { fill: ['white'] })
   loadingText.y = app.screen.height - 50
   loadingText.x = app.screen.width - 150
@@ -44,23 +47,27 @@ export async function init(elementID: string, height: number, width: number, sto
 
   Loader.registerPlugin(SpineParser);
 
-
   await loadExcels()
-  allStoryUnit.value = translate(story)
+  privateState.allStoryUnit = translate(story)
   addLoadResources()
+
   eventBus.on('next', () => {
-    if (characterDone.value && effectDone.value) {
-      currentStoryIndex.value++
+    if (characterDone && effectDone) {
+      if (!playerStore.storyIndexIncrement()) {
+        end()
+        return
+      }
       emitEvents()
     }
   })
   eventBus.on('select', e => {
-    select(e)
+    playerStore.select(e)
     emitEvents()
   })
-  eventBus.on('effectDone', () => effectDone.value = true)
-  eventBus.on('characterDone', () => characterDone.value = true)
+  eventBus.on('effectDone', () => effectDone = true)
+  eventBus.on('characterDone', () => characterDone = true)
   eventBus.on('auto', () => console.log('auto!'))
+
   textInit()
   bgInit()
   // characterInit()
@@ -68,8 +75,8 @@ export async function init(elementID: string, height: number, width: number, sto
   effectInit()
 
   let hasLoad = false
-  spineLoader.load((loader, res) => {
-    setLoadRes(res)
+  app.loader.load((loader, res) => {
+    privateState.loadRes = res
     playerStore.app.loader.load((loader, res) => {
       //当chrome webgl inspector打开时可能导致callback被执行两次
       if (!hasLoad) {
@@ -87,11 +94,6 @@ export async function init(elementID: string, height: number, width: number, sto
  * 根据当前剧情发送事件
  */
 export async function emitEvents() {
-  let { currentStoryIndex, currentStoryUnit, allStoryUnit } = storeToRefs(playerStore)
-  if (currentStoryIndex.value >= allStoryUnit.value.length) {
-    end()
-    return
-  }
   await transitionIn()
   hide()
   showBg()
@@ -102,65 +104,59 @@ export async function emitEvents() {
   show()
   playEffect()
 
-  if (currentStoryUnit.value.type == 'title') {
-    eventBus.emit('showTitle', playerStore.text[0].content)
-  }
-  else if (currentStoryUnit.value.type == 'place') {
-    eventBus.emit('showPlace', playerStore.text[0].content)
-  }
-  else if (currentStoryUnit.value.type == 'text') {
-    eventBus.emit('showText', {
-      text: playerStore.text,
-      textEffect: playerStore.textEffect,
-      speaker: playerStore.speaker
-    })
-  }
-  else if (currentStoryUnit.value.type == 'option') {
-    eventBus.emit('option', playerStore.option)
-  }
-  else if (currentStoryUnit.value.type == 'st') {
-    eventBus.emit('st', {
-      text: playerStore.text,
-      textEffect: playerStore.textEffect,
-      stArgs: playerStore.currentStoryUnit.stArgs!
-    })
-    if (l2dPlaying && playL2dVoice) {
-      //判断并播放l2d语音, 根据clearST增加语音的下标
-      eventBus.emit('playAudio', {
-        voiceJPUrl: `${playerStore.dataUrl}/Audio/VoiceJp/${playerStore.l2dCharacterName}_MemorialLobby/${voiceIndex}.wav`
+  switch (playerStore.currentStoryUnit.type) {
+    case 'title':
+      eventBus.emit('showTitle', playerStore.text[0].content)
+      break
+    case 'place':
+      eventBus.emit('showPlace', playerStore.text[0].content)
+      break
+    case 'text':
+      eventBus.emit('showText', {
+        text: playerStore.text,
+        textEffect: playerStore.textEffect,
+        speaker: playerStore.speaker
       })
-      playL2dVoice = false
-    }
-  }
-  else if (currentStoryUnit.value.type == 'effectOnly') {
-    if (currentStoryUnit.value.clearSt) {
-      eventBus.emit('clearSt')
-      if (l2dPlaying) {
-        voiceIndex++
-        playL2dVoice = true
+      break
+    case 'option':
+      eventBus.emit('option', playerStore.option)
+      break
+    case 'st':
+      eventBus.emit('st', {
+        text: playerStore.text,
+        textEffect: playerStore.textEffect,
+        stArgs: playerStore.currentStoryUnit.stArgs!
+      })
+      if (l2dPlaying && playL2dVoice) {
+        //判断并播放l2d语音, 根据clearST增加语音的下标
+        eventBus.emit('playAudio', {
+          voiceJPUrl: `${playerStore.dataUrl}/Audio/VoiceJp/${playerStore.l2dCharacterName}_MemorialLobby/${voiceIndex}.wav`
+        })
+        playL2dVoice = false
       }
-    }
+      break
+    case 'effectOnly':
+      if (playerStore.currentStoryUnit.clearSt) {
+        eventBus.emit('clearSt')
+        if (l2dPlaying) {
+          voiceIndex++
+          playL2dVoice = true
+        }
+      }
+      break
+    case 'continue':
+      break
+    default:
+      console.log(`本体中尚未处理${playerStore.currentStoryUnit.type}类型故事节点`)
   }
-  else if (currentStoryUnit.value.type == 'continue') {
-  }
-}
 
-/**
- * 根据选择支加入下一语句
- */
-export async function select(option: number) {
-  let { currentStoryIndex } = storeToRefs(playerStore)
-  while (playerStore.currentStoryUnit.SelectionGroup != option) {
-    currentStoryIndex.value++
-  }
 }
-
 
 /**
  * 结束播放
  */
 export function end() {
-  console.log('end!')
+  console.log('播放结束')
 }
 
 /**
@@ -181,7 +177,7 @@ function showBg() {
  */
 function showCharacter() {
   if (playerStore.currentStoryUnit.characters.length != 0) {
-    playerStore.characterDone = false
+    characterDone = false
     eventBus.emit('showCharacter', {
       characters: playerStore.currentStoryUnit.characters,
       // characterEffects: playerStore.currentStoryUnit.characterEffect
@@ -210,8 +206,8 @@ function playAudio() {
 
 
 function playL2d() {
-  if (playerStore.isL2d) {
-    if (playerStore.l2dAnimationName == 'Idle_01') {
+  if (playerStore.l2dCharacterName !== '') {
+    if (playerStore.l2dAnimationName === 'Idle_01') {
       eventBus.emit('playL2D')
       l2dPlaying = true
     }
@@ -226,7 +222,7 @@ function playL2d() {
  */
 function hide() {
   if (playerStore.currentStoryUnit.hide) {
-    if (playerStore.currentStoryUnit.hide == 'all') {
+    if (playerStore.currentStoryUnit.hide === 'all') {
       eventBus.emit('hidemenu')
     }
     else {
@@ -237,7 +233,7 @@ function hide() {
 
 function show() {
   if (playerStore.currentStoryUnit.show) {
-    if (playerStore.currentStoryUnit.show == 'menu') {
+    if (playerStore.currentStoryUnit.show === 'menu') {
       eventBus.emit('showmenu')
     }
   }
@@ -247,8 +243,7 @@ function show() {
  * 播放特效
  */
 function playEffect() {
-  let { effectDone } = storeToRefs(playerStore)
-  effectDone.value = false
+  effectDone = false
   let effect: PlayEffect = {}
   let current = playerStore.currentStoryUnit
   if (current.BGEffect != 0) {
@@ -283,8 +278,8 @@ function addCharacterSpineResources() {
     if (unit.characters.length != 0) {
       for (let character of unit.characters) {
         let filename = getCharacterFileName(character.CharacterName)
-        if (!spineLoader.resources[filename]) {
-          spineLoader.add(filename, `${dataUrl}/spine/${filename}/${filename}.skel`)
+        if (!app.loader.resources[filename]) {
+          app.loader.add(filename, `${dataUrl}/spine/${filename}/${filename}.skel`)
         }
       }
     }
@@ -376,8 +371,8 @@ function addBGNameResources() {
         if (item.AnimationName == 'Idle_01') {
           let filename = String(item.BGFileName).split('/').pop()?.replace('SpineBG_Lobby', '')
           filename = `${filename}_home`
-          if (!spineLoader.resources[filename!]) {
-            spineLoader.add(filename, `${playerStore.dataUrl}/spine/${filename}/${filename}.skel`)
+          if (!app.loader.resources[filename!]) {
+            app.loader.add(filename, `${playerStore.dataUrl}/spine/${filename}/${filename}.skel`)
             addL2dVoice(filename.replace('_home', ''))
           }
         }
@@ -402,25 +397,24 @@ function addL2dVoice(name: string) {
  */
 async function loadExcels() {
   let dataUrl = playerStore.dataUrl
-  let { BGNameExcelTable, CharacterNameExcelTable, BGMExcelTable, TransitionExcelTable } = storeToRefs(playerStore)
   await axios.get(`${dataUrl}/data/ScenarioBGNameExcelTable.json`).then(res => {
     for (let i of res.data['DataList']) {
-      BGNameExcelTable.value[i['Name']] = i
+      privateState.BGNameExcelTable[i['Name']] = i
     }
   })
   await axios.get(`${dataUrl}/data/ScenarioCharacterNameExcelTable.json`).then(res => {
     for (let i of res.data['DataList']) {
-      CharacterNameExcelTable.value[i['CharacterName']] = i
+      privateState.CharacterNameExcelTable[i['CharacterName']] = i
     }
   })
   await axios.get(`${dataUrl}/data/BGMExcelTable.json`).then(res => {
     for (let i of res.data['DataList']) {
-      BGMExcelTable.value[i['Id']] = i
+      privateState.BGMExcelTable[i['Id']] = i
     }
   })
   await axios.get(`${dataUrl}/data/ScenarioTransitionExcelTable.json`).then(res => {
     for (let i of res.data['DataList']) {
-      TransitionExcelTable.value[i['Name']] = i
+      privateState.TransitionExcelTable[i['Name']] = i
     }
   })
 }
