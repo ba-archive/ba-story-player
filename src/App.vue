@@ -18,6 +18,7 @@ window.next=()=>{
     data-url="https://yuuka.cdn.diyigemt.com/image/ba-all-data"
     :width="1000"
     :height="550"
+    language="Cn"
     />
   </div>
 </template>
