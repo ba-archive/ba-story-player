@@ -232,7 +232,20 @@ export interface BasicEmotionOptions extends BaseOptions<EmotionWord> {
     }>
   },
   Exclaim: {},
-  Angry: {},
+  Angry: {
+    pivotPosition:OptionUnit<{
+      x:number
+      y:number
+    }>,
+    animationScale:OptionUnit<{
+      scale:number
+      duration:number
+    }>
+    endScale:OptionUnit<{
+      scale:number
+      duration:number
+    }>
+  },
   Surprise: {},
   Question: {},
   Shy: {},

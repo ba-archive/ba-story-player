@@ -116,10 +116,31 @@ let emotionOptions: EmotionOptions = {
   Angry: {
     "startPositionOffset": {
       "value": {
-        "x": 50,
+        "x": 100,
+        "y": 25
+      },
+      "description": "图片开始时相对于角色的位置"
+    },
+    "pivotPosition": {
+      "value": {
+        "x": 13,
         "y": 0
       },
-      "description": globalDescription['startPositionOffset']
+      "description": "旋转的原点"
+    },
+    "animationScale": {
+      "value": {
+        "scale": 0.28,
+        "duration": 0.2
+      },
+      "description": "angry图像的动画效果, 通过scaleX实现"
+    },
+    "endScale": {
+      "value": {
+        "scale": 0.2,
+        "duration": 0.1
+      },
+      "description": "结束时的缩小动画"
     }
   },
   Surprise: {

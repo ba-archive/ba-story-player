@@ -301,6 +301,24 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
     return fn(instance, emotionOptions[type], emotionImageSprites) as Promise<void>;
   },
   Angry(instance: CharacterEffectInstance, options: EmotionOptions['Angry'], sprites: Sprite[]): Promise<void> {
+    let angryImgUnit = sprites[0]
+    const { app } = usePlayerStore()
+    for (let i = 0; i < 3; ++i) {
+      let uImgUnit = Sprite.from(angryImgUnit.texture)
+      uImgUnit.x = instance.instance.x + options.startPositionOffset.value.x
+      uImgUnit.y = instance.instance.y + options.startPositionOffset.value.y
+      uImgUnit.scale.set(0.3)
+      uImgUnit.pivot.set(options.pivotPosition.value.x, options.pivotPosition.value.y)
+      uImgUnit.angle += i * 120
+      uImgUnit.zIndex = 10
+      app.stage.addChild(uImgUnit)
+      let tl = gsap.timeline()
+      tl.to(uImgUnit.scale, { x: options.animationScale.value.scale, duration: options.animationScale.value.duration })
+        .to(uImgUnit.scale, { x: 0.3, duration: options.animationScale.value.duration })
+        .to(uImgUnit.scale,{x:options.endScale.value.scale,y:options.endScale.value.scale,duration:options.endScale.value.duration})
+        .then(()=>{uImgUnit.visible=false})
+    }
+
     return Promise.resolve(undefined);
   }, Chat(instance: CharacterEffectInstance, options: EmotionOptions['Chat'], sprites: Sprite[]): Promise<void> {
     let chatImage = sprites[0]
