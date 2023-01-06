@@ -1,8 +1,28 @@
 import { EmotionOptions } from "@/types/characterLayer"
 
+let globalDescription = {
+  startPositionOffset: '图片开始时相对于角色的位置'
+}
+
 let emotionOptions: EmotionOptions = {
-  Heart: {},
-  Respond: {},
+  Heart: {
+    "startPositionOffset": {
+      "value": {
+        "x": 50,
+        "y": 0
+      },
+      "description": globalDescription['startPositionOffset']
+    }
+  },
+  Respond: {
+    "startPositionOffset": {
+      "value": {
+        "x": 50,
+        "y": 0
+      },
+      "description": globalDescription['startPositionOffset']
+    }
+  },
   Music: {
     "startPositionOffset": {
       "value": {
@@ -24,12 +44,44 @@ let emotionOptions: EmotionOptions = {
       "description": "动画在y轴上下运动的范围"
     }
   },
-  Twinkle: {},
-  Sad: {},
-  Sweat: {},
-  Dot: {},
+  Twinkle: {
+    "startPositionOffset": {
+      "value": {
+        "x": 50,
+        "y": 0
+      },
+      "description": globalDescription['startPositionOffset']
+    }
+  },
+  Sad: {
+    "startPositionOffset": {
+      "value": {
+        "x": 50,
+        "y": 0
+      },
+      "description": globalDescription['startPositionOffset']
+    }
+  },
+  Sweat: {
+    "startPositionOffset": {
+      "value": {
+        "x": 50,
+        "y": 0
+      },
+      "description": globalDescription['startPositionOffset']
+    }
+  },
+  Dot: {
+    "startPositionOffset": {
+      "value": {
+        "x": 50,
+        "y": 0
+      },
+      "description": globalDescription['startPositionOffset']
+    }
+  },
   Chat: {
-    "position": {
+    "startPositionOffset": {
       "value": {
         "x": 70,
         "y": 20
@@ -52,12 +104,60 @@ let emotionOptions: EmotionOptions = {
       "description": "旋转原点位置, 以设置初始值, 修改的是相对于初始值的值"
     }
   },
-  Exclaim: {},
-  Angry: {},
-  Surprise: {},
-  Question: {},
-  Shy: {},
-  Upset: {}
+  Exclaim: {
+    "startPositionOffset": {
+      "value": {
+        "x": 50,
+        "y": 0
+      },
+      "description": globalDescription['startPositionOffset']
+    }
+  },
+  Angry: {
+    "startPositionOffset": {
+      "value": {
+        "x": 50,
+        "y": 0
+      },
+      "description": globalDescription['startPositionOffset']
+    }
+  },
+  Surprise: {
+    "startPositionOffset": {
+      "value": {
+        "x": 50,
+        "y": 0
+      },
+      "description": globalDescription['startPositionOffset']
+    }
+  },
+  Question: {
+    "startPositionOffset": {
+      "value": {
+        "x": 50,
+        "y": 0
+      },
+      "description": globalDescription['startPositionOffset']
+    }
+  },
+  Shy: {
+    "startPositionOffset": {
+      "value": {
+        "x": 50,
+        "y": 0
+      },
+      "description": globalDescription['startPositionOffset']
+    }
+  },
+  Upset: {
+    "startPositionOffset": {
+      "value": {
+        "x": 50,
+        "y": 0
+      },
+      "description": globalDescription['startPositionOffset']
+    }
+  }
 }
 
 export default emotionOptions

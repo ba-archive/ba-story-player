@@ -205,7 +205,7 @@ const CharacterEffectPlayerInstance: CharacterEffectPlayer = {
   },
   dispose(): void {
   },
-  getHandlerFunction(type: CharacterEffectWord){
+  getHandlerFunction(type: CharacterEffectWord) {
     return Reflect.get(this, type)
   },
   processEffect(type: CharacterEffectWord, instance: CharacterEffectInstance): Promise<void> {
@@ -215,7 +215,7 @@ const CharacterEffectPlayerInstance: CharacterEffectPlayer = {
         reject();
       });
     }
-    return fn(instance,actionOptions[type],[]) as Promise<void>;
+    return fn(instance, actionOptions[type], []) as Promise<void>;
   },
   a(instance: CharacterEffectInstance): Promise<void> {
     const characterInstance = instance.instance;
@@ -279,7 +279,7 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
   },
   dispose(): void {
   },
-  getHandlerFunction(type: EmotionWord){
+  getHandlerFunction(type: EmotionWord) {
     return Reflect.get(this, type)
   },
   processEffect(type: EmotionWord, instance: CharacterEffectInstance): Promise<void> {
@@ -298,23 +298,23 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
       });
     }
     eventBus.emit('playEmotionAudio', type)
-    return fn(instance, emotionOptions[type],emotionImageSprites) as Promise<void>;
+    return fn(instance, emotionOptions[type], emotionImageSprites) as Promise<void>;
   },
   Angry(instance: CharacterEffectInstance, options: EmotionOptions['Angry'], sprites: Sprite[]): Promise<void> {
     return Promise.resolve(undefined);
   }, Chat(instance: CharacterEffectInstance, options: EmotionOptions['Chat'], sprites: Sprite[]): Promise<void> {
-    let chatImage=sprites[0]
+    let chatImage = sprites[0]
     chatImage.scale.set(0.3)
-    chatImage.x=instance.instance.x+options.position.value.x
-    chatImage.y=instance.instance.y+options.position.value.y
-    chatImage.visible=true
-    chatImage.pivot.x=chatImage.width+options.rotatePivot.value.x
-    chatImage.pivot.y=chatImage.height+options.rotatePivot.value.y
+    chatImage.x = instance.instance.x + options.startPositionOffset.value.x
+    chatImage.y = instance.instance.y + options.startPositionOffset.value.y
+    chatImage.visible = true
+    chatImage.pivot.x = chatImage.width + options.rotatePivot.value.x
+    chatImage.pivot.y = chatImage.height + options.rotatePivot.value.y
 
-    let tl=gsap.timeline()
-    tl.to(chatImage,{angle:options.rotateAngle.value,duration:options.rotateTime.value/2})
-      .to(chatImage,{angle:0,duration:options.rotateTime.value/2})
-      .then(()=>{chatImage.visible=false})
+    let tl = gsap.timeline()
+    tl.to(chatImage, { angle: options.rotateAngle.value, duration: options.rotateTime.value / 2 })
+      .to(chatImage, { angle: 0, duration: options.rotateTime.value / 2 })
+      .then(() => { chatImage.visible = false })
 
     return Promise.resolve(undefined);
   }, Dot(instance: CharacterEffectInstance, options: EmotionOptions['Dot'], sprites: Sprite[]): Promise<void> {
@@ -344,21 +344,21 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
       .to(note, { y: y, angle: 0, duration: 0.4 }, 1.0).then(() => { note.visible = false })
 
     return Promise.resolve(undefined);
-  }, Question(instance: CharacterEffectInstance, sprites: Sprite[], options: EmotionOptions['Question']): Promise<void> {
+  }, Question(instance: CharacterEffectInstance, options: EmotionOptions['Question'], sprites: Sprite[]): Promise<void> {
     return Promise.resolve(undefined);
-  }, Respond(instance: CharacterEffectInstance, sprites: Sprite[], options: EmotionOptions['Respond']): Promise<void> {
+  }, Respond(instance: CharacterEffectInstance, options: EmotionOptions['Respond'], sprites: Sprite[]): Promise<void> {
     return Promise.resolve(undefined);
-  }, Sad(instance: CharacterEffectInstance, sprites: Sprite[], options: EmotionOptions['Sad']): Promise<void> {
+  }, Sad(instance: CharacterEffectInstance, options: EmotionOptions['Sad'], sprites: Sprite[]): Promise<void> {
     return Promise.resolve(undefined);
-  }, Shy(instance: CharacterEffectInstance, sprites: Sprite[], options: EmotionOptions['Shy']): Promise<void> {
+  }, Shy(instance: CharacterEffectInstance, options: EmotionOptions['Shy'], sprites: Sprite[]): Promise<void> {
     return Promise.resolve(undefined);
-  }, Surprise(instance: CharacterEffectInstance, sprites: Sprite[], options: EmotionOptions['Surprise']): Promise<void> {
+  }, Surprise(instance: CharacterEffectInstance, options: EmotionOptions['Surprise'], sprites: Sprite[]): Promise<void> {
     return Promise.resolve(undefined);
-  }, Sweat(instance: CharacterEffectInstance, sprites: Sprite[], options: EmotionOptions['Sweat']): Promise<void> {
+  }, Sweat(instance: CharacterEffectInstance, options: EmotionOptions['Sweat'], sprites: Sprite[]): Promise<void> {
     return Promise.resolve(undefined);
-  }, Twinkle(instance: CharacterEffectInstance, sprites: Sprite[], options: EmotionOptions['Twinkle']): Promise<void> {
+  }, Twinkle(instance: CharacterEffectInstance, options: EmotionOptions['Twinkle'], sprites: Sprite[]): Promise<void> {
     return Promise.resolve(undefined);
-  }, Upset(instance: CharacterEffectInstance, sprites: Sprite[], options: EmotionOptions['Upset']): Promise<void> {
+  }, Upset(instance: CharacterEffectInstance, options: EmotionOptions['Upset'], sprites: Sprite[]): Promise<void> {
     return Promise.resolve(undefined);
   }
 }

@@ -207,19 +207,14 @@ export interface OptionUnit<ValueType> {
 }
 
 export type BaseOptions<T extends string> = Record<T, Record<string, OptionUnit<any>>>
-
 /**
  * 情绪动作的具体参数
  */
-export interface EmotionOptions extends BaseOptions<EmotionWord> {
+export interface BasicEmotionOptions extends BaseOptions<EmotionWord> {
   Heart: {
   },
   Respond: {},
   Music: {
-    startPositionOffset: OptionUnit<{
-      x: number,
-      y: number
-    }>
     rotateAngle: OptionUnit<number>
     animationXOffset: OptionUnit<number>
     animationYOffset: OptionUnit<number>
@@ -229,15 +224,11 @@ export interface EmotionOptions extends BaseOptions<EmotionWord> {
   Sweat: {},
   Dot: {},
   Chat: {
-    position:OptionUnit<{
-      x:number
-      y:number
-    }>,
-    rotateAngle:OptionUnit<number>,
-    rotateTime:OptionUnit<number>,
-    rotatePivot:OptionUnit<{
-      x:number
-      y:number
+    rotateAngle: OptionUnit<number>,
+    rotateTime: OptionUnit<number>,
+    rotatePivot: OptionUnit<{
+      x: number
+      y: number
     }>
   },
   Exclaim: {},
@@ -246,6 +237,10 @@ export interface EmotionOptions extends BaseOptions<EmotionWord> {
   Question: {},
   Shy: {},
   Upset: {}
+}
+
+export type EmotionOptions = {
+  [Option in keyof BasicEmotionOptions]: BasicEmotionOptions[Option] & { startPositionOffset: OptionUnit<{ x: number, y: number }> }
 }
 
 export interface ActionOptions extends BaseOptions<CharacterEffectWord> {
