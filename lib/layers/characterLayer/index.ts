@@ -317,6 +317,7 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
         .to(uImgUnit.scale, { x: 0.3, duration: options.animationScale.value.duration })
         .to(uImgUnit.scale,{x:options.endScale.value.scale,y:options.endScale.value.scale,duration:options.endScale.value.duration})
         .then(()=>{uImgUnit.visible=false})
+      
     }
 
     return Promise.resolve(undefined);

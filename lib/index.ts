@@ -32,8 +32,11 @@ export async function init(elementID: string, height: number, width: number, sto
   playerStore = usePlayerStore()
   privateState = initPrivateState()
   privateState.dataUrl = dataUrl
-  privateState.language=language
-  privateState.app = new Application({ height, width })
+  privateState.language = language
+  //加入判断防止vite热更新重新创建app导致加载资源错误
+  if (!privateState.app) {
+    privateState.app = new Application({ height, width })
+  }
 
   app = playerStore.app
 

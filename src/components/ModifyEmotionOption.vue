@@ -1,25 +1,39 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, nextTick, onMounted, ref } from 'vue'
 import eventBus from '../../lib/eventBus'
 import emotionOptions from '../../lib/layers/characterLayer/emotionOptions'
 import actionOptions from '../../lib/layers/characterLayer/actionOptions'
 
-let effectType=ref<'action'|'emotion'>('emotion')
+let effectType = ref<'action' | 'emotion'>('emotion')
 let current = ref('Music')
+let selectCache: { effectType: 'action' | 'emotion', current: string }
+if (localStorage.getItem('selectCache')) {
+  selectCache = JSON.parse(localStorage.getItem('selectCache')!)
+  effectType.value = selectCache['effectType']
+  current.value = selectCache['current']
+}
+else {
+  selectCache = {
+    effectType: effectType.value,
+    current: current.value
+  }
+  localStorage.setItem('selectCache', JSON.stringify(selectCache))
+}
+
 let currentOptions = computed(() => {
-  if(effectType.value=='emotion'){
-    if(current.value in emotionOptions){
+  if (effectType.value == 'emotion') {
+    if (current.value in emotionOptions) {
       return emotionOptions[current.value]
     }
-    else{
+    else {
       return {}
     }
   }
-  else{
-    if(current.value in actionOptions){
+  else {
+    if (current.value in actionOptions) {
       return actionOptions[current.value]
     }
-    else{
+    else {
       return {}
     }
   }
@@ -74,18 +88,38 @@ function changeOption(option: string, value: any) {
 }
 
 function outputOptions() {
-  navigator.clipboard.writeText(JSON.stringify(currentOptions.value,null,2))
+  navigator.clipboard.writeText(JSON.stringify(currentOptions.value, null, 2))
 }
+
+function resizeTextareas() {
+  let textAreas = document.querySelectorAll('textarea')
+  for (let textarea of textAreas) {
+    textarea.style.height = textarea.scrollHeight + "px";
+  }
+}
+
+function updateType() {
+  nextTick(() => { resizeTextareas() })
+
+  localStorage.setItem('selectCache', JSON.stringify({
+    effectType: effectType.value,
+    current: current.value
+  }))
+}
+
+onMounted(() => {
+  resizeTextareas()
+})
 </script>
 
 <template>
   <div class="absolute-right-center">
-    <select v-model="effectType">
+    <select v-model="effectType" @change="updateType">
       <option>emotion</option>
       <option>action</option>
     </select>
-    <select v-model="current">
-      <option v-if="effectType=='emotion'" v-for="emotion in Object.keys(emotionOptions)">{{ emotion }}</option>
+    <select v-model="current" @change="updateType">
+      <option v-if="effectType == 'emotion'" v-for="emotion in Object.keys(emotionOptions)">{{ emotion }}</option>
       <option v-else="effectType=='action'" v-for="action in Object.keys(actionOptions)">{{ action }}</option>
     </select>
     <div v-for="option in Object.keys(currentOptions)">
@@ -101,7 +135,7 @@ function outputOptions() {
       </div>
       <div v-else-if="typeof currentOptions[option].value === 'object'">
         <p :title="currentOptions[option].description">{{ option }}</p>
-        <textarea :value="JSON.stringify(currentOptions[option].value,null,2)"
+        <textarea :value="JSON.stringify(currentOptions[option].value, null, 2)"
           @input="(event) => changeOption(option, JSON.parse((event.target as HTMLInputElement).value))" />
       </div>
     </div>
