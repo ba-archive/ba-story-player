@@ -315,9 +315,9 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
       let tl = gsap.timeline()
       tl.to(uImgUnit.scale, { x: options.animationScale.value.scale, duration: options.animationScale.value.duration })
         .to(uImgUnit.scale, { x: 0.3, duration: options.animationScale.value.duration })
-        .to(uImgUnit.scale,{x:options.endScale.value.scale,y:options.endScale.value.scale,duration:options.endScale.value.duration})
-        .then(()=>{uImgUnit.visible=false})
-      
+        .to(uImgUnit.scale, { x: options.endScale.value.scale, y: options.endScale.value.scale, duration: options.endScale.value.duration })
+        .then(() => { uImgUnit.visible = false })
+
     }
 
     return Promise.resolve(undefined);
@@ -374,6 +374,30 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
   }, Surprise(instance: CharacterEffectInstance, options: EmotionOptions['Surprise'], sprites: Sprite[]): Promise<void> {
     return Promise.resolve(undefined);
   }, Sweat(instance: CharacterEffectInstance, options: EmotionOptions['Sweat'], sprites: Sprite[]): Promise<void> {
+    let { app } = usePlayerStore()
+    let dropImg = Sprite.from(sprites[0].texture)
+    let smallDropImg = Sprite.from(sprites[0].texture)
+    dropImg.scale.set(options.imgScale.value)
+    smallDropImg.scale.set(options.smallImg.value.scale)
+
+    //设置位置
+    dropImg.x = instance.instance.x + options.startPositionOffset.value.x
+    dropImg.y = instance.instance.y + options.startPositionOffset.value.y
+    smallDropImg.x = options.smallImg.value.offset.x
+    smallDropImg.y = options.smallImg.value.offset.y
+
+    dropImg.zIndex = 10
+    smallDropImg.zIndex = 10
+    app.stage.addChild(dropImg).addChild(smallDropImg)
+
+    gsap.to(smallDropImg, {
+      y: smallDropImg.y - options.dropAnimation.value.yOffset - options.smallImg.value.dropAnimationOffset,
+      duration: options.dropAnimation.value.duration
+    })
+    let tl = gsap.timeline()
+    tl.to(dropImg, { y: dropImg.y - options.dropAnimation.value.yOffset, duration: options.dropAnimation.value.duration })
+      .then(() => { dropImg.destroy(); smallDropImg.destroy() })
+
     return Promise.resolve(undefined);
   }, Twinkle(instance: CharacterEffectInstance, options: EmotionOptions['Twinkle'], sprites: Sprite[]): Promise<void> {
     return Promise.resolve(undefined);

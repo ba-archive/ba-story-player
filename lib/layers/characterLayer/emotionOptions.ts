@@ -65,10 +65,32 @@ let emotionOptions: EmotionOptions = {
   Sweat: {
     "startPositionOffset": {
       "value": {
-        "x": 50,
+        "x": 90,
         "y": 0
       },
-      "description": globalDescription['startPositionOffset']
+      "description": "图片开始时相对于角色的位置"
+    },
+    "imgScale": {
+      "value": 0.25,
+      "description": "图片的缩放比例"
+    },
+    "smallImg": {
+      "value": {
+        "scale": 0.6,
+        "offset": {
+          "x": 80,
+          "y": -70
+        },
+        "dropAnimationOffset": -25
+      },
+      "description": "较小的图片相较于较大图片的设置, 包括缩放和相对位置"
+    },
+    "dropAnimation": {
+      "value": {
+        "yOffset": -10,
+        "duration": 0.3
+      },
+      "description": "下落动画的参数"
     }
   },
   Dot: {

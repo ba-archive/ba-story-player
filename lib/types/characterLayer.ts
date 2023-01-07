@@ -221,7 +221,21 @@ export interface BasicEmotionOptions extends BaseOptions<EmotionWord> {
   },
   Twinkle: {},
   Sad: {},
-  Sweat: {},
+  Sweat: {
+    imgScale: OptionUnit<number>
+    smallImg: OptionUnit<{
+      scale: number
+      offset: {
+        x: number
+        y: number
+      },
+      dropAnimationOffset: number
+    }>
+    dropAnimation: OptionUnit<{
+      yOffset: number
+      duration: number
+    }>
+  },
   Dot: {},
   Chat: {
     rotateAngle: OptionUnit<number>,
@@ -233,17 +247,17 @@ export interface BasicEmotionOptions extends BaseOptions<EmotionWord> {
   },
   Exclaim: {},
   Angry: {
-    pivotPosition:OptionUnit<{
-      x:number
-      y:number
+    pivotPosition: OptionUnit<{
+      x: number
+      y: number
     }>,
-    animationScale:OptionUnit<{
-      scale:number
-      duration:number
+    animationScale: OptionUnit<{
+      scale: number
+      duration: number
     }>
-    endScale:OptionUnit<{
-      scale:number
-      duration:number
+    endScale: OptionUnit<{
+      scale: number
+      duration: number
     }>
   },
   Surprise: {},
