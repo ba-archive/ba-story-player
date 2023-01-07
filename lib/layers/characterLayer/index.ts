@@ -6,7 +6,7 @@ import {
   CharacterEffectWord,
   CharacterEmotionPlayer,
   CharacterLayer,
-  EmotionWord, FXEffectWord, SignalEffectWord, CharacterEffectPlayer, Position, EmotionOptions,
+  EmotionWord, FXEffectWord, SignalEffectWord, CharacterEffectPlayer, Position, EmotionOptions, Scale,
 } from "@/types/characterLayer";
 import { ISkeletonData, Spine } from "pixi-spine";
 import { ShowCharacter } from "@/types/events";
@@ -307,7 +307,7 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
       let uImgUnit = Sprite.from(angryImgUnit.texture)
       uImgUnit.x = instance.instance.x + options.startPositionOffset.value.x
       uImgUnit.y = instance.instance.y + options.startPositionOffset.value.y
-      uImgUnit.scale.set(0.3)
+      uImgUnit.scale.set(options.scale.value)
       uImgUnit.pivot.set(options.pivotPosition.value.x, options.pivotPosition.value.y)
       uImgUnit.angle += i * 120
       uImgUnit.zIndex = 10
@@ -323,7 +323,7 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
     return Promise.resolve(undefined);
   }, Chat(instance: CharacterEffectInstance, options: EmotionOptions['Chat'], sprites: Sprite[]): Promise<void> {
     let chatImage = sprites[0]
-    chatImage.scale.set(0.3)
+    chatImage.scale.set(options.scale.value)
     chatImage.x = instance.instance.x + options.startPositionOffset.value.x
     chatImage.y = instance.instance.y + options.startPositionOffset.value.y
     chatImage.visible = true
@@ -341,10 +341,40 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
   }, Exclaim(instance: CharacterEffectInstance, options: EmotionOptions['Exclaim'], sprites: Sprite[]): Promise<void> {
     return Promise.resolve(undefined);
   }, Heart(instance: CharacterEffectInstance, options: EmotionOptions['Heart'], sprites: Sprite[]): Promise<void> {
+    let dialogImg = sprites[0]
+    let heartImg = sprites[1]
+    dialogImg.x = instance.instance.x + options.startPositionOffset.value.x
+    dialogImg.y = instance.instance.y + options.startPositionOffset.value.y
+    dialogImg.scale.set(options.scale.value)
+    heartImg.x = dialogImg.x + options.heartPosition.value.x
+    heartImg.y = dialogImg.y + options.heartPosition.value.y
+    heartImg.scale.set(options.scale.value)
+    dialogImg.zIndex = 10
+    heartImg.zIndex = 11
+
+    dialogImg.visible = heartImg.visible = true
+
+    let tl = gsap.timeline()
+    let firstScale: Scale = {
+      x: options.jumpAnimation.value.firstScale.x * options.scale.value,
+      y: options.jumpAnimation.value.firstScale.y * options.scale.value
+    }
+    let secondScale: Scale = {
+      x: options.jumpAnimation.value.secondScale.x * options.scale.value,
+      y: options.jumpAnimation.value.secondScale.y * options.scale.value
+    }
+    tl.to(heartImg.scale, { x: firstScale.x, y: firstScale.y, duration: options.jumpAnimation.value.duration })
+      .to(heartImg.scale, { x: options.scale.value, y: options.scale.value, duration: options.jumpAnimation.value.duration })
+      .to(heartImg.scale, { x: secondScale.x, y: secondScale.y, duration: options.jumpAnimation.value.duration })
+      .to(heartImg, { alpha: 0, duration: options.fadeOutDuration.value })
+      .add('fadeOut', "<")
+      .to(dialogImg, { alpha: 0, duration: options.fadeOutDuration.value }, 'fadeOut')
+      .then(() => { dialogImg.destroy(); heartImg.destroy() })
+
     return Promise.resolve(undefined);
   }, Music(instance: CharacterEffectInstance, options: EmotionOptions['Music'], sprites: Sprite[]): Promise<void> {
     let note = sprites[0]
-    note.scale.set(0.3)
+    note.scale.set(options.scale.value)
     note.x = instance.instance.x + options.startPositionOffset.value.x
     note.y = instance.instance.y + options.startPositionOffset.value.y
     note.visible = true
@@ -377,7 +407,7 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
     let { app } = usePlayerStore()
     let dropImg = Sprite.from(sprites[0].texture)
     let smallDropImg = Sprite.from(sprites[0].texture)
-    dropImg.scale.set(options.imgScale.value)
+    dropImg.scale.set(options.scale.value)
     smallDropImg.scale.set(options.smallImg.value.scale)
 
     //设置位置

@@ -1,17 +1,48 @@
-import { EmotionOptions } from "@/types/characterLayer"
+import { EmotionOptions, GlobalEmotionOptions } from "@/types/characterLayer"
 
-let globalDescription = {
-  startPositionOffset: '图片开始时相对于角色的位置'
+let globalDescription: Record<keyof GlobalEmotionOptions, string> = {
+  startPositionOffset: '图片开始时相对于角色的位置',
+  scale: '图片缩放比例, 多个图片时为基准图片缩放比例',
+  fadeOutDuration: '淡出动画的时间'
 }
 
 let emotionOptions: EmotionOptions = {
   Heart: {
     "startPositionOffset": {
       "value": {
-        "x": 50,
-        "y": 0
+        "x": 10,
+        "y": -10
       },
-      "description": globalDescription['startPositionOffset']
+      "description": "图片开始时相对于角色的位置"
+    },
+    "scale": {
+      "value": 0.3,
+      "description": "图片缩放比例, 多个图片时为基准图片缩放比例"
+    },
+    "heartPosition": {
+      "value": {
+        "x": 17,
+        "y": 10
+      },
+      "description": "心相对于对话框的位置"
+    },
+    "jumpAnimation": {
+      "value": {
+        "firstScale": {
+          "x": 1.2,
+          "y": 1.3
+        },
+        "secondScale": {
+          "x": 1.1,
+          "y": 1.2
+        },
+        "duration": 0.25
+      },
+      "description": "心跳动动画参数"
+    },
+    "fadeOutDuration": {
+      "value": 0.2,
+      "description": globalDescription['fadeOutDuration']
     }
   },
   Respond: {
@@ -21,6 +52,14 @@ let emotionOptions: EmotionOptions = {
         "y": 0
       },
       "description": globalDescription['startPositionOffset']
+    },
+    "scale": {
+      value: 0.3,
+      "description": globalDescription['scale']
+    },
+    "fadeOutDuration": {
+      "value": 0.1,
+      "description": globalDescription['fadeOutDuration']
     }
   },
   Music: {
@@ -30,6 +69,10 @@ let emotionOptions: EmotionOptions = {
         "y": 0
       },
       "description": "音符图片开始时相对于角色的位置"
+    },
+    "scale": {
+      value: 0.3,
+      "description": globalDescription['scale']
     },
     "rotateAngle": {
       "value": -8,
@@ -42,6 +85,10 @@ let emotionOptions: EmotionOptions = {
     "animationYOffset": {
       "value": 5,
       "description": "动画在y轴上下运动的范围"
+    },
+    "fadeOutDuration": {
+      "value": 0.1,
+      "description": globalDescription['fadeOutDuration']
     }
   },
   Twinkle: {
@@ -51,6 +98,14 @@ let emotionOptions: EmotionOptions = {
         "y": 0
       },
       "description": globalDescription['startPositionOffset']
+    },
+    "scale": {
+      value: 0.3,
+      "description": globalDescription['scale']
+    },
+    "fadeOutDuration": {
+      "value": 0.1,
+      "description": globalDescription['fadeOutDuration']
     }
   },
   Sad: {
@@ -60,6 +115,14 @@ let emotionOptions: EmotionOptions = {
         "y": 0
       },
       "description": globalDescription['startPositionOffset']
+    },
+    "scale": {
+      value: 0.3,
+      "description": globalDescription['scale']
+    },
+    "fadeOutDuration": {
+      "value": 0.1,
+      "description": globalDescription['fadeOutDuration']
     }
   },
   Sweat: {
@@ -70,9 +133,9 @@ let emotionOptions: EmotionOptions = {
       },
       "description": "图片开始时相对于角色的位置"
     },
-    "imgScale": {
-      "value": 0.25,
-      "description": "图片的缩放比例"
+    "scale": {
+      value: 0.3,
+      "description": globalDescription['scale']
     },
     "smallImg": {
       "value": {
@@ -91,6 +154,10 @@ let emotionOptions: EmotionOptions = {
         "duration": 0.3
       },
       "description": "下落动画的参数"
+    },
+    "fadeOutDuration": {
+      "value": 0.1,
+      "description": globalDescription['fadeOutDuration']
     }
   },
   Dot: {
@@ -100,6 +167,14 @@ let emotionOptions: EmotionOptions = {
         "y": 0
       },
       "description": globalDescription['startPositionOffset']
+    },
+    "scale": {
+      value: 0.3,
+      "description": globalDescription['scale']
+    },
+    "fadeOutDuration": {
+      "value": 0.1,
+      "description": globalDescription['fadeOutDuration']
     }
   },
   Chat: {
@@ -109,6 +184,10 @@ let emotionOptions: EmotionOptions = {
         "y": 20
       },
       "description": "相对于人物的位置"
+    },
+    "scale": {
+      value: 0.3,
+      "description": globalDescription['scale']
     },
     "rotateAngle": {
       "value": -25,
@@ -124,6 +203,10 @@ let emotionOptions: EmotionOptions = {
         "y": 30
       },
       "description": "旋转原点位置, 以设置初始值, 修改的是相对于初始值的值"
+    },
+    "fadeOutDuration": {
+      "value": 0.1,
+      "description": globalDescription['fadeOutDuration']
     }
   },
   Exclaim: {
@@ -133,6 +216,14 @@ let emotionOptions: EmotionOptions = {
         "y": 0
       },
       "description": globalDescription['startPositionOffset']
+    },
+    "scale": {
+      value: 0.3,
+      "description": globalDescription['scale']
+    },
+    "fadeOutDuration": {
+      "value": 0.1,
+      "description": globalDescription['fadeOutDuration']
     }
   },
   Angry: {
@@ -142,6 +233,10 @@ let emotionOptions: EmotionOptions = {
         "y": 25
       },
       "description": "图片开始时相对于角色的位置"
+    },
+    "scale": {
+      value: 0.3,
+      "description": globalDescription['scale']
     },
     "pivotPosition": {
       "value": {
@@ -163,6 +258,10 @@ let emotionOptions: EmotionOptions = {
         "duration": 0.1
       },
       "description": "结束时的缩小动画"
+    },
+    "fadeOutDuration": {
+      "value": 0.1,
+      "description": globalDescription['fadeOutDuration']
     }
   },
   Surprise: {
@@ -172,6 +271,14 @@ let emotionOptions: EmotionOptions = {
         "y": 0
       },
       "description": globalDescription['startPositionOffset']
+    },
+    "scale": {
+      value: 0.3,
+      "description": globalDescription['scale']
+    },
+    "fadeOutDuration": {
+      "value": 0.1,
+      "description": globalDescription['fadeOutDuration']
     }
   },
   Question: {
@@ -181,6 +288,14 @@ let emotionOptions: EmotionOptions = {
         "y": 0
       },
       "description": globalDescription['startPositionOffset']
+    },
+    "scale": {
+      value: 0.3,
+      "description": globalDescription['scale']
+    },
+    "fadeOutDuration": {
+      "value": 0.1,
+      "description": globalDescription['fadeOutDuration']
     }
   },
   Shy: {
@@ -190,6 +305,14 @@ let emotionOptions: EmotionOptions = {
         "y": 0
       },
       "description": globalDescription['startPositionOffset']
+    },
+    "scale": {
+      value: 0.3,
+      "description": globalDescription['scale']
+    },
+    "fadeOutDuration": {
+      "value": 0.1,
+      "description": globalDescription['fadeOutDuration']
     }
   },
   Upset: {
@@ -199,6 +322,14 @@ let emotionOptions: EmotionOptions = {
         "y": 0
       },
       "description": globalDescription['startPositionOffset']
+    },
+    "scale": {
+      value: 0.3,
+      "description": globalDescription['scale']
+    },
+    "fadeOutDuration": {
+      "value": 0.1,
+      "description": globalDescription['fadeOutDuration']
     }
   }
 }
