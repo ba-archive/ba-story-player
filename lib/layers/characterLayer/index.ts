@@ -6,7 +6,7 @@ import {
   CharacterEffectWord,
   CharacterEmotionPlayer,
   CharacterLayer,
-  EmotionWord, FXEffectWord, SignalEffectWord, CharacterEffectPlayer, Position, EmotionOptions, Scale,
+  EmotionWord, FXEffectWord, SignalEffectWord, CharacterEffectPlayer, PositionOffset, EmotionOptions, Scale, GlobalEmotionOptions,
 } from "@/types/characterLayer";
 import { ISkeletonData, Spine } from "pixi-spine";
 import { ShowCharacter } from "@/types/events";
@@ -14,7 +14,7 @@ import { usePlayerStore } from "@/stores";
 import { Character, CharacterEffect, CharacterEffectType, CharacterInstance } from "@/types/common";
 import eventBus from "@/eventBus";
 import gsap from "gsap";
-import { Sprite } from "pixi.js";
+import { DisplayObject, Sprite } from "pixi.js";
 import emotionOptions from "./emotionOptions";
 import actionOptions from "./actionOptions";
 
@@ -303,39 +303,44 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
   Angry(instance: CharacterEffectInstance, options: EmotionOptions['Angry'], sprites: Sprite[]): Promise<void> {
     let angryImgUnit = sprites[0]
     const { app } = usePlayerStore()
+    let scale = instance.instance.width * options.scale.value / angryImgUnit.width
+
     for (let i = 0; i < 3; ++i) {
       let uImgUnit = Sprite.from(angryImgUnit.texture)
-      uImgUnit.x = instance.instance.x + options.startPositionOffset.value.x
-      uImgUnit.y = instance.instance.y + options.startPositionOffset.value.y
-      uImgUnit.scale.set(options.scale.value)
-      uImgUnit.pivot.set(options.pivotPosition.value.x, options.pivotPosition.value.y)
+      uImgUnit.x = instance.instance.x + instance.instance.width * options.startPositionOffset.value.x
+      uImgUnit.y = instance.instance.y + instance.instance.width * options.startPositionOffset.value.y
+      uImgUnit.scale.set(scale)
+      uImgUnit.pivot.set(uImgUnit.width * options.pivotPosition.value.x, uImgUnit.width * options.pivotPosition.value.y)
       uImgUnit.angle += i * 120
       uImgUnit.zIndex = 10
       app.stage.addChild(uImgUnit)
       let tl = gsap.timeline()
-      tl.to(uImgUnit.scale, { x: options.animationScale.value.scale, duration: options.animationScale.value.duration })
-        .to(uImgUnit.scale, { x: 0.3, duration: options.animationScale.value.duration })
-        .to(uImgUnit.scale, { x: options.endScale.value.scale, y: options.endScale.value.scale, duration: options.endScale.value.duration })
-        .then(() => { uImgUnit.visible = false })
-
+      tl.to(uImgUnit.scale, { x: scale * options.animationScale.value.scale, duration: options.animationScale.value.duration })
+        .to(uImgUnit.scale, { x: scale, duration: options.animationScale.value.duration })
+        .to(uImgUnit.scale, { x: scale * options.endScale.value.scale, y: scale * options.endScale.value.scale, duration: options.endScale.value.duration })
+        .then(() => { uImgUnit.destroy() })
     }
 
     return Promise.resolve(undefined);
   }, Chat(instance: CharacterEffectInstance, options: EmotionOptions['Chat'], sprites: Sprite[]): Promise<void> {
     let chatImage = sprites[0]
-    chatImage.scale.set(options.scale.value)
-    chatImage.x = instance.instance.x + options.startPositionOffset.value.x
-    chatImage.y = instance.instance.y + options.startPositionOffset.value.y
+    let globalOptions = calcGlobalEmotionOptions(instance, chatImage, options)
+    chatImage.scale.set(globalOptions.scale)
+    chatImage.x = globalOptions.startPositionOffset.x
+    chatImage.y = globalOptions.startPositionOffset.y
     chatImage.visible = true
-    chatImage.pivot.x = chatImage.width + options.rotatePivot.value.x
-    chatImage.pivot.y = chatImage.height + options.rotatePivot.value.y
+    chatImage.pivot.x = chatImage.width * (1 + options.rotatePivot.value.x)
+    chatImage.pivot.y = chatImage.height * (1 + options.rotatePivot.value.y)
+    chatImage.zIndex = 10
 
     let tl = gsap.timeline()
-    tl.to(chatImage, { angle: options.rotateAngle.value, duration: options.rotateTime.value / 2 })
-      .to(chatImage, { angle: 0, duration: options.rotateTime.value / 2 })
-      .then(() => { chatImage.visible = false })
-
-    return Promise.resolve(undefined);
+    return new Promise((resolve, reject) => {
+      tl.to(chatImage, { angle: options.rotateAngle.value, duration: options.rotateTime.value / 2 })
+        .to(chatImage, { angle: 0, duration: options.rotateTime.value / 2 })
+        .to(chatImage, { alpha: 0, duration: options.fadeOutDuration.value })
+        .then(() => { chatImage.destroy(); resolve() })
+        .catch(reason => reject(reason))
+    })
   }, Dot(instance: CharacterEffectInstance, options: EmotionOptions['Dot'], sprites: Sprite[]): Promise<void> {
     return Promise.resolve(undefined);
   }, Exclaim(instance: CharacterEffectInstance, options: EmotionOptions['Exclaim'], sprites: Sprite[]): Promise<void> {
@@ -343,12 +348,15 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
   }, Heart(instance: CharacterEffectInstance, options: EmotionOptions['Heart'], sprites: Sprite[]): Promise<void> {
     let dialogImg = sprites[0]
     let heartImg = sprites[1]
-    dialogImg.x = instance.instance.x + options.startPositionOffset.value.x
-    dialogImg.y = instance.instance.y + options.startPositionOffset.value.y
-    dialogImg.scale.set(options.scale.value)
-    heartImg.x = dialogImg.x + options.heartPosition.value.x
-    heartImg.y = dialogImg.y + options.heartPosition.value.y
-    heartImg.scale.set(options.scale.value)
+
+    dialogImg.x = instance.instance.x + instance.instance.width * options.startPositionOffset.value.x
+    dialogImg.y = instance.instance.y + instance.instance.width * options.startPositionOffset.value.y
+    let dialogScale = options.scale.value * instance.instance.width / dialogImg.width
+    dialogImg.scale.set(dialogScale)
+    heartImg.x = dialogImg.x + dialogImg.width * options.heartImg.value.position.x
+    heartImg.y = dialogImg.y + dialogImg.width * options.heartImg.value.position.y
+    let heartScale = options.heartImg.value.scale * dialogImg.width / heartImg.width
+    heartImg.scale.set(heartScale)
     dialogImg.zIndex = 10
     heartImg.zIndex = 11
 
@@ -356,15 +364,15 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
 
     let tl = gsap.timeline()
     let firstScale: Scale = {
-      x: options.jumpAnimation.value.firstScale.x * options.scale.value,
-      y: options.jumpAnimation.value.firstScale.y * options.scale.value
+      x: options.jumpAnimation.value.firstScale.x * heartScale,
+      y: options.jumpAnimation.value.firstScale.y * heartScale
     }
     let secondScale: Scale = {
-      x: options.jumpAnimation.value.secondScale.x * options.scale.value,
-      y: options.jumpAnimation.value.secondScale.y * options.scale.value
+      x: options.jumpAnimation.value.secondScale.x * heartScale,
+      y: options.jumpAnimation.value.secondScale.y * heartScale
     }
     tl.to(heartImg.scale, { x: firstScale.x, y: firstScale.y, duration: options.jumpAnimation.value.duration })
-      .to(heartImg.scale, { x: options.scale.value, y: options.scale.value, duration: options.jumpAnimation.value.duration })
+      .to(heartImg.scale, { x: heartScale, y: heartScale, duration: options.jumpAnimation.value.duration })
       .to(heartImg.scale, { x: secondScale.x, y: secondScale.y, duration: options.jumpAnimation.value.duration })
       .to(heartImg, { alpha: 0, duration: options.fadeOutDuration.value })
       .add('fadeOut', "<")
@@ -372,27 +380,36 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
       .then(() => { dialogImg.destroy(); heartImg.destroy() })
 
     return Promise.resolve(undefined);
-  }, Music(instance: CharacterEffectInstance, options: EmotionOptions['Music'], sprites: Sprite[]): Promise<void> {
+  }, Music(instance: CharacterEffectInstance, options: EmotionOptions['Music'], sprites: Sprite[]) {
     let note = sprites[0]
-    note.scale.set(options.scale.value)
-    note.x = instance.instance.x + options.startPositionOffset.value.x
-    note.y = instance.instance.y + options.startPositionOffset.value.y
+    let scale = options.scale.value * instance.instance.width / note.width
+    note.scale.set(scale * 0.7)
+    note.x = instance.instance.x + instance.instance.width * options.startPositionOffset.value.x
+    note.y = instance.instance.y + instance.instance.width * options.startPositionOffset.value.y
     note.visible = true
 
     let tl = gsap.timeline()
     let x = note.x
     let y = note.y
-    while (note.scale.x <= 0.3) {
-      note.scale.set(note.scale.x + 0.001)
-    }
 
-    tl.add('start').to(note, { x: x + options.animationXOffset.value, duration: 1.2 }, 0)
-    tl.to(note, { y: y + options.animationYOffset.value, angle: options.rotateAngle.value, duration: 0.3 }, 0)
-      .to(note, { y: y, angle: 0, duration: 0.3 }, 0.3)
-      .to(note, { y: y + options.animationYOffset.value, angle: options.rotateAngle.value, duration: 0.4 }, 0.6)
-      .to(note, { y: y, angle: 0, duration: 0.4 }, 1.0).then(() => { note.visible = false })
+    return new Promise((resolve, reject) => {
+      tl.to(note.scale, { x: scale, y: scale, duration: 0.1 })
+        .to(note, { x: x + note.width * options.animation.value.offset.x, duration: options.animation.value.duration })
+        .add('start', '<')
+        .to(note, { y: y + note.width * options.animation.value.offset.y, angle: options.rotateAngle.value, duration: options.animation.value.duration * 0.3 }, 'start')
+        .to(note, { y: y, angle: 0, duration: options.animation.value.duration * 0.3 }, '>')
+        .to(note, { y: y + note.width * options.animation.value.offset.y, angle: options.rotateAngle.value, duration: options.animation.value.duration * 0.4 }, '>')
+        .to(note, { y: y, angle: 0, duration: options.animation.value.duration * 0.4 }, '>')
+        .to(note, { alpha: 0, duration: options.fadeOutDuration.value }, '>')
+        .then(() => {
+          note.destroy();
+          resolve()
+        })
+        .catch(reason => {
+          reject(reason)
+        })
 
-    return Promise.resolve(undefined);
+    })
   }, Question(instance: CharacterEffectInstance, options: EmotionOptions['Question'], sprites: Sprite[]): Promise<void> {
     return Promise.resolve(undefined);
   }, Respond(instance: CharacterEffectInstance, options: EmotionOptions['Respond'], sprites: Sprite[]): Promise<void> {
@@ -405,30 +422,32 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
     return Promise.resolve(undefined);
   }, Sweat(instance: CharacterEffectInstance, options: EmotionOptions['Sweat'], sprites: Sprite[]): Promise<void> {
     let { app } = usePlayerStore()
-    let dropImg = Sprite.from(sprites[0].texture)
-    let smallDropImg = Sprite.from(sprites[0].texture)
-    dropImg.scale.set(options.scale.value)
-    smallDropImg.scale.set(options.smallImg.value.scale)
+    let dropImg = sprites[0]
+    let smallDropImg = sprites[1]
 
-    //设置位置
-    dropImg.x = instance.instance.x + options.startPositionOffset.value.x
-    dropImg.y = instance.instance.y + options.startPositionOffset.value.y
-    smallDropImg.x = options.smallImg.value.offset.x
-    smallDropImg.y = options.smallImg.value.offset.y
-
+    //设置初始位置和大小
+    let globalOptions = calcGlobalEmotionOptions(instance, dropImg, options)
+    dropImg.scale.set(globalOptions.scale)
+    smallDropImg.scale.set(globalOptions.scale)
+    dropImg.x = globalOptions.startPositionOffset.x
+    dropImg.y = globalOptions.startPositionOffset.y
+    let smallPosition = calcRelativePosition(dropImg, options.smallImg.value.offset)
+    smallDropImg.x = smallPosition.x
+    smallDropImg.y = smallPosition.y
     dropImg.zIndex = 10
     smallDropImg.zIndex = 10
-    app.stage.addChild(dropImg).addChild(smallDropImg)
+    smallDropImg.visible = dropImg.visible = true
 
-    gsap.to(smallDropImg, {
-      y: smallDropImg.y - options.dropAnimation.value.yOffset - options.smallImg.value.dropAnimationOffset,
-      duration: options.dropAnimation.value.duration
-    })
     let tl = gsap.timeline()
-    tl.to(dropImg, { y: dropImg.y - options.dropAnimation.value.yOffset, duration: options.dropAnimation.value.duration })
-      .then(() => { dropImg.destroy(); smallDropImg.destroy() })
-
-    return Promise.resolve(undefined);
+    return new Promise((resolve, reject) => {
+      tl.to(dropImg, { y: dropImg.y - dropImg.width * options.dropAnimation.value.yOffset, duration: options.dropAnimation.value.duration })
+        .to(smallDropImg, {
+          y: smallDropImg.y - options.smallImg.value.dropAnimationOffset * smallDropImg.width,
+          duration: options.dropAnimation.value.duration
+        }, '<')
+        .then(() => { dropImg.destroy(); smallDropImg.destroy(); resolve() })
+        .catch(reason => reject(reason))
+    })
   }, Twinkle(instance: CharacterEffectInstance, options: EmotionOptions['Twinkle'], sprites: Sprite[]): Promise<void> {
     return Promise.resolve(undefined);
   }, Upset(instance: CharacterEffectInstance, options: EmotionOptions['Upset'], sprites: Sprite[]): Promise<void> {
@@ -452,7 +471,7 @@ const POS_INDEX_MAP = {
  * @param character 要显示的角色
  * @param position 角色所在位置
  */
-function calcSpineStagePosition(character: Spine, position: number): Position {
+function calcSpineStagePosition(character: Spine, position: number): PositionOffset {
   const { screenWidth, screenHeight } = getStageSize();
   return {
     x: screenWidth / 5 * (position - 1) - (character.width * character.scale.x / 2),
@@ -473,4 +492,28 @@ function getStageSize() {
     screenWidth,
     screenHeight
   };
+}
+
+
+function calcGlobalEmotionOptions(instance: CharacterEffectInstance, standardImg: Sprite, options: EmotionOptions[EmotionWord]) {
+  return {
+    startPositionOffset: {
+      x: instance.instance.x + instance.instance.width * options.startPositionOffset.value.x,
+      y: instance.instance.y + instance.instance.width * options.startPositionOffset.value.y
+    },
+    scale: options.scale.value * instance.instance.width / standardImg.width
+  }
+}
+
+/**
+ * 根据相对位置计算相对位置
+ * @param standard 相对位置基于的图片
+ * @param relativeValue 相对值
+ * @returns 绝对位置
+ */
+function calcRelativePosition(standard: Sprite, relativeValue: PositionOffset) {
+  return {
+    x: standard.x + standard.width * relativeValue.x,
+    y: standard.y + standard.width * relativeValue.y
+  }
 }

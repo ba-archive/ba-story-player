@@ -1,4 +1,4 @@
-import { Application, Loader, Text } from "pixi.js";
+import { Application, Loader, Text, settings } from "pixi.js";
 import { SpineParser } from 'pixi-spine'
 import { textInit } from "./layers/textLayer";
 import { usePlayerStore, initPrivateState } from "./stores";
@@ -29,6 +29,9 @@ let app: Application
  * 调用各层的初始化函数
  */
 export async function init(elementID: string, height: number, width: number, story: StoryRawUnit[], dataUrl: string, language: Language) {
+  //缓解图片缩放失真
+  settings.MIPMAP_TEXTURES = 2
+
   playerStore = usePlayerStore()
   privateState = initPrivateState()
   privateState.dataUrl = dataUrl

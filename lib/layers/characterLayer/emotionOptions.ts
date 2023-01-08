@@ -1,7 +1,7 @@
 import { EmotionOptions, GlobalEmotionOptions } from "@/types/characterLayer"
 
 let globalDescription: Record<keyof GlobalEmotionOptions, string> = {
-  startPositionOffset: '图片开始时相对于角色的位置',
+  startPositionOffset: '图片开始时相对于角色的位置, 相对值, 值为偏移量与角色宽度比例',
   scale: '图片缩放比例, 多个图片时为基准图片缩放比例',
   fadeOutDuration: '淡出动画的时间'
 }
@@ -10,19 +10,22 @@ let emotionOptions: EmotionOptions = {
   Heart: {
     "startPositionOffset": {
       "value": {
-        "x": 10,
-        "y": -10
+        "x": 0.1,
+        "y": -0.1
       },
       "description": "图片开始时相对于角色的位置"
     },
     "scale": {
-      "value": 0.3,
+      "value": 0.25,
       "description": "图片缩放比例, 多个图片时为基准图片缩放比例"
     },
-    "heartPosition": {
+    "heartImg": {
       "value": {
-        "x": 17,
-        "y": 10
+        "scale": 0.35,
+        "position": {
+          "x": 0.3,
+          "y": 0.2
+        }
       },
       "description": "心相对于对话框的位置"
     },
@@ -42,7 +45,7 @@ let emotionOptions: EmotionOptions = {
     },
     "fadeOutDuration": {
       "value": 0.2,
-      "description": globalDescription['fadeOutDuration']
+      "description": "淡出动画的时间"
     }
   },
   Respond: {
@@ -65,30 +68,32 @@ let emotionOptions: EmotionOptions = {
   Music: {
     "startPositionOffset": {
       "value": {
-        "x": 50,
+        "x": 0.2,
         "y": 0
       },
       "description": "音符图片开始时相对于角色的位置"
     },
     "scale": {
-      value: 0.3,
-      "description": globalDescription['scale']
+      "value": 0.13,
+      "description": "图片缩放比例, 多个图片时为基准图片缩放比例"
     },
     "rotateAngle": {
       "value": -8,
       "description": "来回旋转的角度"
     },
-    "animationXOffset": {
-      "value": -50,
-      "description": "动画在x轴的向左运动的范围"
-    },
-    "animationYOffset": {
-      "value": 5,
-      "description": "动画在y轴上下运动的范围"
+    "animation": {
+      "value": {
+        "offset": {
+          "x": -1,
+          "y": 0.1
+        },
+        "duration": 0.8
+      },
+      "description": "动画参数"
     },
     "fadeOutDuration": {
       "value": 0.1,
-      "description": globalDescription['fadeOutDuration']
+      "description": "淡出动画的时间"
     }
   },
   Twinkle: {
@@ -128,36 +133,36 @@ let emotionOptions: EmotionOptions = {
   Sweat: {
     "startPositionOffset": {
       "value": {
-        "x": 90,
-        "y": 0
+        "x": 0.3,
+        "y": -0.1
       },
       "description": "图片开始时相对于角色的位置"
     },
     "scale": {
-      value: 0.3,
-      "description": globalDescription['scale']
+      "value": 0.08,
+      "description": "图片缩放比例, 多个图片时为基准图片缩放比例"
     },
     "smallImg": {
       "value": {
-        "scale": 0.6,
+        "scale": 1,
         "offset": {
-          "x": 80,
-          "y": -70
+          "x": 1,
+          "y": -0.5
         },
-        "dropAnimationOffset": -25
+        "dropAnimationOffset": -2.3
       },
       "description": "较小的图片相较于较大图片的设置, 包括缩放和相对位置"
     },
     "dropAnimation": {
       "value": {
-        "yOffset": -10,
-        "duration": 0.3
+        "yOffset": -1,
+        "duration": 0.4
       },
       "description": "下落动画的参数"
     },
     "fadeOutDuration": {
       "value": 0.1,
-      "description": globalDescription['fadeOutDuration']
+      "description": "淡出动画的时间"
     }
   },
   Dot: {
@@ -180,33 +185,33 @@ let emotionOptions: EmotionOptions = {
   Chat: {
     "startPositionOffset": {
       "value": {
-        "x": 70,
-        "y": 20
+        "x": 0.25,
+        "y": 0.1
       },
       "description": "相对于人物的位置"
     },
     "scale": {
-      value: 0.3,
-      "description": globalDescription['scale']
+      "value": 0.15,
+      "description": "图片缩放比例, 多个图片时为基准图片缩放比例"
     },
     "rotateAngle": {
       "value": -25,
       "description": "旋转的角度"
     },
     "rotateTime": {
-      "value": 0.6,
+      "value": 0.5,
       "description": "一次旋转来回的时间, 单位为秒"
     },
     "rotatePivot": {
       "value": {
-        "x": 60,
-        "y": 30
+        "x": 1,
+        "y": 1
       },
       "description": "旋转原点位置, 以设置初始值, 修改的是相对于初始值的值"
     },
     "fadeOutDuration": {
       "value": 0.1,
-      "description": globalDescription['fadeOutDuration']
+      "description": "淡出动画的时间"
     }
   },
   Exclaim: {
@@ -229,25 +234,25 @@ let emotionOptions: EmotionOptions = {
   Angry: {
     "startPositionOffset": {
       "value": {
-        "x": 100,
-        "y": 25
+        "x": 0.4,
+        "y": 0.05
       },
-      "description": "图片开始时相对于角色的位置"
+      "description": globalDescription['startPositionOffset']
     },
     "scale": {
-      value: 0.3,
-      "description": globalDescription['scale']
+      "value": 0.1,
+      "description": "图片缩放比例, 多个图片时为基准图片缩放比例"
     },
     "pivotPosition": {
       "value": {
-        "x": 13,
+        "x": 0.6,
         "y": 0
       },
       "description": "旋转的原点"
     },
     "animationScale": {
       "value": {
-        "scale": 0.28,
+        "scale": 0.9,
         "duration": 0.2
       },
       "description": "angry图像的动画效果, 通过scaleX实现"
@@ -261,7 +266,7 @@ let emotionOptions: EmotionOptions = {
     },
     "fadeOutDuration": {
       "value": 0.1,
-      "description": globalDescription['fadeOutDuration']
+      "description": "淡出动画的时间"
     }
   },
   Surprise: {

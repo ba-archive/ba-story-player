@@ -159,7 +159,7 @@ export type EffectFunction<T extends string> = {
 /**
  * 标识角色在stage上的位置
  */
-export interface Position {
+export interface PositionOffset {
   x: number;
   y: number;
 }
@@ -206,7 +206,7 @@ export interface OptionUnit<ValueType> {
   description: string
 }
 
-export interface Position {
+export interface PositionOffset {
   x: number
   y: number
 }
@@ -222,7 +222,10 @@ export type BaseOptions<T extends string> = Record<T, Record<string, OptionUnit<
  */
 export interface BasicEmotionOptions extends BaseOptions<EmotionWord> {
   Heart: {
-    heartPosition: OptionUnit<Position>
+    heartImg: OptionUnit<{
+      scale: number
+      position: PositionOffset
+    }>
     jumpAnimation: OptionUnit<{
       firstScale: Scale
       secondScale: Scale
@@ -232,8 +235,10 @@ export interface BasicEmotionOptions extends BaseOptions<EmotionWord> {
   Respond: {},
   Music: {
     rotateAngle: OptionUnit<number>
-    animationXOffset: OptionUnit<number>
-    animationYOffset: OptionUnit<number>
+    animation: OptionUnit<{
+      offset: PositionOffset
+      duration: number
+    }>
   },
   Twinkle: {},
   Sad: {},

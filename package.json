@@ -16,7 +16,7 @@
     }
   },
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host",
     "build": "vite build && vue-tsc --emitDeclarationOnly",
     "preview": "vite preview"
   },
