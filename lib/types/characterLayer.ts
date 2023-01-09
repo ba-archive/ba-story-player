@@ -232,7 +232,17 @@ export interface BasicEmotionOptions extends BaseOptions<EmotionWord> {
       duration: number
     }>
   },
-  Respond: {},
+  Respond: {
+    flashAnimation: OptionUnit<{
+      alpha: number
+      duration: number
+    }>
+    perImgSetting: OptionUnit<{
+      angle: number
+      scale: number
+      anchor: PositionOffset
+    }[]>
+  },
   Music: {
     rotateAngle: OptionUnit<number>
     animation: OptionUnit<{
@@ -297,6 +307,7 @@ export interface BasicEmotionOptions extends BaseOptions<EmotionWord> {
 export interface GlobalEmotionOptions {
   startPositionOffset: OptionUnit<{ x: number, y: number }>
   scale: OptionUnit<number>
+  fadeOutPreDuration?: OptionUnit<number>
   fadeOutDuration: OptionUnit<number>
 }
 

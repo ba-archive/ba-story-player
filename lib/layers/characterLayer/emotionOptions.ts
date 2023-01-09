@@ -3,7 +3,8 @@ import { EmotionOptions, GlobalEmotionOptions } from "@/types/characterLayer"
 let globalDescription: Record<keyof GlobalEmotionOptions, string> = {
   startPositionOffset: '图片开始时相对于角色的位置, 相对值, 值为偏移量与角色宽度比例',
   scale: '图片缩放比例, 多个图片时为基准图片缩放比例',
-  fadeOutDuration: '淡出动画的时间'
+  fadeOutPreDuration: '淡出动画亲爱的时间, 可选',
+  fadeOutDuration: '淡出动画的时间',
 }
 
 let emotionOptions: EmotionOptions = {
@@ -51,18 +52,58 @@ let emotionOptions: EmotionOptions = {
   Respond: {
     "startPositionOffset": {
       "value": {
-        "x": 50,
-        "y": 0
+        "x": 0.4,
+        "y": 0.1
       },
-      "description": globalDescription['startPositionOffset']
+      "description": "图片开始时相对于角色的位置, 相对值, 值为偏移量与角色宽度比例"
     },
     "scale": {
-      value: 0.3,
-      "description": globalDescription['scale']
+      "value": 0.15,
+      "description": "图片缩放比例, 多个图片时为基准图片缩放比例"
+    },
+    "fadeOutPreDuration": {
+      "value": 0.3,
+      "description": "淡出动画亲爱的时间, 可选"
     },
     "fadeOutDuration": {
       "value": 0.1,
-      "description": globalDescription['fadeOutDuration']
+      "description": "淡出动画的时间"
+    },
+    "flashAnimation": {
+      "value": {
+        "duration": 0.3,
+        "alpha": 0.2
+      },
+      "description": "闪烁动画参数"
+    },
+    "perImgSetting": {
+      "value": [
+        {
+          "scale": 0.7,
+          "anchor": {
+            "x": 1.8,
+            "y": 0
+          },
+          "angle": -10
+        },
+        {
+          "scale": 1,
+          "anchor": {
+            "x": 1.5,
+            "y": 0
+          },
+          "angle": 23
+        },
+        {
+          "scale": 0.7,
+          "anchor": {
+            "x": 1.8,
+            "y": 0
+          },
+          "angle": 50
+        }
+      ],
+      "description": "每个图片的缩放, 旋转原点, 旋转角度"
     }
   },
   Music: {

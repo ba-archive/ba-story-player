@@ -14,7 +14,7 @@ import { usePlayerStore } from "@/stores";
 import { Character, CharacterEffectType, CharacterInstance } from "@/types/common";
 import eventBus from "@/eventBus";
 import gsap from "gsap";
-import { Sprite } from "pixi.js";
+import { Container, Sprite } from "pixi.js";
 import emotionOptions from "./emotionOptions";
 import actionOptions from "./actionOptions";
 
@@ -425,7 +425,31 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
   }, Question(instance: CharacterEffectInstance, options: EmotionOptions['Question'], sprites: Sprite[]): Promise<void> {
     return Promise.resolve(undefined);
   }, Respond(instance: CharacterEffectInstance, options: EmotionOptions['Respond'], sprites: Sprite[]): Promise<void> {
-    return Promise.resolve(undefined);
+    let { app } = usePlayerStore()
+    let globalOptions = setInitValue(instance, sprites[0], options)
+    let imgContainer = new Container()
+    for (let i = 0; i < 3; ++i) {
+      let respondImg = Sprite.from(sprites[0].texture)
+      respondImg.angle = options.perImgSetting.value[i].angle
+      respondImg.anchor.set(
+        options.perImgSetting.value[i].anchor.x,
+        options.perImgSetting.value[i].anchor.y,
+      )
+      respondImg.scale.set(globalOptions.scale * options.perImgSetting.value[i].scale)
+      imgContainer.addChild(respondImg)
+    }
+    app.stage.addChild(imgContainer)
+    imgContainer.position = sprites[0].position
+    imgContainer.zIndex = 10
+
+    let tl = gsap.timeline()
+    return timelinePromise(
+      tl.to(imgContainer, { alpha: options.flashAnimation.value.alpha, duration: options.flashAnimation.value.duration })
+        .to(imgContainer, { alpha: 1, duration: options.fadeOutDuration.value })
+        .to(imgContainer, { duration: options.fadeOutPreDuration?.value })
+        .to(imgContainer, { alpha: 0, duration: options.fadeOutDuration.value }),
+      [...imgContainer.children as Sprite[], ...sprites]
+    );
   }, Sad(instance: CharacterEffectInstance, options: EmotionOptions['Sad'], sprites: Sprite[]): Promise<void> {
     return Promise.resolve(undefined);
   }, Shy(instance: CharacterEffectInstance, options: EmotionOptions['Shy'], sprites: Sprite[]): Promise<void> {
