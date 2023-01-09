@@ -265,7 +265,15 @@ export interface BasicEmotionOptions extends BaseOptions<EmotionWord> {
       y: number
     }>
   },
-  Exclaim: {},
+  Exclaim: {
+    scaleAnimation: OptionUnit<{
+      scale: number
+      scaleDuration: number
+      recoverScale: number
+      recoverDuration: number
+    }>
+    fadeOutWaitTime: OptionUnit<number>
+  },
   Angry: {
     pivotPosition: OptionUnit<{
       x: number

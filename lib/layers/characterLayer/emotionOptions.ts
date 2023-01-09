@@ -217,18 +217,31 @@ let emotionOptions: EmotionOptions = {
   Exclaim: {
     "startPositionOffset": {
       "value": {
-        "x": 50,
-        "y": 0
+        "x": 0.32,
+        "y": -0.1
       },
-      "description": globalDescription['startPositionOffset']
+      "description": "图片开始时相对于角色的位置, 相对值, 值为偏移量与角色宽度比例"
     },
     "scale": {
-      value: 0.3,
-      "description": globalDescription['scale']
+      "value": 0.08,
+      "description": "图片缩放比例, 多个图片时为基准图片缩放比例"
     },
     "fadeOutDuration": {
       "value": 0.1,
-      "description": globalDescription['fadeOutDuration']
+      "description": "淡出动画的时间"
+    },
+    "scaleAnimation": {
+      "value": {
+        "scale": 1.4,
+        "scaleDuration": 0.2,
+        "recoverScale": 1.2,
+        "recoverDuration": 0.1
+      },
+      "description": "动画过程为先放大然后恢复回原来大小"
+    },
+    "fadeOutWaitTime": {
+      "value": 0.3,
+      "description": "消失动画前的等待时间"
     }
   },
   Angry: {

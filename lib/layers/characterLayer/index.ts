@@ -11,10 +11,10 @@ import {
 import { ISkeletonData, Spine } from "pixi-spine";
 import { ShowCharacter } from "@/types/events";
 import { usePlayerStore } from "@/stores";
-import { Character, CharacterEffect, CharacterEffectType, CharacterInstance } from "@/types/common";
+import { Character, CharacterEffectType, CharacterInstance } from "@/types/common";
 import eventBus from "@/eventBus";
 import gsap from "gsap";
-import { DisplayObject, Sprite } from "pixi.js";
+import { Sprite } from "pixi.js";
 import emotionOptions from "./emotionOptions";
 import actionOptions from "./actionOptions";
 
@@ -344,7 +344,19 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
   }, Dot(instance: CharacterEffectInstance, options: EmotionOptions['Dot'], sprites: Sprite[]): Promise<void> {
     return Promise.resolve(undefined);
   }, Exclaim(instance: CharacterEffectInstance, options: EmotionOptions['Exclaim'], sprites: Sprite[]): Promise<void> {
-    return Promise.resolve(undefined);
+    let surpriseImg = sprites[0]
+    let globalOptions = setInitValue(instance, surpriseImg, options)
+    surpriseImg.visible = true
+
+    let tl = gsap.timeline()
+    let animationScale = globalOptions.scale * options.scaleAnimation.value.scale
+    let recoverScale = globalOptions.scale * options.scaleAnimation.value.recoverScale
+    return timelinePromise(
+      tl.to(surpriseImg.scale, { x: animationScale, y: animationScale, duration: options.scaleAnimation.value.scaleDuration })
+        .to(surpriseImg.scale, { x: recoverScale, y: recoverScale, duration: options.scaleAnimation.value.recoverDuration })
+        .to(surpriseImg, { duration: options.fadeOutWaitTime.value })
+        .to(surpriseImg, { alpha: 0, duration: options.fadeOutDuration.value })
+      , [surpriseImg])
   }, Heart(instance: CharacterEffectInstance, options: EmotionOptions['Heart'], sprites: Sprite[]): Promise<void> {
     let dialogImg = sprites[0]
     let heartImg = sprites[1]
@@ -517,3 +529,39 @@ function calcRelativePosition(standard: Sprite, relativeValue: PositionOffset) {
     y: standard.y + standard.width * relativeValue.y
   }
 }
+
+
+/**
+ * 设置基准图片的初始位置, 缩放, zIndex
+ * @param instance 
+ * @param standardImg 
+ * @param options 
+ * @returns 位置和缩放比例的绝对值
+ */
+function setInitValue(instance: CharacterEffectInstance, standardImg: Sprite, options: EmotionOptions[EmotionWord]) {
+  let globalOptions = {
+    startPositionOffset: {
+      x: instance.instance.x + instance.instance.width * options.startPositionOffset.value.x,
+      y: instance.instance.y + instance.instance.width * options.startPositionOffset.value.y
+    },
+    scale: options.scale.value * instance.instance.width / standardImg.width
+  }
+  standardImg.scale.set(globalOptions.scale)
+  standardImg.x = globalOptions.startPositionOffset.x
+  standardImg.y = globalOptions.startPositionOffset.y
+  standardImg.zIndex = 10
+
+  return globalOptions
+}
+
+function timelinePromise(timeLine: gsap.core.Timeline, destroyImgs: Sprite[]) {
+  return new Promise<void>((resolve, reject) => {
+    timeLine.then(() => {
+      resolve()
+      for (let img of destroyImgs) {
+        img.destroy()
+      }
+    })
+      .catch(reason => reject(reason))
+  })
+} 
