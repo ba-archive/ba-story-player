@@ -299,7 +299,15 @@ export interface BasicEmotionOptions extends BaseOptions<EmotionWord> {
     }>
   },
   Surprise: {},
-  Question: {},
+  Question: {
+    scaleAnimation: OptionUnit<{
+      scale: number
+      anchor: PositionOffset
+      scaleDuration: number
+      recoverScale: number
+      recoverDuration: number
+    }>
+  },
   Shy: {},
   Upset: {}
 }

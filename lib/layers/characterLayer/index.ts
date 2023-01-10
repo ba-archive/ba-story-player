@@ -423,7 +423,20 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
 
     })
   }, Question(instance: CharacterEffectInstance, options: EmotionOptions['Question'], sprites: Sprite[]): Promise<void> {
-    return Promise.resolve(undefined);
+    let questionImg = sprites[0]
+    let globalOptions = setInitValue(instance, questionImg, options)
+    questionImg.visible = true
+    questionImg.anchor.set(options.scaleAnimation.value.anchor.x, options.scaleAnimation.value.anchor.y)
+
+    let tl = gsap.timeline()
+    let animationScale = globalOptions.scale * options.scaleAnimation.value.scale
+    let recoverScale = globalOptions.scale * options.scaleAnimation.value.recoverScale
+    return timelinePromise(
+      tl.to(questionImg.scale, { x: animationScale, y: animationScale, duration: options.scaleAnimation.value.scaleDuration })
+        .to(questionImg.scale, { x: recoverScale, y: recoverScale, duration: options.scaleAnimation.value.recoverDuration })
+        .to(questionImg, { duration: options.fadeOutPreDuration!.value })
+        .to(questionImg, { alpha: 0, duration: options.fadeOutDuration.value })
+      , [questionImg])
   }, Respond(instance: CharacterEffectInstance, options: EmotionOptions['Respond'], sprites: Sprite[]): Promise<void> {
     let { app } = usePlayerStore()
     let globalOptions = setInitValue(instance, sprites[0], options)
