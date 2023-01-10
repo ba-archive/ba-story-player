@@ -308,7 +308,24 @@ export interface BasicEmotionOptions extends BaseOptions<EmotionWord> {
       recoverDuration: number
     }>
   },
-  Shy: {},
+  Shy: {
+    shyImg: OptionUnit<{
+      anchor: PositionOffset
+      scale: number
+      position: PositionOffset
+    }>
+    scaleAnamation: OptionUnit<{
+      anchor: PositionOffset
+      startScale: number
+      duration: number
+    }>
+    shakeAnimation: OptionUnit<{
+      angleFrom: number
+      angleTo: number
+      duration: number
+      times: number
+    }>
+  },
   Upset: {}
 }
 

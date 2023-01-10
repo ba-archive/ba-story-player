@@ -377,18 +377,52 @@ let emotionOptions: EmotionOptions = {
   Shy: {
     "startPositionOffset": {
       "value": {
-        "x": 50,
-        "y": 0
+        "x": 0.3,
+        "y": 0.1
       },
-      "description": globalDescription['startPositionOffset']
+      "description": "图片开始时相对于角色的位置, 相对值, 值为偏移量与角色宽度比例"
     },
     "scale": {
-      value: 0.3,
-      "description": globalDescription['scale']
+      "value": 0.3,
+      "description": "图片缩放比例, 多个图片时为基准图片缩放比例"
     },
     "fadeOutDuration": {
       "value": 0.1,
-      "description": globalDescription['fadeOutDuration']
+      "description": "淡出动画的时间"
+    },
+    "shyImg": {
+      "value": {
+        "anchor": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "scale": 1,
+        "position": {
+          "x": -0.65,
+          "y": -0.5
+        }
+      },
+      "description": "///图片的相关设置"
+    },
+    "scaleAnamation": {
+      "value": {
+        "startScale": 0.8,
+        "anchor": {
+          "x": 1,
+          "y": 1
+        },
+        "duration": 0.1
+      },
+      "description": "开始时的放大动画设置, 包括放大开始前的大小,放大动画的依据点, 放大动画的时间"
+    },
+    "shakeAnimation": {
+      "value": {
+        "angleFrom": 13,
+        "angleTo": -10,
+        "duration": 0.4,
+        "times": 2
+      },
+      "description": "///图片摇动动画的相关设置, 包括摇动从哪个角度到哪个角度, 摇动次数"
     }
   },
   Upset: {

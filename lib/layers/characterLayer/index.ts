@@ -466,7 +466,36 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
   }, Sad(instance: CharacterEffectInstance, options: EmotionOptions['Sad'], sprites: Sprite[]): Promise<void> {
     return Promise.resolve(undefined);
   }, Shy(instance: CharacterEffectInstance, options: EmotionOptions['Shy'], sprites: Sprite[]): Promise<void> {
-    return Promise.resolve(undefined);
+    let dialogImg = sprites[0]
+    let shyImg = sprites[1]
+    let globalOptions = setInitValue(instance, dialogImg, options)
+    dialogImg.scale.set(globalOptions.scale * options.scaleAnamation.value.startScale)
+    dialogImg.anchor.set(options.scaleAnamation.value.anchor.x, options.scaleAnamation.value.anchor.y)
+    let shyImgPos = calcRelativePosition(dialogImg, options.shyImg.value.position)
+    shyImg.scale.set(globalOptions.scale * options.shyImg.value.scale * options.scaleAnamation.value.startScale)
+    shyImg.position = shyImgPos
+    dialogImg.zIndex = 10
+    shyImg.zIndex = 11
+    let shyImgAnchor = options.shyImg.value.anchor
+    shyImg.anchor.set(shyImgAnchor.x, shyImgAnchor.y)
+    shyImg.visible = dialogImg.visible = true
+
+    let shakeTl = gsap.timeline({ paused: true })
+    shakeTl.add('start')
+      .to(shyImg, { angle: options.shakeAnimation.value.angleFrom, duration: options.shakeAnimation.value.duration / 2 })
+      .to(shyImg, { angle: options.shakeAnimation.value.angleTo, duration: options.shakeAnimation.value.duration / 2 })
+      .add('end')
+
+
+    let tl = gsap.timeline()
+    return timelinePromise(
+      tl.to(shyImg.scale, { x: globalOptions.scale, y: globalOptions.scale, duration: options.scaleAnamation.value.duration })
+        .to(dialogImg.scale, { x: globalOptions.scale, y: globalOptions.scale, duration: options.scaleAnamation.value.duration }, '<')
+        .add(shakeTl.tweenFromTo('start', 'end', { repeat: options.shakeAnimation.value.times - 1 }))
+        .to(shyImg, { alpha: 0, duration: options.fadeOutDuration.value })
+        .to(dialogImg, { alpha: 0, duration: options.fadeOutDuration.value }, '<')
+      , [shyImg, dialogImg]
+    )
   }, Surprise(instance: CharacterEffectInstance, options: EmotionOptions['Surprise'], sprites: Sprite[]): Promise<void> {
     return Promise.resolve(undefined);
   }, Sweat(instance: CharacterEffectInstance, options: EmotionOptions['Sweat'], sprites: Sprite[]): Promise<void> {
