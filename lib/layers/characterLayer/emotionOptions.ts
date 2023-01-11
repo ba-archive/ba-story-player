@@ -326,18 +326,55 @@ let emotionOptions: EmotionOptions = {
   Surprise: {
     "startPositionOffset": {
       "value": {
-        "x": 50,
-        "y": 0
+        "x": 0.3,
+        "y": 0.16
       },
-      "description": globalDescription['startPositionOffset']
+      "description": "图片开始时相对于角色的位置, 相对值, 值为偏移量与角色宽度比例"
     },
     "scale": {
-      value: 0.3,
-      "description": globalDescription['scale']
+      "value": 0.07,
+      "description": "图片缩放比例, 多个图片时为基准图片缩放比例"
+    },
+    "fadeOutPreDuration": {
+      "value": 0.4,
+      "description": "淡出动画亲爱的时间, 可选"
+    },
+    "imgSetting": {
+      "value": {
+        "angles": [
+          -10,
+          15
+        ],
+        "questionImgPos": {
+          "x": 1.5,
+          "y": 0
+        }
+      },
+      "description": "图片位置和选择角度设置"
     },
     "fadeOutDuration": {
       "value": 0.1,
-      "description": globalDescription['fadeOutDuration']
+      "description": "淡出动画的时间"
+    },
+    "scaleAnimation": {
+      "value": {
+        "startScale": 0.7,
+        "questionImgYScale": 0.3,
+        "duration": 0.3,
+        "anchor": {
+          "x": 0.5,
+          "y": 1
+        }
+      },
+      "description": "图片放大的动画, 其中?图片还有一个y方向的形变, 还可以选定缩放动画的原点"
+    },
+    "jumpAnimation": {
+      "value": {
+        "xOffset": -0.1,
+        "jumpYOffset": 0.1,
+        "duration": 0.3
+      },
+      "description": "图片向左移动并跳动的动画"
     }
   },
   Question: {

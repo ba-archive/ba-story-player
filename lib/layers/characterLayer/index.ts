@@ -497,7 +497,37 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
       , [shyImg, dialogImg]
     )
   }, Surprise(instance: CharacterEffectInstance, options: EmotionOptions['Surprise'], sprites: Sprite[]): Promise<void> {
-    return Promise.resolve(undefined);
+    let exclaimImg = Sprite.from(sprites[0].texture)
+    let surpriseImg = Sprite.from(sprites[1].texture)
+    let globalOptions = setInitValue(instance, exclaimImg, options)
+    let startScale = globalOptions.scale * options.scaleAnimation.value.startScale
+    exclaimImg.scale.set(startScale)
+    exclaimImg.anchor.set(options.scaleAnimation.value.anchor.x, options.scaleAnimation.value.anchor.y)
+    surpriseImg.scale.set(startScale, startScale * options.scaleAnimation.value.questionImgYScale)
+    surpriseImg.position = calcRelativePosition(exclaimImg, options.imgSetting.value.questionImgPos)
+    surpriseImg.anchor.set(options.scaleAnimation.value.anchor.x, options.scaleAnimation.value.anchor.y)
+    let container = new Container()
+    //container设置为从app.stage的(0,0)开始方便使用工具类函数
+    container.addChild(exclaimImg)
+    container.addChild(surpriseImg)
+    let { app } = usePlayerStore()
+    app.stage.addChild(container)
+    container.zIndex = 10
+
+    let tl = gsap.timeline()
+    let xOffset = options.jumpAnimation.value.xOffset * instance.instance.width
+    let jumpYOffset = options.jumpAnimation.value.jumpYOffset * instance.instance.width
+    return timelinePromise(
+      tl.to(container, { x: `+=${xOffset}`, duration: options.jumpAnimation.value.duration })
+        .to(container, { y: `-=${jumpYOffset}`, duration: options.jumpAnimation.value.duration / 2 }, 0)
+        .to(container, { y: `+=${jumpYOffset}`, duration: options.jumpAnimation.value.duration / 2 }, '>')
+        .add('jumpEnd')
+        .to(exclaimImg.scale, { x: globalOptions.scale, y: globalOptions.scale, duration: options.scaleAnimation.value.duration }, 0)
+        .to(surpriseImg.scale, { x: globalOptions.scale, y: globalOptions.scale, duration: options.scaleAnimation.value.duration }, 0)
+        .to(container, { duration: options.fadeOutPreDuration?.value }, 'jumpEnd')
+        .to(container, { alpha: 0, duration: options.fadeOutDuration.value }, '>')
+      , [...sprites, surpriseImg, exclaimImg]
+    )
   }, Sweat(instance: CharacterEffectInstance, options: EmotionOptions['Sweat'], sprites: Sprite[]): Promise<void> {
     let { app } = usePlayerStore()
     let dropImg = sprites[0]

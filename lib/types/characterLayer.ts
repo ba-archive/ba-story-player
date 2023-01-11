@@ -298,7 +298,23 @@ export interface BasicEmotionOptions extends BaseOptions<EmotionWord> {
       duration: number
     }>
   },
-  Surprise: {},
+  Surprise: {
+    imgSetting: OptionUnit<{
+      angles: number[]
+      questionImgPos: PositionOffset
+    }>
+    scaleAnimation: OptionUnit<{
+      startScale: number
+      questionImgYScale: number
+      duration: number
+      anchor: PositionOffset
+    }>
+    jumpAnimation: OptionUnit<{
+      xOffset: number
+      jumpYOffset: number
+      duration: number
+    }>
+  },
   Question: {
     scaleAnimation: OptionUnit<{
       scale: number
