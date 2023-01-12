@@ -250,7 +250,18 @@ export interface BasicEmotionOptions extends BaseOptions<EmotionWord> {
       duration: number
     }>
   },
-  Twinkle: {},
+  Twinkle: {
+    starImgs: OptionUnit<{
+      pos: PositionOffset[]
+      scale: number[]
+    }>
+    fadeInDuration: OptionUnit<number>
+    flashAnimation: OptionUnit<{
+      scales: number[]
+      duration: number[]
+      totalDuration: number
+    }>
+  },
   Sad: {},
   Sweat: {
     smallImg: OptionUnit<{

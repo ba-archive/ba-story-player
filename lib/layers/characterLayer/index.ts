@@ -14,13 +14,18 @@ import { usePlayerStore } from "@/stores";
 import { Character, CharacterEffectType, CharacterInstance } from "@/types/common";
 import eventBus from "@/eventBus";
 import gsap from "gsap";
-import { Container, Sprite } from "pixi.js";
+import { PixiPlugin } from 'gsap/PixiPlugin'
+import { Container, DisplayObject, Sprite } from "pixi.js";
+import * as PIXI from 'pixi.js'
 import emotionOptions from "./emotionOptions";
 import actionOptions from "./actionOptions";
 
 const AnimationIdleTrack = 0; // 光环动画track index
 const AnimationFaceTrack = 1; // 差分切换
 const AnimationEyeCloseTrack = 2; // TODO 眨眼动画
+
+PixiPlugin.registerPIXI(PIXI)
+gsap.registerPlugin(PixiPlugin)
 
 export function characterInit(): boolean {
   return CharacterLayerInstance.init();
@@ -557,7 +562,47 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
         .catch(reason => reject(reason))
     })
   }, Twinkle(instance: CharacterEffectInstance, options: EmotionOptions['Twinkle'], sprites: Sprite[]): Promise<void> {
-    return Promise.resolve(undefined);
+    let container = new Container()
+    setInitPos(instance, container, options)
+    let scale = getRelativeScale(instance, sprites[0], options)
+    let starImgs: Sprite[] = []
+    let starImgScales: number[] = []
+    for (let i = 0; i < 3; ++i) {
+      starImgScales.push(scale * options.starImgs.value.scale[i])
+    }
+    for (let i = 0; i < 3; ++i) {
+      let starImg = Sprite.from(sprites[0].texture)
+      starImgs.push(starImg)
+      starImg.anchor.set(0.5)
+      starImg.scale.set(starImgScales[i])
+      starImg.position = calcRelativePosition(starImgs[0], options.starImgs.value.pos[i])
+      container.addChild(starImg)
+    }
+    let { app } = usePlayerStore()
+    container.alpha = 0
+    app.stage.addChild(container)
+
+    let flashTlMaster = gsap.timeline({ paused: true })
+    for (let i = 0; i < 3; ++i) {
+      let flashTl = gsap.timeline()
+      flashTl.to(starImgs[i],
+        {
+          pixi: { scale: options.flashAnimation.value.scales[i] * starImgScales[i] },
+          duration: options.flashAnimation.value.duration[i] / 2,
+          repeat: -1,
+          yoyo: true,
+        }
+        , 0)
+      flashTlMaster.add(flashTl, 0)
+    }
+
+    let tl = gsap.timeline()
+    return timelinePromise(
+      tl.to(container, { alpha: 1, duration: options.fadeInDuration.value })
+        .add(flashTlMaster.tweenFromTo(0, options.flashAnimation.value.totalDuration))
+        .to(container, { alpha: 0, duration: options.fadeOutDuration.value }, `>-=${options.fadeOutPreDuration?.value}`)
+      , [...starImgs, ...sprites]
+    )
   }, Upset(instance: CharacterEffectInstance, options: EmotionOptions['Upset'], sprites: Sprite[]): Promise<void> {
     return Promise.resolve(undefined);
   }
@@ -650,6 +695,42 @@ function setInitValue(instance: CharacterEffectInstance, standardImg: Sprite, op
   return globalOptions
 }
 
+/**
+ * 设置初始位置, 并同时会将z-index设为10放置角色覆盖图片
+ * @param instance 角色实例
+ * @param object 设置位置的pixi对象
+ * @param options 当前情绪动画的参数
+ * @returns 位置绝对值
+ */
+function setInitPos(instance: CharacterEffectInstance, object: DisplayObject, options: EmotionOptions[EmotionWord]) {
+  let pos = {
+    x: instance.instance.x + instance.instance.width * options.startPositionOffset.value.x,
+    y: instance.instance.y + instance.instance.width * options.startPositionOffset.value.y
+  }
+  object.x = pos.x
+  object.y = pos.y
+  object.zIndex = 10
+
+  return pos
+}
+
+/**
+ * 计算图片基于角色大小的缩放比例 
+ * @param instance 角色实例 
+ * @param img 缩放的图片
+ * @param options 情绪动画设置参数
+ * @returns 缩放比例绝对值
+ */
+function getRelativeScale(instance: CharacterEffectInstance, img: Sprite, options: EmotionOptions[EmotionWord]) {
+  return options.scale.value * instance.instance.width / img.width
+}
+
+/**
+ * timeline执行后生成一个promise并自动回收sprite 
+ * @param timeLine 执行的timeline
+ * @param destroyImgs 要回收的sprite对象数组
+ * @returns 生成的promise
+ */
 function timelinePromise(timeLine: gsap.core.Timeline, destroyImgs: Sprite[]) {
   return new Promise<void>((resolve, reject) => {
     timeLine.then(() => {

@@ -140,18 +140,66 @@ let emotionOptions: EmotionOptions = {
   Twinkle: {
     "startPositionOffset": {
       "value": {
-        "x": 50,
+        "x": 0.2,
         "y": 0
       },
-      "description": globalDescription['startPositionOffset']
+      "description": "图片开始时相对于角色的位置, 相对值, 值为偏移量与角色宽度比例"
     },
     "scale": {
-      value: 0.3,
-      "description": globalDescription['scale']
+      "value": 0.1,
+      "description": "图片缩放比例, 多个图片时为基准图片缩放比例"
+    },
+    "fadeOutPreDuration": {
+      "value": 0.2,
+      "description": "淡出动画亲爱的时间, 可选"
     },
     "fadeOutDuration": {
-      "value": 0.1,
-      "description": globalDescription['fadeOutDuration']
+      "value": 0.2,
+      "description": "淡出动画的时间"
+    },
+    "starImgs": {
+      "value": {
+        "pos": [
+          {
+            "x": 0,
+            "y": 0
+          },
+          {
+            "x": 0.7,
+            "y": -0.6
+          },
+          {
+            "x": 0.8,
+            "y": 0.6
+          }
+        ],
+        "scale": [
+          1,
+          0.9,
+          0.6
+        ]
+      },
+      "description": "三颗星的位置和缩放大小设置"
+    },
+    "flashAnimation": {
+      "value": {
+        "scales": [
+          1.2,
+          1.15,
+          0.9
+        ],
+        "duration": [
+          0.5,
+          0.6,
+          0.4
+        ],
+        "totalDuration": 1
+      },
+      "description": "闪烁动画设置, 包括放大缩小倍数-动画时长"
+    },
+    "fadeInDuration": {
+      "value": 0.2,
+      "description": "出现动画时长"
     }
   },
   Sad: {
