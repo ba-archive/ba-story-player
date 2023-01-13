@@ -3,7 +3,7 @@ import { EmotionOptions, GlobalEmotionOptions } from "@/types/characterLayer"
 let globalDescription: Record<keyof GlobalEmotionOptions, string> = {
   startPositionOffset: '图片开始时相对于角色的位置, 相对值, 值为偏移量与角色宽度比例',
   scale: '图片缩放比例, 多个图片时为基准图片缩放比例',
-  fadeOutPreDuration: '淡出动画亲爱的时间, 可选',
+  fadeOutPreDuration: '淡出动画前的时间, 可选',
   fadeOutDuration: '淡出动画的时间',
 }
 
@@ -257,18 +257,44 @@ let emotionOptions: EmotionOptions = {
   Dot: {
     "startPositionOffset": {
       "value": {
-        "x": 50,
-        "y": 0
+        "x": 0,
+        "y": -0.1
       },
-      "description": globalDescription['startPositionOffset']
+      "description": "图片开始时相对于角色的位置, 相对值, 值为偏移量与角色宽度比例"
     },
     "scale": {
-      value: 0.3,
-      "description": globalDescription['scale']
+      "value": 0.3,
+      "description": "图片缩放比例, 多个图片时为基准图片缩放比例"
+    },
+    "fadeOutPreDuration": {
+      "value": 0.1,
+      "description": "淡出动画前的时间, 可选"
     },
     "fadeOutDuration": {
       "value": 0.1,
-      "description": globalDescription['fadeOutDuration']
+      "description": "淡出动画的时间"
+    },
+    "dotContainerPos": {
+      "value": {
+        "x": 0.3,
+        "y": 1.1
+      },
+      "description": "所有点图片的容器在对话框图片中的位置"
+    },
+    "dotPos": {
+      "value": [
+        0,
+        2,
+        4
+      ],
+      "description": "起始位置的x方向位移的相对值"
+    },
+    "showAnimation": {
+      "value": {
+        "alpahaDuration": 0.1,
+        "showDelay": 0.3
+      },
+      "description": "显示点的动画参数"
     }
   },
   Chat: {

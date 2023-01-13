@@ -347,7 +347,25 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
         .catch(reason => reject(reason))
     })
   }, Dot(instance: CharacterEffectInstance, options: EmotionOptions['Dot'], sprites: Sprite[]): Promise<void> {
-    return Promise.resolve(undefined);
+    let dialogImg = sprites[0]
+    let globalOptions = setInitValue(instance, dialogImg, options)
+    dialogImg.visible = true
+
+    let dotContainer = new Container()
+    let showTl = gsap.timeline()
+    for (let i = 0; i < 3; ++i) {
+      let dotImg = Sprite.from(sprites[1].texture)
+      dotImg.alpha = 0
+      dotImg.position = calcRelativePosition(dotImg, { x: options.dotPos.value[i], y: 0 })
+      showTl.to(dotImg, { alpha: 1, duration: options.showAnimation.value.alpahaDuration, delay: options.showAnimation.value.showDelay })
+      dotContainer.addChild(dotImg)
+    }
+    dialogImg.addChild(dotContainer)
+    dotContainer.position = { x: options.dotContainerPos.value.x * dialogImg.width, y: options.dotContainerPos.value.y * dialogImg.height }
+
+    return timelinePromise(
+      showTl.to(dialogImg, { alpha: 0, duration: options.fadeOutDuration.value, delay: options.fadeOutPreDuration?.value })
+      , [...sprites, ...dotContainer.children as Sprite[]])
   }, Exclaim(instance: CharacterEffectInstance, options: EmotionOptions['Exclaim'], sprites: Sprite[]): Promise<void> {
     let surpriseImg = sprites[0]
     let globalOptions = setInitValue(instance, surpriseImg, options)

@@ -277,7 +277,14 @@ export interface BasicEmotionOptions extends BaseOptions<EmotionWord> {
       duration: number
     }>
   },
-  Dot: {},
+  Dot: {
+    dotContainerPos: OptionUnit<PositionOffset>
+    dotPos: OptionUnit<number[]>
+    showAnimation: OptionUnit<{
+      showDelay: number
+      alpahaDuration: number
+    }>
+  },
   Chat: {
     rotateAngle: OptionUnit<number>,
     rotateTime: OptionUnit<number>,
