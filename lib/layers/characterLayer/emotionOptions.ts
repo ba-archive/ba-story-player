@@ -539,18 +539,44 @@ let emotionOptions: EmotionOptions = {
   Upset: {
     "startPositionOffset": {
       "value": {
-        "x": 50,
-        "y": 0
+        "x": 0,
+        "y": -0.1
       },
-      "description": globalDescription['startPositionOffset']
+      "description": "图片开始时相对于角色的位置, 相对值, 值为偏移量与角色宽度比例"
     },
     "scale": {
-      value: 0.3,
-      "description": globalDescription['scale']
+      "value": 0.3,
+      "description": "图片缩放比例, 多个图片时为基准图片缩放比例"
     },
     "fadeOutDuration": {
-      "value": 0.1,
-      "description": globalDescription['fadeOutDuration']
+      "value": 0.3,
+      "description": "淡出动画的时间"
+    },
+    "upsetImgPos": {
+      "value": {
+        "x": 1.5,
+        "y": 1.4
+      },
+      "description": "线条图片的位置"
+    },
+    "rotateAnimation": {
+      "value": {
+        "angleFrom": 6,
+        "angleTo": -7,
+        "duration": 0.2
+      },
+      "description": "线条图片左右选择的动画参数, 包括选择角度和时间"
+    },
+    "yScaleAnimation": {
+      "value": {
+        "scale": 0.8,
+        "duration": 0.43
+      },
+      "description": "线条图片上下压缩的动画参数, 包括压缩的比例和动画时间"
+    },
+    "animationTotalDuration": {
+      "value": 1,
+      "description": "动画持续时间"
     }
   }
 }

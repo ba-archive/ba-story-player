@@ -622,7 +622,31 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
       , [...starImgs, ...sprites]
     )
   }, Upset(instance: CharacterEffectInstance, options: EmotionOptions['Upset'], sprites: Sprite[]): Promise<void> {
-    return Promise.resolve(undefined);
+    let dialogImg = sprites[0]
+    let globalOptions = setInitValue(instance, dialogImg, options)
+    let upsetImg = Sprite.from(sprites[1].texture)
+    upsetImg.anchor.set(0.5, 0.5)
+    dialogImg.addChild(upsetImg)
+    dialogImg.visible = true
+    setRelativePosition(upsetImg, dialogImg, options.upsetImgPos.value)
+
+    let animationTl = gsap.timeline({ paused: true })
+    animationTl.fromTo(upsetImg,
+      { pixi: { angle: options.rotateAnimation.value.angleFrom } },
+      { pixi: { angle: options.rotateAnimation.value.angleTo }, duration: options.rotateAnimation.value.duration, repeat: -1, yoyo: true })
+      .to(upsetImg, {
+        pixi: { scaleY:  options.yScaleAnimation.value.scale },
+        duration: options.yScaleAnimation.value.duration,
+        repeat: -1,
+        yoyo: true
+      })
+
+    let tl = gsap.timeline()
+    return timelinePromise(
+      tl.add(animationTl.tweenFromTo(0, options.animationTotalDuration.value))
+        .to(dialogImg, { pixi: { alpha: 0 }, duration: options.fadeOutDuration.value })
+      , [...sprites, upsetImg]
+    )
   }
 }
 
@@ -686,6 +710,19 @@ function calcRelativePosition(standard: Sprite, relativeValue: PositionOffset) {
   return {
     x: standard.x + standard.width * relativeValue.x,
     y: standard.y + standard.width * relativeValue.y
+  }
+}
+
+/**
+ * 设置一个图片在另一个图片中的位置(需要该图片是另一图片的child) 
+ * @param childImg 设置的图片
+ * @param containerImg 作为容器的图片
+ * @param relativeValue 位置的相对值(相对于容器图片宽度而言)
+ */
+function setRelativePosition(childImg: Sprite, containerImg: Sprite, relativeValue: PositionOffset) {
+  childImg.position = {
+    x: relativeValue.x * containerImg.width,
+    y: relativeValue.y * containerImg.height
   }
 }
 

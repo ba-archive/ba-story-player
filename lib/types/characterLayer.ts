@@ -360,7 +360,19 @@ export interface BasicEmotionOptions extends BaseOptions<EmotionWord> {
       times: number
     }>
   },
-  Upset: {}
+  Upset: {
+    upsetImgPos: OptionUnit<PositionOffset>
+    rotateAnimation: OptionUnit<{
+      angleFrom: number
+      angleTo: number
+      duration: number
+    }>
+    yScaleAnimation: OptionUnit<{
+      scale: number
+      duration: number
+    }>
+    animationTotalDuration: OptionUnit<number>
+  }
 }
 
 export interface GlobalEmotionOptions {
