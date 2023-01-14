@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, ref } from 'vue'
 import eventBus from '../../lib/eventBus'
-import emotionOptions from '../../lib/layers/characterLayer/emotionOptions'
-import actionOptions from '../../lib/layers/characterLayer/actionOptions'
+import emotionOptions, { emotionDescriptions } from '../../lib/layers/characterLayer/emotionOptions'
+import actionOptions, { actionDescriptions } from '../../lib/layers/characterLayer/actionOptions'
 
 let effectType = ref<'action' | 'emotion'>('emotion')
 let current = ref('Music')
@@ -32,6 +32,25 @@ let currentOptions = computed(() => {
   else {
     if (current.value in actionOptions) {
       return actionOptions[current.value]
+    }
+    else {
+      return {}
+    }
+  }
+})
+
+let currentDescriptions = computed(() => {
+  if (effectType.value == 'emotion') {
+    if (current.value in emotionOptions) {
+      return { ...emotionDescriptions[current.value], ...emotionDescriptions['globalOptions'] }
+    }
+    else {
+      return {}
+    }
+  }
+  else {
+    if (current.value in actionOptions) {
+      return { ...actionDescriptions[current.value] }
     }
     else {
       return {}
@@ -84,7 +103,7 @@ function playEffect() {
 }
 
 function changeOption(option: string, value: any) {
-  Reflect.set(currentOptions.value[option], 'value', value)
+  Reflect.set(currentOptions.value, option, value)
 }
 
 function outputOptions() {
@@ -123,19 +142,19 @@ onMounted(() => {
       <option v-else="effectType=='action'" v-for="action in Object.keys(actionOptions)">{{ action }}</option>
     </select>
     <div v-for="option in Object.keys(currentOptions)">
-      <div v-if="typeof currentOptions[option].value === 'string'">
-        <p :title="currentOptions[option].description">{{ option }}</p>
-        <input :value="currentOptions[option].value"
+      <div v-if="typeof currentOptions[option] === 'string'">
+        <p :title="currentDescriptions[option]">{{ option }}</p>
+        <input :value="currentOptions[option]"
           @input="(event) => changeOption(option, (event.target as HTMLInputElement).value)" />
       </div>
-      <div v-else-if="typeof currentOptions[option].value === 'number'">
-        <p :title="currentOptions[option].description">{{ option }}</p>
-        <input type="number" step="0.01" :value="currentOptions[option].value"
+      <div v-else-if="typeof currentOptions[option] === 'number'">
+        <p :title="currentDescriptions[option]">{{ option }}</p>
+        <input type="number" step="0.01" :value="currentOptions[option]"
           @input="(event) => changeOption(option, Number((event.target as HTMLInputElement).value))" />
       </div>
-      <div v-else-if="typeof currentOptions[option].value === 'object'">
-        <p :title="currentOptions[option].description">{{ option }}</p>
-        <textarea :value="JSON.stringify(currentOptions[option].value, null, 2)"
+      <div v-else-if="typeof currentOptions[option] === 'object'">
+        <p :title="currentDescriptions[option]">{{ option }}</p>
+        <textarea :value="JSON.stringify(currentOptions[option], null, 2)"
           @input="(event) => changeOption(option, JSON.parse((event.target as HTMLInputElement).value))" />
       </div>
     </div>

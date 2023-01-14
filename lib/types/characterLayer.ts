@@ -167,12 +167,12 @@ type DescriptionUnit<T> = {
 }
 
 export type OptionDescriptions = {
-  emotions: {
+  emotion: {
     globalOptions: {
       [key in keyof GlobalEmotionOptions]: string
     }
   } & DescriptionUnit<BasicEmotionOptions>,
-  actions: DescriptionUnit<ActionOptions>,
+  action: DescriptionUnit<ActionOptions>,
 }
 
 /**
