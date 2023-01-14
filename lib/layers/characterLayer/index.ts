@@ -308,21 +308,21 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
   Angry(instance: CharacterEffectInstance, options: EmotionOptions['Angry'], sprites: Sprite[]): Promise<void> {
     let angryImgUnit = sprites[0]
     const { app } = usePlayerStore()
-    let scale = instance.instance.width * options.scale.value / angryImgUnit.width
+    let scale = instance.instance.width * options.scale / angryImgUnit.width
 
     for (let i = 0; i < 3; ++i) {
       let uImgUnit = Sprite.from(angryImgUnit.texture)
-      uImgUnit.x = instance.instance.x + instance.instance.width * options.startPositionOffset.value.x
-      uImgUnit.y = instance.instance.y + instance.instance.width * options.startPositionOffset.value.y
+      uImgUnit.x = instance.instance.x + instance.instance.width * options.startPositionOffset.x
+      uImgUnit.y = instance.instance.y + instance.instance.width * options.startPositionOffset.y
       uImgUnit.scale.set(scale)
-      uImgUnit.pivot.set(uImgUnit.width * options.pivotPosition.value.x, uImgUnit.width * options.pivotPosition.value.y)
+      uImgUnit.pivot.set(uImgUnit.width * options.pivotPosition.x, uImgUnit.width * options.pivotPosition.y)
       uImgUnit.angle += i * 120
       uImgUnit.zIndex = 10
       app.stage.addChild(uImgUnit)
       let tl = gsap.timeline()
-      tl.to(uImgUnit.scale, { x: scale * options.animationScale.value.scale, duration: options.animationScale.value.duration })
-        .to(uImgUnit.scale, { x: scale, duration: options.animationScale.value.duration })
-        .to(uImgUnit.scale, { x: scale * options.endScale.value.scale, y: scale * options.endScale.value.scale, duration: options.endScale.value.duration })
+      tl.to(uImgUnit.scale, { x: scale * options.animationScale.scale, duration: options.animationScale.duration })
+        .to(uImgUnit.scale, { x: scale, duration: options.animationScale.duration })
+        .to(uImgUnit.scale, { x: scale * options.endScale.scale, y: scale * options.endScale.scale, duration: options.endScale.duration })
         .then(() => { uImgUnit.destroy() })
     }
 
@@ -334,15 +334,15 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
     chatImage.x = globalOptions.startPositionOffset.x
     chatImage.y = globalOptions.startPositionOffset.y
     chatImage.visible = true
-    chatImage.pivot.x = chatImage.width * (1 + options.rotatePivot.value.x)
-    chatImage.pivot.y = chatImage.height * (1 + options.rotatePivot.value.y)
+    chatImage.pivot.x = chatImage.width * (1 + options.rotatePivot.x)
+    chatImage.pivot.y = chatImage.height * (1 + options.rotatePivot.y)
     chatImage.zIndex = 10
 
     let tl = gsap.timeline()
     return new Promise((resolve, reject) => {
-      tl.to(chatImage, { angle: options.rotateAngle.value, duration: options.rotateTime.value / 2 })
-        .to(chatImage, { angle: 0, duration: options.rotateTime.value / 2 })
-        .to(chatImage, { alpha: 0, duration: options.fadeOutDuration.value })
+      tl.to(chatImage, { angle: options.rotateAngle, duration: options.rotateTime / 2 })
+        .to(chatImage, { angle: 0, duration: options.rotateTime / 2 })
+        .to(chatImage, { alpha: 0, duration: options.fadeOutDuration })
         .then(() => { chatImage.destroy(); resolve() })
         .catch(reason => reject(reason))
     })
@@ -356,41 +356,41 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
     for (let i = 0; i < 3; ++i) {
       let dotImg = Sprite.from(sprites[1].texture)
       dotImg.alpha = 0
-      dotImg.position = calcRelativePosition(dotImg, { x: options.dotPos.value[i], y: 0 })
-      showTl.to(dotImg, { alpha: 1, duration: options.showAnimation.value.alpahaDuration, delay: options.showAnimation.value.showDelay })
+      dotImg.position = calcRelativePosition(dotImg, { x: options.dotPos[i], y: 0 })
+      showTl.to(dotImg, { alpha: 1, duration: options.showAnimation.alpahaDuration, delay: options.showAnimation.showDelay })
       dotContainer.addChild(dotImg)
     }
     dialogImg.addChild(dotContainer)
-    dotContainer.position = { x: options.dotContainerPos.value.x * dialogImg.width, y: options.dotContainerPos.value.y * dialogImg.height }
+    dotContainer.position = { x: options.dotContainerPos.x * dialogImg.width, y: options.dotContainerPos.y * dialogImg.height }
 
     return timelinePromise(
-      showTl.to(dialogImg, { alpha: 0, duration: options.fadeOutDuration.value, delay: options.fadeOutPreDuration?.value })
+      showTl.to(dialogImg, { alpha: 0, duration: options.fadeOutDuration, delay: options.fadeOutPreDuration})
       , [...sprites, ...dotContainer.children as Sprite[]])
-  }, Exclaim(instance: CharacterEffectInstance, options: EmotionOptions['Exclaim'], sprites: Sprite[]): Promise<void> {
+  }, Exclaim(instance: CharacterEffectInstance, options, sprites: Sprite[]): Promise<void> {
     let surpriseImg = sprites[0]
     let globalOptions = setInitValue(instance, surpriseImg, options)
     surpriseImg.visible = true
 
     let tl = gsap.timeline()
-    let animationScale = globalOptions.scale * options.scaleAnimation.value.scale
-    let recoverScale = globalOptions.scale * options.scaleAnimation.value.recoverScale
+    let animationScale = globalOptions.scale * options.scaleAnimation.scale
+    let recoverScale = globalOptions.scale * options.scaleAnimation.recoverScale
     return timelinePromise(
-      tl.to(surpriseImg.scale, { x: animationScale, y: animationScale, duration: options.scaleAnimation.value.scaleDuration })
-        .to(surpriseImg.scale, { x: recoverScale, y: recoverScale, duration: options.scaleAnimation.value.recoverDuration })
-        .to(surpriseImg, { duration: options.fadeOutWaitTime.value })
-        .to(surpriseImg, { alpha: 0, duration: options.fadeOutDuration.value })
+      tl.to(surpriseImg.scale, { x: animationScale, y: animationScale, duration: options.scaleAnimation.scaleDuration })
+        .to(surpriseImg.scale, { x: recoverScale, y: recoverScale, duration: options.scaleAnimation.recoverDuration })
+        .to(surpriseImg, { duration: options.fadeOutWaitTime })
+        .to(surpriseImg, { alpha: 0, duration: options.fadeOutDuration })
       , [surpriseImg])
   }, Heart(instance: CharacterEffectInstance, options: EmotionOptions['Heart'], sprites: Sprite[]): Promise<void> {
     let dialogImg = sprites[0]
     let heartImg = sprites[1]
 
-    dialogImg.x = instance.instance.x + instance.instance.width * options.startPositionOffset.value.x
-    dialogImg.y = instance.instance.y + instance.instance.width * options.startPositionOffset.value.y
-    let dialogScale = options.scale.value * instance.instance.width / dialogImg.width
+    dialogImg.x = instance.instance.x + instance.instance.width * options.startPositionOffset.x
+    dialogImg.y = instance.instance.y + instance.instance.width * options.startPositionOffset.y
+    let dialogScale = options.scale * instance.instance.width / dialogImg.width
     dialogImg.scale.set(dialogScale)
-    heartImg.x = dialogImg.x + dialogImg.width * options.heartImg.value.position.x
-    heartImg.y = dialogImg.y + dialogImg.width * options.heartImg.value.position.y
-    let heartScale = options.heartImg.value.scale * dialogImg.width / heartImg.width
+    heartImg.x = dialogImg.x + dialogImg.width * options.heartImg.position.x
+    heartImg.y = dialogImg.y + dialogImg.width * options.heartImg.position.y
+    let heartScale = options.heartImg.scale * dialogImg.width / heartImg.width
     heartImg.scale.set(heartScale)
     dialogImg.zIndex = 10
     heartImg.zIndex = 11
@@ -399,28 +399,28 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
 
     let tl = gsap.timeline()
     let firstScale: Scale = {
-      x: options.jumpAnimation.value.firstScale.x * heartScale,
-      y: options.jumpAnimation.value.firstScale.y * heartScale
+      x: options.jumpAnimation.firstScale.x * heartScale,
+      y: options.jumpAnimation.firstScale.y * heartScale
     }
     let secondScale: Scale = {
-      x: options.jumpAnimation.value.secondScale.x * heartScale,
-      y: options.jumpAnimation.value.secondScale.y * heartScale
+      x: options.jumpAnimation.secondScale.x * heartScale,
+      y: options.jumpAnimation.secondScale.y * heartScale
     }
-    tl.to(heartImg.scale, { x: firstScale.x, y: firstScale.y, duration: options.jumpAnimation.value.duration })
-      .to(heartImg.scale, { x: heartScale, y: heartScale, duration: options.jumpAnimation.value.duration })
-      .to(heartImg.scale, { x: secondScale.x, y: secondScale.y, duration: options.jumpAnimation.value.duration })
-      .to(heartImg, { alpha: 0, duration: options.fadeOutDuration.value })
+    tl.to(heartImg.scale, { x: firstScale.x, y: firstScale.y, duration: options.jumpAnimation.duration })
+      .to(heartImg.scale, { x: heartScale, y: heartScale, duration: options.jumpAnimation.duration })
+      .to(heartImg.scale, { x: secondScale.x, y: secondScale.y, duration: options.jumpAnimation.duration })
+      .to(heartImg, { alpha: 0, duration: options.fadeOutDuration })
       .add('fadeOut', "<")
-      .to(dialogImg, { alpha: 0, duration: options.fadeOutDuration.value }, 'fadeOut')
+      .to(dialogImg, { alpha: 0, duration: options.fadeOutDuration }, 'fadeOut')
       .then(() => { dialogImg.destroy(); heartImg.destroy() })
 
     return Promise.resolve(undefined);
   }, Music(instance: CharacterEffectInstance, options: EmotionOptions['Music'], sprites: Sprite[]) {
     let note = sprites[0]
-    let scale = options.scale.value * instance.instance.width / note.width
+    let scale = options.scale * instance.instance.width / note.width
     note.scale.set(scale * 0.7)
-    note.x = instance.instance.x + instance.instance.width * options.startPositionOffset.value.x
-    note.y = instance.instance.y + instance.instance.width * options.startPositionOffset.value.y
+    note.x = instance.instance.x + instance.instance.width * options.startPositionOffset.x
+    note.y = instance.instance.y + instance.instance.width * options.startPositionOffset.y
     note.visible = true
 
     let tl = gsap.timeline()
@@ -429,13 +429,13 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
 
     return new Promise((resolve, reject) => {
       tl.to(note.scale, { x: scale, y: scale, duration: 0.1 })
-        .to(note, { x: x + note.width * options.animation.value.offset.x, duration: options.animation.value.duration })
+        .to(note, { x: x + note.width * options.animation.offset.x, duration: options.animation.duration })
         .add('start', '<')
-        .to(note, { y: y + note.width * options.animation.value.offset.y, angle: options.rotateAngle.value, duration: options.animation.value.duration * 0.3 }, 'start')
-        .to(note, { y: y, angle: 0, duration: options.animation.value.duration * 0.3 }, '>')
-        .to(note, { y: y + note.width * options.animation.value.offset.y, angle: options.rotateAngle.value, duration: options.animation.value.duration * 0.4 }, '>')
-        .to(note, { y: y, angle: 0, duration: options.animation.value.duration * 0.4 }, '>')
-        .to(note, { alpha: 0, duration: options.fadeOutDuration.value }, '>')
+        .to(note, { y: y + note.width * options.animation.offset.y, angle: options.rotateAngle, duration: options.animation.duration * 0.3 }, 'start')
+        .to(note, { y: y, angle: 0, duration: options.animation.duration * 0.3 }, '>')
+        .to(note, { y: y + note.width * options.animation.offset.y, angle: options.rotateAngle, duration: options.animation.duration * 0.4 }, '>')
+        .to(note, { y: y, angle: 0, duration: options.animation.duration * 0.4 }, '>')
+        .to(note, { alpha: 0, duration: options.fadeOutDuration }, '>')
         .then(() => {
           note.destroy();
           resolve()
@@ -449,16 +449,16 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
     let questionImg = sprites[0]
     let globalOptions = setInitValue(instance, questionImg, options)
     questionImg.visible = true
-    questionImg.anchor.set(options.scaleAnimation.value.anchor.x, options.scaleAnimation.value.anchor.y)
+    questionImg.anchor.set(options.scaleAnimation.anchor.x, options.scaleAnimation.anchor.y)
 
     let tl = gsap.timeline()
-    let animationScale = globalOptions.scale * options.scaleAnimation.value.scale
-    let recoverScale = globalOptions.scale * options.scaleAnimation.value.recoverScale
+    let animationScale = globalOptions.scale * options.scaleAnimation.scale
+    let recoverScale = globalOptions.scale * options.scaleAnimation.recoverScale
     return timelinePromise(
-      tl.to(questionImg.scale, { x: animationScale, y: animationScale, duration: options.scaleAnimation.value.scaleDuration })
-        .to(questionImg.scale, { x: recoverScale, y: recoverScale, duration: options.scaleAnimation.value.recoverDuration })
-        .to(questionImg, { duration: options.fadeOutPreDuration!.value })
-        .to(questionImg, { alpha: 0, duration: options.fadeOutDuration.value })
+      tl.to(questionImg.scale, { x: animationScale, y: animationScale, duration: options.scaleAnimation.scaleDuration })
+        .to(questionImg.scale, { x: recoverScale, y: recoverScale, duration: options.scaleAnimation.recoverDuration })
+        .to(questionImg, { duration: options.fadeOutPreDuration! })
+        .to(questionImg, { alpha: 0, duration: options.fadeOutDuration })
       , [questionImg])
   }, Respond(instance: CharacterEffectInstance, options: EmotionOptions['Respond'], sprites: Sprite[]): Promise<void> {
     let { app } = usePlayerStore()
@@ -466,12 +466,12 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
     let imgContainer = new Container()
     for (let i = 0; i < 3; ++i) {
       let respondImg = Sprite.from(sprites[0].texture)
-      respondImg.angle = options.perImgSetting.value[i].angle
+      respondImg.angle = options.perImgSetting[i].angle
       respondImg.anchor.set(
-        options.perImgSetting.value[i].anchor.x,
-        options.perImgSetting.value[i].anchor.y,
+        options.perImgSetting[i].anchor.x,
+        options.perImgSetting[i].anchor.y,
       )
-      respondImg.scale.set(globalOptions.scale * options.perImgSetting.value[i].scale)
+      respondImg.scale.set(globalOptions.scale * options.perImgSetting[i].scale)
       imgContainer.addChild(respondImg)
     }
     app.stage.addChild(imgContainer)
@@ -480,10 +480,10 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
 
     let tl = gsap.timeline()
     return timelinePromise(
-      tl.to(imgContainer, { alpha: options.flashAnimation.value.alpha, duration: options.flashAnimation.value.duration })
-        .to(imgContainer, { alpha: 1, duration: options.fadeOutDuration.value })
-        .to(imgContainer, { duration: options.fadeOutPreDuration?.value })
-        .to(imgContainer, { alpha: 0, duration: options.fadeOutDuration.value }),
+      tl.to(imgContainer, { alpha: options.flashAnimation.alpha, duration: options.flashAnimation.duration })
+        .to(imgContainer, { alpha: 1, duration: options.fadeOutDuration })
+        .to(imgContainer, { duration: options.fadeOutPreDuration})
+        .to(imgContainer, { alpha: 0, duration: options.fadeOutDuration }),
       [...imgContainer.children as Sprite[], ...sprites]
     );
   }, Sad(instance: CharacterEffectInstance, options: EmotionOptions['Sad'], sprites: Sprite[]): Promise<void> {
@@ -492,43 +492,43 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
     let dialogImg = sprites[0]
     let shyImg = sprites[1]
     let globalOptions = setInitValue(instance, dialogImg, options)
-    dialogImg.scale.set(globalOptions.scale * options.scaleAnamation.value.startScale)
-    dialogImg.anchor.set(options.scaleAnamation.value.anchor.x, options.scaleAnamation.value.anchor.y)
-    let shyImgPos = calcRelativePosition(dialogImg, options.shyImg.value.position)
-    shyImg.scale.set(globalOptions.scale * options.shyImg.value.scale * options.scaleAnamation.value.startScale)
+    dialogImg.scale.set(globalOptions.scale * options.scaleAnamation.startScale)
+    dialogImg.anchor.set(options.scaleAnamation.anchor.x, options.scaleAnamation.anchor.y)
+    let shyImgPos = calcRelativePosition(dialogImg, options.shyImg.position)
+    shyImg.scale.set(globalOptions.scale * options.shyImg.scale * options.scaleAnamation.startScale)
     shyImg.position = shyImgPos
     dialogImg.zIndex = 10
     shyImg.zIndex = 11
-    let shyImgAnchor = options.shyImg.value.anchor
+    let shyImgAnchor = options.shyImg.anchor
     shyImg.anchor.set(shyImgAnchor.x, shyImgAnchor.y)
     shyImg.visible = dialogImg.visible = true
 
     let shakeTl = gsap.timeline({ paused: true })
     shakeTl.add('start')
-      .to(shyImg, { angle: options.shakeAnimation.value.angleFrom, duration: options.shakeAnimation.value.duration / 2 })
-      .to(shyImg, { angle: options.shakeAnimation.value.angleTo, duration: options.shakeAnimation.value.duration / 2 })
+      .to(shyImg, { angle: options.shakeAnimation.angleFrom, duration: options.shakeAnimation.duration / 2 })
+      .to(shyImg, { angle: options.shakeAnimation.angleTo, duration: options.shakeAnimation.duration / 2 })
       .add('end')
 
 
     let tl = gsap.timeline()
     return timelinePromise(
-      tl.to(shyImg.scale, { x: globalOptions.scale, y: globalOptions.scale, duration: options.scaleAnamation.value.duration })
-        .to(dialogImg.scale, { x: globalOptions.scale, y: globalOptions.scale, duration: options.scaleAnamation.value.duration }, '<')
-        .add(shakeTl.tweenFromTo('start', 'end', { repeat: options.shakeAnimation.value.times - 1 }))
-        .to(shyImg, { alpha: 0, duration: options.fadeOutDuration.value })
-        .to(dialogImg, { alpha: 0, duration: options.fadeOutDuration.value }, '<')
+      tl.to(shyImg.scale, { x: globalOptions.scale, y: globalOptions.scale, duration: options.scaleAnamation.duration })
+        .to(dialogImg.scale, { x: globalOptions.scale, y: globalOptions.scale, duration: options.scaleAnamation.duration }, '<')
+        .add(shakeTl.tweenFromTo('start', 'end', { repeat: options.shakeAnimation.times - 1 }))
+        .to(shyImg, { alpha: 0, duration: options.fadeOutDuration })
+        .to(dialogImg, { alpha: 0, duration: options.fadeOutDuration }, '<')
       , [shyImg, dialogImg]
     )
   }, Surprise(instance: CharacterEffectInstance, options: EmotionOptions['Surprise'], sprites: Sprite[]): Promise<void> {
     let exclaimImg = Sprite.from(sprites[0].texture)
     let surpriseImg = Sprite.from(sprites[1].texture)
     let globalOptions = setInitValue(instance, exclaimImg, options)
-    let startScale = globalOptions.scale * options.scaleAnimation.value.startScale
+    let startScale = globalOptions.scale * options.scaleAnimation.startScale
     exclaimImg.scale.set(startScale)
-    exclaimImg.anchor.set(options.scaleAnimation.value.anchor.x, options.scaleAnimation.value.anchor.y)
-    surpriseImg.scale.set(startScale, startScale * options.scaleAnimation.value.questionImgYScale)
-    surpriseImg.position = calcRelativePosition(exclaimImg, options.imgSetting.value.questionImgPos)
-    surpriseImg.anchor.set(options.scaleAnimation.value.anchor.x, options.scaleAnimation.value.anchor.y)
+    exclaimImg.anchor.set(options.scaleAnimation.anchor.x, options.scaleAnimation.anchor.y)
+    surpriseImg.scale.set(startScale, startScale * options.scaleAnimation.questionImgYScale)
+    surpriseImg.position = calcRelativePosition(exclaimImg, options.imgSetting.questionImgPos)
+    surpriseImg.anchor.set(options.scaleAnimation.anchor.x, options.scaleAnimation.anchor.y)
     let container = new Container()
     //container设置为从app.stage的(0,0)开始方便使用工具类函数
     container.addChild(exclaimImg)
@@ -538,17 +538,17 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
     container.zIndex = 10
 
     let tl = gsap.timeline()
-    let xOffset = options.jumpAnimation.value.xOffset * instance.instance.width
-    let jumpYOffset = options.jumpAnimation.value.jumpYOffset * instance.instance.width
+    let xOffset = options.jumpAnimation.xOffset * instance.instance.width
+    let jumpYOffset = options.jumpAnimation.jumpYOffset * instance.instance.width
     return timelinePromise(
-      tl.to(container, { x: `+=${xOffset}`, duration: options.jumpAnimation.value.duration })
-        .to(container, { y: `-=${jumpYOffset}`, duration: options.jumpAnimation.value.duration / 2 }, 0)
-        .to(container, { y: `+=${jumpYOffset}`, duration: options.jumpAnimation.value.duration / 2 }, '>')
+      tl.to(container, { x: `+=${xOffset}`, duration: options.jumpAnimation.duration })
+        .to(container, { y: `-=${jumpYOffset}`, duration: options.jumpAnimation.duration / 2 }, 0)
+        .to(container, { y: `+=${jumpYOffset}`, duration: options.jumpAnimation.duration / 2 }, '>')
         .add('jumpEnd')
-        .to(exclaimImg.scale, { x: globalOptions.scale, y: globalOptions.scale, duration: options.scaleAnimation.value.duration }, 0)
-        .to(surpriseImg.scale, { x: globalOptions.scale, y: globalOptions.scale, duration: options.scaleAnimation.value.duration }, 0)
-        .to(container, { duration: options.fadeOutPreDuration?.value }, 'jumpEnd')
-        .to(container, { alpha: 0, duration: options.fadeOutDuration.value }, '>')
+        .to(exclaimImg.scale, { x: globalOptions.scale, y: globalOptions.scale, duration: options.scaleAnimation.duration }, 0)
+        .to(surpriseImg.scale, { x: globalOptions.scale, y: globalOptions.scale, duration: options.scaleAnimation.duration }, 0)
+        .to(container, { duration: options.fadeOutPreDuration }, 'jumpEnd')
+        .to(container, { alpha: 0, duration: options.fadeOutDuration }, '>')
       , [...sprites, surpriseImg, exclaimImg]
     )
   }, Sweat(instance: CharacterEffectInstance, options: EmotionOptions['Sweat'], sprites: Sprite[]): Promise<void> {
@@ -562,7 +562,7 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
     smallDropImg.scale.set(globalOptions.scale)
     dropImg.x = globalOptions.startPositionOffset.x
     dropImg.y = globalOptions.startPositionOffset.y
-    let smallPosition = calcRelativePosition(dropImg, options.smallImg.value.offset)
+    let smallPosition = calcRelativePosition(dropImg, options.smallImg.offset)
     smallDropImg.x = smallPosition.x
     smallDropImg.y = smallPosition.y
     dropImg.zIndex = 10
@@ -571,10 +571,10 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
 
     let tl = gsap.timeline()
     return new Promise((resolve, reject) => {
-      tl.to(dropImg, { y: dropImg.y - dropImg.width * options.dropAnimation.value.yOffset, duration: options.dropAnimation.value.duration })
+      tl.to(dropImg, { y: dropImg.y - dropImg.width * options.dropAnimation.yOffset, duration: options.dropAnimation.duration })
         .to(smallDropImg, {
-          y: smallDropImg.y - options.smallImg.value.dropAnimationOffset * smallDropImg.width,
-          duration: options.dropAnimation.value.duration
+          y: smallDropImg.y - options.smallImg.dropAnimationOffset * smallDropImg.width,
+          duration: options.dropAnimation.duration
         }, '<')
         .then(() => { dropImg.destroy(); smallDropImg.destroy(); resolve() })
         .catch(reason => reject(reason))
@@ -586,14 +586,14 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
     let starImgs: Sprite[] = []
     let starImgScales: number[] = []
     for (let i = 0; i < 3; ++i) {
-      starImgScales.push(scale * options.starImgs.value.scale[i])
+      starImgScales.push(scale * options.starImgs.scale[i])
     }
     for (let i = 0; i < 3; ++i) {
       let starImg = Sprite.from(sprites[0].texture)
       starImgs.push(starImg)
       starImg.anchor.set(0.5)
       starImg.scale.set(starImgScales[i])
-      starImg.position = calcRelativePosition(starImgs[0], options.starImgs.value.pos[i])
+      starImg.position = calcRelativePosition(starImgs[0], options.starImgs.pos[i])
       container.addChild(starImg)
     }
     let { app } = usePlayerStore()
@@ -605,8 +605,8 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
       let flashTl = gsap.timeline()
       flashTl.to(starImgs[i],
         {
-          pixi: { scale: options.flashAnimation.value.scales[i] * starImgScales[i] },
-          duration: options.flashAnimation.value.duration[i] / 2,
+          pixi: { scale: options.flashAnimation.scales[i] * starImgScales[i] },
+          duration: options.flashAnimation.duration[i] / 2,
           repeat: -1,
           yoyo: true,
         }
@@ -616,9 +616,9 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
 
     let tl = gsap.timeline()
     return timelinePromise(
-      tl.to(container, { alpha: 1, duration: options.fadeInDuration.value })
-        .add(flashTlMaster.tweenFromTo(0, options.flashAnimation.value.totalDuration))
-        .to(container, { alpha: 0, duration: options.fadeOutDuration.value }, `>-=${options.fadeOutPreDuration?.value}`)
+      tl.to(container, { alpha: 1, duration: options.fadeInDuration })
+        .add(flashTlMaster.tweenFromTo(0, options.flashAnimation.totalDuration))
+        .to(container, { alpha: 0, duration: options.fadeOutDuration }, `>-=${options.fadeOutPreDuration}`)
       , [...starImgs, ...sprites]
     )
   }, Upset(instance: CharacterEffectInstance, options: EmotionOptions['Upset'], sprites: Sprite[]): Promise<void> {
@@ -628,23 +628,23 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
     upsetImg.anchor.set(0.5, 0.5)
     dialogImg.addChild(upsetImg)
     dialogImg.visible = true
-    setRelativePosition(upsetImg, dialogImg, options.upsetImgPos.value)
+    setRelativePosition(upsetImg, dialogImg, options.upsetImgPos)
 
     let animationTl = gsap.timeline({ paused: true })
     animationTl.fromTo(upsetImg,
-      { pixi: { angle: options.rotateAnimation.value.angleFrom } },
-      { pixi: { angle: options.rotateAnimation.value.angleTo }, duration: options.rotateAnimation.value.duration, repeat: -1, yoyo: true })
+      { pixi: { angle: options.rotateAnimation.angleFrom } },
+      { pixi: { angle: options.rotateAnimation.angleTo }, duration: options.rotateAnimation.duration, repeat: -1, yoyo: true })
       .to(upsetImg, {
-        pixi: { scaleY:  options.yScaleAnimation.value.scale },
-        duration: options.yScaleAnimation.value.duration,
+        pixi: { scaleY: options.yScaleAnimation.scale },
+        duration: options.yScaleAnimation.duration,
         repeat: -1,
         yoyo: true
       })
 
     let tl = gsap.timeline()
     return timelinePromise(
-      tl.add(animationTl.tweenFromTo(0, options.animationTotalDuration.value))
-        .to(dialogImg, { pixi: { alpha: 0 }, duration: options.fadeOutDuration.value })
+      tl.add(animationTl.tweenFromTo(0, options.animationTotalDuration))
+        .to(dialogImg, { pixi: { alpha: 0 }, duration: options.fadeOutDuration })
       , [...sprites, upsetImg]
     )
   }
@@ -693,10 +693,10 @@ function getStageSize() {
 function calcGlobalEmotionOptions(instance: CharacterEffectInstance, standardImg: Sprite, options: EmotionOptions[EmotionWord]) {
   return {
     startPositionOffset: {
-      x: instance.instance.x + instance.instance.width * options.startPositionOffset.value.x,
-      y: instance.instance.y + instance.instance.width * options.startPositionOffset.value.y
+      x: instance.instance.x + instance.instance.width * options.startPositionOffset.x,
+      y: instance.instance.y + instance.instance.width * options.startPositionOffset.y
     },
-    scale: options.scale.value * instance.instance.width / standardImg.width
+    scale: options.scale * instance.instance.width / standardImg.width
   }
 }
 
@@ -737,10 +737,10 @@ function setRelativePosition(childImg: Sprite, containerImg: Sprite, relativeVal
 function setInitValue(instance: CharacterEffectInstance, standardImg: Sprite, options: EmotionOptions[EmotionWord]) {
   let globalOptions = {
     startPositionOffset: {
-      x: instance.instance.x + instance.instance.width * options.startPositionOffset.value.x,
-      y: instance.instance.y + instance.instance.width * options.startPositionOffset.value.y
+      x: instance.instance.x + instance.instance.width * options.startPositionOffset.x,
+      y: instance.instance.y + instance.instance.width * options.startPositionOffset.y
     },
-    scale: options.scale.value * instance.instance.width / standardImg.width
+    scale: options.scale * instance.instance.width / standardImg.width
   }
   standardImg.scale.set(globalOptions.scale)
   standardImg.x = globalOptions.startPositionOffset.x
@@ -759,8 +759,8 @@ function setInitValue(instance: CharacterEffectInstance, standardImg: Sprite, op
  */
 function setInitPos(instance: CharacterEffectInstance, object: DisplayObject, options: EmotionOptions[EmotionWord]) {
   let pos = {
-    x: instance.instance.x + instance.instance.width * options.startPositionOffset.value.x,
-    y: instance.instance.y + instance.instance.width * options.startPositionOffset.value.y
+    x: instance.instance.x + instance.instance.width * options.startPositionOffset.x,
+    y: instance.instance.y + instance.instance.width * options.startPositionOffset.y
   }
   object.x = pos.x
   object.y = pos.y
@@ -777,7 +777,7 @@ function setInitPos(instance: CharacterEffectInstance, object: DisplayObject, op
  * @returns 缩放比例绝对值
  */
 function getRelativeScale(instance: CharacterEffectInstance, img: Sprite, options: EmotionOptions[EmotionWord]) {
-  return options.scale.value * instance.instance.width / img.width
+  return options.scale * instance.instance.width / img.width
 }
 
 /**

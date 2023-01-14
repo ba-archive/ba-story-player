@@ -1,583 +1,409 @@
-import { EmotionOptions, GlobalEmotionOptions } from "@/types/characterLayer"
+import { EmotionOptions, OptionDescriptions } from "@/types/characterLayer"
 
-let globalDescription: Record<keyof GlobalEmotionOptions, string> = {
-  startPositionOffset: '图片开始时相对于角色的位置, 相对值, 值为偏移量与角色宽度比例',
-  scale: '图片缩放比例, 多个图片时为基准图片缩放比例',
-  fadeOutPreDuration: '淡出动画前的时间, 可选',
-  fadeOutDuration: '淡出动画的时间',
+/**
+ * 每个参数的描述
+ */
+let descriptions: OptionDescriptions['emotions'] = {
+  "globalOptions": {
+    startPositionOffset: '图片开始时相对于角色的位置, 相对值, 值为偏移量与角色宽度比例',
+    scale: '图片缩放比例, 多个图片时为基准图片缩放比例',
+    fadeOutPreDuration: '淡出动画前的时间, 可选',
+    fadeOutDuration: '淡出动画的时间',
+  },
+  "Heart": {
+    "heartImg": "心相对于对话框的位置",
+    "jumpAnimation": "心跳动动画参数",
+  },
+  "Respond": {
+    "flashAnimation": "闪烁动画参数",
+    "perImgSetting": "每个图片的缩放, 旋转原点, 旋转角度"
+  },
+  "Music": {
+    "rotateAngle": "来回旋转的角度",
+    "animation": "动画参数",
+  },
+  "Twinkle": {
+    "starImgs": "三颗星的位置和缩放大小设置",
+    "flashAnimation": "闪烁动画设置, 包括放大缩小倍数-动画时长",
+    "fadeInDuration": "出现动画时长"
+  },
+  "Sad": {},
+  "Sweat": {
+    "smallImg": "较小的图片相较于较大图片的设置, 包括缩放和相对位置",
+    "dropAnimation": "下落动画的参数",
+  },
+  "Dot": {
+    "dotContainerPos": "所有点图片的容器在对话框图片中的位置",
+    "dotPos": "起始位置的x方向位移的相对值",
+    "showAnimation": "显示点的动画参数"
+  },
+  "Chat": {
+    "rotateAngle": "旋转的角度",
+    "rotateTime": "一次旋转来回的时间, 单位为秒",
+    "rotatePivot": "旋转原点位置, 以设置初始值, 修改的是相对于初始值的值",
+  },
+  "Exclaim": {
+    "scaleAnimation": "动画过程为先放大然后恢复回原来大小",
+    "fadeOutWaitTime": "消失动画前的等待时间"
+  },
+  "Angry": {
+    "pivotPosition": "旋转的原点",
+    "animationScale": "angry图像的动画效果, 通过scaleX实现",
+    "endScale": "结束时的缩小动画",
+  },
+  "Surprise": {
+    "imgSetting": "图片位置和选择角度设置",
+
+    "scaleAnimation": "图片放大的动画, 其中?图片还有一个y方向的形变, 还可以选定缩放动画的原点",
+    "jumpAnimation": "图片向左移动并跳动的动画"
+  },
+  "Question": {
+    "scaleAnimation": "动画过程为先放大然后恢复回原来大小"
+  },
+  "Shy": {
+    "shyImg": "///图片的相关设置",
+    "scaleAnamation": "开始时的放大动画设置, 包括放大开始前的大小,放大动画的依据点, 放大动画的时间",
+    "shakeAnimation": "///图片摇动动画的相关设置, 包括摇动从哪个角度到哪个角度, 摇动次数"
+  },
+  "Upset": {
+    "upsetImgPos": "线条图片的位置",
+    "rotateAnimation": "线条图片左右选择的动画参数, 包括选择角度和时间",
+    "yScaleAnimation": "线条图片上下压缩的动画参数, 包括压缩的比例和动画时间",
+    "animationTotalDuration": "动画持续时间"
+  }
 }
 
 let emotionOptions: EmotionOptions = {
-  Heart: {
+  "Heart": {
     "startPositionOffset": {
-      "value": {
-        "x": 0.1,
-        "y": -0.1
-      },
-      "description": "图片开始时相对于角色的位置"
+      "x": 0.1,
+      "y": -0.1
     },
-    "scale": {
-      "value": 0.25,
-      "description": "图片缩放比例, 多个图片时为基准图片缩放比例"
-    },
+    "scale": 0.25,
     "heartImg": {
-      "value": {
-        "scale": 0.35,
-        "position": {
-          "x": 0.3,
-          "y": 0.2
-        }
-      },
-      "description": "心相对于对话框的位置"
+      "scale": 0.35,
+      "position": {
+        "x": 0.3,
+        "y": 0.2
+      }
     },
     "jumpAnimation": {
-      "value": {
-        "firstScale": {
-          "x": 1.2,
-          "y": 1.3
-        },
-        "secondScale": {
-          "x": 1.1,
-          "y": 1.2
-        },
-        "duration": 0.25
+      "firstScale": {
+        "x": 1.2,
+        "y": 1.3
       },
-      "description": "心跳动动画参数"
+      "secondScale": {
+        "x": 1.1,
+        "y": 1.2
+      },
+      "duration": 0.25
     },
-    "fadeOutDuration": {
-      "value": 0.2,
-      "description": "淡出动画的时间"
-    }
+    "fadeOutDuration": 0.2
   },
-  Respond: {
+  "Respond": {
     "startPositionOffset": {
-      "value": {
-        "x": 0.4,
+      "x": 0.4,
+      "y": 0.1
+    },
+    "scale": 0.15,
+    "fadeOutPreDuration": 0.3,
+    "fadeOutDuration": 0.1,
+    "flashAnimation": {
+      "duration": 0.3,
+      "alpha": 0.2
+    },
+    "perImgSetting": [
+      {
+        "scale": 0.7,
+        "anchor": {
+          "x": 1.8,
+          "y": 0
+        },
+        "angle": -10
+      },
+      {
+        "scale": 1,
+        "anchor": {
+          "x": 1.5,
+          "y": 0
+        },
+        "angle": 23
+      },
+      {
+        "scale": 0.7,
+        "anchor": {
+          "x": 1.8,
+          "y": 0
+        },
+        "angle": 50
+      }
+    ]
+  },
+  "Music": {
+    "startPositionOffset": {
+      "x": 0.2,
+      "y": 0
+    },
+    "scale": 0.13,
+    "rotateAngle": -8,
+    "animation": {
+      "offset": {
+        "x": -1,
         "y": 0.1
       },
-      "description": "图片开始时相对于角色的位置, 相对值, 值为偏移量与角色宽度比例"
+      "duration": 0.8
     },
-    "scale": {
-      "value": 0.15,
-      "description": "图片缩放比例, 多个图片时为基准图片缩放比例"
+    "fadeOutDuration": 0.1
+  },
+  "Twinkle": {
+    "startPositionOffset": {
+      "x": 0.2,
+      "y": 0
     },
-    "fadeOutPreDuration": {
-      "value": 0.3,
-      "description": "淡出动画亲爱的时间, 可选"
-    },
-    "fadeOutDuration": {
-      "value": 0.1,
-      "description": "淡出动画的时间"
-    },
-    "flashAnimation": {
-      "value": {
-        "duration": 0.3,
-        "alpha": 0.2
-      },
-      "description": "闪烁动画参数"
-    },
-    "perImgSetting": {
-      "value": [
+    "scale": 0.1,
+    "fadeOutPreDuration": 0.2,
+    "fadeOutDuration": 0.2,
+    "starImgs": {
+      "pos": [
         {
-          "scale": 0.7,
-          "anchor": {
-            "x": 1.8,
-            "y": 0
-          },
-          "angle": -10
+          "x": 0,
+          "y": 0
         },
         {
-          "scale": 1,
-          "anchor": {
-            "x": 1.5,
-            "y": 0
-          },
-          "angle": 23
+          "x": 0.7,
+          "y": -0.6
         },
         {
-          "scale": 0.7,
-          "anchor": {
-            "x": 1.8,
-            "y": 0
-          },
-          "angle": 50
+          "x": 0.8,
+          "y": 0.6
         }
       ],
-      "description": "每个图片的缩放, 旋转原点, 旋转角度"
-    }
-  },
-  Music: {
-    "startPositionOffset": {
-      "value": {
-        "x": 0.2,
-        "y": 0
-      },
-      "description": "音符图片开始时相对于角色的位置"
-    },
-    "scale": {
-      "value": 0.13,
-      "description": "图片缩放比例, 多个图片时为基准图片缩放比例"
-    },
-    "rotateAngle": {
-      "value": -8,
-      "description": "来回旋转的角度"
-    },
-    "animation": {
-      "value": {
-        "offset": {
-          "x": -1,
-          "y": 0.1
-        },
-        "duration": 0.8
-      },
-      "description": "动画参数"
-    },
-    "fadeOutDuration": {
-      "value": 0.1,
-      "description": "淡出动画的时间"
-    }
-  },
-  Twinkle: {
-    "startPositionOffset": {
-      "value": {
-        "x": 0.2,
-        "y": 0
-      },
-      "description": "图片开始时相对于角色的位置, 相对值, 值为偏移量与角色宽度比例"
-    },
-    "scale": {
-      "value": 0.1,
-      "description": "图片缩放比例, 多个图片时为基准图片缩放比例"
-    },
-    "fadeOutPreDuration": {
-      "value": 0.2,
-      "description": "淡出动画亲爱的时间, 可选"
-    },
-    "fadeOutDuration": {
-      "value": 0.2,
-      "description": "淡出动画的时间"
-    },
-    "starImgs": {
-      "value": {
-        "pos": [
-          {
-            "x": 0,
-            "y": 0
-          },
-          {
-            "x": 0.7,
-            "y": -0.6
-          },
-          {
-            "x": 0.8,
-            "y": 0.6
-          }
-        ],
-        "scale": [
-          1,
-          0.9,
-          0.6
-        ]
-      },
-      "description": "三颗星的位置和缩放大小设置"
+      "scale": [
+        1,
+        0.9,
+        0.6
+      ]
     },
     "flashAnimation": {
-      "value": {
-        "scales": [
-          1.2,
-          1.15,
-          0.9
-        ],
-        "duration": [
-          0.5,
-          0.6,
-          0.4
-        ],
-        "totalDuration": 1
-      },
-      "description": "闪烁动画设置, 包括放大缩小倍数-动画时长"
+      "scales": [
+        1.2,
+        1.15,
+        0.9
+      ],
+      "duration": [
+        0.5,
+        0.6,
+        0.4
+      ],
+      "totalDuration": 1
     },
-    "fadeInDuration": {
-      "value": 0.2,
-      "description": "出现动画时长"
-    }
+    "fadeInDuration": 0.2
   },
-  Sad: {
+  "Sad": {
     "startPositionOffset": {
-      "value": {
-        "x": 50,
-        "y": 0
-      },
-      "description": globalDescription['startPositionOffset']
+      "x": 50,
+      "y": 0
     },
-    "scale": {
-      value: 0.3,
-      "description": globalDescription['scale']
-    },
-    "fadeOutDuration": {
-      "value": 0.1,
-      "description": globalDescription['fadeOutDuration']
-    }
+    "scale": 0.3,
+    "fadeOutDuration": 0.1
   },
-  Sweat: {
+  "Sweat": {
     "startPositionOffset": {
-      "value": {
-        "x": 0.3,
-        "y": -0.1
-      },
-      "description": "图片开始时相对于角色的位置"
+      "x": 0.3,
+      "y": -0.1
     },
-    "scale": {
-      "value": 0.08,
-      "description": "图片缩放比例, 多个图片时为基准图片缩放比例"
-    },
+    "scale": 0.08,
     "smallImg": {
-      "value": {
-        "scale": 1,
-        "offset": {
-          "x": 1,
-          "y": -0.5
-        },
-        "dropAnimationOffset": -2.3
+      "scale": 1,
+      "offset": {
+        "x": 1,
+        "y": -0.5
       },
-      "description": "较小的图片相较于较大图片的设置, 包括缩放和相对位置"
+      "dropAnimationOffset": -2.3
     },
     "dropAnimation": {
-      "value": {
-        "yOffset": -1,
-        "duration": 0.4
-      },
-      "description": "下落动画的参数"
+      "yOffset": -1,
+      "duration": 0.4
     },
-    "fadeOutDuration": {
-      "value": 0.1,
-      "description": "淡出动画的时间"
-    }
+    "fadeOutDuration": 0.1
   },
-  Dot: {
+  "Dot": {
     "startPositionOffset": {
-      "value": {
-        "x": 0,
-        "y": -0.1
-      },
-      "description": "图片开始时相对于角色的位置, 相对值, 值为偏移量与角色宽度比例"
+      "x": 0,
+      "y": -0.1
     },
-    "scale": {
-      "value": 0.3,
-      "description": "图片缩放比例, 多个图片时为基准图片缩放比例"
-    },
-    "fadeOutPreDuration": {
-      "value": 0.1,
-      "description": "淡出动画前的时间, 可选"
-    },
-    "fadeOutDuration": {
-      "value": 0.1,
-      "description": "淡出动画的时间"
-    },
+    "scale": 0.3,
+    "fadeOutPreDuration": 0.1,
+    "fadeOutDuration": 0.1,
     "dotContainerPos": {
-      "value": {
-        "x": 0.3,
-        "y": 1.1
-      },
-      "description": "所有点图片的容器在对话框图片中的位置"
+      "x": 0.3,
+      "y": 1.1
     },
-    "dotPos": {
-      "value": [
-        0,
-        2,
-        4
-      ],
-      "description": "起始位置的x方向位移的相对值"
-    },
+    "dotPos": [
+      0,
+      2,
+      4
+    ],
     "showAnimation": {
-      "value": {
-        "alpahaDuration": 0.1,
-        "showDelay": 0.3
-      },
-      "description": "显示点的动画参数"
+      "alpahaDuration": 0.1,
+      "showDelay": 0.3
     }
   },
-  Chat: {
+  "Chat": {
     "startPositionOffset": {
-      "value": {
-        "x": 0.25,
-        "y": 0.1
-      },
-      "description": "相对于人物的位置"
+      "x": 0.25,
+      "y": 0.1
     },
-    "scale": {
-      "value": 0.15,
-      "description": "图片缩放比例, 多个图片时为基准图片缩放比例"
-    },
-    "rotateAngle": {
-      "value": -25,
-      "description": "旋转的角度"
-    },
-    "rotateTime": {
-      "value": 0.5,
-      "description": "一次旋转来回的时间, 单位为秒"
-    },
+    "scale": 0.15,
+    "rotateAngle": -25,
+    "rotateTime": 0.5,
     "rotatePivot": {
-      "value": {
+      "x": 1,
+      "y": 1
+    },
+    "fadeOutDuration": 0.1
+  },
+  "Exclaim": {
+    "startPositionOffset": {
+      "x": 0.32,
+      "y": -0.1
+    },
+    "scale": 0.08,
+    "fadeOutDuration": 0.1,
+    "scaleAnimation": {
+      "scale": 1.4,
+      "scaleDuration": 0.2,
+      "recoverScale": 1.2,
+      "recoverDuration": 0.1
+    },
+    "fadeOutWaitTime": 0.3
+  },
+  "Angry": {
+    "startPositionOffset": {
+      "x": 0.4,
+      "y": 0.05
+    },
+    "scale": 0.1,
+    "pivotPosition": {
+      "x": 0.6,
+      "y": 0
+    },
+    "animationScale": {
+      "scale": 0.9,
+      "duration": 0.2
+    },
+    "endScale": {
+      "scale": 0.2,
+      "duration": 0.1
+    },
+    "fadeOutDuration": 0.1
+  },
+  "Surprise": {
+    "startPositionOffset": {
+      "x": 0.3,
+      "y": 0.16
+    },
+    "scale": 0.07,
+    "fadeOutPreDuration": 0.4,
+    "imgSetting": {
+      "angles": [
+        -10,
+        15
+      ],
+      "questionImgPos": {
+        "x": 1.5,
+        "y": 0
+      }
+    },
+    "fadeOutDuration": 0.1,
+    "scaleAnimation": {
+      "startScale": 0.7,
+      "questionImgYScale": 0.3,
+      "duration": 0.3,
+      "anchor": {
+        "x": 0.5,
+        "y": 1
+      }
+    },
+    "jumpAnimation": {
+      "xOffset": -0.1,
+      "jumpYOffset": 0.1,
+      "duration": 0.3
+    }
+  },
+  "Question": {
+    "startPositionOffset": {
+      "x": 0.27,
+      "y": 0.05
+    },
+    "scale": 0.09,
+    "fadeOutDuration": 0.2,
+    "fadeOutPreDuration": 0.4,
+    "scaleAnimation": {
+      "scale": 1.6,
+      "anchor": {
+        "x": 0.5,
+        "y": 1
+      },
+      "scaleDuration": 0.2,
+      "recoverScale": 1.4,
+      "recoverDuration": 0.05
+    }
+  },
+  "Shy": {
+    "startPositionOffset": {
+      "x": 0.3,
+      "y": 0.1
+    },
+    "scale": 0.3,
+    "fadeOutDuration": 0.1,
+    "shyImg": {
+      "anchor": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "scale": 1,
+      "position": {
+        "x": -0.65,
+        "y": -0.5
+      }
+    },
+    "scaleAnamation": {
+      "startScale": 0.8,
+      "anchor": {
         "x": 1,
         "y": 1
       },
-      "description": "旋转原点位置, 以设置初始值, 修改的是相对于初始值的值"
-    },
-    "fadeOutDuration": {
-      "value": 0.1,
-      "description": "淡出动画的时间"
-    }
-  },
-  Exclaim: {
-    "startPositionOffset": {
-      "value": {
-        "x": 0.32,
-        "y": -0.1
-      },
-      "description": "图片开始时相对于角色的位置, 相对值, 值为偏移量与角色宽度比例"
-    },
-    "scale": {
-      "value": 0.08,
-      "description": "图片缩放比例, 多个图片时为基准图片缩放比例"
-    },
-    "fadeOutDuration": {
-      "value": 0.1,
-      "description": "淡出动画的时间"
-    },
-    "scaleAnimation": {
-      "value": {
-        "scale": 1.4,
-        "scaleDuration": 0.2,
-        "recoverScale": 1.2,
-        "recoverDuration": 0.1
-      },
-      "description": "动画过程为先放大然后恢复回原来大小"
-    },
-    "fadeOutWaitTime": {
-      "value": 0.3,
-      "description": "消失动画前的等待时间"
-    }
-  },
-  Angry: {
-    "startPositionOffset": {
-      "value": {
-        "x": 0.4,
-        "y": 0.05
-      },
-      "description": globalDescription['startPositionOffset']
-    },
-    "scale": {
-      "value": 0.1,
-      "description": "图片缩放比例, 多个图片时为基准图片缩放比例"
-    },
-    "pivotPosition": {
-      "value": {
-        "x": 0.6,
-        "y": 0
-      },
-      "description": "旋转的原点"
-    },
-    "animationScale": {
-      "value": {
-        "scale": 0.9,
-        "duration": 0.2
-      },
-      "description": "angry图像的动画效果, 通过scaleX实现"
-    },
-    "endScale": {
-      "value": {
-        "scale": 0.2,
-        "duration": 0.1
-      },
-      "description": "结束时的缩小动画"
-    },
-    "fadeOutDuration": {
-      "value": 0.1,
-      "description": "淡出动画的时间"
-    }
-  },
-  Surprise: {
-    "startPositionOffset": {
-      "value": {
-        "x": 0.3,
-        "y": 0.16
-      },
-      "description": "图片开始时相对于角色的位置, 相对值, 值为偏移量与角色宽度比例"
-    },
-    "scale": {
-      "value": 0.07,
-      "description": "图片缩放比例, 多个图片时为基准图片缩放比例"
-    },
-    "fadeOutPreDuration": {
-      "value": 0.4,
-      "description": "淡出动画亲爱的时间, 可选"
-    },
-    "imgSetting": {
-      "value": {
-        "angles": [
-          -10,
-          15
-        ],
-        "questionImgPos": {
-          "x": 1.5,
-          "y": 0
-        }
-      },
-      "description": "图片位置和选择角度设置"
-    },
-    "fadeOutDuration": {
-      "value": 0.1,
-      "description": "淡出动画的时间"
-    },
-    "scaleAnimation": {
-      "value": {
-        "startScale": 0.7,
-        "questionImgYScale": 0.3,
-        "duration": 0.3,
-        "anchor": {
-          "x": 0.5,
-          "y": 1
-        }
-      },
-      "description": "图片放大的动画, 其中?图片还有一个y方向的形变, 还可以选定缩放动画的原点"
-    },
-    "jumpAnimation": {
-      "value": {
-        "xOffset": -0.1,
-        "jumpYOffset": 0.1,
-        "duration": 0.3
-      },
-      "description": "图片向左移动并跳动的动画"
-    }
-  },
-  Question: {
-    "startPositionOffset": {
-      "value": {
-        "x": 0.27,
-        "y": 0.05
-      },
-      "description": "图片开始时相对于角色的位置, 相对值, 值为偏移量与角色宽度比例"
-    },
-    "scale": {
-      "value": 0.09,
-      "description": "图片缩放比例, 多个图片时为基准图片缩放比例"
-    },
-    "fadeOutDuration": {
-      "value": 0.2,
-      "description": "淡出动画的时间"
-    },
-    "fadeOutPreDuration": {
-      "value": 0.4,
-      "description": "淡出动画亲爱的时间, 可选"
-    },
-    "scaleAnimation": {
-      "value": {
-        "scale": 1.6,
-        "anchor": {
-          "x": 0.5,
-          "y": 1
-        },
-        "scaleDuration": 0.2,
-        "recoverScale": 1.4,
-        "recoverDuration": 0.05
-      },
-      "description": "动画过程为先放大然后恢复回原来大小"
-    }
-  },
-  Shy: {
-    "startPositionOffset": {
-      "value": {
-        "x": 0.3,
-        "y": 0.1
-      },
-      "description": "图片开始时相对于角色的位置, 相对值, 值为偏移量与角色宽度比例"
-    },
-    "scale": {
-      "value": 0.3,
-      "description": "图片缩放比例, 多个图片时为基准图片缩放比例"
-    },
-    "fadeOutDuration": {
-      "value": 0.1,
-      "description": "淡出动画的时间"
-    },
-    "shyImg": {
-      "value": {
-        "anchor": {
-          "x": 0.5,
-          "y": 0.5
-        },
-        "scale": 1,
-        "position": {
-          "x": -0.65,
-          "y": -0.5
-        }
-      },
-      "description": "///图片的相关设置"
-    },
-    "scaleAnamation": {
-      "value": {
-        "startScale": 0.8,
-        "anchor": {
-          "x": 1,
-          "y": 1
-        },
-        "duration": 0.1
-      },
-      "description": "开始时的放大动画设置, 包括放大开始前的大小,放大动画的依据点, 放大动画的时间"
+      "duration": 0.1
     },
     "shakeAnimation": {
-      "value": {
-        "angleFrom": 13,
-        "angleTo": -10,
-        "duration": 0.4,
-        "times": 2
-      },
-      "description": "///图片摇动动画的相关设置, 包括摇动从哪个角度到哪个角度, 摇动次数"
+      "angleFrom": 13,
+      "angleTo": -10,
+      "duration": 0.4,
+      "times": 2
     }
   },
-  Upset: {
+  "Upset": {
     "startPositionOffset": {
-      "value": {
-        "x": 0,
-        "y": -0.1
-      },
-      "description": "图片开始时相对于角色的位置, 相对值, 值为偏移量与角色宽度比例"
+      "x": 0,
+      "y": -0.1
     },
-    "scale": {
-      "value": 0.3,
-      "description": "图片缩放比例, 多个图片时为基准图片缩放比例"
-    },
-    "fadeOutDuration": {
-      "value": 0.3,
-      "description": "淡出动画的时间"
-    },
+    "scale": 0.3,
+    "fadeOutDuration": 0.3,
     "upsetImgPos": {
-      "value": {
-        "x": 1.5,
-        "y": 1.4
-      },
-      "description": "线条图片的位置"
+      "x": 1.5,
+      "y": 1.4
     },
     "rotateAnimation": {
-      "value": {
-        "angleFrom": 6,
-        "angleTo": -7,
-        "duration": 0.2
-      },
-      "description": "线条图片左右选择的动画参数, 包括选择角度和时间"
+      "angleFrom": 6,
+      "angleTo": -7,
+      "duration": 0.2
     },
     "yScaleAnimation": {
-      "value": {
-        "scale": 0.8,
-        "duration": 0.43
-      },
-      "description": "线条图片上下压缩的动画参数, 包括压缩的比例和动画时间"
+      "scale": 0.8,
+      "duration": 0.43
     },
-    "animationTotalDuration": {
-      "value": 1,
-      "description": "动画持续时间"
-    }
+    "animationTotalDuration": 1
   }
 }
 

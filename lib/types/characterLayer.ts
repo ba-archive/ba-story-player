@@ -118,7 +118,7 @@ export interface CharacterEffectPlayerInterface<T extends EmotionWord | Characte
 /**
  * 所有角色特效统一接口
  */
-export type BaseCharacterEffectPlayer<T extends EmotionWord | CharacterEffectWord | FXEffectWord | SignalEffectWord>
+export type BaseCharacterEffectPlayer<T extends EffectsWord>
   = CharacterEffectPlayerInterface<T> & EffectFunction<T>
 
 /**
@@ -150,14 +150,33 @@ export interface CharacterEffectInstance extends Character {
   instance: Spine;
 }
 
-type EffectFunctionUnit = (instance: CharacterEffectInstance, options: any, sprites: Sprite[],) => Promise<void> | undefined
+type EffectsWord = EmotionWord | CharacterEffectWord | FXEffectWord | SignalEffectWord
 
-export type EffectFunction<T extends string> = {
-  [key in T]: EffectFunctionUnit;
+type Options = EmotionOptions & ActionOptions & FXOptions & SignalOptions
+
+type EffectFunctionUnit = (instance: CharacterEffectInstance, options: any, sprites: Sprite[]) => Promise<void> | undefined
+
+export type EffectFunction<T extends EffectsWord> = {
+  [key in T]: (instance: CharacterEffectInstance, options: Options[key], sprites: Sprite[]) => Promise<void> | undefined
+}
+
+type DescriptionUnit<T> = {
+  [key in keyof T]: {
+    [option in keyof T[key]]: string
+  }
+}
+
+export type OptionDescriptions = {
+  emotions: {
+    globalOptions: {
+      [key in keyof GlobalEmotionOptions]: string
+    }
+  } & DescriptionUnit<BasicEmotionOptions>,
+  actions: DescriptionUnit<ActionOptions>,
 }
 
 /**
- * 标识角色在stage上的位置
+ * 位置标识
  */
 export interface PositionOffset {
   x: number;
@@ -192,194 +211,182 @@ export type FXEffectWord = "shot";
  */
 export type SignalEffectWord = "signal";
 
+
 /**
- * 每个参数需要遵循的格式
+ * 在x, y方向各自的缩放
  */
-export interface OptionUnit<ValueType> {
-  /**
-   * 参数值
-   */
-  value: ValueType
-  /**
-   * 该参数功能描述
-   */
-  description: string
-}
-
-export interface PositionOffset {
-  x: number
-  y: number
-}
-
 export interface Scale {
   x: number
   y: number
 }
 
-export type BaseOptions<T extends string> = Record<T, Record<string, OptionUnit<any>>>
+export type BaseOptions<T extends string> = Record<T, Record<string, any>>
 /**
  * 情绪动作的具体参数
  */
 export interface BasicEmotionOptions extends BaseOptions<EmotionWord> {
   Heart: {
-    heartImg: OptionUnit<{
+    heartImg: {
       scale: number
       position: PositionOffset
-    }>
-    jumpAnimation: OptionUnit<{
+    }
+    jumpAnimation: {
       firstScale: Scale
       secondScale: Scale
       duration: number
-    }>
+    }
   },
   Respond: {
-    flashAnimation: OptionUnit<{
+    flashAnimation: {
       alpha: number
       duration: number
-    }>
-    perImgSetting: OptionUnit<{
+    }
+    perImgSetting: {
       angle: number
       scale: number
       anchor: PositionOffset
-    }[]>
+    }[]
   },
   Music: {
-    rotateAngle: OptionUnit<number>
-    animation: OptionUnit<{
+    rotateAngle: number
+    animation: {
       offset: PositionOffset
       duration: number
-    }>
+    }
   },
   Twinkle: {
-    starImgs: OptionUnit<{
+    starImgs: {
       pos: PositionOffset[]
       scale: number[]
-    }>
-    fadeInDuration: OptionUnit<number>
-    flashAnimation: OptionUnit<{
+    }
+    fadeInDuration: number
+    flashAnimation: {
       scales: number[]
       duration: number[]
       totalDuration: number
-    }>
+    }
   },
   Sad: {},
   Sweat: {
-    smallImg: OptionUnit<{
+    smallImg: {
       scale: number
       offset: {
         x: number
         y: number
       },
       dropAnimationOffset: number
-    }>
-    dropAnimation: OptionUnit<{
+    }
+    dropAnimation: {
       yOffset: number
       duration: number
-    }>
+    }
   },
   Dot: {
-    dotContainerPos: OptionUnit<PositionOffset>
-    dotPos: OptionUnit<number[]>
-    showAnimation: OptionUnit<{
+    dotContainerPos: PositionOffset
+    dotPos: number[]
+    showAnimation: {
       showDelay: number
       alpahaDuration: number
-    }>
+    }
   },
   Chat: {
-    rotateAngle: OptionUnit<number>,
-    rotateTime: OptionUnit<number>,
-    rotatePivot: OptionUnit<{
+    rotateAngle: number,
+    rotateTime: number,
+    rotatePivot: {
       x: number
       y: number
-    }>
+    }
   },
   Exclaim: {
-    scaleAnimation: OptionUnit<{
+    scaleAnimation: {
       scale: number
       scaleDuration: number
       recoverScale: number
       recoverDuration: number
-    }>
-    fadeOutWaitTime: OptionUnit<number>
+    }
+    fadeOutWaitTime: number
   },
   Angry: {
-    pivotPosition: OptionUnit<{
+    pivotPosition: {
       x: number
       y: number
-    }>,
-    animationScale: OptionUnit<{
+    },
+    animationScale: {
       scale: number
       duration: number
-    }>
-    endScale: OptionUnit<{
+    }
+    endScale: {
       scale: number
       duration: number
-    }>
+    }
   },
   Surprise: {
-    imgSetting: OptionUnit<{
+    imgSetting: {
       angles: number[]
       questionImgPos: PositionOffset
-    }>
-    scaleAnimation: OptionUnit<{
+    }
+    scaleAnimation: {
       startScale: number
       questionImgYScale: number
       duration: number
       anchor: PositionOffset
-    }>
-    jumpAnimation: OptionUnit<{
+    }
+    jumpAnimation: {
       xOffset: number
       jumpYOffset: number
       duration: number
-    }>
+    }
   },
   Question: {
-    scaleAnimation: OptionUnit<{
+    scaleAnimation: {
       scale: number
       anchor: PositionOffset
       scaleDuration: number
       recoverScale: number
       recoverDuration: number
-    }>
+    }
   },
   Shy: {
-    shyImg: OptionUnit<{
+    shyImg: {
       anchor: PositionOffset
       scale: number
       position: PositionOffset
-    }>
-    scaleAnamation: OptionUnit<{
+    }
+    scaleAnamation: {
       anchor: PositionOffset
       startScale: number
       duration: number
-    }>
-    shakeAnimation: OptionUnit<{
+    }
+    shakeAnimation: {
       angleFrom: number
       angleTo: number
       duration: number
       times: number
-    }>
+    }
   },
   Upset: {
-    upsetImgPos: OptionUnit<PositionOffset>
-    rotateAnimation: OptionUnit<{
+    upsetImgPos: PositionOffset
+    rotateAnimation: {
       angleFrom: number
       angleTo: number
       duration: number
-    }>
-    yScaleAnimation: OptionUnit<{
+    }
+    yScaleAnimation: {
       scale: number
       duration: number
-    }>
-    animationTotalDuration: OptionUnit<number>
+    }
+    animationTotalDuration: number
   }
 }
 
+/**
+ * emotion情绪动画共有的参数
+ */
 export interface GlobalEmotionOptions {
-  startPositionOffset: OptionUnit<{ x: number, y: number }>
-  scale: OptionUnit<number>
-  fadeOutPreDuration?: OptionUnit<number>
-  fadeOutDuration: OptionUnit<number>
+  startPositionOffset: { x: number, y: number }
+  scale: number
+  fadeOutPreDuration?: number
+  fadeOutDuration: number
 }
 
 export type EmotionOptions = {
@@ -406,4 +413,12 @@ export interface ActionOptions extends BaseOptions<CharacterEffectWord> {
   jump: {},
   falldownR: {},
   hide: {}
+}
+
+export interface FXOptions extends BaseOptions<FXEffectWord> {
+
+}
+
+export interface SignalOptions extends BaseOptions<SignalEffectWord> {
+
 }

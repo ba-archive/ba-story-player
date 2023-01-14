@@ -131,7 +131,7 @@ onMounted(() => {
       <div v-else-if="typeof currentOptions[option].value === 'number'">
         <p :title="currentOptions[option].description">{{ option }}</p>
         <input type="number" step="0.01" :value="currentOptions[option].value"
-          @input="(event) => changeOption(option, (event.target as HTMLInputElement).value)" />
+          @input="(event) => changeOption(option, Number((event.target as HTMLInputElement).value))" />
       </div>
       <div v-else-if="typeof currentOptions[option].value === 'object'">
         <p :title="currentOptions[option].description">{{ option }}</p>
