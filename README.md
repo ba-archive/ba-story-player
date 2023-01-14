@@ -1,5 +1,6 @@
 # 剧情播放器组件仓库
 
-相关定义请见[文档](https://github.com/ba-archive/rfcs/blob/main/0000-story-viewer-architecture.md)
+本仓库是剧情播放器的组件仓库.
 
-各层接口事件地址:[文档](https://github.com/ba-archive/rfcs/blob/main/0002-interface-and-events.md)
+# 贡献说明
+请参照[贡献指南](./docs/contribute.md)
