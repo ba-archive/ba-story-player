@@ -1,26 +1,21 @@
 /**
  * 初始化人物层, 订阅player的剧情信息.
  */
+import eventBus from "@/eventBus";
+import { usePlayerStore } from "@/stores";
 import {
   CharacterEffectInstance, CharacterEffectPlayerInterface,
-  CharacterEffectWord,
-  CharacterEmotionPlayer,
-  CharacterLayer,
-  EmotionWord, FXEffectWord, SignalEffectWord, CharacterEffectPlayer, PositionOffset, EmotionOptions, Scale, GlobalEmotionOptions,
+  CharacterEffectWord, CharacterLayer,
+  EmotionWord, FXEffectWord, SignalEffectWord
 } from "@/types/characterLayer";
-import { ISkeletonData, Spine } from "pixi-spine";
-import { ShowCharacter } from "@/types/events";
-import { usePlayerStore } from "@/stores";
 import { Character, CharacterEffectType, CharacterInstance } from "@/types/common";
-import eventBus from "@/eventBus";
+import { ShowCharacter } from "@/types/events";
 import gsap from "gsap";
-import { PixiPlugin } from 'gsap/PixiPlugin'
-import { Container, DisplayObject, Sprite } from "pixi.js";
-import * as PIXI from 'pixi.js'
-import emotionOptions from "./emotionOptions";
-import actionOptions from "./actionOptions";
-import CharacterEmotionPlayerInstance from './emotionPlayer'
+import { PixiPlugin } from 'gsap/PixiPlugin';
+import { ISkeletonData, Spine } from "pixi-spine";
+import * as PIXI from 'pixi.js';
 import CharacterEffectPlayerInstance, { getStageSize } from "./actionPlayer";
+import CharacterEmotionPlayerInstance from './emotionPlayer';
 
 const AnimationIdleTrack = 0; // 光环动画track index
 const AnimationFaceTrack = 1; // 差分切换

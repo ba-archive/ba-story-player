@@ -398,8 +398,12 @@ export interface ActionOptions extends BaseOptions<CharacterEffectWord> {
   d: {},
   dl: {},
   dr: {},
-  ar: {},
-  al: {},
+  ar: {
+    speed: number
+  },
+  al: {
+    speed: number
+  },
   hophop: {},
   greeting: {},
   shake: {},

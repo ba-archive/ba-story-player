@@ -1,10 +1,6 @@
 import { usePlayerStore } from "@/stores";
 import {
-  CharacterEffectInstance, CharacterEffectPlayerInterface,
-  CharacterEffectWord,
-  CharacterEmotionPlayer,
-  CharacterLayer,
-  EmotionWord, FXEffectWord, SignalEffectWord, CharacterEffectPlayer, PositionOffset, EmotionOptions, Scale, GlobalEmotionOptions,
+  CharacterEffectInstance, CharacterEffectPlayer, CharacterEffectWord, PositionOffset
 } from "@/types/characterLayer";
 import gsap from "gsap";
 import { Spine } from "pixi-spine";
@@ -49,10 +45,28 @@ const CharacterEffectPlayerInstance: CharacterEffectPlayer = {
         onComplete: resolve
       });
     })
-  }, al(instance: CharacterEffectInstance): Promise<void> {
-    return Promise.resolve(undefined);
-  }, ar(instance: CharacterEffectInstance): Promise<void> {
-    return Promise.resolve(undefined);
+  }, al(instance: CharacterEffectInstance, option): Promise<void> {
+    initCharacter(instance)
+    let { app } = usePlayerStore()
+
+    let tl = gsap.timeline()
+    let initX = app.screen.width
+    let distance = initX - instance.instance.x
+    let duration = distance / (instance.instance.width * option.speed)
+    tl.fromTo(instance.instance, { pixi: { x: initX } },
+      { pixi: { x: instance.instance.x }, duration })
+    return timeLinePromise(tl)
+
+  }, ar(instance: CharacterEffectInstance, option): Promise<void> {
+    initCharacter(instance)
+
+    let tl = gsap.timeline()
+    let distance = instance.instance.x + instance.instance.width
+    let duration = distance / (instance.instance.width * option.speed)
+    tl.fromTo(instance.instance, { pixi: { x: -instance.instance.width } },
+      { pixi: { x: instance.instance.x }, duration })
+    return timeLinePromise(tl)
+
   }, closeup(instance: CharacterEffectInstance): Promise<void> {
     return Promise.resolve(undefined);
   }, d(instance: CharacterEffectInstance): Promise<void> {
@@ -126,6 +140,32 @@ export function getStageSize() {
     screenWidth,
     screenHeight
   };
+}
+
+/**
+ * 根据timeline生成promise
+ * @param tl 
+ * @returns 
+ */
+function timeLinePromise(tl: gsap.core.Timeline) {
+  return new Promise<void>((resolve, reject) => {
+    tl.then(() => resolve()).catch(reason => reject(reason))
+  })
+}
+
+/**
+ * 初始化角色的位置, zIndex, 动画和可见性.
+ * @param instance 
+ */
+function initCharacter(instance: CharacterEffectInstance) {
+  const characterInstance = instance.instance;
+  const { x, y } = calcSpineStagePosition(characterInstance, instance.position);
+  characterInstance.x = x;
+  characterInstance.y = y;
+  characterInstance.zIndex = Reflect.get(POS_INDEX_MAP, instance.position);
+  characterInstance.state.setAnimation(AnimationIdleTrack, 'Idle_01', true);
+  characterInstance.visible = true
+  characterInstance.alpha = 1
 }
 
 export default CharacterEffectPlayerInstance

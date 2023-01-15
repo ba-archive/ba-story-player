@@ -5,8 +5,12 @@ export let actionDescriptions: OptionDescriptions['action'] = {
   d: {},
   dl: {},
   dr: {},
-  ar: {},
-  al: {},
+  ar: {
+    "speed": "移动速度"
+  },
+  al: {
+    "speed": "移动速度"
+  },
   hophop: {},
   greeting: {},
   shake: {},
@@ -27,8 +31,12 @@ let actionOptions: ActionOptions = {
   d: {},
   dl: {},
   dr: {},
-  ar: {},
-  al: {},
+  ar: {
+    speed: 1.5
+  },
+  al: {
+    speed: 1.5
+  },
   hophop: {},
   greeting: {},
   shake: {},
