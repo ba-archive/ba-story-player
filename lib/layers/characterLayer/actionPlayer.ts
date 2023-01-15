@@ -5,7 +5,7 @@ import {
 import gsap from "gsap";
 import { Spine } from "pixi-spine";
 import actionOptions from "./actionOptions";
-
+import { ColorOverlayFilter } from '@pixi/filter-color-overlay'
 
 const AnimationIdleTrack = 0; // 光环动画track index
 const AnimationFaceTrack = 1; // 差分切换
@@ -35,12 +35,15 @@ const CharacterEffectPlayerInstance: CharacterEffectPlayer = {
     characterInstance.y = y;
     characterInstance.zIndex = Reflect.get(POS_INDEX_MAP, instance.position);
     characterInstance.state.setAnimation(AnimationIdleTrack, 'Idle_01', true);
+    characterInstance.alpha = 1
+    let colorFilter = new ColorOverlayFilter([0, 0, 0], 1)
+    characterInstance.filters = [colorFilter]
+
     return new Promise((resolve) => {
-      characterInstance.alpha = 0;
       characterInstance.visible = true;
       const timeLine = gsap.timeline();
-      timeLine.to(characterInstance, {
-        alpha: 1,
+      timeLine.to(colorFilter, {
+        alpha: 0,
         duration: 1,
         onComplete: resolve
       });
@@ -70,17 +73,19 @@ const CharacterEffectPlayerInstance: CharacterEffectPlayer = {
   }, closeup(instance: CharacterEffectInstance): Promise<void> {
     return Promise.resolve(undefined);
   }, d(instance: CharacterEffectInstance, options): Promise<void> {
+    let colorFilter = new ColorOverlayFilter([0, 0, 0], 0)
+    instance.instance.filters = [colorFilter]
     let tl = gsap.timeline()
 
-    tl.to(instance.instance, { pixi: { alpha: 0 }, duration: options.duration })
-    return timeLinePromise(tl, () => { instance.instance.visible = false })
+    tl.to(colorFilter, { alpha: 1, duration: options.duration })
+    return timeLinePromise(tl, () => { instance.instance.alpha = 0 })
   }, dl(instance: CharacterEffectInstance, options): Promise<void> {
     let tl = gsap.timeline()
     let distance = instance.instance.x + instance.instance.width
     let duration = distance / (instance.instance.width * options.speed)
     tl.to(instance.instance,
       { pixi: { x: -instance.instance.width }, duration })
-    return timeLinePromise(tl, () => instance.instance.visible = false)
+    return timeLinePromise(tl)
 
   }, dr(instance: CharacterEffectInstance, options): Promise<void> {
     let { app } = usePlayerStore()
@@ -91,7 +96,7 @@ const CharacterEffectPlayerInstance: CharacterEffectPlayer = {
     let duration = distance / (instance.instance.width * options.speed)
     tl.to(instance.instance, { pixi: { x: finalX }, duration },
     )
-    return timeLinePromise(tl, () => instance.instance.visible = false)
+    return timeLinePromise(tl)
   }, falldownR(instance: CharacterEffectInstance): Promise<void> {
     return Promise.resolve(undefined);
   }, greeting(instance: CharacterEffectInstance): Promise<void> {

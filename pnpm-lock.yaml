@@ -2,6 +2,7 @@ lockfileVersion: 5.4
 
 specifiers:
   '@pixi-spine/base': ^3.1.0
+  '@pixi/filter-color-overlay': ^4.0.0
   '@types/node': ^18.11.9
   '@vitejs/plugin-vue': ^3.2.0
   axios: ^1.1.3
@@ -17,6 +18,7 @@ specifiers:
 
 dependencies:
   '@pixi-spine/base': 3.1.0
+  '@pixi/filter-color-overlay': 4.2.0
   axios: registry.npmmirror.com/axios/1.1.3
   easy-typer-js: 2.1.0
   gsap: registry.npmmirror.com/gsap/3.11.3
@@ -66,6 +68,13 @@ packages:
       '@pixi/settings': ^6.1.0
       '@pixi/sprite': ^6.1.0
       '@pixi/utils': ^6.1.0
+    dev: false
+
+  /@pixi/filter-color-overlay/4.2.0:
+    resolution: {integrity: sha512-+xqUIyaRLf35ZRZAybO3tTW0eXMeWTpvPH9nFxucpo7pOeJNc/Z59jPgbtu1N3nTLCEBDtwwq3rGdVSWnSVuVw==}
+    peerDependencies:
+      '@pixi/core': ^6.0.0
+      '@pixi/utils': ^6.0.0
     dev: false
 
   /easy-typer-js/2.1.0:
