@@ -45,14 +45,14 @@ const CharacterEffectPlayerInstance: CharacterEffectPlayer = {
         onComplete: resolve
       });
     })
-  }, al(instance: CharacterEffectInstance, option): Promise<void> {
+  }, al(instance: CharacterEffectInstance, options): Promise<void> {
     initCharacter(instance)
     let { app } = usePlayerStore()
 
     let tl = gsap.timeline()
     let initX = app.screen.width
     let distance = initX - instance.instance.x
-    let duration = distance / (instance.instance.width * option.speed)
+    let duration = distance / (instance.instance.width * options.speed)
     tl.fromTo(instance.instance, { pixi: { x: initX } },
       { pixi: { x: instance.instance.x }, duration })
     return timeLinePromise(tl)
@@ -69,12 +69,29 @@ const CharacterEffectPlayerInstance: CharacterEffectPlayer = {
 
   }, closeup(instance: CharacterEffectInstance): Promise<void> {
     return Promise.resolve(undefined);
-  }, d(instance: CharacterEffectInstance): Promise<void> {
-    return Promise.resolve(undefined);
-  }, dl(instance: CharacterEffectInstance): Promise<void> {
-    return Promise.resolve(undefined);
-  }, dr(instance: CharacterEffectInstance): Promise<void> {
-    return Promise.resolve(undefined);
+  }, d(instance: CharacterEffectInstance, options): Promise<void> {
+    let tl = gsap.timeline()
+
+    tl.to(instance.instance, { pixi: { alpha: 0 }, duration: options.duration })
+    return timeLinePromise(tl, () => { instance.instance.visible = false })
+  }, dl(instance: CharacterEffectInstance, options): Promise<void> {
+    let tl = gsap.timeline()
+    let distance = instance.instance.x + instance.instance.width
+    let duration = distance / (instance.instance.width * options.speed)
+    tl.to(instance.instance,
+      { pixi: { x: -instance.instance.width }, duration })
+    return timeLinePromise(tl, () => instance.instance.visible = false)
+
+  }, dr(instance: CharacterEffectInstance, options): Promise<void> {
+    let { app } = usePlayerStore()
+
+    let tl = gsap.timeline()
+    let finalX = app.screen.width
+    let distance = finalX - instance.instance.x
+    let duration = distance / (instance.instance.width * options.speed)
+    tl.to(instance.instance, { pixi: { x: finalX }, duration },
+    )
+    return timeLinePromise(tl, () => instance.instance.visible = false)
   }, falldownR(instance: CharacterEffectInstance): Promise<void> {
     return Promise.resolve(undefined);
   }, greeting(instance: CharacterEffectInstance): Promise<void> {
@@ -145,12 +162,19 @@ export function getStageSize() {
 /**
  * 根据timeline生成promise
  * @param tl 
+ * @param callBack 可选, 返回promise前调用的函数
  * @returns 
  */
-function timeLinePromise(tl: gsap.core.Timeline) {
-  return new Promise<void>((resolve, reject) => {
-    tl.then(() => resolve()).catch(reason => reject(reason))
-  })
+async function timeLinePromise(tl: gsap.core.Timeline, callBack?: () => any) {
+  try {
+    await tl.then()
+  } catch (e) {
+    throw e
+  }
+
+  if (callBack) {
+    callBack()
+  }
 }
 
 /**

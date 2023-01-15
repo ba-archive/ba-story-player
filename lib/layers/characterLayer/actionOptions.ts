@@ -2,9 +2,15 @@ import { ActionOptions, OptionDescriptions } from "@/types/characterLayer";
 
 export let actionDescriptions: OptionDescriptions['action'] = {
   a: {},
-  d: {},
-  dl: {},
-  dr: {},
+  d: {
+    "duration": "消失动画的时间"
+  },
+  dl: {
+    "speed": "移动速度"
+  },
+  dr: {
+    "speed": "移动速度"
+  },
   ar: {
     "speed": "移动速度"
   },
@@ -28,14 +34,20 @@ export let actionDescriptions: OptionDescriptions['action'] = {
 
 let actionOptions: ActionOptions = {
   a: {},
-  d: {},
-  dl: {},
-  dr: {},
+  d: {
+    "duration": 0.6
+  },
+  dl: {
+    speed: 2.4
+  },
+  dr: {
+    speed: 2.4
+  },
   ar: {
-    speed: 1.5
+    speed: 2.4
   },
   al: {
-    speed: 1.5
+    speed: 2.4
   },
   hophop: {},
   greeting: {},

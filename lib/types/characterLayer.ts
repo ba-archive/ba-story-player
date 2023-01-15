@@ -395,9 +395,15 @@ export type EmotionOptions = {
 
 export interface ActionOptions extends BaseOptions<CharacterEffectWord> {
   a: {},
-  d: {},
-  dl: {},
-  dr: {},
+  d: {
+    duration: number
+  },
+  dl: {
+    speed: number
+  },
+  dr: {
+    speed: number
+  },
   ar: {
     speed: number
   },
