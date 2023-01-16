@@ -4,7 +4,7 @@ import {
 } from "@/types/characterLayer";
 import gsap from "gsap";
 import { Spine } from "pixi-spine";
-import actionOptions from "./actionOptions";
+import actionOptions, { moveSpeed } from "./actionOptions";
 import { ColorOverlayFilter } from '@pixi/filter-color-overlay'
 
 const AnimationIdleTrack = 0; // 光环动画track index
@@ -70,8 +70,11 @@ const CharacterEffectPlayerInstance: CharacterEffectPlayer = {
       { pixi: { x: instance.instance.x }, duration })
     return timeLinePromise(tl)
 
-  }, closeup(instance: CharacterEffectInstance): Promise<void> {
-    return Promise.resolve(undefined);
+  }, closeup(instance: CharacterEffectInstance, options): Promise<void> {
+    let scale = instance.instance.scale.x * options.scale
+    instance.instance.scale.set(scale)
+
+    return Promise.resolve()
   }, d(instance: CharacterEffectInstance, options): Promise<void> {
     let colorFilter = new ColorOverlayFilter([0, 0, 0], 0)
     instance.instance.filters = [colorFilter]
@@ -97,30 +100,90 @@ const CharacterEffectPlayerInstance: CharacterEffectPlayer = {
     tl.to(instance.instance, { pixi: { x: finalX }, duration },
     )
     return timeLinePromise(tl)
-  }, falldownR(instance: CharacterEffectInstance): Promise<void> {
-    return Promise.resolve(undefined);
-  }, greeting(instance: CharacterEffectInstance): Promise<void> {
-    return Promise.resolve(undefined);
+  }, falldownR(instance: CharacterEffectInstance, options): Promise<void> {
+    let tl = gsap.timeline()
+    let pivotOffset = {
+      x: instance.instance.width * options.anchor.x / instance.instance.scale.x,
+      y: instance.instance.height * options.anchor.y / instance.instance.scale.y
+    }
+    let orginPivot = instance.instance.pivot.clone()
+    instance.instance.pivot.x += pivotOffset.x
+    instance.instance.pivot.y += pivotOffset.y
+    instance.instance.position.set(instance.instance.x + pivotOffset.x * instance.instance.scale.x, instance.instance.y + pivotOffset.y * instance.instance.scale.x)
+    let { app } = usePlayerStore()
+    let finalY = instance.instance.y + instance.instance.height * (options.anchor.y + 0.1)
+    tl.to(instance.instance, { pixi: { angle: options.rightAngle }, duration: options.firstRotateDuration, repeat: 1, yoyo: true })
+      .to(instance.instance, { pixi: { y: finalY }, duration: options.falldownDuration })
+      .to(instance.instance, { pixi: { angle: options.leftAngle }, duration: options.falldownDuration * options.leftRotationPercent, repeat: 1, yoyo: true }, '<-=0.1')
+      .to(instance.instance, { pixi: { angle: options.rightAngle }, duration: options.firstRotateDuration }, '>')
+      .to(instance.instance, { pixi: { x: `+=${options.xOffset * instance.instance.width}` } }, 0)
+
+    return timeLinePromise(tl, () => { instance.instance.angle = 0; instance.instance.pivot = orginPivot })
+  }, greeting(instance: CharacterEffectInstance, options): Promise<void> {
+    let tl = gsap.timeline()
+    let yOffset = options.yOffset * instance.instance.height
+    tl.to(instance.instance, { pixi: { y: `-=${yOffset}` }, repeat: 1, yoyo: true, duration: options.duration / 2 })
+
+    return timeLinePromise(tl)
   }, hide(instance: CharacterEffectInstance): Promise<void> {
     return Promise.resolve(undefined);
-  }, hophop(instance: CharacterEffectInstance): Promise<void> {
-    return Promise.resolve(undefined);
-  }, jump(instance: CharacterEffectInstance): Promise<void> {
-    return Promise.resolve(undefined);
+  }, hophop(instance: CharacterEffectInstance, options): Promise<void> {
+    let tl = gsap.timeline()
+    let yOffset = options.yOffset * instance.instance.height
+    tl.to(instance.instance, { pixi: { y: `-=${yOffset}` }, repeat: 3, yoyo: true, duration: options.duration / 2 })
+
+    return timeLinePromise(tl)
+  }, jump(instance: CharacterEffectInstance, options): Promise<void> {
+    let tl = gsap.timeline()
+    let yOffset = options.yOffset * instance.instance.height
+    tl.to(instance.instance, { pixi: { y: `-=${yOffset}` }, repeat: 1, yoyo: true, duration: options.duration / 2 })
+
+    return timeLinePromise(tl)
+
   }, m1(instance: CharacterEffectInstance): Promise<void> {
-    return Promise.resolve(undefined);
+    return timeLinePromise(moveTo(instance, 1))
   }, m2(instance: CharacterEffectInstance): Promise<void> {
-    return Promise.resolve(undefined);
+    return timeLinePromise(moveTo(instance, 2))
   }, m3(instance: CharacterEffectInstance): Promise<void> {
-    return Promise.resolve(undefined);
+    return timeLinePromise(moveTo(instance, 3))
   }, m4(instance: CharacterEffectInstance): Promise<void> {
-    return Promise.resolve(undefined);
+    return timeLinePromise(moveTo(instance, 4))
   }, m5(instance: CharacterEffectInstance): Promise<void> {
-    return Promise.resolve(undefined);
-  }, shake(instance: CharacterEffectInstance): Promise<void> {
-    return Promise.resolve(undefined);
-  }, stiff(instance: CharacterEffectInstance): Promise<void> {
-    return Promise.resolve(undefined);
+    return timeLinePromise(moveTo(instance, 5))
+  }, shake(instance: CharacterEffectInstance, options): Promise<void> {
+    let tl = gsap.timeline()
+    let fromX = options.shakeAnimation.from * instance.instance.width
+    let toX = options.shakeAnimation.to * instance.instance.width
+    tl.to(instance.instance, {
+      pixi: { x: `+=${fromX}` }, repeat: 1,
+      yoyo: true, duration: options.shakeAnimation.duration / 2
+    })
+      .to(instance.instance, {
+        pixi: { x: `+=${toX}` },
+        repeat: 1,
+        yoyo: true,
+        duration: options.shakeAnimation.duration / 2
+      })
+      .repeat(options.shakeAnimation.repeat - 1)
+
+    return timeLinePromise(tl)
+  }, stiff(instance: CharacterEffectInstance, options): Promise<void> {
+    let tl = gsap.timeline()
+    let fromX = options.shakeAnimation.from * instance.instance.width
+    let toX = options.shakeAnimation.to * instance.instance.width
+    tl.to(instance.instance, {
+      pixi: { x: `+=${fromX}` }, repeat: 1,
+      yoyo: true, duration: options.shakeAnimation.duration / 2
+    })
+      .to(instance.instance, {
+        pixi: { x: `+=${toX}` },
+        repeat: 1,
+        yoyo: true,
+        duration: options.shakeAnimation.duration / 2
+      })
+      .repeat(options.shakeAnimation.repeat - 1)
+
+    return timeLinePromise(tl)
   }
 }
 
@@ -195,6 +258,21 @@ function initCharacter(instance: CharacterEffectInstance) {
   characterInstance.state.setAnimation(AnimationIdleTrack, 'Idle_01', true);
   characterInstance.visible = true
   characterInstance.alpha = 1
+}
+
+/**
+ * 将立绘移动到指定位置, 返回一个移动动画timeline
+ * @param instance 
+ * @param position 
+ * @returns 
+ */
+function moveTo(instance: CharacterEffectInstance, position: number) {
+  let movePos = calcSpineStagePosition(instance.instance, position)
+  let tl = gsap.timeline()
+  let distance = Math.abs(instance.instance.x - movePos.x)
+  let duration = distance / (moveSpeed * instance.instance.width)
+
+  return tl.to(instance.instance, { pixi: { x: movePos.x }, duration })
 }
 
 export default CharacterEffectPlayerInstance

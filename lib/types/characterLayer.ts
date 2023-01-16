@@ -157,7 +157,7 @@ type Options = EmotionOptions & ActionOptions & FXOptions & SignalOptions
 type EffectFunctionUnit = (instance: CharacterEffectInstance, options: any, sprites: Sprite[]) => Promise<void> | undefined
 
 export type EffectFunction<T extends EffectsWord> = {
-  [key in T]: (instance: CharacterEffectInstance, options: Options[key], sprites: Sprite[]) => Promise<void> | undefined
+  [key in T]: (instance: CharacterEffectInstance, options: Options[key], sprites: Sprite[]) => Promise<void>
 }
 
 type DescriptionUnit<T> = {
@@ -410,18 +410,51 @@ export interface ActionOptions extends BaseOptions<CharacterEffectWord> {
   al: {
     speed: number
   },
-  hophop: {},
-  greeting: {},
-  shake: {},
+  hophop: {
+    yOffset: number
+    duration: number
+  },
+  greeting: {
+    yOffset: number
+    duration: number
+  },
+  shake: {
+    shakeAnimation: {
+      from: number
+      to: number
+      duration: number
+      repeat: number
+    }
+  },
   m1: {},
   m2: {},
   m3: {},
   m4: {},
   m5: {},
-  stiff: {},
-  closeup: {},
-  jump: {},
-  falldownR: {},
+  stiff: {
+    shakeAnimation: {
+      from: number
+      to: number
+      duration: number
+      repeat: number
+    }
+  },
+  closeup: {
+    scale: number
+  },
+  jump: {
+    yOffset: number
+    duration: number
+  },
+  falldownR: {
+    anchor: PositionOffset
+    rightAngle: number
+    leftAngle: number
+    firstRotateDuration: number
+    leftRotationPercent:number
+    falldownDuration: number
+    xOffset: number
+  },
   hide: {}
 }
 
