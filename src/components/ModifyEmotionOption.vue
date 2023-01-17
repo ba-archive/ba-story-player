@@ -89,7 +89,8 @@ function playEffect() {
         CharacterName: 4179367264,
         face: '05',
         position: 3,
-        highlight: true,
+        highlight: false,
+        signal: true,
         effects: [
           {
             type: effectType.value,

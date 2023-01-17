@@ -10,12 +10,16 @@ import {
 } from "@/types/characterLayer";
 import { Character, CharacterEffectType, CharacterInstance } from "@/types/common";
 import { ShowCharacter } from "@/types/events";
-import gsap from "gsap";
+import gsap, { Power0 } from "gsap";
 import { PixiPlugin } from 'gsap/PixiPlugin';
 import { ISkeletonData, Spine } from "pixi-spine";
 import * as PIXI from 'pixi.js';
 import CharacterEffectPlayerInstance, { getStageSize } from "./actionPlayer";
 import CharacterEmotionPlayerInstance from './emotionPlayer';
+import { ColorOverlayFilter } from '@pixi/filter-color-overlay'
+import { CRTFilter } from '@pixi/filter-crt'
+import { AdjustmentFilter } from '@pixi/filter-adjustment'
+import { MotionBlurFilter } from '@pixi/filter-motion-blur'
 
 const AnimationIdleTrack = 0; // 光环动画track index
 const AnimationFaceTrack = 1; // 差分切换
@@ -146,6 +150,41 @@ const CharacterLayerInstance: CharacterLayer = {
   showOneCharacter(data: CharacterEffectInstance): Promise<void> {
     // 表情
     data.instance.state.setAnimation(AnimationFaceTrack, data.face, true);
+
+    data.instance.filters = []
+    //处理人物高亮
+
+    if (data.signal) {
+      let crtFilter = new CRTFilter({
+        lineWidth: data.instance.width * 0.005,
+        time: 0
+      })
+      let adjustmentFilter = new AdjustmentFilter({
+        gamma: 1.3,
+        red: 1,
+        green: 1.1,
+        blue: 1.15,
+      })
+      let motionBlurFilter = new MotionBlurFilter()
+      data.instance.filters.push(
+        crtFilter,
+        adjustmentFilter,
+        motionBlurFilter
+      )
+      loopCRtAnimation(crtFilter)
+      let tl = gsap.timeline()
+      tl.to(motionBlurFilter.velocity, { x: 5, duration: 0.1, repeat: 1, yoyo: true })
+        .to(motionBlurFilter.velocity, { x: -5, duration: 0.1, repeat: 1, yoyo: true })
+      tl.repeat(-1)
+      tl.repeatDelay(3)
+    }
+    if (!data.highlight) {
+      data.instance.filters.push(new ColorOverlayFilter([0, 0, 0], 0.3))
+    }
+    else{
+      data.instance.filters.push(new ColorOverlayFilter([0, 0, 0], 0))
+    }
+
     return new Promise<void>(async (resolve, reject) => {
       let count = 0;
       const effectListLength = data.effects.length;
@@ -199,4 +238,8 @@ const CharacterLayerInstance: CharacterLayer = {
   characterScale: undefined,
   characterSpineCache: new Map<number, CharacterInstance>(),
   effectPlayerMap: new Map<CharacterEffectType, CharacterEffectPlayerInterface<EmotionWord | CharacterEffectWord | FXEffectWord | SignalEffectWord>>(),
+}
+
+function loopCRtAnimation(crtFilter: CRTFilter) {
+  gsap.to(crtFilter, { time: "+=10", duration: 1, ease: Power0.easeNone }).then(() => loopCRtAnimation(crtFilter))
 }

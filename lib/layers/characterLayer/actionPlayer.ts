@@ -36,8 +36,8 @@ const CharacterEffectPlayerInstance: CharacterEffectPlayer = {
     characterInstance.zIndex = Reflect.get(POS_INDEX_MAP, instance.position);
     characterInstance.state.setAnimation(AnimationIdleTrack, 'Idle_01', true);
     characterInstance.alpha = 1
-    let colorFilter = new ColorOverlayFilter([0, 0, 0], 1)
-    characterInstance.filters = [colorFilter]
+    let colorFilter = characterInstance.filters![characterInstance.filters!.length - 1] as ColorOverlayFilter
+    colorFilter.alpha = 1
 
     return new Promise((resolve) => {
       characterInstance.visible = true;
@@ -76,8 +76,7 @@ const CharacterEffectPlayerInstance: CharacterEffectPlayer = {
 
     return Promise.resolve()
   }, d(instance: CharacterEffectInstance, options): Promise<void> {
-    let colorFilter = new ColorOverlayFilter([0, 0, 0], 0)
-    instance.instance.filters = [colorFilter]
+    let colorFilter = instance.instance.filters![instance.instance.filters!.length-1] as ColorOverlayFilter
     let tl = gsap.timeline()
 
     tl.to(colorFilter, { alpha: 1, duration: options.duration })
@@ -110,7 +109,6 @@ const CharacterEffectPlayerInstance: CharacterEffectPlayer = {
     instance.instance.pivot.x += pivotOffset.x
     instance.instance.pivot.y += pivotOffset.y
     instance.instance.position.set(instance.instance.x + pivotOffset.x * instance.instance.scale.x, instance.instance.y + pivotOffset.y * instance.instance.scale.x)
-    let { app } = usePlayerStore()
     let finalY = instance.instance.y + instance.instance.height * (options.anchor.y + 0.1)
     tl.to(instance.instance, { pixi: { angle: options.rightAngle }, duration: options.firstRotateDuration, repeat: 1, yoyo: true })
       .to(instance.instance, { pixi: { y: finalY }, duration: options.falldownDuration })

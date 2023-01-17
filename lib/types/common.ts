@@ -1,5 +1,5 @@
 import type { Spine } from 'pixi-spine'
-import {CharacterEffectWord, EmotionWord, FXEffectWord, SignalEffectWord} from "@/types/characterLayer";
+import { CharacterEffectWord, EmotionWord, FXEffectWord, SignalEffectWord } from "@/types/characterLayer";
 export type StoryType = "title" | "place" | "text" | "option" | "st" | "effectOnly" | 'continue'
 
 export type Dict<T> = {
@@ -35,18 +35,22 @@ export interface Character {
    * 人物是否高亮
    */
   highlight: boolean
+  /**
+   * 人物是否是全息投影状态
+   */
+  signal: boolean
 
-  effects:CharacterEffect[]
+  effects: CharacterEffect[]
 }
 
-export type CharacterEffectType = 'emotion'|'action'|'fx'|'signal';
+export type CharacterEffectType = 'emotion' | 'action' | 'fx' | 'signal';
 
 export interface CharacterEffect {
   type: CharacterEffectType;
   // target: number,
   effect: EmotionWord | CharacterEffectWord | FXEffectWord | SignalEffectWord;
   async: boolean
-  arg?:string
+  arg?: string
 }
 
 export interface Option {
@@ -66,7 +70,7 @@ export interface TextEffect {
    * `fontsize` 字体大小
    * `ruby` 日文注音
    */
-  name: 'color'|'fontsize'|'ruby',
+  name: 'color' | 'fontsize' | 'ruby',
   /**
    * 特效参数
    */
@@ -78,7 +82,7 @@ export interface TextEffect {
 }
 
 export interface Effect {
-  type: 'wait'|'zmc' |'bgshake'
+  type: 'wait' | 'zmc' | 'bgshake'
   args: Array<string>
 }
 
@@ -111,7 +115,7 @@ export interface StoryUnit {
   type: StoryType,
   characters: Character[],
   options?: Option[],
-  textEffect:{
+  textEffect: {
     TextJp: TextEffect[],
     TextCn?: TextEffect[],
     TextTw?: TextEffect[],
@@ -128,10 +132,10 @@ export interface StoryUnit {
   nextChapterName?: string,
   fight?: number,
   clearSt?: boolean,
-  hide?:'menu'|'all'
-  show?:'menu'
+  hide?: 'menu' | 'all'
+  show?: 'menu'
   otherEffect: Effect[]
-  naName?:string
+  naName?: string
 }
 
 export interface CharacterInstance {
