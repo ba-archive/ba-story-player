@@ -4,7 +4,7 @@ import {
 } from "@/types/characterLayer";
 import gsap from "gsap";
 import { Spine } from "pixi-spine";
-import actionOptions, { moveSpeed } from "./actionOptions";
+import actionOptions, { moveSpeed } from "./options/actionOptions";
 import { ColorOverlayFilter } from '@pixi/filter-color-overlay'
 
 const AnimationIdleTrack = 0; // 光环动画track index

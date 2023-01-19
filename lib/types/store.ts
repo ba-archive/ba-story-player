@@ -65,6 +65,7 @@ export interface PrivateStates {
    * 根据emotion名获取emotion图片信息
    */
   emotionResourcesTable: { [index: string]: string[] },
+  fxImageTable: { [index: string]: string[] },
 }
 
 /**
@@ -110,6 +111,12 @@ export interface BasicGetters {
    * @returns 情绪资源图片url数组, 按从底而上, 从左到右排列
    */
   emotionResources: (emotionName: string) => string[]
+  /**
+   * 获取fx特效图像资源
+   * @param fxName 
+   * @returns 图像资源url数组
+   */
+  fxImages: (fxName: string) => string[]
 
   /**
    * 获取背景图片的url, 如果对应的BGName不是背景图片则返回空字符串

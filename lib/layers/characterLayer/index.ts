@@ -16,6 +16,7 @@ import { ISkeletonData, Spine } from "pixi-spine";
 import * as PIXI from 'pixi.js';
 import CharacterEffectPlayerInstance, { getStageSize } from "./actionPlayer";
 import CharacterEmotionPlayerInstance from './emotionPlayer';
+import characterFXPlayer from "./fxPlayer";
 import { ColorOverlayFilter } from '@pixi/filter-color-overlay'
 import { CRTFilter } from '@pixi/filter-crt'
 import { AdjustmentFilter } from '@pixi/filter-adjustment'
@@ -45,6 +46,7 @@ const CharacterLayerInstance: CharacterLayer = {
     eventBus.on("showCharacter", showCharacter);
     this.effectPlayerMap.set("emotion", CharacterEmotionPlayerInstance);
     this.effectPlayerMap.set("action", CharacterEffectPlayerInstance);
+    this.effectPlayerMap.set("fx", characterFXPlayer);
     this.effectPlayerMap.forEach((value) => {
       value.init();
     })
@@ -152,8 +154,8 @@ const CharacterLayerInstance: CharacterLayer = {
     data.instance.state.setAnimation(AnimationFaceTrack, data.face, true);
 
     data.instance.filters = []
-    //处理人物高亮
 
+    //处理全息状态
     if (data.signal) {
       let crtFilter = new CRTFilter({
         lineWidth: data.instance.width * 0.005,
@@ -178,10 +180,11 @@ const CharacterLayerInstance: CharacterLayer = {
       tl.repeat(-1)
       tl.repeatDelay(3)
     }
+    //处理人物高光
     if (!data.highlight) {
       data.instance.filters.push(new ColorOverlayFilter([0, 0, 0], 0.3))
     }
-    else{
+    else {
       data.instance.filters.push(new ColorOverlayFilter([0, 0, 0], 0))
     }
 

@@ -1,12 +1,15 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, ref } from 'vue'
 import eventBus from '../../lib/eventBus'
-import emotionOptions, { emotionDescriptions } from '../../lib/layers/characterLayer/emotionOptions'
-import actionOptions, { actionDescriptions } from '../../lib/layers/characterLayer/actionOptions'
+import emotionOptions, { emotionDescriptions } from '../../lib/layers/characterLayer/options/emotionOptions'
+import actionOptions, { actionDescriptions } from '../../lib/layers/characterLayer/options/actionOptions'
+import fxOptions, { fxOptionsDescriptions } from '../../lib/layers/characterLayer/options/fxOptions'
 
-let effectType = ref<'action' | 'emotion'>('emotion')
+let effectType = ref<'action' | 'emotion' | 'fx'>('emotion')
 let current = ref('Music')
-let selectCache: { effectType: 'action' | 'emotion', current: string }
+let signal = ref(false)
+let highlight = ref(true)
+let selectCache: { effectType: 'action' | 'emotion' | 'fx', current: string }
 if (localStorage.getItem('selectCache')) {
   selectCache = JSON.parse(localStorage.getItem('selectCache')!)
   effectType.value = selectCache['effectType']
@@ -20,42 +23,33 @@ else {
   localStorage.setItem('selectCache', JSON.stringify(selectCache))
 }
 
-let currentOptions = computed(() => {
-  if (effectType.value == 'emotion') {
-    if (current.value in emotionOptions) {
-      return emotionOptions[current.value]
-    }
-    else {
-      return {}
-    }
+let optionsMap = {
+  emotion: emotionOptions,
+  action: actionOptions,
+  fx: fxOptions
+}
+
+let descriptionsMap = {
+  emotion: emotionDescriptions,
+  action: actionDescriptions,
+  fx: fxOptionsDescriptions
+}
+
+function checkAndReturn(property: string, object: any) {
+  if (property in object) {
+    return object[property]
   }
   else {
-    if (current.value in actionOptions) {
-      return actionOptions[current.value]
-    }
-    else {
-      return {}
-    }
+    return {}
   }
+}
+
+let currentOptions = computed(() => {
+  return checkAndReturn(current.value, optionsMap[effectType.value])
 })
 
 let currentDescriptions = computed(() => {
-  if (effectType.value == 'emotion') {
-    if (current.value in emotionOptions) {
-      return { ...emotionDescriptions[current.value], ...emotionDescriptions['globalOptions'] }
-    }
-    else {
-      return {}
-    }
-  }
-  else {
-    if (current.value in actionOptions) {
-      return { ...actionDescriptions[current.value] }
-    }
-    else {
-      return {}
-    }
-  }
+  return checkAndReturn(current.value, descriptionsMap[effectType.value])
 })
 
 function showCharacter() {
@@ -89,8 +83,8 @@ function playEffect() {
         CharacterName: 4179367264,
         face: '05',
         position: 3,
-        highlight: false,
-        signal: true,
+        highlight: highlight.value,
+        signal: signal.value,
         effects: [
           {
             type: effectType.value,
@@ -134,13 +128,19 @@ onMounted(() => {
 
 <template>
   <div class="absolute-right-center">
+    <div>
+      <label>signal:</label>
+      <input type="checkbox" v-model="signal" />
+      <label>highlight:</label>
+      <input type="checkbox" v-model="highlight" />
+    </div>
     <select v-model="effectType" @change="updateType">
       <option>emotion</option>
       <option>action</option>
+      <option>fx</option>
     </select>
     <select v-model="current" @change="updateType">
-      <option v-if="effectType == 'emotion'" v-for="emotion in Object.keys(emotionOptions)">{{ emotion }}</option>
-      <option v-else="effectType=='action'" v-for="action in Object.keys(actionOptions)">{{ action }}</option>
+      <option v-for="effect in Object.keys(optionsMap[effectType])">{{ effect }}</option>
     </select>
     <div v-for="option in Object.keys(currentOptions)">
       <div v-if="typeof currentOptions[option] === 'string'">

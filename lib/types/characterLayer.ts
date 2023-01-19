@@ -144,6 +144,17 @@ export interface CharacterEffectPlayer extends BaseCharacterEffectPlayer<Charact
 }
 
 /**
+ * 人物fx特效处理
+ */
+export interface CharacterFXPlayer extends BaseCharacterEffectPlayer<FXEffectWord> {
+  /**
+   * 获取特效处理函数
+   * @param type 人物特效类型
+   */
+  getHandlerFunction(type: FXEffectWord): EffectFunctionUnit;
+}
+
+/**
  * CharacterEmotionPlayer使用, 提供角色spine与施加在其身上的所有特效
  */
 export interface CharacterEffectInstance extends Character {
@@ -173,6 +184,7 @@ export type OptionDescriptions = {
     }
   } & DescriptionUnit<BasicEmotionOptions>,
   action: DescriptionUnit<ActionOptions>,
+  fx: DescriptionUnit<FXOptions>
 }
 
 /**
@@ -451,7 +463,7 @@ export interface ActionOptions extends BaseOptions<CharacterEffectWord> {
     rightAngle: number
     leftAngle: number
     firstRotateDuration: number
-    leftRotationPercent:number
+    leftRotationPercent: number
     falldownDuration: number
     xOffset: number
   },
@@ -459,7 +471,12 @@ export interface ActionOptions extends BaseOptions<CharacterEffectWord> {
 }
 
 export interface FXOptions extends BaseOptions<FXEffectWord> {
-
+  shot: {
+    scale: number
+    shotDuration: number
+    shotDelay: number
+    shotPos: PositionOffset[]
+  }
 }
 
 export interface SignalOptions extends BaseOptions<SignalEffectWord> {

@@ -43,12 +43,12 @@ export interface Character {
   effects: CharacterEffect[]
 }
 
-export type CharacterEffectType = 'emotion' | 'action' | 'fx' | 'signal';
+export type CharacterEffectType = 'emotion' | 'action' | 'fx';
 
 export interface CharacterEffect {
   type: CharacterEffectType;
   // target: number,
-  effect: EmotionWord | CharacterEffectWord | FXEffectWord | SignalEffectWord;
+  effect: EmotionWord | CharacterEffectWord | FXEffectWord;
   async: boolean
   arg?: string
 }

@@ -46,6 +46,9 @@ let privateState: PrivateStates = {
     'Chat': ['Emoticon_Chat.png']
     // TODO: Upset, Music, Think, Bulb, Sigh, Steam, Zzz, Tear
   },
+  "fxImageTable": {
+    "shot": ['shot.png']
+  }
 }
 
 let getterFunctions: GetterFunctions = {
@@ -150,6 +153,13 @@ let getterFunctions: GetterFunctions = {
    */
   emotionResources: () => (emotionName: string) => {
     return privateState.emotionResourcesTable[emotionName]
+  },
+
+  /**
+     * 获取情绪动画的图片url, 按从底部到顶部, 从左到右排列资源.
+     */
+  fxImages: () => (fxName: string) => {
+    return privateState.fxImageTable[fxName]
   },
 
   /**

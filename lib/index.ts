@@ -286,6 +286,7 @@ function playEffect() {
 function addLoadResources() {
   addCharacterSpineResources()
   addEmotionResources()
+  addFXResources()
   addBGNameResources()
   addBgmResources()
   addSoundResources()
@@ -334,6 +335,19 @@ async function addEmotionResources() {
     let emotionSoundName = `SFX_Emoticon_Motion_${emotionName}`
     if (!playerStore.app.loader.resources[emotionSoundName]) {
       playerStore.app.loader.add(emotionSoundName, `${playerStore.dataUrl}/Audio/Sound/${emotionSoundName}.wav`)
+    }
+  }
+}
+
+/**
+ * 添加FX相关资源
+ */
+async function addFXResources() {
+  for (let fxImages of Object.values(playerStore.fxImageTable)) {
+    for (let url of fxImages) {
+      if (!playerStore.app.loader.resources[url]) {
+        playerStore.app.loader.add(url, `${playerStore.dataUrl}/fx/${url}`)
+      }
     }
   }
 }

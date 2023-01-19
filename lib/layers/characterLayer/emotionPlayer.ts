@@ -8,7 +8,7 @@ import {
   EmotionWord, FXEffectWord, SignalEffectWord, CharacterEffectPlayer, PositionOffset, EmotionOptions, Scale, GlobalEmotionOptions,
 } from "@/types/characterLayer";
 import { Container, DisplayObject, Sprite } from "pixi.js";
-import emotionOptions from "./emotionOptions";
+import emotionOptions from "./options/emotionOptions";
 import gsap from 'gsap'
 
 
