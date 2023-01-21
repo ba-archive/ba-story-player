@@ -66,6 +66,12 @@ interface PlayAudio{
 ```
 `playEmotionAudio`: 播放人物情绪动作特效音, 参数是一个string代表人物的情绪动作
 
+`playSelectSound`: 播放选择时的特效音
+
+## 可使用getter
+`otherSound`: 获取其他声音资源url
+`emotionSoundUrl`: 获取emotion特效对应的特效音
+
 # UI层
 UI层负责UI的相关功能
 ## 发出事件
@@ -78,7 +84,9 @@ UI层负责UI的相关功能
 文字层负责有对话框文字, 无对话框文字, 选项的显示.
 ## 接收事件
 `showTitle`: 显示标题, 接受一个string参数作为标题
+
 `showPlace`: 显示地点, 接受一个string参数作为地点
+
 `showText`: 显示普通对话框文字
 参数
 ```ts
@@ -88,6 +96,7 @@ export interface ShowText {
   speaker?: Speaker
 }
 ```
+
 `st`: 显示无对话框文字
 参数: 
 ```ts
@@ -108,7 +117,9 @@ interface TextEffect {
 ```
 其中stArgs通常只需要注意第二个参数, serial打字机效果, instant立即全部显示.
 当没有清除无对话框文字时, 新来的文字需要放在原来文字的下方.
+
 `clearSt`: 清除无对话框文字
+
 `option`: 显示选项
 参数: ShowOption[]
 ```ts
@@ -121,10 +132,12 @@ interface Option {
 `next`: 进入下一语句
     
 `select`: 选择后加入下一剧情语句, 需要带一个number类型的参数
+
+`playSelectSound`: 播放选择时的特效音
 ## 可使用getter
 `nameAndNickName`: 根据CharacterName获取name和nickname
 ## 需要处理的state
-`_logText`: 已播放剧情语句
+`logText`: 已播放剧情语句, 通过`setLogText`进行修改.
 # 特效层
 特效层用于播放除人物相关特效外的特效
 ## 接收事件
