@@ -2,6 +2,7 @@
 import BaStoryPlayer from '../lib/BaStoryPlayer.vue'
 import yuuka from './data/yuuka.json'
 import eventBus from '../lib/eventBus'
+import ModifyEmotionOption from './components/ModifyEmotionOption.vue';
 
 window.eventBus=eventBus
 window.next=()=>{
@@ -20,5 +21,6 @@ window.next=()=>{
     :height="550"
     language="Cn"
     />
+    <!-- <ModifyEmotionOption /> -->
   </div>
 </template>

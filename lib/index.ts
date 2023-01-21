@@ -1,4 +1,4 @@
-import { Application, Loader, Text } from "pixi.js";
+import { Application, Loader, Text, settings } from "pixi.js";
 import { SpineParser } from 'pixi-spine'
 import { textInit } from "./layers/textLayer";
 import { usePlayerStore, initPrivateState } from "./stores";
@@ -29,11 +29,17 @@ let app: Application
  * 调用各层的初始化函数
  */
 export async function init(elementID: string, height: number, width: number, story: StoryRawUnit[], dataUrl: string, language: Language) {
+  //缓解图片缩放失真
+  settings.MIPMAP_TEXTURES = 2
+
   playerStore = usePlayerStore()
   privateState = initPrivateState()
   privateState.dataUrl = dataUrl
-  privateState.language=language
-  privateState.app = new Application({ height, width })
+  privateState.language = language
+  //加入判断防止vite热更新重新创建app导致加载资源错误
+  if (!privateState.app) {
+    privateState.app = new Application({ height, width })
+  }
 
   app = playerStore.app
 
@@ -70,7 +76,7 @@ export async function init(elementID: string, height: number, width: number, sto
 
   textInit()
   bgInit()
-  // characterInit()
+  characterInit()
   soundInit()
   effectInit()
 
@@ -84,6 +90,22 @@ export async function init(elementID: string, height: number, width: number, sto
         app.stage.removeChild(loadingText)
         emitEvents()
         hasLoad = true
+        // window.app = app;
+        // eventBus.emit("showCharacter", {
+        //   characters: [{
+        //     "CharacterName": 4179367264,
+        //     "position": 3,
+        //     "face": "05",
+        //     "highlight": false,
+        //     "effects": [
+        //       {
+        //         "type": "action",
+        //         "effect": "a",
+        //         "async": false
+        //       }
+        //     ]
+        //   }]
+        // })
       }
     })
   })
@@ -264,6 +286,7 @@ function playEffect() {
 function addLoadResources() {
   addCharacterSpineResources()
   addEmotionResources()
+  addFXResources()
   addBGNameResources()
   addBgmResources()
   addSoundResources()
@@ -312,6 +335,19 @@ async function addEmotionResources() {
     let emotionSoundName = `SFX_Emoticon_Motion_${emotionName}`
     if (!playerStore.app.loader.resources[emotionSoundName]) {
       playerStore.app.loader.add(emotionSoundName, `${playerStore.dataUrl}/Audio/Sound/${emotionSoundName}.wav`)
+    }
+  }
+}
+
+/**
+ * 添加FX相关资源
+ */
+async function addFXResources() {
+  for (let fxImages of Object.values(playerStore.fxImageTable)) {
+    for (let url of fxImages) {
+      if (!playerStore.app.loader.resources[url]) {
+        playerStore.app.loader.add(url, `${playerStore.dataUrl}/fx/${url}`)
+      }
     }
   }
 }

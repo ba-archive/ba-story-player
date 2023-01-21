@@ -3,6 +3,7 @@ import { onMounted } from 'vue';
 import { init } from '@/index';
 import { StoryRawUnit } from '@/types/common';
 import eventBus from "@/eventBus";
+//@ts-ignore
 import BaDialog from "@/layers/textLayer/BaDialog.vue";
 import { Language } from './types/store';
 
