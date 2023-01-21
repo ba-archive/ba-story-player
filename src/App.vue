@@ -21,6 +21,6 @@ window.next=()=>{
     :height="550"
     language="Cn"
     />
-    <ModifyEmotionOption />
+    <!-- <ModifyEmotionOption /> -->
   </div>
 </template>
