@@ -11,6 +11,9 @@ export type Language = 'Cn' | 'Jp'
  * 仅可通过函数修改的state
  */
 export interface PrivateStates {
+  /**
+   * pixi.js app实例
+   */
   app: Application | null
   /**
    * 后端资源前缀
@@ -39,6 +42,13 @@ export interface PrivateStates {
    * 背景实例
    */
   bgInstance: null | Sprite
+
+  //文字层
+  /**
+   * 已经展示过的语句的集合, 用于ui层显示日志
+   */
+  logText: ShowText[],
+
 
   //资源管理
   /**
@@ -75,11 +85,6 @@ export interface PublicStates {
   //人物层
   currentCharacterMap: Map<number, CharacterInstance>
 
-  //文字层
-  /**
-   * 已经展示过的语句的集合, 用于ui层显示日志
-   */
-  logText: ShowText[],
 }
 
 
@@ -161,4 +166,10 @@ export interface Actions {
    *  根据选项结果进入下一个故事节点, 不存在该节点则返回false
    */
   select: (option: number) => boolean
+  /**
+   * 设置logText的值, 即已经显示过的文字
+   * @param logText 
+   * @returns 
+   */
+  setLogText: (logText: ShowText[]) => void
 }
