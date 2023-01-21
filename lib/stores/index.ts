@@ -11,6 +11,9 @@ let privateState: PrivateStates = {
   allStoryUnit: [],
   currentStoryIndex: 0,
 
+  //文字层
+  logText: [],
+
   //背景层
   bgInstance: null,
 
@@ -46,7 +49,7 @@ let privateState: PrivateStates = {
     'Chat': ['Emoticon_Chat.png']
     // TODO: Upset, Music, Think, Bulb, Sigh, Steam, Zzz, Tear
   },
-  "fxImageTable": {
+  fxImageTable: {
     "shot": ['shot.png']
   }
 }
@@ -273,30 +276,32 @@ let actions: Actions = {
     }
 
     return true
+  },
+  setLogText(logText) {
+    privateState.logText = logText
+  }
+}
+
+let store = {
+  currentCharacterMap: new Map(),
+  ...actions,
+}
+
+for (let getter of Object.keys(getterFunctions) as Array<keyof GetterFunctions>) {
+  Reflect.defineProperty(store, getter, {
+    get: () => getterFunctions[getter]()
+  })
+}
+
+for (let state of Object.keys(privateState) as Array<keyof PrivateStates>) {
+  if (!['app'].includes(state)) {
+    Reflect.defineProperty(store, state, {
+      get: () => privateState[state]
+    })
   }
 }
 
 export let usePlayerStore = () => {
-  let store = {
-    logText: [],
-    currentCharacterMap: new Map(),
-    ...actions
-  }
-
-  for (let getter of Object.keys(getterFunctions) as Array<keyof GetterFunctions>) {
-    Reflect.defineProperty(store, getter, {
-      get: () => getterFunctions[getter]()
-    })
-  }
-
-  for (let state of Object.keys(privateState) as Array<keyof PrivateStates>) {
-    if (!['app'].includes(state)) {
-      Reflect.defineProperty(store, state, {
-        get: () => privateState[state]
-      })
-    }
-  }
-
   return store as unknown as PublicStates & Getters & Readonly<PrivateStates> & Actions
 }
 
