@@ -313,11 +313,16 @@ function addCharacterSpineResources() {
  * 获取人物立绘文件名
  */
 function getCharacterFileName(CharacterName: number) {
-  let item = playerStore.CharacterNameExcelTable[CharacterName]
-  let temp = String(item.SpinePrefabName).split('/')
-  temp = temp[temp.length - 1].split('_')
-  let id = temp[temp.length - 1]
-  return `${id}_spr`
+  let item = playerStore.CharacterNameExcelTable.get(CharacterName)
+  if (item) {
+    let temp = String(item.SpinePrefabName).split('/')
+    temp = temp[temp.length - 1].split('_')
+    let id = temp[temp.length - 1]
+    return `${id}_spr`
+  }
+  else {
+    return ''
+  }
 }
 
 /**
@@ -371,8 +376,11 @@ function addBgmResources() {
  * 获取bgm地址
  */
 function getBgmPath(id: number) {
-  let item = playerStore.BGMExcelTable[id]
-  return `${playerStore.dataUrl}/${item.Path}.ogg`
+  let item = playerStore.BGMExcelTable.get(id)
+  if (item)
+    return `${playerStore.dataUrl}/${item.Path}.ogg`
+  else
+    return ''
 }
 
 /**
@@ -396,20 +404,22 @@ function addSoundResources() {
 function addBGNameResources() {
   for (let i of playerStore.allStoryUnit) {
     if (i.BGName != 0) {
-      let item = playerStore.BGNameExcelTable[i.BGName]
-      if (item.BGType == 'Image') {
-        let filename = String(item.BGFileName).split('/').pop()
-        if (!playerStore.app.loader.resources[filename!]) {
-          playerStore.app.loader.add(filename!, `${playerStore.dataUrl}/bg/${filename}.jpg`);
+      let item = playerStore.BGNameExcelTable.get(i.BGName)
+      if (item) {
+        if (item.BGType == 'Image') {
+          let filename = String(item.BGFileName).split('/').pop()
+          if (!playerStore.app.loader.resources[filename!]) {
+            playerStore.app.loader.add(filename!, `${playerStore.dataUrl}/bg/${filename}.jpg`);
+          }
         }
-      }
-      else {
-        if (item.AnimationName == 'Idle_01') {
-          let filename = String(item.BGFileName).split('/').pop()?.replace('SpineBG_Lobby', '')
-          filename = `${filename}_home`
-          if (!app.loader.resources[filename!]) {
-            app.loader.add(filename, `${playerStore.dataUrl}/spine/${filename}/${filename}.skel`)
-            addL2dVoice(filename.replace('_home', ''))
+        else {
+          if (item.AnimationName == 'Idle_01') {
+            let filename = String(item.BGFileName).split('/').pop()?.replace('SpineBG_Lobby', '')
+            filename = `${filename}_home`
+            if (!app.loader.resources[filename!]) {
+              app.loader.add(filename, `${playerStore.dataUrl}/spine/${filename}/${filename}.skel`)
+              addL2dVoice(filename.replace('_home', ''))
+            }
           }
         }
       }
@@ -435,22 +445,22 @@ async function loadExcels() {
   let dataUrl = playerStore.dataUrl
   await axios.get(`${dataUrl}/data/ScenarioBGNameExcelTable.json`).then(res => {
     for (let i of res.data['DataList']) {
-      privateState.BGNameExcelTable[i['Name']] = i
+      privateState.BGNameExcelTable.set(i['Name'], i)
     }
   })
   await axios.get(`${dataUrl}/data/ScenarioCharacterNameExcelTable.json`).then(res => {
     for (let i of res.data['DataList']) {
-      privateState.CharacterNameExcelTable[i['CharacterName']] = i
+      privateState.CharacterNameExcelTable.set(i['CharacterName'], i)
     }
   })
   await axios.get(`${dataUrl}/data/BGMExcelTable.json`).then(res => {
     for (let i of res.data['DataList']) {
-      privateState.BGMExcelTable[i['Id']] = i
+      privateState.BGMExcelTable.set(i['Id'], i)
     }
   })
   await axios.get(`${dataUrl}/data/ScenarioTransitionExcelTable.json`).then(res => {
     for (let i of res.data['DataList']) {
-      privateState.TransitionExcelTable[i['Name']] = i
+      privateState.TransitionExcelTable.set(i['Name'], i)
     }
   })
 }
@@ -458,18 +468,22 @@ async function loadExcels() {
 async function transitionIn() {
   let name = playerStore.currentStoryUnit.Transition
   if (name) {
-    let item = playerStore.TransitionExcelTable[name]
-    eventBus.emit('transitionIn', item)
-    await wait(item.TransitionInDuration)
+    let item = playerStore.TransitionExcelTable.get(name)
+    if (item) {
+      eventBus.emit('transitionIn', item)
+      await wait(item.TransitionInDuration)
+    }
   }
 }
 
 async function transitionOut() {
   let name = playerStore.currentStoryUnit.Transition
   if (name) {
-    let item = playerStore.TransitionExcelTable[name]
-    eventBus.emit('transitionOut', item)
-    await wait(item.TransitionOutDuration)
+    let item = playerStore.TransitionExcelTable.get(name)
+    if (item) {
+      eventBus.emit('transitionOut', item)
+      await wait(item.TransitionOutDuration)
+    }
   }
 }
 

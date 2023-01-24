@@ -48,7 +48,7 @@ export type CharacterEffectType = 'emotion' | 'action' | 'fx';
 export interface CharacterEffect {
   type: CharacterEffectType;
   // target: number,
-  effect: EmotionWord | CharacterEffectWord | FXEffectWord;
+  effect: string
   async: boolean
   arg?: string
 }
@@ -135,10 +135,10 @@ export interface StoryUnit {
   hide?: 'menu' | 'all'
   show?: 'menu'
   otherEffect: Effect[]
-  naName?:string
-  video?:{
-    videoPath:string
-    soundPath:string
+  naName?: string
+  video?: {
+    videoPath: string
+    soundPath: string
   }
 }
 

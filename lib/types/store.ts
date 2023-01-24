@@ -58,19 +58,19 @@ export interface PrivateStates {
   /**
    * 根据BGName获取资源信息, 包括l2d和背景图片
    */
-  BGNameExcelTable: { [index: number]: BGNameExcelTableItem },
+  BGNameExcelTable: Map<number, BGNameExcelTableItem>,
   /**
    * 根据CharacterName获取角色name和nickName(名字与所属)
    */
-  CharacterNameExcelTable: { [index: number]: CharacterNameExcelTableItem }
+  CharacterNameExcelTable: Map<number, CharacterNameExcelTableItem>
   /**
    * 根据bgm id获取bgm资源信息
    */
-  BGMExcelTable: { [index: number]: BGMExcelTableItem }
+  BGMExcelTable: Map<number, BGMExcelTableItem>
   /**
    * 根据transition标识获取transition相关信息
    */
-  TransitionExcelTable: { [index: number]: TransitionTableItem }
+  TransitionExcelTable: Map<number, TransitionTableItem>
   /**
    * 根据emotion名获取emotion图片信息
    */

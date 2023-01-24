@@ -29,10 +29,10 @@ let privateState: PrivateStates = {
     '통신모모카': 3025942184
 
   },
-  BGNameExcelTable: {},
-  CharacterNameExcelTable: {},
-  BGMExcelTable: {},
-  TransitionExcelTable: {},
+  BGNameExcelTable: new Map(),
+  CharacterNameExcelTable: new Map(),
+  BGMExcelTable: new Map(),
+  TransitionExcelTable: new Map(),
   emotionResourcesTable: {
     'Heart': ['Emoticon_Balloon_N.png', 'Emoticon_Heart.png'],
     'Respond': ['Emoticon_Action.png'],
@@ -84,15 +84,17 @@ let getterFunctions: GetterFunctions = {
     if (this.currentSpeakerCharacterName() === 0) {
       return undefined
     }
-    let nameInfo = privateState.CharacterNameExcelTable[this.currentSpeakerCharacterName()]
-    if (nameInfo[`Name${privateState.language.toUpperCase() as 'CN' | 'JP'}`]) {
-      return {
-        name: nameInfo[`Name${privateState.language.toUpperCase() as 'CN' | 'JP'}`]!,
-        nickName: nameInfo[`Nickname${privateState.language.toUpperCase() as 'CN' | 'JP'}`]!
+    let nameInfo = privateState.CharacterNameExcelTable.get(this.currentSpeakerCharacterName())
+    if (nameInfo) {
+      if (nameInfo[`Name${privateState.language.toUpperCase() as 'CN' | 'JP'}`]) {
+        return {
+          name: nameInfo[`Name${privateState.language.toUpperCase() as 'CN' | 'JP'}`]!,
+          nickName: nameInfo[`Nickname${privateState.language.toUpperCase() as 'CN' | 'JP'}`]!
+        }
       }
-    }
-    else {
-      return { name: nameInfo.NameJP, nickName: nameInfo.NicknameJP }
+      else {
+        return { name: nameInfo.NameJP, nickName: nameInfo.NicknameJP }
+      }
     }
   },
 
@@ -144,11 +146,13 @@ let getterFunctions: GetterFunctions = {
     if (privateState.loadRes === null) {
       throw new Error('spine资源未加载')
     }
-    let item = privateState.CharacterNameExcelTable[CharacterName]
-    let temp = String(item.SpinePrefabName).split('/')
-    temp = temp[temp.length - 1].split('_')
-    let id = temp[temp.length - 1]
-    return privateState.loadRes[`${id}_spr`].spineData
+    let item = privateState.CharacterNameExcelTable.get(CharacterName)
+    if (item) {
+      let temp = String(item.SpinePrefabName).split('/')
+      temp = temp[temp.length - 1].split('_')
+      let id = temp[temp.length - 1]
+      return privateState.loadRes[`${id}_spr`].spineData
+    }
   },
 
   /**
@@ -173,7 +177,7 @@ let getterFunctions: GetterFunctions = {
   },
 
   bgUrl() {
-    let item = privateState.BGNameExcelTable[this.currentStoryUnit()!.BGName]
+    let item = privateState.BGNameExcelTable.get(this.currentStoryUnit()!.BGName)
     if (item) {
       if (item.BGType === 'Image') {
         let temp = String(item.BGFileName).split('/')
@@ -190,7 +194,7 @@ let getterFunctions: GetterFunctions = {
    * 获取bgm的url
    */
   bgmUrl() {
-    let item = privateState.BGMExcelTable[this.currentStoryUnit().BGMId]
+    let item = privateState.BGMExcelTable.get(this.currentStoryUnit().BGMId)
     if (item) {
       return `${privateState.dataUrl}/${item.Path}.mp3`
     }
@@ -202,7 +206,7 @@ let getterFunctions: GetterFunctions = {
    * 获取bgm的参数
    */
   bgmArgs() {
-    let item = privateState.BGMExcelTable[this.currentStoryUnit().BGMId]
+    let item = privateState.BGMExcelTable.get(this.currentStoryUnit().BGMId)
     if (item) {
       return item
     }
@@ -220,7 +224,7 @@ let getterFunctions: GetterFunctions = {
   },
 
   l2dCharacterName() {
-    let item = privateState.BGNameExcelTable[this.currentStoryUnit()!.BGName]
+    let item = privateState.BGNameExcelTable.get(this.currentStoryUnit()!.BGName)
     if (item) {
       if (item.BGType === 'Spine') {
         let temp = String(item.BGFileName).split('/')
@@ -235,7 +239,7 @@ let getterFunctions: GetterFunctions = {
     if (privateState.loadRes === null) {
       throw new Error('spine资源未加载')
     }
-    let item = privateState.BGNameExcelTable[this.currentStoryUnit()!.BGName]
+    let item = privateState.BGNameExcelTable.get(this.currentStoryUnit()!.BGName)
     if (item) {
       if (item.BGType === 'Spine') {
         let temp = String(item.BGFileName).split('/')
@@ -246,7 +250,7 @@ let getterFunctions: GetterFunctions = {
   },
 
   l2dAnimationName() {
-    let item = privateState.BGNameExcelTable[this.currentStoryUnit()!.BGName]
+    let item = privateState.BGNameExcelTable.get(this.currentStoryUnit()!.BGName)
     if (item) {
       if (item.BGType === 'Spine') {
         return item.AnimationName

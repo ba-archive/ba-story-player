@@ -1,7 +1,7 @@
 import { Character, StoryRawUnit, StoryUnit, Text, TextEffect } from "@/types/common";
 import { usePlayerStore } from '@/stores'
 import { EmotionWord } from "@/types/characterLayer";
-import * as utils  from "./utils";
+import * as utils from "./utils";
 
 
 let emotionWordTable: { [index: string]: EmotionWord } = {
@@ -63,17 +63,17 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
       /**
        * 当前script类型, 小写字母
        */
-      let scriptType=scriptUnits[0].toLocaleLowerCase()
+      let scriptType = scriptUnits[0].toLocaleLowerCase()
       let optionIndex = 0
 
       if (utils.compareCaseInsensive(scriptType, '#title')) {
         unit.type = 'title'
-        unit = utils.setOneText(unit, rawStoryUnit,playStore.userName)
+        unit = utils.setOneText(unit, rawStoryUnit, playStore.userName)
         break
       }
       else if (utils.compareCaseInsensive(scriptType, '#place')) {
         unit.type = 'place'
-        unit = utils.setOneText(unit, rawStoryUnit,playStore.userName)
+        unit = utils.setOneText(unit, rawStoryUnit, playStore.userName)
         break
       }
       else if (utils.compareCaseInsensive(scriptType, '#na')) {
@@ -120,36 +120,33 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
       }
       else if (utils.isCharacter(scriptType)) {
         let CharacterName = playStore.characterNameTable[scriptUnits[1]]
+        //添加全息人物特效
+        let signal = false
+        let characterInfo = playStore.CharacterNameExcelTable.get(CharacterName)
+        if (characterInfo) {
+          if (characterInfo.Shape === 'Signal') {
+            signal = true
+          }
+        }
+
+        //有立绘人物对话
+        if (scriptUnits.length === 4) {
+          unit.type = 'text'
+          utils.setOneText(unit, rawStoryUnit, playStore.userName)
+        }
         unit.characters.push({
           CharacterName,
           position: Number(scriptType),
           face: scriptUnits[2],
           highlight: scriptUnits.length === 4,
+          signal,
           effects: []
         })
-        //添加全息人物特效
-        if ('Shape' in playStore.CharacterNameExcelTable[CharacterName]
-          &&
-          playStore.CharacterNameExcelTable[CharacterName].Shape === 'Signal') {
-          for (let [index, character] of unit.characters.entries()) {
-            if (character.position === Number(scriptType)) {
-              unit.characters[index].effects.push({
-                type: 'signal',
-                effect: '',
-                async: false,
-              })
-            }
-          }
-        }
-        //有立绘人物对话
-        if (scriptUnits.length === 4) {
-          unit.type='text'
-          utils.setOneText(unit, rawStoryUnit,playStore.userName)
-        }
+
       }
       else if (utils.isCharacterEffect(scriptType)) {
         if (scriptUnits.length === 2) {
-          let characterIndex = utils.getCharacterIndex(unit,Number(scriptType[1]),result,rawIndex)
+          let characterIndex = utils.getCharacterIndex(unit, Number(scriptType[1]), result, rawIndex)
           unit.characters[characterIndex].effects.push({
             type: 'action',
             effect: scriptUnits[1],
@@ -157,7 +154,7 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
           })
         }
         else if (utils.compareCaseInsensive(scriptUnits[1], 'em')) {
-          let characterIndex = utils.getCharacterIndex(unit,Number(scriptType[1]),result,rawIndex)
+          let characterIndex = utils.getCharacterIndex(unit, Number(scriptType[1]), result, rawIndex)
           unit.characters[characterIndex].effects.push({
             type: 'emotion',
             effect: emotionWordTable[scriptUnits[2]],
@@ -165,7 +162,7 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
           })
         }
         else if (utils.compareCaseInsensive(scriptUnits[1], 'fx')) {
-          let characterIndex = utils.getCharacterIndex(unit,Number(scriptType[1]),result,rawIndex)
+          let characterIndex = utils.getCharacterIndex(unit, Number(scriptType[1]), result, rawIndex)
           unit.characters[characterIndex].effects.push({
             type: 'fx',
             effect: scriptUnits[2],
@@ -230,11 +227,11 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
       else if (utils.compareCaseInsensive(scriptType, '#bgshake')) {
         unit.otherEffect.push({ type: 'bgshake', args: [] })
       }
-      else if (scriptType==='#video'){
+      else if (scriptType === '#video') {
         //处理情况为 #video;Scenario/Main/22000_MV_Video;Scenario/Main/22000_MV_Sound
-        unit.video={
-          videoPath:scriptUnits[1],
-          soundPath:scriptUnits[2]
+        unit.video = {
+          videoPath: scriptUnits[1],
+          soundPath: scriptUnits[2]
         }
       }
     }
