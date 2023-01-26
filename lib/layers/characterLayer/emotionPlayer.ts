@@ -1,15 +1,11 @@
 import eventBus from "@/eventBus";
 import { usePlayerStore } from "@/stores";
 import {
-  CharacterEffectInstance, CharacterEffectPlayerInterface,
-  CharacterEffectWord,
-  CharacterEmotionPlayer,
-  CharacterLayer,
-  EmotionWord, FXEffectWord, SignalEffectWord, CharacterEffectPlayer, PositionOffset, EmotionOptions, Scale, GlobalEmotionOptions,
+  CharacterEffectInstance, CharacterEmotionPlayer, EmotionOptions, EmotionWord, PositionOffset, Scale
 } from "@/types/characterLayer";
+import gsap from 'gsap';
 import { Container, DisplayObject, Sprite } from "pixi.js";
 import emotionOptions from "./options/emotionOptions";
-import gsap from 'gsap'
 
 
 const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {

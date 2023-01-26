@@ -1,6 +1,7 @@
 import { usePlayerStore } from '@/stores';
 import { EmotionWord } from "@/types/characterLayer";
 import { StoryRawUnit, StoryUnit } from "@/types/common";
+import { getResourcesUrl } from '@/utils';
 import * as utils from "./utils";
 
 let emotionWordTable: { [index: string]: EmotionWord } = {
@@ -71,7 +72,7 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
       if (BGItem) {
         if (BGItem.BGType === 'Image') {
           unit.bg = {
-            url: `${playerStore.dataUrl}/${BGItem.BGFileName}.jpg`,
+            url: getResourcesUrl('bg', BGItem.BGFileName),
             overlap: utils.checkBgOverlap(unit)
           }
         }
@@ -191,7 +192,7 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
                 temp = temp[temp.length - 1].split('_')
                 let id = temp[temp.length - 1]
                 let filename = `${id}_spr`
-                spineUrl = `${playerStore.dataUrl}/spine/${filename}/${filename}.skel`
+                spineUrl = getResourcesUrl('characterSpine', filename)
               }
 
               //有立绘人物对话

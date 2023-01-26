@@ -2,6 +2,7 @@ import { StoryRawUnit, StoryUnit, Text, TextEffect } from "@/types/common"
 import { usePlayerStore } from '@/stores/index'
 import { Language } from "@/types/store"
 import { PlayAudio } from "@/types/events"
+import { getResourcesUrl } from '@/utils'
 
 let playerStore = usePlayerStore()
 
@@ -36,7 +37,7 @@ export function isOption(s: string) {
 /**
  * 从原始文字生成Text[], 即带特效参数字符串
  * @param rawStoryUnit 
- * @param stm 是否为stm类型文字j
+ * @param stm 是否为stm类型文字
  * @returns 
  */
 export function generateText(rawStoryUnit: StoryRawUnit, stm?: boolean) {
@@ -117,19 +118,19 @@ export function getCharacterIndex(unit: StoryUnit, initPosition: number, result:
 export function getBgm(BGMId: number): PlayAudio['bgm'] | undefined {
   let item = playerStore.BGMExcelTable.get(BGMId)
   if (item) {
-    return { url: `${playerStore.dataUrl}/${item.Path}.ogg`, bgmArgs: item }
+    return { url: getResourcesUrl('bgm', item.Path), bgmArgs: item }
   }
 }
 
 export function getSoundUrl(Sound: string) {
   if (Sound) {
-    return `${playerStore.dataUrl}/Audio/Sound/${Sound}.wav`
+    return getResourcesUrl('sound', Sound)
   }
 }
 
 export function getVoiceJPUrl(VoiceJp: string) {
   if (VoiceJp) {
-    return `${playerStore.dataUrl}/Audio/VoiceJp/${VoiceJp}.mp3`
+    return getResourcesUrl('voiceJp', VoiceJp)
   }
 }
 
@@ -150,7 +151,7 @@ export function checkBgOverlap(unit: StoryUnit) {
 export function getL2DUrl(BGFileName: string) {
   let filename = String(BGFileName).split('/').pop()?.replace('SpineBG_Lobby', '')
   filename = `${filename}_home`
-  return `${playerStore.dataUrl}/spine/${filename}/${filename}.skel`
+  return getResourcesUrl('l2dSpine', filename)
 }
 
 /**

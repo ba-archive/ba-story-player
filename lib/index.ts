@@ -11,6 +11,7 @@ import { Language } from "@/types/store";
 import axios from 'axios';
 import { SpineParser } from 'pixi-spine';
 import { Application, Loader, settings, Text } from "pixi.js";
+import * as utils from '@/utils'
 
 let playerStore: ReturnType<typeof usePlayerStore>
 let privateState: ReturnType<typeof initPrivateState>
@@ -27,6 +28,7 @@ export async function init(elementID: string, height: number, width: number, sto
 
   playerStore = usePlayerStore()
   privateState = initPrivateState()
+  utils.setDataUrl(dataUrl)
   privateState.dataUrl = dataUrl
   privateState.language = language
   //加入判断防止vite热更新重新创建app导致加载资源错误
@@ -59,6 +61,7 @@ export async function init(elementID: string, height: number, width: number, sto
   app.stage.addChild(loadingText)
   resourcesLoader.load(() => {
     app.stage.removeChild(loadingText)
+    loadingText.destroy()
     eventEmitter.emitEvents()
   })
 }
@@ -414,14 +417,14 @@ let resourcesLoader = {
     for (let emotionResources of playerStore.emotionResourcesTable.values()) {
       for (let emotionResource of emotionResources) {
         if (!this.loader.resources[emotionResource]) {
-          this.loader.add(emotionResource, `${playerStore.dataUrl}/emotions/${emotionResource}`)
+          this.loader.add(emotionResource, utils.getResourcesUrl('emotionImg', emotionResource))
         }
       }
     }
     for (let emotionName of playerStore.emotionResourcesTable.keys()) {
       let emotionSoundName = `SFX_Emoticon_Motion_${emotionName}`
       if (!this.loader.resources[emotionSoundName]) {
-        this.loader.add(emotionSoundName, `${playerStore.dataUrl}/Audio/Sound/${emotionSoundName}.wav`)
+        this.loader.add(emotionSoundName, utils.getResourcesUrl('emotionSound', emotionSoundName))
       }
     }
   },
@@ -433,7 +436,7 @@ let resourcesLoader = {
     for (let fxImages of playerStore.fxImageTable.values()) {
       for (let url of fxImages) {
         if (!this.loader.resources[url]) {
-          this.loader.add(url, `${playerStore.dataUrl}/fx/${url}`)
+          this.loader.add(url, utils.getResourcesUrl('fx', url))
         }
       }
     }
@@ -445,8 +448,8 @@ let resourcesLoader = {
   addL2dVoice(name: string) {
     let voicePath = `${name}_MemorialLobby`
     for (let voiceFileName of l2dVoiceExcelTable[voicePath]) {
-      this.loader.add(voiceFileName,
-        `${playerStore.dataUrl}/Audio/VoiceJp/${voicePath}/${voiceFileName}.wav`)
+      this.loader.add(voiceFileName, `${voicePath}/${voiceFileName}`
+      )
     }
   },
 
@@ -454,25 +457,29 @@ let resourcesLoader = {
    * 加载原始数据资源
    */
   async loadExcels() {
-    let dataUrl = playerStore.dataUrl
-    await axios.get(`${dataUrl}/data/ScenarioBGNameExcelTable.json`).then(res => {
+    await axios.get(utils.getResourcesUrl('excel', 'ScenarioBGNameExcelTable.json')).then(res => {
       for (let i of res.data['DataList']) {
         privateState.BGNameExcelTable.set(i['Name'], i)
       }
     })
-    await axios.get(`${dataUrl}/data/ScenarioCharacterNameExcelTable.json`).then(res => {
+    await axios.get(utils.getResourcesUrl('excel', 'ScenarioCharacterNameExcelTable.json')).then(res => {
       for (let i of res.data['DataList']) {
         privateState.CharacterNameExcelTable.set(i['CharacterName'], i)
       }
     })
-    await axios.get(`${dataUrl}/data/BGMExcelTable.json`).then(res => {
+    await axios.get(utils.getResourcesUrl('excel', 'BGMExcelTable.json')).then(res => {
       for (let i of res.data['DataList']) {
         privateState.BGMExcelTable.set(i['Id'], i)
       }
     })
-    await axios.get(`${dataUrl}/data/ScenarioTransitionExcelTable.json`).then(res => {
+    await axios.get(utils.getResourcesUrl('excel', 'ScenarioTransitionExcelTable.json')).then(res => {
       for (let i of res.data['DataList']) {
         privateState.TransitionExcelTable.set(i['Name'], i)
+      }
+    })
+    await axios.get(utils.getResourcesUrl('excel', 'ScenarioBGEffectExcelTable.json')).then(res => {
+      for (let i of res.data['DataList']) {
+        privateState.BGEffectExcelTable.set(i['Name'], i)
       }
     })
   }
