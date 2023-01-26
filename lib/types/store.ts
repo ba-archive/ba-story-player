@@ -1,9 +1,7 @@
-import { Application, LoaderResource, Sprite } from "pixi.js"
-import { CharacterInstance, Dict, StoryUnit, Speaker } from "./common"
+import { Application, Sprite } from "pixi.js"
+import { CharacterInstance, StoryUnit } from "./common"
 import { ShowText } from './events'
-import { BGMExcelTableItem, BGNameExcelTableItem, CharacterNameExcelTableItem, TransitionTableItem } from "./excels"
-import { Text, TextEffect } from '@/types/common'
-import { ShowOption } from '@/types/events'
+import { BGEffectExcelTableItem, BGMExcelTableItem, BGNameExcelTableItem, CharacterNameExcelTableItem, TransitionTableItem } from "./excels"
 
 export type Language = 'Cn' | 'Jp'
 
@@ -29,13 +27,9 @@ export interface PrivateStates {
    */
   allStoryUnit: StoryUnit[]
   /**
-   * 当前在故事中的坐标
+   * 用于查找l2d spinedata
    */
-  currentStoryIndex: number
-  /**
-   * spine资源
-   */
-  loadRes: Dict<LoaderResource> | null
+  l2dSpineUrl: string
 
   //背景层
   /**
@@ -54,7 +48,7 @@ export interface PrivateStates {
   /**
    * 角色韩文名对应唯一数字标识CharacterName
    */
-  characterNameTable: { [index: string]: number },
+  characterNameTable: Map<string, number>
   /**
    * 根据BGName获取资源信息, 包括l2d和背景图片
    */
@@ -63,6 +57,11 @@ export interface PrivateStates {
    * 根据CharacterName获取角色name和nickName(名字与所属)
    */
   CharacterNameExcelTable: Map<number, CharacterNameExcelTableItem>
+  /**
+   * 获取BGEffect
+   */
+  BGEffectExcelTable: Map<number, BGEffectExcelTableItem>
+
   /**
    * 根据bgm id获取bgm资源信息
    */
@@ -74,8 +73,8 @@ export interface PrivateStates {
   /**
    * 根据emotion名获取emotion图片信息
    */
-  emotionResourcesTable: { [index: string]: string[] },
-  fxImageTable: { [index: string]: string[] },
+  emotionResourcesTable: Map<string, string[]>,
+  fxImageTable: Map<string, string[]>,
 }
 
 /**
@@ -90,21 +89,13 @@ export interface PublicStates {
 
 export interface BasicGetters {
   app: Application
-  currentStoryUnit: StoryUnit
 
-  speaker: Speaker | undefined
-
+  /**
+   * 故事简要概述
+   */
   storySummary: string
 
-  CharacterName: (name: string) => number
-
-  text: Text[]
-
-  textEffect: TextEffect[]
-
-  option: ShowOption[]
-
-  currentSpeakerCharacterName: number
+  CharacterName: (name: string) => number | undefined
 
   /**
    * 获取角色spineData
@@ -115,40 +106,19 @@ export interface BasicGetters {
    * @param emotionName 情绪名
    * @returns 情绪资源图片url数组, 按从底而上, 从左到右排列
    */
-  emotionResources: (emotionName: string) => string[]
+  emotionResources: (emotionName: string) => string[] | undefined
   /**
    * 获取fx特效图像资源
    * @param fxName 
    * @returns 图像资源url数组
    */
-  fxImages: (fxName: string) => string[]
+  fxImages: (fxName: string) => string[] | undefined
 
-  /**
-   * 获取背景图片的url, 如果对应的BGName不是背景图片则返回空字符串
-   */
-  bgUrl: string
-  /**
-   * 获取bgm链接, 无bgm时返回空链接
-   */
-  bgmUrl: string
-  /**
-   * 获取bgm相关参数
-   */
-  bgmArgs: BGMExcelTableItem | undefined
-  /**
-   * 获取效果音url
-   */
-  soundUrl: string
   emotionSoundUrl: (emotionName: string) => string
-  l2dCharacterName: string,
   /**
    * 获取L2D资源
    */
   l2dSpineData: import('@pixi-spine/base').ISkeletonData | undefined,
-  /**
-   * 获取L2D动作名
-   */
-  l2dAnimationName: string
 }
 
 export type GetterFunctions = {
@@ -159,17 +129,15 @@ export type Getters = Readonly<BasicGetters>
 export interface Actions {
   setBgInstance: (sprite: Sprite) => void
   /**
-   * 直接进入相邻的故事节点, 到最后则返回false
-   */
-  storyIndexIncrement: () => boolean
-  /**
-   *  根据选项结果进入下一个故事节点, 不存在该节点则返回false
-   */
-  select: (option: number) => boolean
-  /**
    * 设置logText的值, 即已经显示过的文字
    * @param logText 
    * @returns 
    */
   setLogText: (logText: ShowText[]) => void
+  /**
+   * 设置l2d的spine数据地址便于l2d层获取spinedata
+   * @param url 
+   * @returns 
+   */
+  setL2DSpineUrl: (url: string) => void
 }

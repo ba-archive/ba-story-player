@@ -1,16 +1,10 @@
 import { StoryRawUnit, StoryUnit, Text, TextEffect } from "@/types/common"
+import { usePlayerStore } from '@/stores/index'
+import { Language } from "@/types/store"
+import { PlayAudio } from "@/types/events"
 
-/**
- * 当只需要一行语句时填充unit, 即Text数组只有一个成员的情况
- */
-export function setOneText(unit: StoryUnit, i: StoryRawUnit, userName: string) {
-  unit.text.TextJp = [{ content: String(i.TextJp).replace('[USERNAME]', userName).replace('#n', '\n') }]
-  if (i.TextCn) {
-    unit.text.TextCn = [{ content: String(i.TextCn).replace('[USERNAME]', userName).replace('#n', '\n') }]
-  }
+let playerStore = usePlayerStore()
 
-  return unit
-}
 /**
  * 判断是否是角色
  * @param s 
@@ -38,55 +32,59 @@ export function isOption(s: string) {
   return /\[ns\]|\[s\d?\]/.test(s)
 }
 
+
 /**
- * 根据原始文字生成Text数组
- * @param s 判断的字符串
+ * 从原始文字生成Text[], 即带特效参数字符串
+ * @param rawStoryUnit 
+ * @param stm 是否为stm类型文字j
+ * @returns 
  */
-export function generateText(s: string): Text[] {
-  //原始文字示例: "― （いや[wa:200]いや、[wa:900]いくら[wa:300]そういう[wa:300]状況だからって"
-  let strs = s.split('[')
+export function generateText(rawStoryUnit: StoryRawUnit, stm?: boolean) {
+  let rawText = getText(rawStoryUnit, playerStore.language)
+  rawText = rawText.replace('[USERNAME]', playerStore.userName)
   let result: Text[] = []
-  for (let i of strs) {
-    let slices = i.split(']')
-    if (slices.length === 1) {
-      result.push({ content: slices[0] })
+  if (rawText.includes('[wa')) {
+    //原始文字示例: "― （いや[wa:200]いや、[wa:900]いくら[wa:300]そういう[wa:300]状況だからって"
+    //根据[wa分开
+    let strs = rawText.split('[wa:')
+    for (let str of strs) {
+      let spiltIndex = str.indexOf(']')
+      let waitTime = Number(str.slice(0, spiltIndex))
+      let textUnit = str.slice(spiltIndex + 1)
+      result.push({ content: textUnit, waitTime, effects: [] })
     }
-    else {
-      let effectSlice = slices[0].split(':')
-      if (effectSlice[0] === 'wa') {
-        result.push({ content: slices[1], waitTime: Number(effectSlice[1]) })
+  }
+  else if (stm) {
+    //例子[FF6666]……我々は望む、七つの[-][ruby=なげ][FF6666]嘆[-][/ruby][FF6666]きを。[-]
+    rawText = rawText.replace('[/ruby]', '')
+    let textUnits = rawText.split('[-]')
+    for (let [index, textUnit] of textUnits.entries()) {
+      if (textUnit.startsWith('[FF')) {
+        let temp = textUnit.split(']')
+        result.push({
+          content: temp[1],
+          effects: [
+            { name: 'color', value: [temp[0].slice(1)] }
+          ]
+        })
+      }
+      else if (textUnit.startsWith('[ruby')) {
+        let temp = textUnit.split(']')
+        result.push({
+          content: temp[2],
+          effects: [
+            { name: 'color', value: [temp[1].slice(1)] },
+            { name: 'ruby', value: [temp[0].slice(6)] }
+          ]
+        })
       }
     }
   }
-
-  return result
-}
-
-/**
- * 生成Text和TextEffect
- * @param s 字符串
- */
-export function generateTextEffect(s: string) {
-  s = String(s)
-  s = s.replace('[/ruby]', '')
-  let texts = s.split('[-]')
-  let text: Text[] = []
-  let textEffects: TextEffect[] = []
-  for (let [index, i] of texts.entries()) {
-    if (i.startsWith('[FF')) {
-      let temp = i.split(']')
-      text.push({ content: temp[1] })
-      textEffects.push({ name: 'color', value: [temp[0].slice(1)], textIndex: index })
-    }
-    else if (i.startsWith('[ruby')) {
-      let temp = i.split(']')
-      text.push({ content: temp[2] })
-      textEffects.push({ name: 'color', value: [temp[1].slice(1)], textIndex: index })
-      textEffects.push({ name: 'ruby', value: [temp[0].slice(6)], textIndex: index })
-    }
+  else {
+    result.push({ content: rawText, effects: [] })
   }
 
-  return { text, textEffects }
+  return result
 }
 
 /**
@@ -114,4 +112,80 @@ export function getCharacterIndex(unit: StoryUnit, initPosition: number, result:
   }
 
   return characterIndex
+}
+
+export function getBgm(BGMId: number): PlayAudio['bgm'] | undefined {
+  let item = playerStore.BGMExcelTable.get(BGMId)
+  if (item) {
+    return { url: `${playerStore.dataUrl}/${item.Path}.ogg`, bgmArgs: item }
+  }
+}
+
+export function getSoundUrl(Sound: string) {
+  if (Sound) {
+    return `${playerStore.dataUrl}/Audio/Sound/${Sound}.wav`
+  }
+}
+
+export function getVoiceJPUrl(VoiceJp: string) {
+  if (VoiceJp) {
+    return `${playerStore.dataUrl}/Audio/VoiceJp/${VoiceJp}.mp3`
+  }
+}
+
+/**
+ * 检查当前单元是否有背景覆盖变换, 有则删除该变换并返回变换的参数
+ * @param unit 
+ */
+export function checkBgOverlap(unit: StoryUnit) {
+  if (unit.transition) {
+    if (unit.transition.TransitionOut === 'bgoverlap') {
+      let duration = unit.transition.TransitionOutDuration
+      unit.transition = undefined
+      return duration
+    }
+  }
+}
+
+export function getL2DUrl(BGFileName: string) {
+  let filename = String(BGFileName).split('/').pop()?.replace('SpineBG_Lobby', '')
+  filename = `${filename}_home`
+  return `${playerStore.dataUrl}/spine/${filename}/${filename}.skel`
+}
+
+/**
+ * 根据韩文名获取name和nickname
+ * @param name 
+ * @returns Speaker
+ */
+export function getSpeaker(name: string) {
+  let CharacterName = playerStore.characterNameTable.get(name)
+  if (CharacterName) {
+    let nameInfo = playerStore.CharacterNameExcelTable.get(CharacterName)
+    if (nameInfo) {
+      let language = playerStore.language.toUpperCase() as 'CN' | 'JP'
+      if (nameInfo[`Name${language}`]) {
+        return {
+          name: nameInfo[`Name${language}`]!,
+          nickName: nameInfo[`Nickname${language}`]!
+        }
+      }
+      else {
+        return { name: nameInfo.NameJP, nickName: nameInfo.NicknameJP }
+      }
+    }
+  }
+}
+
+/**
+ * 选择文字, 当没有当前语言文字时返回日文
+ */
+export function getText(rawStoryUnit: StoryRawUnit, language: Language): string {
+  let textProperty = `Text${language}` as const
+  if (textProperty in rawStoryUnit) {
+    return String(Reflect.get(rawStoryUnit, textProperty))
+  }
+  else {
+    return String(rawStoryUnit.TextJp)
+  }
 }

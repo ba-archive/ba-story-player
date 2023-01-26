@@ -1,5 +1,5 @@
-import { Character, CharacterEffect, Option, TextEffect, Text, Speaker, Effect } from "./common"
-import { BGMExcelTableItem, TransitionTableItem } from "./excels"
+import { Character, Effect, Speaker, Text, TextEffect } from "./common"
+import { BGEffectExcelTableItem, BGMExcelTableItem, TransitionTableItem } from "./excels"
 
 export type Events = {
   //通用
@@ -128,10 +128,10 @@ export interface ShowCharacter {
 }
 
 export interface PlayAudio {
-  bgm?:{
-    url?:string
-    bgmArgs:BGMExcelTableItem
-  } 
+  bgm?: {
+    url?: string
+    bgmArgs: BGMExcelTableItem
+  }
   soundUrl?: string
   voiceJPUrl?: string
 }
@@ -141,10 +141,6 @@ export interface ShowText {
    * 文本
    */
   text: Text[]
-  /**
-   * 文本特效, 根据文本的index添加特效
-   */
-  textEffect: TextEffect[]
   /**
    * 说话的人, 包括名字和所属
    */
@@ -156,10 +152,6 @@ export interface StText {
    * 文本
    */
   text: Text[]
-  /**
-   * 文本特效, 根据文本的index添加特效
-   */
-  textEffect: TextEffect[]
   /**
    * st的参数, 目前只需要注意第二个参数, serial打字机效果, instant立即全部显示.
    */
@@ -178,6 +170,6 @@ export interface ShowOption {
 }
 
 export interface PlayEffect {
-  BGEffect?: number
-  otherEffect?: Effect[]
+  BGEffect?: BGEffectExcelTableItem
+  otherEffect: Effect[]
 }

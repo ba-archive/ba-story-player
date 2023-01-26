@@ -35,19 +35,57 @@ let emotionWordTable: { [index: string]: EmotionWord } = {
 export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
 
   let result: StoryUnit[] = []
-  let playStore = usePlayerStore()
+  let playerStore = usePlayerStore()
   for (let [rawIndex, rawStoryUnit] of rawStory.entries()) {
-    //初始化unit, 并将需要的原始属性填入unit
-    let { GroupId, BGMId, BGName, BGEffect, SelectionGroup, Sound, Transition, VoiceJp, PopupFileName } = rawStoryUnit
+    //初始化unit, 将需要的原始属性填入unit, 同时查表填入其他属性
+    let { GroupId, SelectionGroup, PopupFileName } = rawStoryUnit
     let unit: StoryUnit = {
-      GroupId, BGMId, BGName, BGEffect, SelectionGroup, Sound, Transition, VoiceJp, PopupFileName,
+      GroupId, SelectionGroup, PopupFileName,
       type: 'text',
       characters: [],
-      otherEffect: [],
-      text: { TextJp: [] },
-      textEffect: {
-        TextJp: []
+      textAbout: {
+        showText: {
+          text: [],
+        },
+        st: {}
+      },
+      effect: {
+        otherEffect: []
+      },
+    }
+    let audio = {
+      bgm: utils.getBgm(rawStoryUnit.BGMId),
+      soundUrl: utils.getSoundUrl(rawStoryUnit.Sound),
+      voiceJPUrl: utils.getVoiceJPUrl(rawStoryUnit.VoiceJp)
+    }
+    for (let key of Object.keys(audio) as Array<keyof typeof audio>) {
+      if (audio[key] !== undefined) {
+        unit.audio = audio
+        break
       }
+    }
+    if (rawStoryUnit.Transition) {
+      unit.transition = playerStore.TransitionExcelTable.get(rawStoryUnit.Transition)
+    }
+    if (rawStoryUnit.BGName) {
+      let BGItem = playerStore.BGNameExcelTable.get(rawStoryUnit.BGName)
+      if (BGItem) {
+        if (BGItem.BGType === 'Image') {
+          unit.bg = {
+            url: `${playerStore.dataUrl}/${BGItem.BGFileName}.jpg`,
+            overlap: utils.checkBgOverlap(unit)
+          }
+        }
+        else if (BGItem.BGType === 'Spine') {
+          unit.l2d = {
+            spineUrl: utils.getL2DUrl(BGItem.BGFileName),
+            animationName: BGItem.AnimationName
+          }
+        }
+      }
+    }
+    if (rawStoryUnit.BGEffect) {
+      unit.effect.BGEffect = playerStore.BGEffectExcelTable.get(rawStoryUnit.BGEffect)
     }
 
     //当没有文字时初步判断为effectOnly类型
@@ -55,6 +93,7 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
       unit.type = 'effectOnly'
     }
 
+    //解析scriptkr
     let ScriptKr = String(rawStoryUnit.ScriptKr)
     let scripts = ScriptKr.split('\n')
     for (let script of scripts) {
@@ -68,63 +107,48 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
       switch (scriptType) {
         case '#title':
           unit.type = 'title'
-          unit = utils.setOneText(unit, rawStoryUnit, playStore.userName)
+          unit.textAbout.word = utils.generateText(rawStoryUnit)[0].content
           break;
         case '#place':
           unit.type = 'place'
-          unit = utils.setOneText(unit, rawStoryUnit, playStore.userName)
+          unit.textAbout.word = utils.generateText(rawStoryUnit)[0].content
           break
         case '#na':
           //无立绘时的对话框对话, 可能有名字
           unit.type = 'text'
-          unit = utils.setOneText(unit, rawStoryUnit, playStore.userName)
+          unit.textAbout.showText.text = utils.generateText(rawStoryUnit)
           if (scriptUnits.length === 3) {
-            unit.naName = scriptUnits[1]
+            unit.textAbout.showText.speaker = utils.getSpeaker(scriptUnits[1])
           }
           break
         case '#st':
           unit.type = 'st'
-          unit.stArgs = scriptUnits.slice(1)
+          unit.textAbout.st = {}
+          unit.textAbout.st.stArgs = scriptUnits.slice(1)
           if (scriptUnits.length === 3) {
             break
           }
           //当st有文字时
           else {
-            unit.stArgs = scriptUnits.slice(1, scriptUnits.length - 1)
-            unit.text.TextJp = utils.generateText(rawStoryUnit.TextJp)
-            if (rawStoryUnit.TextCn) {
-              unit.text.TextCn = utils.generateText(rawStoryUnit.TextCn)
-            }
+            unit.textAbout.st.stArgs = scriptUnits.slice(1, scriptUnits.length - 1)
+            unit.textAbout.showText.text = utils.generateText(rawStoryUnit)
           }
           break
         case '#stm':
           //有特效的st
           unit.type = 'st'
-
-          let jp = utils.generateTextEffect(rawStoryUnit.TextJp)
-          unit.text.TextJp = jp.text
-          unit.textEffect.TextJp = jp.textEffects
-          if (rawStoryUnit.TextCn) {
-            let cn = utils.generateTextEffect(rawStoryUnit.TextCn)
-            unit.text.TextCn = cn.text
-            unit.textEffect.TextCn = cn.textEffects
-          }
+          unit.textAbout.showText.text = utils.generateText(rawStoryUnit, true)
           break
-        case '#clearST':
-          unit.clearSt = true
+        case '#clearst':
+          unit.textAbout.st = {}
+          unit.textAbout.st.clearSt = true
           break
         case '#wait':
-          unit.otherEffect.push({ type: 'wait', args: [scriptUnits[1]] })
+          unit.effect.otherEffect.push({ type: 'wait', args: [scriptUnits[1]] })
           break
         case '#fontsize':
-          unit.textEffect.TextJp.push({ textIndex: 0, name: 'fontsize', value: [scriptUnits[1]] })
-          if (rawStoryUnit.TextCn) {
-            if (unit.textEffect.TextCn) {
-              unit.textEffect.TextCn.push({ textIndex: 0, name: 'fontsize', value: [scriptUnits[1]] })
-            }
-            else {
-              unit.textEffect.TextCn = [{ textIndex: 0, name: 'fontsize', value: [scriptUnits[1]] }]
-            }
+          for (let i = 0; i < unit.textAbout.showText.text.length; ++i) {
+            unit.textAbout.showText.text[i].effects.push({ name: 'fontsize', value: [scriptUnits[1]] })
           }
           break
         case '#all':
@@ -139,10 +163,10 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
           unit.show = 'menu'
           break
         case '#zmc':
-          unit.otherEffect.push({ type: 'zmc', args: scriptUnits.slice(1) })
+          unit.effect.otherEffect.push({ type: 'zmc', args: scriptUnits.slice(1) })
           break
         case '#bgshake':
-          unit.otherEffect.push({ type: 'bgshake', args: [] })
+          unit.effect.otherEffect.push({ type: 'bgshake', args: [] })
           break
         case '#video':
           //处理情况为 #video;Scenario/Main/22000_MV_Video;Scenario/Main/22000_MV_Sound
@@ -153,30 +177,40 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
           break
         default:
           if (utils.isCharacter(scriptType)) {
-            let CharacterName = playStore.characterNameTable[scriptUnits[1]]
-            //添加全息人物特效
-            let signal = false
-            let characterInfo = playStore.CharacterNameExcelTable.get(CharacterName)
-            if (characterInfo) {
-              if (characterInfo.Shape === 'Signal') {
-                signal = true
+            let CharacterName = playerStore.characterNameTable.get(scriptUnits[1])
+            if (CharacterName) {
+              let signal = false
+              let characterInfo = playerStore.CharacterNameExcelTable.get(CharacterName)
+              let spineUrl = ''
+              if (characterInfo) {
+                //添加全息人物特效
+                if (characterInfo.Shape === 'Signal') {
+                  signal = true
+                }
+                //添加人物spineUrl
+                let temp = String(characterInfo.SpinePrefabName).split('/')
+                temp = temp[temp.length - 1].split('_')
+                let id = temp[temp.length - 1]
+                let filename = `${id}_spr`
+                spineUrl = `${playerStore.dataUrl}/spine/${filename}/${filename}.skel`
               }
-            }
 
-            //有立绘人物对话
-            if (scriptUnits.length === 4) {
-              unit.type = 'text'
-              utils.setOneText(unit, rawStoryUnit, playStore.userName)
+              //有立绘人物对话
+              if (scriptUnits.length === 4) {
+                unit.type = 'text'
+                unit.textAbout.showText.text = utils.generateText(rawStoryUnit)
+                unit.textAbout.showText.speaker = utils.getSpeaker(scriptUnits[1])
+              }
+              unit.characters.push({
+                CharacterName,
+                position: Number(scriptType),
+                face: scriptUnits[2],
+                highlight: scriptUnits.length === 4,
+                signal,
+                spineUrl,
+                effects: []
+              })
             }
-            unit.characters.push({
-              CharacterName,
-              position: Number(scriptType),
-              face: scriptUnits[2],
-              highlight: scriptUnits.length === 4,
-              signal,
-              effects: []
-            })
-
           }
           else if (utils.isCharacterEffect(scriptType)) {
             if (scriptUnits.length === 2) {
@@ -206,29 +240,25 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
           }
           else if (utils.isOption(scriptType)) {
             unit.type = 'option'
-            let TextJp = String(rawStoryUnit.TextJp).split('\n')[optionIndex]
-            TextJp = TextJp.slice(4)
-            let TextCn
-            if (rawStoryUnit.TextCn) {
-              TextCn = String(rawStoryUnit.TextCn).split('\n')[optionIndex]
-              TextCn = TextCn.slice(4)
-            }
+            let text = String(Reflect.get(rawStoryUnit, `Text${playerStore.language}`)).split('\n')[optionIndex]
+            text = text.slice(4)
+
             //[ns]或[s]
             if (scriptType[2] === 's' || scriptType[2] === ']') {
-              if (unit.options) {
-                unit.options.push({ SelectionGroup: 0, text: { TextJp, TextCn } })
+              if (unit.textAbout.options) {
+                unit.textAbout.options.push({ SelectionGroup: 0, text })
               }
               else {
-                unit.options = [{ SelectionGroup: 0, text: { TextJp, TextCn } }]
+                unit.textAbout.options = [{ SelectionGroup: 0, text }]
               }
             }
             else {
               //[s1]
-              if (unit.options) {
-                unit.options.push({ SelectionGroup: Number(scriptType[2]), text: { TextJp, TextCn } })
+              if (unit.textAbout.options) {
+                unit.textAbout.options.push({ SelectionGroup: Number(scriptType[2]), text })
               }
               else {
-                unit.options = [{ SelectionGroup: Number(scriptType[2]), text: { TextJp, TextCn } }]
+                unit.textAbout.options = [{ SelectionGroup: Number(scriptType[2]), text }]
               }
             }
             optionIndex++

@@ -1,5 +1,6 @@
-import type { Spine } from 'pixi-spine'
-import { CharacterEffectWord, EmotionWord, FXEffectWord, SignalEffectWord } from "@/types/characterLayer";
+import type { Spine } from 'pixi-spine';
+import { PlayAudio, PlayEffect, ShowOption, ShowText } from './events';
+import { BGEffectExcelTableItem, TransitionTableItem } from './excels';
 export type StoryType = "title" | "place" | "text" | "option" | "st" | "effectOnly" | 'continue'
 
 export type Dict<T> = {
@@ -16,6 +17,10 @@ export interface Text {
    * 显示文本前等待的时间
    */
   waitTime?: number
+  /**
+   * 文字特效
+   */
+  effects: TextEffect[]
 }
 
 export interface Character {
@@ -28,6 +33,10 @@ export interface Character {
    */
   CharacterName: number,
   /**
+   * 人物spinedata的url
+   */
+  spineUrl: string,
+  /**
    * 人物表情
    */
   face: string,
@@ -39,7 +48,9 @@ export interface Character {
    * 人物是否是全息投影状态
    */
   signal: boolean
-
+  /**
+   * 人物特效
+   */
   effects: CharacterEffect[]
 }
 
@@ -47,7 +58,6 @@ export type CharacterEffectType = 'emotion' | 'action' | 'fx';
 
 export interface CharacterEffect {
   type: CharacterEffectType;
-  // target: number,
   effect: string
   async: boolean
   arg?: string
@@ -75,10 +85,6 @@ export interface TextEffect {
    * 特效参数
    */
   value: string[],
-  /**
-   * 特效作用的text的index
-   */
-  textIndex: number
 }
 
 export interface Effect {
@@ -104,38 +110,54 @@ export interface StoryRawUnit {
 }
 
 export interface StoryUnit {
+  //rawUnit中的属性
   GroupId: number,
   SelectionGroup: number,
-  BGMId: number,
-  Sound: string,
-  Transition: number,
-  BGName: number,
-  BGEffect: number
   PopupFileName: string,
+
   type: StoryType,
+  audio?: PlayAudio
+  /**
+   * 渐变
+   */
+  transition?: TransitionTableItem,
+  /**
+   * 背景图片
+   */
+  bg?: {
+    url: string,
+    /**
+     * 以覆盖原来背景的方式显示, 值为渐变时间
+     */
+    overlap?: number,
+  },
+  l2d?: {
+    spineUrl: string
+    animationName: string
+  },
+  effect: PlayEffect
   characters: Character[],
-  options?: Option[],
-  textEffect: {
-    TextJp: TextEffect[],
-    TextCn?: TextEffect[],
-    TextTw?: TextEffect[],
-    TextEN?: TextEffect[]
-  },
-  text: {
-    TextJp: Text[],
-    TextCn?: Text[],
-    TextTw?: Text[],
-    TextEN?: Text[]
-  },
-  VoiceJp: string,
-  stArgs?: string[]
-  nextChapterName?: string,
+  /**
+   * 文字相关的属性, 包括选项, 对话, st文字, 章节名, 人物名
+   */
+  textAbout: {
+    options?: ShowOption[],
+    /**
+     * 当内容为一个单词时填入, 如地点, 标题, 章节名
+     */
+    word?: string
+    /**
+     * 显示的对话文字
+     */
+    showText: ShowText,
+    st?: {
+      stArgs?: string[]
+      clearSt?: boolean,
+    }
+  }
   fight?: number,
-  clearSt?: boolean,
   hide?: 'menu' | 'all'
   show?: 'menu'
-  otherEffect: Effect[]
-  naName?: string
   video?: {
     videoPath: string
     soundPath: string

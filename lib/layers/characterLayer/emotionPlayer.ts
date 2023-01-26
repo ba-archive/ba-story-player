@@ -25,7 +25,11 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
     const fn = this.getHandlerFunction(type);
     const { emotionResources, app } = usePlayerStore()
     let emotionImageSprites: Sprite[] = []
-    for (let imageResource of emotionResources(type)) {
+    let emotionImgs = emotionResources(type)
+    if (!emotionImgs) {
+      return Promise.reject(`${type}没有对于的图像资源`)
+    }
+    for (let imageResource of emotionImgs) {
       let tempSprite = Sprite.from(imageResource)
       tempSprite.visible = false
       app.stage.addChild(tempSprite)
