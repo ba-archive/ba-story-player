@@ -3,7 +3,6 @@ import { EmotionWord } from "@/types/characterLayer";
 import { StoryRawUnit, StoryUnit } from "@/types/common";
 import * as utils from "./utils";
 
-
 let emotionWordTable: { [index: string]: EmotionWord } = {
   '[하트]': 'Heart',
   'h': 'Heart',
