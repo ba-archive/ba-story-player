@@ -22,7 +22,7 @@ let l2dVoiceExcelTable = {
 /**
  * 调用各层的初始化函数
  */
-export async function init(elementID: string, height: number, width: number, story: StoryRawUnit[], dataUrl: string, language: Language) {
+export async function init(elementID: string, height: number, width: number, story: StoryRawUnit[], dataUrl: string, language: Language, userName: string) {
   //缓解图片缩放失真
   settings.MIPMAP_TEXTURES = 2
 
@@ -31,6 +31,7 @@ export async function init(elementID: string, height: number, width: number, sto
   utils.setDataUrl(dataUrl)
   privateState.dataUrl = dataUrl
   privateState.language = language
+  privateState.userName = userName
   //加入判断防止vite热更新重新创建app导致加载资源错误
   if (!privateState.app) {
     privateState.app = new Application({ height, width })

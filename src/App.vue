@@ -20,6 +20,7 @@ window.next=()=>{
     :width="1000"
     :height="550"
     language="Cn"
+    username="testUser"
     />
     <!-- <ModifyEmotionOption /> -->
   </div>

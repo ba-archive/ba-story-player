@@ -7,15 +7,16 @@ import eventBus from "@/eventBus";
 import BaDialog from "@/layers/textLayer/BaDialog.vue";
 import { Language } from './types/store';
 
-let { story, dataUrl, height, width, language } = defineProps<{
+let props = defineProps<{
   story: StoryRawUnit[]
   dataUrl: string
   height: number
   width: number
   language: Language
+  username: string
 }>()
 
-onMounted(() => { init('player__main', height, width, story, dataUrl, language) })
+onMounted(() => { init('player__main', props.height, props.width, props.story, props.dataUrl, props.language, props.username) })
 
 /**
  * 测试文本框
@@ -23,12 +24,11 @@ onMounted(() => { init('player__main', height, width, story, dataUrl, language) 
  */
 function TestDialog() {
   eventBus.emit('showText', {
-    text: [{ content: "测试文本asjdklajsdlkjlaskd", waitTime: 1000 }],
+    text: [{ content: "测试文本asjdklajsdlkjlaskd", waitTime: 1000, effects: [] }],
     speaker: {
       name: "未花",
       nickName: "茶话会"
     },
-    textEffect: []
   });
 }
 
