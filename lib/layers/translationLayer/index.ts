@@ -222,6 +222,9 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
               })
             }
             else if (utils.compareCaseInsensive(scriptUnits[1], 'em')) {
+              if (emotionWordTable[scriptUnits[2]] === undefined) {
+                console.log(`${scriptUnits[2]}未收录到emotionWordTable中, 当前rawStoryUnit: `, rawStoryUnit)
+              }
               let characterIndex = utils.getCharacterIndex(unit, Number(scriptType[1]), result, rawIndex)
               unit.characters[characterIndex].effects.push({
                 type: 'emotion',
