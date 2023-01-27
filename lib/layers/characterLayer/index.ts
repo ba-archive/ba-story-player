@@ -188,6 +188,9 @@ const CharacterLayerInstance: CharacterLayer = {
     return new Promise<void>(async (resolve, reject) => {
       let count = 0;
       const effectListLength = data.effects.length;
+      if (effectListLength === 0) {
+        resolve()
+      }
       const reason: any[] = [];
       const resolveHandler = () => {
         if (count !== effectListLength) {
