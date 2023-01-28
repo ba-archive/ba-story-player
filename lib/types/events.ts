@@ -53,6 +53,10 @@ export type Events = {
    * 播放人物情绪动作特效音
    */
   playEmotionAudio: string
+  /**
+   * 播放选项选择特效音
+   */
+  playSelectSound: undefined
 
   //UI层
 
@@ -73,6 +77,10 @@ export type Events = {
    */
   showTitle: string
   /**
+   * 标题展示完成
+   */
+  titleDone: undefined
+  /**
    * 展示地点
    */
   showPlace: string
@@ -88,6 +96,10 @@ export type Events = {
    * 清除无对话框文字和对话框
    */
   clearSt: undefined
+  /**
+   * st动画播放完成
+   */
+  stDone: undefined
   /**
    * 显示选项
    */
