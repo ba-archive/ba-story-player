@@ -6,7 +6,7 @@
       <div class="select-container" v-if="selection.length !== 0">
         <div v-for="(e, index) in selection"
              class="select-item"
-             @mousedown="selectionSelect = e.SelectionGroup"
+             @mousedown="handleSelectMousedown(e.SelectionGroup)"
              :class="{ 'select-item-active': e.SelectionGroup === selectionSelect }"
              :key="index"
              @click="handleSelect(e.SelectionGroup)"
@@ -94,6 +94,12 @@ function skipText() {
   }
 }
 
+function handleSelectMousedown(index: number) {
+  selectionSelect.value = index;
+  //TODO 声音层在天上飞
+  // eventBus.emit("playSelectSound");
+}
+
 function handleSelect(select: number) {
   eventBus.emit("select", select);
   selection.value = [];
@@ -135,12 +141,13 @@ async function handleShowTextEvent(e: ShowText) {
 function showTextDialog(text: Text): Promise<void> {
   return new Promise((resolve) => {
     obj.output = "";
+    obj.isEnd = false;
     if (text.waitTime) {
       setTimeout(() => {
-        typingInstance = new EasyTyper(obj, text.content, () => { resolve() }, () => {});
+        typingInstance = new EasyTyper(obj, text.content, () => { resolve(); typingInstance?.close() }, () => {});
       }, text.waitTime);
     } else {
-      typingInstance = new EasyTyper(obj, text.content, () => { resolve() }, () => {});
+      typingInstance = new EasyTyper(obj, text.content, () => { resolve(); typingInstance?.close() }, () => {});
     }
     lastText.value = text.content;
   });
