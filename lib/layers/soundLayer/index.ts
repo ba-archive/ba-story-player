@@ -1,8 +1,7 @@
 import eventBus from "@/eventBus";
-import { EmotionWord } from "@/types/characterLayer";
 import { PlayAudio } from "@/types/events";
-import { getResourcesUrl } from "@/utils";
 import { Sound } from "@pixi/sound";
+import { usePlayerStore } from "@/stores";
 
 
 /**
@@ -80,10 +79,15 @@ export function soundInit() {
     })
 
     eventBus.on('playEmotionAudio', (emotype: string) => {
-        let url = getResourcesUrl("emotionSound", `SFX_Emoticon_Motion_${emotype}`)
+        let url = usePlayerStore().emotionSoundUrl(emotype)
         console.log(`Get emoAudio URL: ${url}`)
         playAudio({
             soundUrl: url
         })
+    })
+
+    eventBus.on('playSelectSound', () => {
+        console.log("Play Select Sound!")
+        playAudio({soundUrl: usePlayerStore().otherSoundUrl('select')})
     })
 }
