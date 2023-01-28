@@ -1,6 +1,8 @@
 <template>
   <div class="container" @click="skipText" :style="{ height: `${playerHeight}px` }" @mouseup="selectionSelect = -1">
     <div class="container-inner">
+      <div class="titleContainer" :class="{ 'fade-in-out': titleContent }" v-if="titleContent"><div>{{ titleContent }}</div></div>
+      <div class="placeContainer" :class="{ 'fade-in-out': placeContent }" v-if="placeContent"><div>{{ placeContent }}</div></div>
       <div class="select-container" v-if="selection.length !== 0">
         <div v-for="(e, index) in selection"
              class="select-item"
@@ -24,7 +26,7 @@
 
 <script setup lang="ts">
 
-import {reactive, onMounted, ref, computed} from 'vue'
+import {reactive, onMounted, ref, computed, Ref} from 'vue'
 import EasyTyper from 'easy-typer-js'
 import eventBus from "@/eventBus";
 import {ShowOption, ShowText} from "@/types/events";
@@ -38,7 +40,7 @@ const obj = reactive({
   // 忽略
   isEnd: false,
   // 打字间隔
-  speed: 1000,
+  speed: 20,
   // 关闭否则会消除之前的字体
   singleBack: false,
   // 忽略
@@ -56,7 +58,11 @@ const props = withDefaults(defineProps<IProps>(), {playerHeight: 0});
 // 选项
 const selection = ref<ShowOption[]>([]);
 // 按钮按下效果
-const selectionSelect = ref<number>(1);
+const selectionSelect = ref<number>(-1);
+// 标题
+const titleContent = ref<string>("");
+// 位置
+const placeContent = ref<string>("");
 // 昵称
 const name = ref<string>();
 // 次级标题(昵称右边)
@@ -94,10 +100,27 @@ function handleSelect(select: number) {
 }
 
 onMounted(() => {
+  eventBus.on("showTitle", handleShowTitle);
+  eventBus.on("showPlace", handleShowPlace);
   // 监听showText事件
   eventBus.on('showText', handleShowTextEvent);
   eventBus.on("option", (e) => { selection.value = e });
-})
+});
+
+function handleShowTitle(e: string) {
+  proxyShowCoverTitle(titleContent, e)
+}
+
+function handleShowPlace(e: string) {
+  proxyShowCoverTitle(placeContent, e)
+}
+
+function proxyShowCoverTitle(proxy: Ref<string>, value: string) {
+  proxy.value = value;
+  setTimeout(() => {
+    proxy.value = "";
+  }, 3000)
+}
 
 async function handleShowTextEvent(e: ShowText) {
   // 设置昵称
@@ -135,6 +158,7 @@ interface IProps {
 </script>
 
 <style scoped lang="scss">
+$border-radius: 3px;
 .name{
   font-family: 'TJL',serif;
   font-size: 3.5rem;
@@ -194,7 +218,7 @@ interface IProps {
       background-color: rgba(255, 255, 255, .3);
       line-height: 2;
       font-size: 1.5rem;
-      border-radius: 3px;
+      border-radius: $border-radius;
       color: black;
       cursor: pointer;
       transition: width 0.3s, height 0.3s;
@@ -202,6 +226,50 @@ interface IProps {
     .select-item-active {
       transform: scale(0.5);
     }
+  }
+  .titleContainer {
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    line-height: 1;
+    position: absolute;
+    top: 0;
+    left: 0;
+    font-size: 2rem;
+    background-color: black;
+    opacity: 0;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+  }
+  .placeContainer {
+    position: absolute;
+    left: 0;
+    top: 10%;
+    border-top-right-radius: $border-radius;
+    border-bottom-right-radius: $border-radius;
+    background-color: black;
+    color: white;
+    padding: 16px;
+  }
+  .fade-in-out {
+    animation: fade-in-out 3s;
+  }
+}
+@keyframes fade-in-out {
+  0% {
+    opacity: 0;
+  }
+  25% {
+    opacity: 1;
+  }
+  75% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
   }
 }
 </style>
