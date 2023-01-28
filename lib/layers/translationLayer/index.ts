@@ -97,6 +97,7 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
     //解析scriptkr
     let ScriptKr = String(rawStoryUnit.ScriptKr)
     let scripts = ScriptKr.split('\n')
+    let optionIndex = 0
     for (let script of scripts) {
       //根据';'将script分为更小的单元
       let scriptUnits = script.split(';')
@@ -104,7 +105,6 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
        * 当前script类型, 小写字母
        */
       let scriptType = scriptUnits[0].toLocaleLowerCase()
-      let optionIndex = 0
       switch (scriptType) {
         case '#title':
           unit.type = 'title'

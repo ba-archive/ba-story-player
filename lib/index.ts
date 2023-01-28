@@ -121,12 +121,15 @@ let storyHandler = {
    * @returns 
    */
   select(option: number) {
-    while (this.currentStoryUnit.SelectionGroup != option) {
-      if (!this.storyIndexIncrement()) {
-        return false
-      }
+    if (option === 0) {
+      this.storyIndexIncrement()
+      return
     }
-
+    let index = playerStore.allStoryUnit.findIndex(value => value.SelectionGroup === option)
+    if (index === -1) {
+      return false
+    }
+    this.currentStoryIndex = index
     return true
   },
 
