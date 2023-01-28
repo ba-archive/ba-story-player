@@ -1,5 +1,5 @@
 <template>
-  <div :style="{padding: `${3 * props.dialogHeight / 1080}rem ${8 * props.dialogHeight / 1080}rem`}" class="dialog">
+  <div :style="{padding: `${3 * props.dialogHeight / 1080}rem ${8 * props.dialogHeight / 1080}rem`}" class="dialog" @click="skipText">
     <div class="title">
       <div :style="{fontSize: `${3.5 * props.dialogHeight / 1080}rem`}"  class="name">{{name}}</div>
       <div :style="{fontSize: `${2 * props.dialogHeight / 1080}rem`}" class="department">{{nickName}}</div>
@@ -16,6 +16,8 @@
 import {reactive, onMounted, ref} from 'vue'
 import EasyTyper from 'easy-typer-js'
 import eventBus from "@/eventBus";
+import {ShowText} from "@/types/events";
+import {Text} from "@/types/common";
 
 
 // 计算属性
@@ -25,7 +27,7 @@ const obj = reactive({
   // 忽略
   isEnd: false,
   // 打字间隔
-  speed: 20,
+  speed: 1000,
   // 关闭否则会消除之前的字体
   singleBack: false,
   // 忽略
@@ -45,21 +47,50 @@ const props = withDefaults(defineProps<IProps>(), {dialogHeight: 0});
 const name = ref<string>();
 // 次级标题(昵称右边)
 const nickName = ref<string>();
+let typingInstance: EasyTyper | null;
+let lastText = "";
+
+function skipText() {
+  if (!typingInstance) return;
+  if (obj.isEnd) {
+    eventBus.emit("next");
+  } else {
+    // 立即显示所有
+    typingInstance.closeTimer();
+    typingInstance.close();
+    obj.output = lastText;
+  }
+}
 
 onMounted(() => {
-
+  // 监听showText事件
+  eventBus.on('showText', handleShowTextEvent);
 })
 
-// 监听text事件
-eventBus.on('showText',
-  (e) => {
-    // 设置内容
-    new EasyTyper(obj, e.text[0].content, () => {}, () => {});
-    // 设置昵称
-    name.value = e.speaker?.name;
-    // 设置次级标题
-    nickName.value = e.speaker?.nickName;
-});
+async function handleShowTextEvent(e: ShowText) {
+  // 设置昵称
+  name.value = e.speaker?.name;
+  // 设置次级标题
+  nickName.value = e.speaker?.nickName;
+  for (const text of e.text) {
+    await showTextDialog(text);
+    lastText = "";
+  }
+}
+
+function showTextDialog(text: Text): Promise<void> {
+  return new Promise((resolve) => {
+    obj.output = "";
+    if (text.waitTime) {
+      setTimeout(() => {
+        typingInstance = new EasyTyper(obj, text.content, () => { resolve() }, () => {});
+      }, text.waitTime);
+    } else {
+      typingInstance = new EasyTyper(obj, text.content, () => { resolve() }, () => {});
+    }
+    lastText = text.content;
+  });
+}
 
 interface IProps {
   dialogHeight: number;
