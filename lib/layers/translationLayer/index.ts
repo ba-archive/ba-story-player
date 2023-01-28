@@ -1,6 +1,7 @@
 import { usePlayerStore } from '@/stores';
 import { EmotionWord } from "@/types/characterLayer";
 import { StoryRawUnit, StoryUnit } from "@/types/common";
+import { StArgs } from '@/types/events';
 import { getResourcesUrl } from '@/utils';
 import * as utils from "./utils";
 
@@ -124,13 +125,12 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
         case '#st':
           unit.type = 'st'
           unit.textAbout.st = {}
-          unit.textAbout.st.stArgs = scriptUnits.slice(1)
+          unit.textAbout.st.stArgs = [JSON.parse(scriptUnits[1]) as number[], scriptUnits[2] as StArgs[1], Number(scriptUnits[3])]
           if (scriptUnits.length === 3) {
             break
           }
           //当st有文字时
           else {
-            unit.textAbout.st.stArgs = scriptUnits.slice(1, scriptUnits.length - 1)
             unit.textAbout.showText.text = utils.generateText(rawStoryUnit)
           }
           break

@@ -147,6 +147,11 @@ export interface ShowText {
   speaker?: Speaker
 }
 
+/**
+ * st特效参数, 第一个为位置, 第二个为显示效果
+ */
+export type StArgs = [number[], 'serial' | 'instant', number]
+
 export interface StText {
   /**
    * 文本
@@ -155,7 +160,7 @@ export interface StText {
   /**
    * st的参数, 目前只需要注意第二个参数, serial打字机效果, instant立即全部显示.
    */
-  stArgs: string[]
+  stArgs: StArgs
 }
 
 export interface ShowOption {

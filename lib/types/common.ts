@@ -1,5 +1,5 @@
 import type { Spine } from 'pixi-spine';
-import { PlayAudio, PlayEffect, ShowOption, ShowText } from './events';
+import { PlayAudio, PlayEffect, ShowOption, ShowText, StArgs } from './events';
 import { BGEffectExcelTableItem, TransitionTableItem } from './excels';
 export type StoryType = "title" | "place" | "text" | "option" | "st" | "effectOnly" | 'continue'
 
@@ -151,7 +151,7 @@ export interface StoryUnit {
      */
     showText: ShowText,
     st?: {
-      stArgs?: string[]
+      stArgs?: StArgs
       clearSt?: boolean,
     }
   }
