@@ -148,9 +148,11 @@ let eventEmitter = {
   playL2dVoice: true,
   characterDone: true,
   effectDone: true,
+  titleDone: true,
+  stDone: true,
 
   get unitDone() {
-    return this.characterDone && this.effectDone
+    return this.characterDone && this.effectDone && this.titleDone && this.stDone
   },
 
   /**

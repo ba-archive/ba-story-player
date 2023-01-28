@@ -84,10 +84,17 @@ UI层负责UI的相关功能
 `storySummary`: 剧情梗概
 # 文字层
 文字层负责有对话框文字, 无对话框文字, 选项的显示.
+## 发出事件
+`titleDone`: 标题显示完成
+`stDone`: st文字显示完成
 ## 接收事件
-`showTitle`: 显示标题, 接受一个string参数作为标题
+`showTitle`: 显示标题, 接受一个string参数作为标题.
+
+示例: [体香1](https://www.bilibili.com/video/BV1qY411f72B?t=10.4)
 
 `showPlace`: 显示地点, 接受一个string参数作为地点
+
+示例: [体香1](https://www.bilibili.com/video/BV1qY411f72B?t=14.0)
 
 `showText`: 显示普通对话框文字
 参数
