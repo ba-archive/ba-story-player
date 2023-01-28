@@ -37,8 +37,8 @@ function TestDialog() {
 <template>
   <div id="player" :style="{ height: `${height}px` }">
     <div id="player__main">
-      <BaDialog class="dialog" :dialog-height="height"
-        :style="{ marginTop: `${height / 2}px`, width: `${width}px`, height: `${height / 2}px` }"></BaDialog>
+      <BaDialog :player-height="height"
+        :style="{ width: `${width}px` }"></BaDialog>
     </div>
     <button @click="TestDialog">文本框测试</button>
     <button style="margin-left:1%" @click="() => {  eventBus.emit('next') }">next</button>
@@ -48,9 +48,5 @@ function TestDialog() {
 <style>
 #player {
   background-color: black;
-}
-
-.dialog {
-  position: absolute;
 }
 </style>
