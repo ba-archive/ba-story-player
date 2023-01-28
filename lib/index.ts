@@ -44,6 +44,12 @@ export async function init(elementID: string, height: number, width: number, sto
   eventBus.on('*', (type, e) => console.log(type, e))
 
   Loader.registerPlugin(SpineParser);
+
+  //添加加载文字并加载初始化资源以便翻译层进行翻译
+  let loadingText = new Text('loading...', { fill: ['white'] })
+  loadingText.y = app.screen.height - 50
+  loadingText.x = app.screen.width - 150
+  app.stage.addChild(loadingText)
   await resourcesLoader.init(app.loader)
   privateState.allStoryUnit = translate(story)
 
@@ -52,18 +58,14 @@ export async function init(elementID: string, height: number, width: number, sto
   characterInit()
   soundInit()
   effectInit()
-  eventEmitter.init()
 
+  //加载剩余资源
   resourcesLoader.addLoadResources()
-  //添加提示加载文字并加载资源
-  let loadingText = new Text('loading...', { fill: ['white'] })
-  loadingText.y = app.screen.height - 50
-  loadingText.x = app.screen.width - 150
-  app.stage.addChild(loadingText)
   resourcesLoader.load(() => {
     app.stage.removeChild(loadingText)
     loadingText.destroy()
-    eventEmitter.emitEvents()
+    //开始发送事件
+    eventEmitter.init()
   })
 }
 
@@ -100,7 +102,13 @@ let storyHandler = {
    * 通过下标递增更新当前故事节点 
    */
   storyIndexIncrement() {
+    let currentSelectionGroup = this.currentStoryUnit.SelectionGroup
     this.currentStoryIndex++
+    while (![0, currentSelectionGroup].includes(this.currentStoryUnit.SelectionGroup)
+      && this.currentStoryIndex < playerStore.allStoryUnit.length
+    ) {
+      this.currentStoryIndex++
+    }
     if (this.currentStoryIndex >= playerStore.allStoryUnit.length) {
       return false
     }
@@ -141,27 +149,41 @@ let eventEmitter = {
   characterDone: true,
   effectDone: true,
 
+  get unitDone() {
+    return this.characterDone && this.effectDone
+  },
+
   /**
    * 注册事件
    */
   init() {
     eventBus.on('next', () => {
-      if (eventEmitter.characterDone && eventEmitter.effectDone) {
-        if (!storyHandler.storyIndexIncrement()) {
-          storyHandler.end()
-          return
-        }
-        eventEmitter.emitEvents()
+      if (this.unitDone) {
+        storyHandler.storyIndexIncrement()
+        this.storyPlay()
       }
     })
     eventBus.on('select', e => {
       storyHandler.select(e)
-      eventEmitter.emitEvents()
+      this.storyPlay()
     })
     eventBus.on('effectDone', () => eventEmitter.effectDone = true)
     eventBus.on('characterDone', () => eventEmitter.characterDone = true)
     eventBus.on('auto', () => console.log('auto!'))
 
+    this.storyPlay()
+  },
+
+  /**
+   * 播放故事直到对话框或选项出现
+   */
+  async storyPlay() {
+    while (!['text', 'option'].includes(storyHandler.currentStoryUnit.type)) {
+      console.log(storyHandler.currentStoryUnit.type)
+      await this.emitEvents()
+      storyHandler.storyIndexIncrement()
+    }
+    await this.emitEvents()
   },
 
   /**
@@ -231,6 +253,20 @@ let eventEmitter = {
       default:
         console.log(`本体中尚未处理${currentStoryUnit.type}类型故事节点`)
     }
+
+    let startTime = Date.now()
+    let checkEffectDone = new Promise<void>((resolve, reject) => {
+      let interval = setInterval(() => {
+        if (this.unitDone) {
+          clearInterval(interval)
+          resolve()
+        }
+        else if (Date.now() - startTime >= 5000) {
+          reject('特效长时间未完成')
+        }
+      })
+    })
+    await checkEffectDone
   },
 
   /**
@@ -306,10 +342,9 @@ let eventEmitter = {
    * 播放特效
    */
   playEffect() {
-    this.effectDone = false
     if (storyHandler.currentStoryUnit.effect.BGEffect || storyHandler.currentStoryUnit.effect.otherEffect.length != 0) {
+      this.effectDone = false
       eventBus.emit('playEffect', storyHandler.currentStoryUnit.effect)
-
     }
   },
 

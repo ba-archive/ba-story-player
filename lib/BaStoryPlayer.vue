@@ -41,7 +41,7 @@ function TestDialog() {
         :style="{ marginTop: `${height / 2}px`, width: `${width}px`, height: `${height / 2}px` }"></BaDialog>
     </div>
     <button @click="TestDialog">文本框测试</button>
-    <button style="margin-left:1%" @click="() => { eventBus.emit('effectDone'); eventBus.emit('next') }">next</button>
+    <button style="margin-left:1%" @click="() => {  eventBus.emit('next') }">next</button>
   </div>
 </template>
 
