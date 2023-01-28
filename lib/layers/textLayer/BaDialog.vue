@@ -11,10 +11,11 @@
 
 </template>
 
-<script setup>
+<script setup lang="ts">
 
 import {reactive, onMounted, ref} from 'vue'
 import EasyTyper from 'easy-typer-js'
+import eventBus from "@/eventBus";
 
 
 // 计算属性
@@ -38,14 +39,12 @@ const obj = reactive({
 })
 
 // 外部传入播放器高度,用于动态计算字体等数值
-const props = defineProps({
-  dialogHeight: Number
-})
+const props = withDefaults(defineProps<IProps>(), {dialogHeight: 0});
 
 // 昵称
-let name = ref('').value;
+const name = ref<string>();
 // 次级标题(昵称右边)
-let nickName = ref('').value;
+const nickName = ref<string>();
 
 onMounted(() => {
 
@@ -55,12 +54,16 @@ onMounted(() => {
 eventBus.on('showText',
   (e) => {
     // 设置内容
-    new EasyTyper(obj, e.text[0].content);
+    new EasyTyper(obj, e.text[0].content, () => {}, () => {});
     // 设置昵称
-    name = e.speaker.name;
+    name.value = e.speaker?.name;
     // 设置次级标题
-    nickName = e.speaker.nickName;
+    nickName.value = e.speaker?.nickName;
 });
+
+interface IProps {
+  dialogHeight: number;
+}
 
 </script>
 
