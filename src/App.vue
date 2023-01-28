@@ -16,10 +16,11 @@ window.next=()=>{
 <template>
   <div style="display:flex;justify-content: center;">
     <BaStoryPlayer :story="yuuka" 
-    data-url="https://yuuka.cdn.diyigemt.com/image/ba-all-data"
+    data-url="https://yuuka.diyigemt.com/image/ba-all-data"
     :width="1000"
     :height="550"
     language="Cn"
+    username="testUser"
     />
     <!-- <ModifyEmotionOption /> -->
   </div>

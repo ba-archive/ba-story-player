@@ -1,15 +1,11 @@
 import eventBus from "@/eventBus";
 import { usePlayerStore } from "@/stores";
 import {
-  CharacterEffectInstance, CharacterEffectPlayerInterface,
-  CharacterEffectWord,
-  CharacterEmotionPlayer,
-  CharacterLayer,
-  EmotionWord, FXEffectWord, SignalEffectWord, CharacterEffectPlayer, PositionOffset, EmotionOptions, Scale, GlobalEmotionOptions,
+  CharacterEffectInstance, CharacterEmotionPlayer, EmotionOptions, EmotionWord, PositionOffset, Scale
 } from "@/types/characterLayer";
+import gsap from 'gsap';
 import { Container, DisplayObject, Sprite } from "pixi.js";
 import emotionOptions from "./options/emotionOptions";
-import gsap from 'gsap'
 
 
 const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
@@ -25,7 +21,11 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
     const fn = this.getHandlerFunction(type);
     const { emotionResources, app } = usePlayerStore()
     let emotionImageSprites: Sprite[] = []
-    for (let imageResource of emotionResources(type)) {
+    let emotionImgs = emotionResources(type)
+    if (!emotionImgs) {
+      return Promise.reject(`${type}没有对于的图像资源`)
+    }
+    for (let imageResource of emotionImgs) {
       let tempSprite = Sprite.from(imageResource)
       tempSprite.visible = false
       app.stage.addChild(tempSprite)

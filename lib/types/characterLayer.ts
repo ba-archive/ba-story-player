@@ -94,13 +94,13 @@ export interface CharacterLayer {
    * @value CharacterInstance 包含spine对象的实例
    */
   characterSpineCache: Map<number, CharacterInstance>,
-  effectPlayerMap: Map<CharacterEffectType, CharacterEffectPlayerInterface<EmotionWord | CharacterEffectWord | FXEffectWord | SignalEffectWord>>,
+  effectPlayerMap: Map<CharacterEffectType, CharacterEffectPlayerInterface<EmotionWord | CharacterEffectWord | FXEffectWord>>,
 }
 
 /**
  * 所有角色特效基础接口
  */
-export interface CharacterEffectPlayerInterface<T extends EmotionWord | CharacterEffectWord | FXEffectWord | SignalEffectWord> {
+export interface CharacterEffectPlayerInterface<T extends EmotionWord | CharacterEffectWord | FXEffectWord> {
   /**
    * 初始化函数, player初始化时调用
    */
@@ -161,9 +161,9 @@ export interface CharacterEffectInstance extends Character {
   instance: Spine;
 }
 
-type EffectsWord = EmotionWord | CharacterEffectWord | FXEffectWord | SignalEffectWord
+export type EffectsWord = EmotionWord | CharacterEffectWord | FXEffectWord
 
-type Options = EmotionOptions & ActionOptions & FXOptions & SignalOptions
+type Options = EmotionOptions & ActionOptions & FXOptions
 
 type EffectFunctionUnit = (instance: CharacterEffectInstance, options: any, sprites: Sprite[]) => Promise<void> | undefined
 

@@ -1,12 +1,9 @@
-/**
- * 初始化人物层, 订阅player的剧情信息.
- */
 import eventBus from "@/eventBus";
 import { usePlayerStore } from "@/stores";
 import {
   CharacterEffectInstance, CharacterEffectPlayerInterface,
   CharacterEffectWord, CharacterLayer,
-  EmotionWord, FXEffectWord, SignalEffectWord
+  EmotionWord, FXEffectWord, EffectsWord
 } from "@/types/characterLayer";
 import { Character, CharacterEffectType, CharacterInstance } from "@/types/common";
 import { ShowCharacter } from "@/types/events";
@@ -191,6 +188,9 @@ const CharacterLayerInstance: CharacterLayer = {
     return new Promise<void>(async (resolve, reject) => {
       let count = 0;
       const effectListLength = data.effects.length;
+      if (effectListLength === 0) {
+        resolve()
+      }
       const reason: any[] = [];
       const resolveHandler = () => {
         if (count !== effectListLength) {
@@ -212,7 +212,7 @@ const CharacterLayerInstance: CharacterLayer = {
         }
         count++;
         if (effect.async) {
-          await effectPlayer.processEffect(effect.effect, data)
+          await effectPlayer.processEffect(effect.effect as EffectsWord, data)
             .then(resolveHandler)
             .catch((err) => {
               reason.push(err);
@@ -220,7 +220,7 @@ const CharacterLayerInstance: CharacterLayer = {
             })
         } else {
           setTimeout(() => {
-            effectPlayer.processEffect(effect.effect, data)
+            effectPlayer.processEffect(effect.effect as EffectsWord, data)
               .then(resolveHandler)
               .catch((err) => {
                 reason.push(err);
@@ -240,7 +240,7 @@ const CharacterLayerInstance: CharacterLayer = {
   },
   characterScale: undefined,
   characterSpineCache: new Map<number, CharacterInstance>(),
-  effectPlayerMap: new Map<CharacterEffectType, CharacterEffectPlayerInterface<EmotionWord | CharacterEffectWord | FXEffectWord | SignalEffectWord>>(),
+  effectPlayerMap: new Map<CharacterEffectType, CharacterEffectPlayerInterface<EmotionWord | CharacterEffectWord | FXEffectWord>>(),
 }
 
 function loopCRtAnimation(crtFilter: CRTFilter) {

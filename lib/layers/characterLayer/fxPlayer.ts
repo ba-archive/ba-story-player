@@ -20,7 +20,11 @@ const characterFXPlayer: CharacterFXPlayer = {
     }
     const { fxImages, app } = usePlayerStore()
     let fxImageSprites: Sprite[] = []
-    for (let imageResource of fxImages(type)) {
+    let currentFxImgs = fxImages(type)
+    if (!currentFxImgs) {
+      Promise.reject(`fx中${type}对应的图像资源不存在`)
+    }
+    for (let imageResource of currentFxImgs!) {
       let tempSprite = Sprite.from(imageResource)
       tempSprite.visible = false
       app.stage.addChild(tempSprite)
@@ -34,9 +38,9 @@ const characterFXPlayer: CharacterFXPlayer = {
     sprites[0].x = instance.instance.x
     sprites[0].y = instance.instance.y
 
-    setPos(instance,sprites[0],options.shotPos[0])
+    setPos(instance, sprites[0], options.shotPos[0])
     sprites[0].zIndex = 10
-    sprites[0].visible=true
+    sprites[0].visible = true
     let tl = gsap.timeline()
     for (let pos of options.shotPos) {
       tl.fromTo(sprites[0], { pixi: { alpha: 1 } }, { pixi: { alpha: 0 }, duration: options.shotDuration, delay: options.shotDelay, onStart: () => { setPos(instance, sprites[0], pos) } })

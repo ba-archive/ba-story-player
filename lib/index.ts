@@ -1,78 +1,57 @@
-import { Application, Loader, Text, settings } from "pixi.js";
-import { SpineParser } from 'pixi-spine'
-import { textInit } from "./layers/textLayer";
-import { usePlayerStore, initPrivateState } from "./stores";
-import { bgInit } from "@/layers/bgLayer"
-import { characterInit } from "./layers/characterLayer";
-import { soundInit } from "./layers/soundLayer";
 import eventBus from "@/eventBus";
-import axios from 'axios'
-import { StoryRawUnit } from "./types/common";
-import { translate } from '@/layers/translationLayer'
-import { PlayAudio, PlayEffect } from "@/types/events";
-import { effectInit } from '@/layers/effectLayer'
-import { Language } from "./types/store";
+import { bgInit } from "@/layers/bgLayer";
+import { characterInit } from "@/layers/characterLayer";
+import { effectInit } from '@/layers/effectLayer';
+import { soundInit } from "@/layers/soundLayer";
+import { textInit } from "@/layers/textLayer";
+import { translate } from '@/layers/translationLayer';
+import { initPrivateState, usePlayerStore } from "@/stores";
+import { StoryRawUnit, StoryUnit } from "@/types/common";
+import { Language } from "@/types/store";
+import axios from 'axios';
+import { SpineParser } from 'pixi-spine';
+import { Application, Loader, settings, Text } from "pixi.js";
+import * as utils from '@/utils'
 
 let playerStore: ReturnType<typeof usePlayerStore>
 let privateState: ReturnType<typeof initPrivateState>
-let l2dPlaying = false
-let voiceIndex = 1
-let playL2dVoice = true
 let l2dVoiceExcelTable = {
   'CH0184_MemorialLobby': [...Array(10).keys()].slice(1, 11).map(value => value.toString())
 } as { [index: string]: string[] }
-let characterDone = true
-let effectDone = true
-let app: Application
 
 /**
  * 调用各层的初始化函数
  */
-export async function init(elementID: string, height: number, width: number, story: StoryRawUnit[], dataUrl: string, language: Language) {
+export async function init(elementID: string, height: number, width: number, story: StoryRawUnit[], dataUrl: string, language: Language, userName: string) {
   //缓解图片缩放失真
   settings.MIPMAP_TEXTURES = 2
 
   playerStore = usePlayerStore()
   privateState = initPrivateState()
+  utils.setDataUrl(dataUrl)
   privateState.dataUrl = dataUrl
   privateState.language = language
+  privateState.userName = userName
   //加入判断防止vite热更新重新创建app导致加载资源错误
   if (!privateState.app) {
     privateState.app = new Application({ height, width })
   }
 
-  app = playerStore.app
-
+  let app = playerStore.app
   document.querySelector(`#${elementID}`)?.appendChild(app.view)
-  //添加提示加载文字
-  let loadingText = new Text('loading...', { fill: ['white'] })
-  loadingText.y = app.screen.height - 50
-  loadingText.x = app.screen.width - 150
-  app.stage.addChild(loadingText)
+
+  //打印事件到控制台便于测试, 正式版请移除
   eventBus.on('*', (type, e) => console.log(type, e))
 
   Loader.registerPlugin(SpineParser);
 
-  await loadExcels()
+  //添加加载文字并加载初始化资源以便翻译层进行翻译
+  let loadingText = new Text('loading...', { fill: ['white'] })
+  loadingText.y = app.screen.height - 50
+  loadingText.x = app.screen.width - 150
+  app.stage.addChild(loadingText)
+  await resourcesLoader.init(app.loader)
   privateState.allStoryUnit = translate(story)
-  addLoadResources()
-
-  eventBus.on('next', () => {
-    if (characterDone && effectDone) {
-      if (!playerStore.storyIndexIncrement()) {
-        end()
-        return
-      }
-      emitEvents()
-    }
-  })
-  eventBus.on('select', e => {
-    playerStore.select(e)
-    emitEvents()
-  })
-  eventBus.on('effectDone', () => effectDone = true)
-  eventBus.on('characterDone', () => characterDone = true)
-  eventBus.on('auto', () => console.log('auto!'))
 
   textInit()
   bgInit()
@@ -80,398 +59,470 @@ export async function init(elementID: string, height: number, width: number, sto
   soundInit()
   effectInit()
 
-  let hasLoad = false
-  app.loader.load((loader, res) => {
-    privateState.loadRes = res
-    playerStore.app.loader.load((loader, res) => {
-      //当chrome webgl inspector打开时可能导致callback被执行两次
-      if (!hasLoad) {
-        console.log(res)
-        app.stage.removeChild(loadingText)
-        emitEvents()
-        hasLoad = true
-        // window.app = app;
-        // eventBus.emit("showCharacter", {
-        //   characters: [{
-        //     "CharacterName": 4179367264,
-        //     "position": 3,
-        //     "face": "05",
-        //     "highlight": false,
-        //     "effects": [
-        //       {
-        //         "type": "action",
-        //         "effect": "a",
-        //         "async": false
-        //       }
-        //     ]
-        //   }]
-        // })
-      }
-    })
+  //加载剩余资源
+  resourcesLoader.addLoadResources()
+  resourcesLoader.load(() => {
+    app.stage.removeChild(loadingText)
+    loadingText.destroy()
+    //开始发送事件
+    eventEmitter.init()
   })
-
 }
 
-/**
- * 根据当前剧情发送事件
- */
-export async function emitEvents() {
-  await transitionIn()
-  hide()
-  showBg()
-  await transitionOut()
-  showCharacter()
-  playAudio()
-  playL2d()
-  show()
-  playEffect()
 
-  switch (playerStore.currentStoryUnit.type) {
-    case 'title':
-      eventBus.emit('showTitle', playerStore.text[0].content)
-      break
-    case 'place':
-      eventBus.emit('showPlace', playerStore.text[0].content)
-      break
-    case 'text':
-      eventBus.emit('showText', {
-        text: playerStore.text,
-        textEffect: playerStore.textEffect,
-        speaker: playerStore.speaker
-      })
-      break
-    case 'option':
-      eventBus.emit('option', playerStore.option)
-      break
-    case 'st':
-      eventBus.emit('st', {
-        text: playerStore.text,
-        textEffect: playerStore.textEffect,
-        stArgs: playerStore.currentStoryUnit.stArgs!
-      })
-      if (l2dPlaying && playL2dVoice) {
-        //判断并播放l2d语音, 根据clearST增加语音的下标
-        eventBus.emit('playAudio', {
-          voiceJPUrl: `${playerStore.dataUrl}/Audio/VoiceJp/${playerStore.l2dCharacterName}_MemorialLobby/${voiceIndex}.wav`
-        })
-        playL2dVoice = false
-      }
-      break
-    case 'effectOnly':
-      if (playerStore.currentStoryUnit.clearSt) {
-        eventBus.emit('clearSt')
-        if (l2dPlaying) {
-          voiceIndex++
-          playL2dVoice = true
+/**
+ * 处理故事进度对象
+ */
+let storyHandler = {
+  currentStoryIndex: 0,
+
+  get currentStoryUnit(): StoryUnit {
+    if (playerStore && playerStore.allStoryUnit.length > this.currentStoryIndex) {
+      return playerStore.allStoryUnit[this.currentStoryIndex]
+    }
+
+    //默认值
+    return {
+      type: 'text',
+      GroupId: 0,
+      SelectionGroup: 0,
+      PopupFileName: '',
+      audio: {},
+      effect: { otherEffect: [] },
+      characters: [],
+      textAbout: {
+        showText: {
+          text: []
         }
       }
-      break
-    case 'continue':
-      break
-    default:
-      console.log(`本体中尚未处理${playerStore.currentStoryUnit.type}类型故事节点`)
-  }
-
-}
-
-/**
- * 结束播放
- */
-export function end() {
-  console.log('播放结束')
-}
-
-/**
- * 显示背景
- */
-function showBg() {
-  if (playerStore.bgUrl != '') {
-    eventBus.emit('showBg', playerStore.bgUrl)
-    if (l2dPlaying) {
-      eventBus.emit('endL2D')
-      l2dPlaying = false
     }
-  }
+  },
+
+  /**
+   * 通过下标递增更新当前故事节点 
+   */
+  storyIndexIncrement() {
+    let currentSelectionGroup = this.currentStoryUnit.SelectionGroup
+    this.currentStoryIndex++
+    while (![0, currentSelectionGroup].includes(this.currentStoryUnit.SelectionGroup)
+      && this.currentStoryIndex < playerStore.allStoryUnit.length
+    ) {
+      this.currentStoryIndex++
+    }
+    if (this.currentStoryIndex >= playerStore.allStoryUnit.length) {
+      return false
+    }
+    return true
+  },
+
+  /**
+   * 根据选项控制故事节点
+   * @param option 
+   * @returns 
+   */
+  select(option: number) {
+    while (this.currentStoryUnit.SelectionGroup != option) {
+      if (!this.storyIndexIncrement()) {
+        return false
+      }
+    }
+
+    return true
+  },
+
+  /**
+   * 结束播放
+   */
+  end() {
+    console.log('播放结束')
+  },
 }
 
+
 /**
- * 显示角色
+ * 事件发送控制对象
  */
-function showCharacter() {
-  if (playerStore.currentStoryUnit.characters.length != 0) {
-    characterDone = false
-    eventBus.emit('showCharacter', {
-      characters: playerStore.currentStoryUnit.characters,
-      // characterEffects: playerStore.currentStoryUnit.characterEffect
+let eventEmitter = {
+  l2dPlaying: false,
+  voiceIndex: 1,
+  playL2dVoice: true,
+  characterDone: true,
+  effectDone: true,
+  titleDone: true,
+  stDone: true,
+
+  get unitDone() {
+    return this.characterDone && this.effectDone && this.titleDone && this.stDone
+  },
+
+  /**
+   * 注册事件
+   */
+  init() {
+    eventBus.on('next', () => {
+      if (this.unitDone) {
+        storyHandler.storyIndexIncrement()
+        this.storyPlay()
+      }
     })
-  }
-}
+    eventBus.on('select', e => {
+      storyHandler.select(e)
+      this.storyPlay()
+    })
+    eventBus.on('effectDone', () => eventEmitter.effectDone = true)
+    eventBus.on('characterDone', () => eventEmitter.characterDone = true)
+    eventBus.on('auto', () => console.log('auto!'))
 
-/**
- * 播放声音
- */
-function playAudio() {
-  let audio: PlayAudio = {}
-  if (playerStore.bgmUrl != '') {
-    audio.bgm = {
-      url: playerStore.bgmUrl,
-      bgmArgs: playerStore.bgmArgs!
+    this.storyPlay()
+  },
+
+  /**
+   * 播放故事直到对话框或选项出现
+   */
+  async storyPlay() {
+    while (!['text', 'option'].includes(storyHandler.currentStoryUnit.type)) {
+      console.log(storyHandler.currentStoryUnit.type)
+      await this.emitEvents()
+      storyHandler.storyIndexIncrement()
     }
-  }
-  if (playerStore.soundUrl != '') {
-    audio.soundUrl = playerStore.soundUrl
-  }
-  if (Object.keys(audio).length != 0) {
-    eventBus.emit('playAudio', audio)
-  }
-}
+    await this.emitEvents()
+  },
 
+  /**
+   * 根据当前剧情发送事件
+   */
+  async emitEvents() {
+    await this.transitionIn()
+    this.hide()
+    this.showBg()
+    await this.transitionOut()
+    this.showCharacter()
+    this.playAudio()
+    this.playL2d()
+    this.show()
+    this.playEffect()
 
-function playL2d() {
-  if (playerStore.l2dCharacterName !== '') {
-    if (playerStore.l2dAnimationName === 'Idle_01') {
-      eventBus.emit('playL2D')
-      l2dPlaying = true
-    }
-    else {
-      eventBus.emit('changeAnimation', playerStore.l2dAnimationName)
-    }
-  }
-}
-
-/**
- * 控制隐藏事件的发送
- */
-function hide() {
-  if (playerStore.currentStoryUnit.hide) {
-    if (playerStore.currentStoryUnit.hide === 'all') {
-      eventBus.emit('hidemenu')
-    }
-    else {
-      eventBus.emit('hide')
-    }
-  }
-}
-
-function show() {
-  if (playerStore.currentStoryUnit.show) {
-    if (playerStore.currentStoryUnit.show === 'menu') {
-      eventBus.emit('showmenu')
-    }
-  }
-}
-
-/**
- * 播放特效
- */
-function playEffect() {
-  effectDone = false
-  let effect: PlayEffect = {}
-  let current = playerStore.currentStoryUnit
-  if (current.BGEffect != 0) {
-    effect.BGEffect = current.BGEffect
-  }
-  if (current.otherEffect.length != 0) {
-    effect.otherEffect = current.otherEffect
-  }
-
-  if (Object.keys(effect).length != 0) {
-    eventBus.emit('playEffect', effect)
-  }
-}
-
-/**
- * 添加所有资源
- */
-function addLoadResources() {
-  addCharacterSpineResources()
-  addEmotionResources()
-  addFXResources()
-  addBGNameResources()
-  addBgmResources()
-  addSoundResources()
-}
-
-/**
- * 添加人物立绘资源
- */
-function addCharacterSpineResources() {
-  let dataUrl = playerStore.dataUrl
-  for (let unit of playerStore.allStoryUnit) {
-    if (unit.characters.length != 0) {
-      for (let character of unit.characters) {
-        let filename = getCharacterFileName(character.CharacterName)
-        if (!app.loader.resources[filename]) {
-          app.loader.add(filename, `${dataUrl}/spine/${filename}/${filename}.skel`)
+    let currentStoryUnit = storyHandler.currentStoryUnit
+    switch (currentStoryUnit.type) {
+      case 'title':
+        if (currentStoryUnit.textAbout.word) {
+          eventBus.emit('showTitle', currentStoryUnit.textAbout.word)
         }
-      }
-    }
-  }
-}
-
-/**
- * 获取人物立绘文件名
- */
-function getCharacterFileName(CharacterName: number) {
-  let item = playerStore.CharacterNameExcelTable[CharacterName]
-  let temp = String(item.SpinePrefabName).split('/')
-  temp = temp[temp.length - 1].split('_')
-  let id = temp[temp.length - 1]
-  return `${id}_spr`
-}
-
-/**
- * 添加人物情绪相关资源(图片和声音)
- */
-async function addEmotionResources() {
-  for (let emotionResources of Object.values(playerStore.emotionResourcesTable)) {
-    for (let emotionResource of emotionResources) {
-      if (!playerStore.app.loader.resources[emotionResource]) {
-        playerStore.app.loader.add(emotionResource, `${playerStore.dataUrl}/emotions/${emotionResource}`)
-      }
-    }
-  }
-  for (let emotionName of Object.keys(playerStore.emotionResourcesTable)) {
-    let emotionSoundName = `SFX_Emoticon_Motion_${emotionName}`
-    if (!playerStore.app.loader.resources[emotionSoundName]) {
-      playerStore.app.loader.add(emotionSoundName, `${playerStore.dataUrl}/Audio/Sound/${emotionSoundName}.wav`)
-    }
-  }
-}
-
-/**
- * 添加FX相关资源
- */
-async function addFXResources() {
-  for (let fxImages of Object.values(playerStore.fxImageTable)) {
-    for (let url of fxImages) {
-      if (!playerStore.app.loader.resources[url]) {
-        playerStore.app.loader.add(url, `${playerStore.dataUrl}/fx/${url}`)
-      }
-    }
-  }
-}
-
-/**
- * 添加bgm资源
- */
-function addBgmResources() {
-  let loader = playerStore.app.loader
-  for (let unit of playerStore.allStoryUnit) {
-    if (unit.BGMId != 0) {
-      let path = getBgmPath(unit.BGMId)
-      if (!loader.resources[path]) {
-        loader.add(path, path)
-      }
-    }
-  }
-}
-
-/**
- * 获取bgm地址
- */
-function getBgmPath(id: number) {
-  let item = playerStore.BGMExcelTable[id]
-  return `${playerStore.dataUrl}/${item.Path}.ogg`
-}
-
-/**
- * 添加sound资源
- */
-function addSoundResources() {
-  let loader = playerStore.app.loader
-  for (let unit of playerStore.allStoryUnit) {
-    if (unit.Sound != '') {
-      let path = `${playerStore.dataUrl}/Audio/Sound/${unit.Sound}.wav`
-      if (!loader.resources[path]) {
-        loader.add(path, path)
-      }
-    }
-  }
-}
-
-/**
- * 根据BGName添加资源, 即加载背景和l2d资源
- */
-function addBGNameResources() {
-  for (let i of playerStore.allStoryUnit) {
-    if (i.BGName != 0) {
-      let item = playerStore.BGNameExcelTable[i.BGName]
-      if (item.BGType == 'Image') {
-        let filename = String(item.BGFileName).split('/').pop()
-        if (!playerStore.app.loader.resources[filename!]) {
-          playerStore.app.loader.add(filename!, `${playerStore.dataUrl}/bg/${filename}.jpg`);
+        break
+      case 'place':
+        if (currentStoryUnit.textAbout.word) {
+          eventBus.emit('showPlace', currentStoryUnit.textAbout.word)
         }
+        break
+      case 'text':
+        eventBus.emit('showText', currentStoryUnit.textAbout.showText)
+        break
+      case 'option':
+        if (currentStoryUnit.textAbout.options) {
+          eventBus.emit('option', currentStoryUnit.textAbout.options)
+        }
+        break
+      case 'st':
+        if (currentStoryUnit.textAbout.st) {
+          if (currentStoryUnit.textAbout.st.stArgs) {
+            eventBus.emit('st', {
+              text: currentStoryUnit.textAbout.showText.text,
+              stArgs: currentStoryUnit.textAbout.st.stArgs
+            })
+          }
+          else if (currentStoryUnit.textAbout.st.clearSt) {
+            eventBus.emit('clearSt')
+            if (this.l2dPlaying) {
+              this.voiceIndex++
+              this.playL2dVoice = true
+            }
+          }
+        }
+        if (this.l2dPlaying && this.playL2dVoice) {
+          //to do 后续加入声音对应表
+          //判断并播放l2d语音, 根据clearST增加语音的下标
+          eventBus.emit('playAudio', {
+            voiceJPUrl: `${playerStore.dataUrl}/Audio/VoiceJp/CH0184_MemorialLobby/${this.voiceIndex}.wav`
+          })
+          this.playL2dVoice = false
+        }
+        break
+      case 'effectOnly':
+        break
+      //to do
+      // case 'continue':
+      //   break
+      default:
+        console.log(`本体中尚未处理${currentStoryUnit.type}类型故事节点`)
+    }
+
+    let startTime = Date.now()
+    let checkEffectDone = new Promise<void>((resolve, reject) => {
+      let interval = setInterval(() => {
+        if (this.unitDone) {
+          clearInterval(interval)
+          resolve()
+        }
+        else if (Date.now() - startTime >= 5000) {
+          reject('特效长时间未完成')
+        }
+      })
+    })
+    await checkEffectDone
+  },
+
+  /**
+   * 显示背景
+   */
+  showBg() {
+    if (storyHandler.currentStoryUnit.bg) {
+      eventBus.emit('showBg', storyHandler.currentStoryUnit.bg?.url)
+      if (this.l2dPlaying) {
+        eventBus.emit('endL2D')
+        this.l2dPlaying = false
+      }
+    }
+  },
+
+  /**
+   * 显示角色
+   */
+  showCharacter() {
+    if (storyHandler.currentStoryUnit.characters.length != 0) {
+      this.characterDone = false
+      eventBus.emit('showCharacter', {
+        characters: storyHandler.currentStoryUnit.characters,
+      })
+    }
+  },
+
+  /**
+   * 播放声音
+   */
+  playAudio() {
+    if (storyHandler.currentStoryUnit.audio) {
+      eventBus.emit('playAudio', storyHandler.currentStoryUnit.audio)
+    }
+  },
+
+  playL2d() {
+    if (storyHandler.currentStoryUnit.l2d) {
+      if (storyHandler.currentStoryUnit.l2d.animationName === 'Idle_01') {
+        eventBus.emit('playL2D')
+        playerStore.setL2DSpineUrl(storyHandler.currentStoryUnit.l2d.spineUrl)
+        this.l2dPlaying = true
       }
       else {
-        if (item.AnimationName == 'Idle_01') {
-          let filename = String(item.BGFileName).split('/').pop()?.replace('SpineBG_Lobby', '')
-          filename = `${filename}_home`
-          if (!app.loader.resources[filename!]) {
-            app.loader.add(filename, `${playerStore.dataUrl}/spine/${filename}/${filename}.skel`)
-            addL2dVoice(filename.replace('_home', ''))
+        eventBus.emit('changeAnimation', storyHandler.currentStoryUnit.l2d.animationName)
+      }
+    }
+  },
+
+  /**
+   * 控制隐藏事件的发送
+   */
+  hide() {
+    if (storyHandler.currentStoryUnit.hide) {
+      if (storyHandler.currentStoryUnit.hide === 'all') {
+        eventBus.emit('hidemenu')
+      }
+      else {
+        eventBus.emit('hide')
+      }
+    }
+  },
+
+  show() {
+    if (storyHandler.currentStoryUnit.show) {
+      if (storyHandler.currentStoryUnit.show === 'menu') {
+        eventBus.emit('showmenu')
+      }
+    }
+  },
+
+  /**
+   * 播放特效
+   */
+  playEffect() {
+    if (storyHandler.currentStoryUnit.effect.BGEffect || storyHandler.currentStoryUnit.effect.otherEffect.length != 0) {
+      this.effectDone = false
+      eventBus.emit('playEffect', storyHandler.currentStoryUnit.effect)
+    }
+  },
+
+  async transitionIn() {
+    if (storyHandler.currentStoryUnit.transition) {
+      eventBus.emit('transitionIn', storyHandler.currentStoryUnit.transition)
+      await wait(storyHandler.currentStoryUnit.transition.TransitionInDuration)
+    }
+  },
+
+  async transitionOut() {
+    if (storyHandler.currentStoryUnit.transition) {
+      if (storyHandler.currentStoryUnit.transition) {
+        eventBus.emit('transitionOut', storyHandler.currentStoryUnit.transition)
+        await wait(storyHandler.currentStoryUnit.transition.TransitionOutDuration)
+      }
+    }
+  },
+}
+
+
+/**
+ * 资源加载处理对象
+ */
+let resourcesLoader = {
+  loader: new Loader(),
+  /**
+   * 初始化, 预先加载表资源供翻译层使用
+   */
+  async init(loader: Loader) {
+    await this.loadExcels()
+    this.loader = loader
+  },
+  /**
+   * 添加所有资源
+   */
+  addLoadResources() {
+    this.addEmotionResources()
+    this.addFXResources()
+    for (let unit of playerStore.allStoryUnit) {
+      //添加人物spine
+      if (unit.characters.length != 0) {
+        for (let character of unit.characters) {
+          let spineUrl = character.spineUrl
+          if (!this.loader.resources[character.CharacterName]) {
+            this.loader.add(String(character.CharacterName), spineUrl)
           }
         }
       }
+      if (unit.audio) {
+        //添加bgm资源
+        this.checkAndAdd(unit.audio.bgm?.url)
+
+        //添加sound
+        this.checkAndAdd(unit.audio.soundUrl)
+      }
+      //添加背景图片
+      this.checkAndAdd(unit.bg, 'url')
+
+      //添加l2d spine资源
+      this.checkAndAdd(unit.l2d, 'spineUrl')
     }
+  },
+
+  /**
+   * 加载资源并在加载完成后执行callback
+   * @param callback 
+   */
+  load(callback: () => void) {
+    let hasLoad = false
+    this.loader.load((loader, res) => {
+      playerStore.app.loader.load((loader, res) => {
+        //当chrome webgl inspector打开时可能导致callback被执行两次
+        if (!hasLoad) {
+          console.log(res)
+          callback()
+        }
+      })
+    })
+  },
+
+  /**
+   * 检查资源是否存在或已加载, 没有则添加
+   * @param resources 检查是否存在的资源, url可为对象属性或本身
+   * @param key 当resoureces为对象时指定的url属性
+   */
+  checkAndAdd(resources: Object | string | undefined, key?: string) {
+    let url = ''
+    if (resources) {
+      if (typeof resources === 'string') {
+        url = resources
+      }
+      else {
+        url = Reflect.get(resources, key!)
+      }
+      if (!this.loader.resources[url]) {
+        this.loader.add(url, url)
+      }
+    }
+  },
+
+  /**
+   * 添加人物情绪相关资源(图片和声音)
+   */
+  async addEmotionResources() {
+    for (let emotionResources of playerStore.emotionResourcesTable.values()) {
+      for (let emotionResource of emotionResources) {
+        if (!this.loader.resources[emotionResource]) {
+          this.loader.add(emotionResource, utils.getResourcesUrl('emotionImg', emotionResource))
+        }
+      }
+    }
+    for (let emotionName of playerStore.emotionResourcesTable.keys()) {
+      let emotionSoundName = `SFX_Emoticon_Motion_${emotionName}`
+      if (!this.loader.resources[emotionSoundName]) {
+        this.loader.add(emotionSoundName, utils.getResourcesUrl('emotionSound', emotionSoundName))
+      }
+    }
+  },
+
+  /**
+   * 添加FX相关资源
+   */
+  async addFXResources() {
+    for (let fxImages of playerStore.fxImageTable.values()) {
+      for (let url of fxImages) {
+        if (!this.loader.resources[url]) {
+          this.loader.add(url, utils.getResourcesUrl('fx', url))
+        }
+      }
+    }
+  },
+
+  /**
+   * 添加l2d语音
+   */
+  addL2dVoice(name: string) {
+    let voicePath = `${name}_MemorialLobby`
+    for (let voiceFileName of l2dVoiceExcelTable[voicePath]) {
+      this.loader.add(voiceFileName, `${voicePath}/${voiceFileName}`
+      )
+    }
+  },
+
+  /**
+   * 加载原始数据资源
+   */
+  async loadExcels() {
+    await axios.get(utils.getResourcesUrl('excel', 'ScenarioBGNameExcelTable.json')).then(res => {
+      for (let i of res.data['DataList']) {
+        privateState.BGNameExcelTable.set(i['Name'], i)
+      }
+    })
+    await axios.get(utils.getResourcesUrl('excel', 'ScenarioCharacterNameExcelTable.json')).then(res => {
+      for (let i of res.data['DataList']) {
+        privateState.CharacterNameExcelTable.set(i['CharacterName'], i)
+      }
+    })
+    await axios.get(utils.getResourcesUrl('excel', 'BGMExcelTable.json')).then(res => {
+      for (let i of res.data['DataList']) {
+        privateState.BGMExcelTable.set(i['Id'], i)
+      }
+    })
+    await axios.get(utils.getResourcesUrl('excel', 'ScenarioTransitionExcelTable.json')).then(res => {
+      for (let i of res.data['DataList']) {
+        privateState.TransitionExcelTable.set(i['Name'], i)
+      }
+    })
+    await axios.get(utils.getResourcesUrl('excel', 'ScenarioBGEffectExcelTable.json')).then(res => {
+      for (let i of res.data['DataList']) {
+        privateState.BGEffectExcelTable.set(i['Name'], i)
+      }
+    })
   }
 }
 
-/**
- * 添加l2d语音
- */
-function addL2dVoice(name: string) {
-  let voicePath = `${name}_MemorialLobby`
-  for (let voiceFileName of l2dVoiceExcelTable[voicePath]) {
-    playerStore.app.loader.add(voiceFileName,
-      `${playerStore.dataUrl}/Audio/VoiceJp/${voicePath}/${voiceFileName}.wav`)
-  }
-}
-
-/**
- * 加载原始数据资源
- */
-async function loadExcels() {
-  let dataUrl = playerStore.dataUrl
-  await axios.get(`${dataUrl}/data/ScenarioBGNameExcelTable.json`).then(res => {
-    for (let i of res.data['DataList']) {
-      privateState.BGNameExcelTable[i['Name']] = i
-    }
-  })
-  await axios.get(`${dataUrl}/data/ScenarioCharacterNameExcelTable.json`).then(res => {
-    for (let i of res.data['DataList']) {
-      privateState.CharacterNameExcelTable[i['CharacterName']] = i
-    }
-  })
-  await axios.get(`${dataUrl}/data/BGMExcelTable.json`).then(res => {
-    for (let i of res.data['DataList']) {
-      privateState.BGMExcelTable[i['Id']] = i
-    }
-  })
-  await axios.get(`${dataUrl}/data/ScenarioTransitionExcelTable.json`).then(res => {
-    for (let i of res.data['DataList']) {
-      privateState.TransitionExcelTable[i['Name']] = i
-    }
-  })
-}
-
-async function transitionIn() {
-  let name = playerStore.currentStoryUnit.Transition
-  if (name) {
-    let item = playerStore.TransitionExcelTable[name]
-    eventBus.emit('transitionIn', item)
-    await wait(item.TransitionInDuration)
-  }
-}
-
-async function transitionOut() {
-  let name = playerStore.currentStoryUnit.Transition
-  if (name) {
-    let item = playerStore.TransitionExcelTable[name]
-    eventBus.emit('transitionOut', item)
-    await wait(item.TransitionOutDuration)
-  }
-}
 
 /**
  * wait in promise

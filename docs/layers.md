@@ -1,9 +1,11 @@
 # 通用
 每层需提供一个init函数用于注册event handler(如果是组件类型则需自行使用eventBus注册).
+## 资源访问
+通过`@/stores`的`usePlayerStore`获取资源工具类
+可访问getter:
+`app`: pixi-Application实例
 ## 事件管理
 通过`eventBus.ts`导入`eventBus`.
-## 可访问getter
-`app`: pixi-Application实例
 
 ## 接收事件
 `hide`: 清除当前内容
@@ -82,18 +84,35 @@ UI层负责UI的相关功能
 `storySummary`: 剧情梗概
 # 文字层
 文字层负责有对话框文字, 无对话框文字, 选项的显示.
+## 发出事件
+`titleDone`: 标题显示完成
+
+`stDone`: st文字显示完成
 ## 接收事件
-`showTitle`: 显示标题, 接受一个string参数作为标题
+`showTitle`: 显示标题, 接受一个string参数作为标题.
+
+示例: [体香1](https://www.bilibili.com/video/BV1qY411f72B?t=10.4)
 
 `showPlace`: 显示地点, 接受一个string参数作为地点
+
+示例: [体香1](https://www.bilibili.com/video/BV1qY411f72B?t=14.0)
 
 `showText`: 显示普通对话框文字
 参数
 ```ts
 export interface ShowText {
   text: Text[]
-  textEffect: TextEffect[]
   speaker?: Speaker
+}
+interface Text {
+    content: string
+    effect: TextEffect[]
+    waitTime?: number
+}
+interface TextEffect {
+    name: 'color'|'fontsize'|'ruby',
+    value: string[],
+    textIndex: number
 }
 ```
 
@@ -101,22 +120,22 @@ export interface ShowText {
 参数: 
 ```ts
 interface StText{
-    text: Text[]
-    textEffect: TextEffect[]
-    stArgs:string[] 
+  text: Text[]
+  stArgs:[number[],'serial'|'instant',number] 
 }
-interface Text {
-    content: string
-    waitTime?: number
-}
-interface TextEffect {
-    name: 'color'|'fontsize'|'ruby',,
-    value: string[],
-    textIndex: number
-}
+
 ```
-其中stArgs通常只需要注意第二个参数, serial打字机效果, instant立即全部显示.
-当没有清除无对话框文字时, 新来的文字需要放在原来文字的下方.
+stArgs: 
+第一个参数代表位置, 一般由两个数组成
+位置示意图:
+![](./img/text-position.png)
+注意100单位长度的位置应大于等于文字默认高度
+
+第二个参数代表效果, serial打字机效果, instant立即全部显示.
+
+第三个参数目前尚不明确
+
+参数例子:[[-1200,-530],'serial',60](体香1 L2d第一句)
 
 `clearSt`: 清除无对话框文字
 
@@ -134,8 +153,6 @@ interface Option {
 `select`: 选择后加入下一剧情语句, 需要带一个number类型的参数
 
 `playSelectSound`: 播放选择时的特效音
-## 可使用getter
-`nameAndNickName`: 根据CharacterName获取name和nickname
 ## 需要处理的state
 `logText`: 已播放剧情语句, 通过`setLogText`进行修改.
 # 特效层
@@ -148,7 +165,9 @@ interface Option {
 L2D层用于播放L2D
 ## 接收事件
 `playL2D`: 加载L2D
+
 `changeAnimation`: 更换动画, 接受一个string参数作为动画名
+
 `endL2D`: 停止L2D
 ## 可使用getter
 `l2dSpineData`: 获取l2d的spine数据
