@@ -60,10 +60,13 @@ interface CharacterEffect{
 
 参数:
 ```ts
-interface PlayAudio{
-    bgmUrl?:string
-    soundUrl?:string
-    voiceJPUrl?:string
+export interface PlayAudio {
+  bgm?: {
+    url?: string
+    bgmArgs: BGMExcelTableItem
+  }
+  soundUrl?: string
+  voiceJPUrl?: string
 }
 ```
 `playEmotionAudio`: 播放人物情绪动作特效音, 参数是一个string代表人物的情绪动作
@@ -72,15 +75,18 @@ interface PlayAudio{
 
 ## 可使用getter
 `otherSound`: 获取其他声音资源url
+
 `emotionSoundUrl`: 获取emotion特效对应的特效音
 
 # UI层
 UI层负责UI的相关功能
 ## 发出事件
 `skip`: 跳过剧情
+
 `auto`: 启动自动模式
 ## 可使用getter
 `logText`: 已播放剧情语句
+
 `storySummary`: 剧情梗概
 # 文字层
 文字层负责有对话框文字, 无对话框文字, 选项的显示.
@@ -163,8 +169,10 @@ interface Option {
 `effectDone`: 特效播放完成时发出的事件
 # L2D层
 L2D层用于播放L2D
+## 发出事件
+`animationDone`: 当前l2d动画播放完成
 ## 接收事件
-`playL2D`: 加载L2D
+`playL2D`: 加载L2D, 播放l2d初始动画
 
 `changeAnimation`: 更换动画, 接受一个string参数作为动画名
 
