@@ -1,7 +1,7 @@
 # 通用
 每层需提供一个init函数用于注册event handler(如果是组件类型则需自行使用eventBus注册).
 ## 资源访问
-通过`@/stores`的`usePlayerStore`获取资源工具类
+通过`@/stores`的`usePlayerStore`获取资源工具类, 注意请获取整个对象而不是某个属性, 不然可能会导致数据过时.
 可访问getter:
 `app`: pixi-Application实例
 ## 事件管理
@@ -74,7 +74,7 @@ export interface PlayAudio {
 `playSelectSound`: 播放选择时的特效音
 
 ## 可使用getter
-`otherSound`: 获取其他声音资源url
+`otherSoundUrl`: 获取其他声音资源url
 
 `emotionSoundUrl`: 获取emotion特效对应的特效音
 

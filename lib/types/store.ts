@@ -2,6 +2,7 @@ import { Application, Sprite } from "pixi.js"
 import { CharacterInstance, StoryUnit } from "./common"
 import { ShowText } from './events'
 import { BGEffectExcelTableItem, BGMExcelTableItem, BGNameExcelTableItem, CharacterNameExcelTableItem, TransitionTableItem } from "./excels"
+import { OtherSounds } from "./resources"
 
 export type Language = 'Cn' | 'Jp'
 
@@ -115,6 +116,12 @@ export interface BasicGetters {
   fxImages: (fxName: string) => string[] | undefined
 
   emotionSoundUrl: (emotionName: string) => string
+  /**
+   * 获取其他特效音url
+   * @param type 特效音类型, 如select
+   * @returns 
+   */
+  otherSoundUrl: (type: OtherSounds) => string
   /**
    * 获取L2D资源
    */

@@ -12,6 +12,7 @@ import axios from 'axios';
 import { SpineParser } from 'pixi-spine';
 import { Application, Loader, settings, Text } from "pixi.js";
 import * as utils from '@/utils'
+import { getOtherSoundUrls } from "@/utils";
 
 let playerStore: ReturnType<typeof usePlayerStore>
 let privateState: ReturnType<typeof initPrivateState>
@@ -386,6 +387,7 @@ let resourcesLoader = {
   addLoadResources() {
     this.addEmotionResources()
     this.addFXResources()
+    this.addOtherSounds()
     for (let unit of playerStore.allStoryUnit) {
       //添加人物spine
       if (unit.characters.length != 0) {
@@ -488,6 +490,18 @@ let resourcesLoader = {
     for (let voiceFileName of l2dVoiceExcelTable[voicePath]) {
       this.loader.add(voiceFileName, `${voicePath}/${voiceFileName}`
       )
+    }
+  },
+
+  /**
+   * 添加其他特效音
+   */
+  addOtherSounds() {
+    let otherSoundUrls = getOtherSoundUrls()
+    for (let url of otherSoundUrls) {
+      if (!this.loader.resources[url]) {
+        this.loader.add(url, url)
+      }
     }
   },
 
