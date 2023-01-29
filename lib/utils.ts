@@ -1,4 +1,7 @@
+import { OtherSoundsUrls, ResourcesTypes } from "@/types/resources"
+
 let dataUrl = ''
+let otherSoundMap: OtherSoundsUrls
 
 /**
  * 设置数据站点
@@ -6,9 +9,19 @@ let dataUrl = ''
  */
 export function setDataUrl(url: string): void {
   dataUrl = url
+  otherSoundMap = {
+    select: `${dataUrl}/Audio/Sound/UI_Button_Touch.wav`
+  }
 }
 
-type ResourcesTypes = 'emotionImg' | 'emotionSound' | 'fx' | 'l2dSpine' | 'l2dVoice' | 'excel' | 'bgm' | 'sound' | 'voiceJp' | 'characterSpine' | 'bg'
+/**
+ * 获取其他特效音资源, 用于本体资源加载
+ * @returns 
+ */
+export function getOtherSoundUrls(): string[] {
+  return Object.values(otherSoundMap)
+}
+
 
 /**
  * 根据资源类型和参数获取资源地址, 可根据服务器实际情况修改
@@ -40,6 +53,8 @@ export function getResourcesUrl(type: ResourcesTypes, arg: string): string {
       return `${dataUrl}/spine/${arg}/${arg}.skel`
     case 'bg':
       return `${dataUrl}/${arg}.jpg`
+    case 'otherSound':
+      return Reflect.get(otherSoundMap, arg) || ''
     default:
       return ''
   }
