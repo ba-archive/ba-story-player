@@ -1,4 +1,5 @@
 import { Actions, GetterFunctions, Getters, PrivateStates, PublicStates } from '@/types/store'
+import { getResourcesUrl } from '@/utils'
 
 let characterNameTable = {
   '유우카 체육복ND': 4179367264,
@@ -97,7 +98,11 @@ let getterFunctions: GetterFunctions = {
    * 获取emotion的对应声音资源的url, 传入的参数是emotion的名字
    */
   emotionSoundUrl: () => (emotionName) => {
-    return `${privateState.dataUrl}/Audio/Sound/SFX_Emoticon_Motion_${emotionName}.wav`
+    return getResourcesUrl('emotionSound', `SFX_Emoticon_Motion_${emotionName}`)
+  },
+
+  otherSoundUrl: () => (sound) => {
+    return getResourcesUrl('otherSound', sound)
   },
 
   l2dSpineData() {
