@@ -73,14 +73,17 @@ export interface Option {
   }
 }
 
+/**
+ * 文字特效类型,
+ * `color`颜色
+ * `fontsize` 字体大小
+ * `ruby` 日文注音
+ */
+export type TextEffectName = 'color' | 'fontsize' | 'ruby';
+
 export interface TextEffect {
-  /**
-   * 特效类型,
-   * `color`颜色
-   * `fontsize` 字体大小
-   * `ruby` 日文注音
-   */
-  name: 'color' | 'fontsize' | 'ruby',
+
+  name: TextEffectName,
   /**
    * 特效参数
    */

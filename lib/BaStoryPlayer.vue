@@ -32,15 +32,31 @@ function TestDialog() {
   });
 }
 
+function testSt() {
+  eventBus.emit("st", {
+    text: [{
+      content: "― 哈、",
+      waitTime: 0,
+      effects: []
+    },{
+      content: "哈……",
+      waitTime: 1500,
+      effects: []
+    }],
+    stArgs: [[-1200,-530], "serial", 1]
+  })
+}
+
 </script>
 
 <template>
   <div id="player" :style="{ height: `${height}px` }">
     <div id="player__main">
-      <BaDialog :player-height="height"
+      <BaDialog :player-height="height" :player-width="width"
         :style="{ width: `${width}px` }"></BaDialog>
     </div>
     <button @click="TestDialog">文本框测试</button>
+    <button @click="testSt">st测试</button>
     <button style="margin-left:1%" @click="() => {  eventBus.emit('next') }">next</button>
   </div>
 </template>

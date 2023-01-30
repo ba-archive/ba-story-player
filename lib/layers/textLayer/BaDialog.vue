@@ -1,8 +1,10 @@
 <template>
   <div class="container" @click="skipText" :style="{ height: `${playerHeight}px` }" @mouseup="selectionSelect = -1">
     <div class="container-inner">
-      <div class="titleContainer" :class="{ 'fade-in-out': titleContent }" v-if="titleContent"><div>{{ titleContent }}</div></div>
-      <div class="placeContainer" :class="{ 'fade-in-out': placeContent }" v-if="placeContent"><div>{{ placeContent }}</div></div>
+      <div class="st-container" ref="stOutput" />
+      <div class="title-container" :class="{ 'fade-in-out': titleContent }" v-if="titleContent"><div>{{ titleContent
+        }}</div></div>
+      <div class="place-container" :class="{ 'fade-in-out': placeContent }" v-if="placeContent"><div>{{ placeContent }}</div></div>
       <div class="select-container" v-if="selection.length !== 0">
         <div v-for="(e, index) in selection"
              class="select-item"
@@ -12,13 +14,14 @@
              @click="handleSelect(e.SelectionGroup)"
              >{{ e.text }}</div>
       </div>
-      <div :style="{padding: `${fontSize(3)}rem ${fontSize(8)}rem`, height: `${playerHeight / 2}px`}" class="dialog" >
+      <div v-if="showDialog" :style="{padding: `${fontSize(3)}rem ${fontSize(8)}rem`, height: `${playerHeight / 2}px`}"
+           class="dialog" >
         <div class="title">
           <div :style="{fontSize: `${fontSize(3.5)}rem`}" class="name">{{name}}</div>
           <div :style="{fontSize: `${fontSize(2)}rem`}" class="department">{{nickName}}</div>
         </div>
         <hr>
-        <div :style="{fontSize: `${fontSize(2.5)}rem`}" class="content">{{ obj.output }}</div>
+        <div ref="typewriterOutput" :style="{fontSize: `${fontSize(2.5)}rem`}" class="content" />
       </div>
     </div>
   </div>
@@ -26,35 +29,21 @@
 
 <script setup lang="ts">
 
-import {reactive, onMounted, ref, computed, Ref} from 'vue'
-import EasyTyper from 'easy-typer-js'
+import {onMounted, ref, computed, Ref, nextTick} from 'vue'
 import eventBus from "@/eventBus";
-import {ShowOption, ShowText} from "@/types/events";
-import {Text} from "@/types/common";
+import Typed, {TypedExtend, TypedOptions} from "typed.js";
+import {ShowOption, ShowText, StText} from "@/types/events";
+import {Text, TextEffectName} from "@/types/common";
 
-
-// 计算属性
-const obj = reactive({
-  // 忽略
-  output: '',
-  // 忽略
-  isEnd: false,
-  // 打字间隔
-  speed: 20,
-  // 关闭否则会消除之前的字体
-  singleBack: false,
-  // 忽略
-  sleep: 0,
-  // 固定
-  type: 'normal',
-  // 忽略
-  backSpeed: 40,
-  // 忽略
-  sentencePause: false
-})
-
+const TypedOptions: TypedOptions = {
+  typeSpeed: 20,
+  showCursor: false,
+  contentType: "html"
+}
+const typewriterOutput = ref();
+const stOutput = ref();
 // 外部传入播放器高度,用于动态计算字体等数值
-const props = withDefaults(defineProps<IProps>(), {playerHeight: 0});
+const props = withDefaults(defineProps<IProps>(), {playerHeight: 0, playerWidth: 0});
 // 选项
 const selection = ref<ShowOption[]>([]);
 // 按钮按下效果
@@ -67,30 +56,23 @@ const placeContent = ref<string>("");
 const name = ref<string>();
 // 次级标题(昵称右边)
 const nickName = ref<string>();
-let typingInstance: EasyTyper | null;
-// 最后一次typing的内容 为啥要缓存呢, 因为这个库没有(
-let lastText = new Proxy({ value: "" }, {
-  get(target: { value: string }, p: string | symbol): any {
-    if (p === "value") {
-      const cache = target.value;
-      target.value = "";
-      return cache;
-    } else {
-      return Reflect.get(target, p);
-    }
-  }
-});
-
+// 在执行st特效时置为false以隐藏对话框
+const showDialog = ref<boolean>(true);
+let typingInstance: TypedExtend | null;
 function skipText() {
-  if (!typingInstance) return;
   if (selection.value.length !== 0) return;
-  if (obj.isEnd) {
+  if (typingInstance.isEnd) {
     eventBus.emit("next");
   } else {
     // 立即显示所有
-    typingInstance.closeTimer();
-    typingInstance.close();
-    obj.output = lastText.value;
+    typingInstance.stop();
+    typingInstance.destroy();
+    typingInstance.isEnd = true;
+    if (showDialog) {
+      typewriterOutput.value.innerHTML = typingInstance.strings.pop()
+    } else {
+      stOutput.value.innerHTML = typingInstance.strings.join("")
+    }
   }
 }
 
@@ -110,6 +92,7 @@ onMounted(() => {
   eventBus.on("showPlace", handleShowPlace);
   // 监听showText事件
   eventBus.on('showText', handleShowTextEvent);
+  eventBus.on('st', handleShowStEvent);
   eventBus.on("option", (e) => { selection.value = e });
 });
 
@@ -128,44 +111,119 @@ function proxyShowCoverTitle(proxy: Ref<string>, value: string) {
   }, 3000)
 }
 
-async function handleShowTextEvent(e: ShowText) {
-  // 设置昵称
-  name.value = e.speaker?.name;
-  // 设置次级标题
-  nickName.value = e.speaker?.nickName;
-  for (const text of e.text) {
-    await showTextDialog(text);
+function handleShowStEvent(e: StText) {
+  if (!e.stArgs || !Array.isArray(e.stArgs) || e.stArgs.length !== 3) {
+    console.error("处理st特效失败", e);
+    return;
   }
+  // 显示st时隐藏对话框
+  showDialog.value = false;
+  const stPos = e.stArgs[0];
+  const stType = e.stArgs[1];
+  const x = Math.floor(((stWidth / 2) + stPos[0]) * stPositionBounds.value.width);
+  const y = Math.floor(((stHeight / 2) - stPos[1]) * stPositionBounds.value.height);
+  debugger
+  const extendPos = `position: absolute; left: ${x}px; top: ${y}px; width: auto`
+  // const unused = e.stArgs[3];
+  if (stType === "instant") {
+    stOutput.value.innerHTML = parseTextEffect({
+      content: e.text.map(text => parseTextEffect(text, "", "span")).join(""),
+      effects: []
+    }, extendPos);
+  } else if (stType === "serial") {
+    // typingInstance = new Typed(typewriterOutput.value, {
+    //   ...TypedOptions,
+    //   strings: [text.content],
+    //   onComplete(self: TypedExtend) {
+    //     self.isEnd = true;
+    //   }
+    // });
+  }
+}
+
+function handleShowTextEvent(e: ShowText) {
+  showDialog.value = true;
+  nextTick(async () => {
+    // 设置昵称
+    name.value = e.speaker?.name;
+    // 设置次级标题
+    nickName.value = e.speaker?.nickName;
+    for (const text of e.text) {
+      await showTextDialog(parseTextEffect(text));
+    }
+  })
+}
+
+function parseTextEffect(text: Text, extendStyle = "", tag = "div"): Text {
+  const effects = text.effects;
+  // TODO parse value
+  const rt = (effects.filter(effect => effect.name === "ruby")[0] || {value: []}).value.join("")
+  const style = effects.filter(effect => effect.name !== "ruby").map(effect => {
+    const value = effect.value.join("");
+    const name = effect.name;
+    if (name === "color") {
+      return `color: ${value}`;
+    } else if (name === "fontsize") {
+      return `font-size: ${Math.floor(Number(Number(value) * fontSizeBounds.value))}px`
+    }
+    return (StyleEffectTemplate[effect.name] || "").replace("${value}", effect.value.join(""))
+  }).join(";");
+  if (rt) {
+    text.content = `<ruby style="${style};${extendStyle}">${text.content}<rt>${rt}</rt><rp>烫</rp></ruby>`
+  } else {
+    text.content = `<${tag} style="${style};${extendStyle}">${text.content}</${tag}>`
+  }
+  return text;
 }
 
 function showTextDialog(text: Text): Promise<void> {
   return new Promise((resolve) => {
-    obj.output = "";
-    obj.isEnd = false;
-    if (text.waitTime) {
-      setTimeout(() => {
-        typingInstance = new EasyTyper(obj, text.content, () => { resolve(); typingInstance?.close() }, () => {});
-      }, text.waitTime);
-    } else {
-      typingInstance = new EasyTyper(obj, text.content, () => { resolve(); typingInstance?.close() }, () => {});
-    }
-    lastText.value = text.content;
+    typewriterOutput.value.innerHTML = ""
+    text.waitTime = text.waitTime || 0;
+    setTimeout(() => {
+      typingInstance = new Typed(typewriterOutput.value, {
+        ...TypedOptions,
+        strings: [text.content],
+        onComplete(self: TypedExtend) {
+          self.isEnd = true;
+          resolve();
+        }
+      });
+      typingInstance.start();
+    }, text.waitTime);
   });
 }
 
 const fontSizeBounds = computed(() => (props.playerHeight / 1080));
+const stWidth = 3000;
+const stHeight = 1600;
+const stPositionBounds = computed(() => ({ width: props.playerWidth / stWidth, height: props.playerHeight / stHeight }))
 function fontSize(multi: number) {
   return fontSizeBounds.value * multi;
+}
+type StyleEffectTemplateMap = {
+  [key in TextEffectName]: string
+}
+const StyleEffectTemplate: StyleEffectTemplateMap = {
+  color: "color: ${value}",
+  fontsize: "font-size: ${value}px",
+  ruby: ''
 }
 
 interface IProps {
   playerHeight: number;
+  playerWidth: number;
 }
 
 </script>
 
 <style scoped lang="scss">
 $border-radius: 3px;
+$dialog-z-index: 3;
+$place-z-index: 4;
+$title-z-index: 5;
+$select-z-index: 5;
+$st-z-index: 5;
 .name{
   font-family: 'TJL',serif;
   font-size: 3.5rem;
@@ -193,6 +251,7 @@ $border-radius: 3px;
   background-image: linear-gradient(to bottom , rgba(255,0,0,0) , rgba(19,32,45,0.9) 30%);
   position: absolute;
   bottom: 0;
+  z-index: $text-layer-z-index + $dialog-z-index;
 }
 
 .content{
@@ -219,6 +278,7 @@ $border-radius: 3px;
     gap: 16px;
     flex-direction: column;
     max-width: 80%;
+    z-index: $text-layer-z-index + $select-z-index;
     .select-item {
       flex: 1;
       text-align: center;
@@ -234,7 +294,7 @@ $border-radius: 3px;
       transform: scale(0.5);
     }
   }
-  .titleContainer {
+  .title-container {
     width: 100%;
     height: 100%;
     text-align: center;
@@ -249,9 +309,9 @@ $border-radius: 3px;
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 999;
+    z-index: $text-layer-z-index + $title-z-index;
   }
-  .placeContainer {
+  .place-container {
     position: absolute;
     left: 0;
     top: 10%;
@@ -260,6 +320,15 @@ $border-radius: 3px;
     background-color: black;
     color: white;
     padding: 16px;
+    z-index: $text-layer-z-index + $place-z-index;
+  }
+  .st-container {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: $text-layer-z-index + $st-z-index;
   }
   .fade-in-out {
     animation: fade-in-out 3s;
