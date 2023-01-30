@@ -1,5 +1,5 @@
 import { usePlayerStore } from "@/stores";
-import { BGEffectHandlerOptions, BGEffectHandlers, CurrentBGEffect as CurrentBGEffect } from "@/types/effectLayer";
+import { BGEffectHandlerOptions, BGEffectHandlers, CurrentBGEffect as CurrentBGEffect, EffectRemoveFunction } from "@/types/effectLayer";
 import { Container, Sprite } from "pixi.js";
 import { Emitter, upgradeConfig } from '@pixi/particle-emitter'
 import rainConfig from './emitterConfigs/rain.json'
@@ -38,7 +38,12 @@ export async function playBGEffect(bgEffectItem: BGEffectExcelTableItem) {
       imgs.push(Sprite.from(resource))
     }
     let handler = bgEffectHandlers[effect]
-    await Reflect.apply(handler, undefined, [imgs, bgEffectItem, bgEffectHandlerOptions[effect]])
+    let removeFunction = await Reflect.apply(handler, undefined, [imgs, bgEffectItem, bgEffectHandlerOptions[effect]])
+    currentBGEffect = {
+      effect,
+      removeFunction,
+      resources: imgs
+    }
   }
 }
 
@@ -48,6 +53,9 @@ export async function playBGEffect(bgEffectItem: BGEffectExcelTableItem) {
 export async function removeBGEffect() {
   if (currentBGEffect) {
     await currentBGEffect.removeFunction()
+    for (let resource of currentBGEffect.resources) {
+      resource.destroy()
+    }
     currentBGEffect = undefined
   }
 }
@@ -82,43 +90,8 @@ export let bgEffectHandlers: BGEffectHandlers = {
     newRainConfig.spawnRect.w = playerStore.app.view.width
     newRainConfig.spawnRect.h = playerStore.app.view.height
     let emitter = new Emitter(emitterContainer, upgradeConfig(newRainConfig, [resources[0].texture]))
-    // Calculate the current time
-    let elapsed = Date.now();
 
-    let stopFlag = false
-    // Update function every frame
-    let update = function () {
-      if (stopFlag) {
-        return
-      }
-      // Update the next frame
-      requestAnimationFrame(update);
-
-      var now = Date.now();
-      // The emitter requires the elapsed
-      // number of seconds since the last update
-      emitter.update((now - elapsed) * 0.001);
-      elapsed = now;
-    };
-
-    let stop = async function () {
-      stopFlag = true
-      emitter.emit = false
-      emitter.destroy()
-      for (let resource of resources) {
-        resource.destroy()
-      }
-    }
-
-    // Start emitting
-    emitter.emit = true;
-    currentBGEffect = {
-      effect: 'BG_Rain_L',
-      removeFunction: stop
-    }
-
-    // Start the update
-    update();
+    return emitterHelper(emitter)
   },
   BG_UnderFire: async function (resources, setting, options) {
     throw new Error("该BGEffect处理函数未实现");
@@ -241,4 +214,46 @@ export let bgEffectHandlerOptions: BGEffectHandlerOptions = {
   BG_Snow_L: {},
   BG_Fireworks_L_BGOff_01: {},
   "BG_ScrollR_1.0": {}
+}
+
+/**
+ * emitter工具函数, 会自动启动emitter并返回一个终止函数
+ * @param emitter 
+ * @param stopCallback 终止函数中调用的函数 
+ * @returns 终止函数, 功能是停止当前emitter并回收
+ */
+function emitterHelper(emitter: Emitter, stopCallback?: () => void): EffectRemoveFunction {
+  let elapsed = Date.now();
+  let stopFlag = false
+  // Update function every frame
+  let update = function () {
+    if (stopFlag) {
+      return
+    }
+    // Update the next frame
+    requestAnimationFrame(update);
+
+    var now = Date.now();
+    // The emitter requires the elapsed
+    // number of seconds since the last update
+    emitter.update((now - elapsed) * 0.001);
+    elapsed = now;
+  };
+
+  let stop = async function () {
+    stopFlag = true
+    emitter.emit = false
+    emitter.destroy()
+    if (stopCallback) {
+      stopCallback()
+    }
+  }
+
+  // Start emitting
+  emitter.emit = true;
+
+  // Start the update
+  update();
+
+  return stop
 }

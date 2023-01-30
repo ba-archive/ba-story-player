@@ -4,9 +4,12 @@ import { BGEffectExcelTableItem, BGEffectType } from "./excels";
 
 export type BGEffectImgTable = Record<BGEffectType, string[]>
 
+export type EffectRemoveFunction = () => Promise<void>
+
 export type CurrentBGEffect = {
   effect: BGEffectType,
-  removeFunction: () => Promise<void>
+  removeFunction: EffectRemoveFunction
+  resources: Sprite[]
 } | undefined
 
 export interface BGEffectHandlerOptions {
@@ -53,7 +56,7 @@ export interface BGEffectHandlerOptions {
 /**
  * BGEffect处理函数
  */
-export type BGEffectHandlerFunction<type extends BGEffectType> = (resources: Sprite[], setting: BGEffectExcelTableItem, options: BGEffectHandlerOptions[type]) => Promise<void>
+export type BGEffectHandlerFunction<type extends BGEffectType> = (resources: Sprite[], setting: BGEffectExcelTableItem, options: BGEffectHandlerOptions[type]) => Promise<EffectRemoveFunction>
 
 /**
  * 类型与处理函数的对应
