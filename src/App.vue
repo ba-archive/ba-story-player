@@ -5,7 +5,7 @@ import eventBus from '../lib/eventBus'
 import { storyHandler, resourcesLoader } from '../lib/index'
 import ModifyEmotionOption from './components/ModifyEmotionOption.vue';
 import TestEffect from './components/TestEffect.vue';
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 
 window.baResource = resourcesLoader // 方便查看资源加载情况
 window.baStory = storyHandler
@@ -23,6 +23,13 @@ let storySummary = {
   summary: '总之就是总结'
 }
 let toolType = ref('')
+let cacheKey = 'toolType'
+if (localStorage.getItem(cacheKey)) {
+  toolType.value = localStorage.getItem(cacheKey) as string
+}
+watch(toolType, () => {
+  localStorage.setItem(cacheKey, toolType.value)
+})
 
 Reflect.set(window, 'eventBus', eventBus)
 Reflect.set(window, 'next', () => {
@@ -44,7 +51,9 @@ Reflect.set(window, 'next', () => {
       </select>
     </div>
     <ModifyEmotionOption class="absolute-right-center" v-if="toolType === 'emotion'" />
-    <TestEffect class="absolute-right-center" v-if="toolType === 'effect'" />
+    <Suspense>
+      <TestEffect class="absolute-right-center" v-if="toolType === 'effect'" />
+    </Suspense>
   </div>
 </template>
 

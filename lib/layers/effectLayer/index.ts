@@ -19,7 +19,10 @@ export function effectInit() {
       gsap.to(playerMain, { alpha: 1, duration: transition.TransitionOutDuration / 1000 })
     }
   })
-  eventBus.on('playEffect', effects => {
+  eventBus.on('playEffect', async effects => {
+    for(let effect of effects.otherEffect){
+      
+    }
     eventBus.emit('effectDone')
   })
 
