@@ -153,4 +153,6 @@ export let usePlayerStore = () => {
 /**
  * 返回可修改的privateState, 仅本体在初始化时可调用
  */
-export let initPrivateState = () => privateState
+export let initPrivateState = () => privateState;
+
+window.baStore = store // 存一个随时可以查看值

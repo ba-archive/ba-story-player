@@ -35,7 +35,10 @@ export type Events = {
    * 人物已处理完毕
    */
   characterDone: undefined
-
+  /**
+   * l2d 动画播放状态, 当前动画是否播放完成
+   */
+  l2dAnimationDone: boolean
   //背景层
 
   /**
