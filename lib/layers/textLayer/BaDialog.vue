@@ -17,7 +17,7 @@
       <div v-if="showDialog" :style="{padding: `${fontSize(3)}rem ${fontSize(8)}rem`, height: `${playerHeight / 2}px`}"
            class="dialog" >
         <div class="title">
-          <div :style="{fontSize: `${fontSize(3.5)}rem`}" class="name">{{name}}</div>
+          <div :style="{fontSize: `${fontSize(3.5)}rem`}" class="name">{{ name }}&emsp;</div>
           <div :style="{fontSize: `${fontSize(2)}rem`}" class="department">{{nickName}}</div>
         </div>
         <hr>
@@ -61,13 +61,13 @@ const showDialog = ref<boolean>(true);
 let typingInstance: TypedExtend | null;
 function skipText() {
   if (selection.value.length !== 0) return;
-  if (typingInstance.isEnd) {
+  if (typingInstance.typingComplete) {
     eventBus.emit("next");
   } else {
     // 立即显示所有
     typingInstance.stop();
     typingInstance.destroy();
-    typingInstance.isEnd = true;
+    typingInstance.typingComplete = true;
     if (showDialog) {
       typewriterOutput.value.innerHTML = typingInstance.strings.pop()
     } else {
@@ -143,14 +143,12 @@ function handleShowStEvent(e: StText) {
 
 function handleShowTextEvent(e: ShowText) {
   showDialog.value = true;
-  nextTick(async () => {
+  nextTick(() => {
     // 设置昵称
     name.value = e.speaker?.name;
     // 设置次级标题
     nickName.value = e.speaker?.nickName;
-    for (const text of e.text) {
-      await showTextDialog(parseTextEffect(text));
-    }
+    showTextDialog(e.text.map(text => parseTextEffect(text, "", "span")));
   })
 }
 
@@ -176,22 +174,32 @@ function parseTextEffect(text: Text, extendStyle = "", tag = "div"): Text {
   return text;
 }
 
-function showTextDialog(text: Text): Promise<void> {
-  return new Promise((resolve) => {
-    typewriterOutput.value.innerHTML = ""
-    text.waitTime = text.waitTime || 0;
-    setTimeout(() => {
-      typingInstance = new Typed(typewriterOutput.value, {
-        ...TypedOptions,
-        strings: [text.content],
-        onComplete(self: TypedExtend) {
-          self.isEnd = true;
-          resolve();
-        }
-      });
-      typingInstance.start();
-    }, text.waitTime);
+function showTextDialog(text: Text[]) {
+  if (text.length === 0) return;
+  typingInstance?.stop();
+  typingInstance?.destroy();
+  let index = 1;
+  let last: string = text[0].content;
+  typingInstance = new Typed(typewriterOutput.value, {
+    ...TypedOptions,
+    strings: [text[0].content],
+    onComplete(self: TypedExtend) {
+      if (index < text.length) {
+        self.pause.curStrPos = last.length;
+        self.pause.status = true;
+        self.pause.typewrite = true;
+        const next = last + text[index].content;
+        self.pause.curString = next;
+        last = next;
+        setTimeout(() => {
+          self.typingComplete = false;
+          self.start();
+        }, text[index].waitTime || 0);
+        index++;
+      }
+    }
   });
+  typingInstance.start();
 }
 
 const fontSizeBounds = computed(() => (props.playerHeight / 1080));

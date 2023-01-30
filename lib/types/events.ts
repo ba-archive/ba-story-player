@@ -165,7 +165,7 @@ export interface StText {
    * st默认是不会清空的, 需要使用clearSt手动清空
    */
   //TODO
-  clearSt: boolean;
+  clearSt?: boolean;
 }
 
 export interface ShowOption {

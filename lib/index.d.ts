@@ -2,11 +2,16 @@ import Typed from "typed.js";
 declare module "typed.js" {
   declare interface TypedExtend extends Typed {
     strings: string[];
-    isEnd: boolean;
     pause: {
       curStrPos: number;
+      curString: string;
+      status: boolean;
+      typewrite: boolean;
     };
     strPos: number;
+    options: TypedOptions;
+    startDelay: number;
+    typingComplete: boolean;
   }
   declare interface TypedOptions {
     /**

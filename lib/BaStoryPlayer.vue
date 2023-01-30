@@ -22,9 +22,9 @@ onMounted(() => { init('player__main', props.height, props.width, props.story, p
  * 测试文本框
  * @constructor
  */
-function TestDialog() {
+function testDialog() {
   eventBus.emit('showText', {
-    text: [{ content: "测试文本asjdklajsdlkjlaskd", waitTime: 1000, effects: [] }],
+    text: [{ content: "测试文本1", waitTime: 0, effects: [] }, { content: "测试文本2", waitTime: 2000, effects: [] }],
     speaker: {
       name: "未花",
       nickName: "茶话会"
@@ -55,8 +55,8 @@ function testSt() {
       <BaDialog :player-height="height" :player-width="width"
         :style="{ width: `${width}px` }"></BaDialog>
     </div>
-    <button @click="TestDialog">文本框测试</button>
-    <button @click="testSt">st测试</button>
+    <button @click="testDialog">文本框测试</button>
+    <button style="margin-left:1%" @click="testSt">st测试</button>
     <button style="margin-left:1%" @click="() => {  eventBus.emit('next') }">next</button>
   </div>
 </template>
