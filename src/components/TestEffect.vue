@@ -17,7 +17,7 @@
     </div>
     <div v-if="effectType === 'bgeffect'">
       <label>effectType</label>
-      <select v-model="currentBGEffectType">
+      <select v-model="currentBGEffectType" @change="effectTypeChange">
         <option v-for="effect in Object.keys(effectNamesTable)">{{ effect }}</option>
       </select>
       <label>bgEffect name</label>
@@ -100,6 +100,10 @@ function updateBGEffectItem() {
     currentBGEffectItem.value = item
     currentBGEffectType.value = item.Effect
   }
+}
+function effectTypeChange() {
+  currentBGEffect.value = currentBGEffectNames.value[0]
+  updateBGEffectItem()
 }
 
 //缓存值以便刷新后正常使用
