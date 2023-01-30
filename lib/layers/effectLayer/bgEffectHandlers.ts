@@ -1,8 +1,9 @@
 import { usePlayerStore } from "@/stores";
-import { BGEffectHandlerOptions, BGEffectHandlers } from "@/types/effectLayer";
-import { Container } from "pixi.js";
+import { BGEffectHandlerOptions, BGEffectHandlers, CurrentBGEffect as CurrentBGEffect } from "@/types/effectLayer";
+import { Container, Sprite } from "pixi.js";
 import { Emitter, upgradeConfig } from '@pixi/particle-emitter'
 import rainConfig from './emitterConfigs/rain.json'
+import { BGEffectExcelTableItem } from "@/types/excels";
 
 /**
  * app和bgInstance请从此处调用
@@ -13,6 +14,43 @@ let playerStore = usePlayerStore()
  */
 export let emitterContainer = new Container()
 emitterContainer.zIndex = 15
+/**
+ * 当前播放的BGEffect
+ */
+let currentBGEffect: CurrentBGEffect
+
+/**
+ * 播放对应的BGEffect
+ * @param bgEffectItem 
+ * @returns 
+ */
+export async function playBGEffect(bgEffectItem: BGEffectExcelTableItem) {
+  let effect = bgEffectItem.Effect
+  //此特效正在播放, 无需处理
+  if (effect === currentBGEffect?.effect) {
+    return
+  }
+  await removeBGEffect()
+  let resources = playerStore.bgEffectImgMap.get(effect)
+  if (resources) {
+    let imgs: Sprite[] = []
+    for (let resource of resources) {
+      imgs.push(Sprite.from(resource))
+    }
+    let handler = bgEffectHandlers[effect]
+    await Reflect.apply(handler, undefined, [imgs, bgEffectItem, bgEffectHandlerOptions[effect]])
+  }
+}
+
+/**
+ * 移除当前的BGEffect
+ */
+export async function removeBGEffect() {
+  if (currentBGEffect) {
+    await currentBGEffect.removeFunction()
+    currentBGEffect = undefined
+  }
+}
 
 export let bgEffectHandlers: BGEffectHandlers = {
   "": async function (resources, setting, options) {
@@ -40,16 +78,19 @@ export let bgEffectHandlers: BGEffectHandlers = {
     throw new Error("该BGEffect处理函数未实现");
   },
   BG_Rain_L: async function (resources, setting, options) {
-    let editRainConfig = { ...rainConfig }
-    editRainConfig.spawnRect.w = playerStore.app.view.width
-    editRainConfig.spawnRect.h = playerStore.app.view.height
-    let emitter = new Emitter(emitterContainer, upgradeConfig(editRainConfig, [resources[0].texture]))
+    let newRainConfig = { ...rainConfig }
+    newRainConfig.spawnRect.w = playerStore.app.view.width
+    newRainConfig.spawnRect.h = playerStore.app.view.height
+    let emitter = new Emitter(emitterContainer, upgradeConfig(newRainConfig, [resources[0].texture]))
     // Calculate the current time
     let elapsed = Date.now();
 
+    let stopFlag = false
     // Update function every frame
     let update = function () {
-
+      if (stopFlag) {
+        return
+      }
       // Update the next frame
       requestAnimationFrame(update);
 
@@ -60,8 +101,21 @@ export let bgEffectHandlers: BGEffectHandlers = {
       elapsed = now;
     };
 
+    let stop = async function () {
+      stopFlag = true
+      emitter.emit = false
+      emitter.destroy()
+      for (let resource of resources) {
+        resource.destroy()
+      }
+    }
+
     // Start emitting
     emitter.emit = true;
+    currentBGEffect = {
+      effect: 'BG_Rain_L',
+      removeFunction: stop
+    }
 
     // Start the update
     update();

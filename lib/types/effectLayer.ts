@@ -1,12 +1,17 @@
 import { Sprite } from "pixi.js";
 import { BGEffectExcelTableItem, BGEffectType } from "./excels";
 
-type BasicBGEffectHandlerOptions = Record<BGEffectType, any>
 
 export type BGEffectImgTable = Record<BGEffectType, string[]>
 
-export interface BGEffectHandlerOptions extends BasicBGEffectHandlerOptions {
-  BG_FocusLine: {},
+export type CurrentBGEffect = {
+  effect: BGEffectType,
+  removeFunction: () => Promise<void>
+} | undefined
+
+export interface BGEffectHandlerOptions {
+  BG_FocusLine: {
+  },
   "": {},
   "BG_ScrollT_0.5": {},
   BG_Filter_Red: {},

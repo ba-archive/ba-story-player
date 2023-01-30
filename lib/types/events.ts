@@ -3,21 +3,21 @@ import { BGEffectExcelTableItem, BGMExcelTableItem, TransitionTableItem } from "
 
 export type Events = {
   //通用
-
   /**
    * 清除当前内容
    */
   hide: undefined
-  /**
-   * 特效播放完毕
-   */
-
+ 
   //特效层
 
   /**
-   * 播饭特效
+   * 播放特效
    */
   playEffect: PlayEffect
+  /**
+   * 移除当前特效
+   */
+  removeEffect: undefined
   effectDone: undefined
   transitionIn: TransitionTableItem
   transitionOut: TransitionTableItem

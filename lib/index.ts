@@ -355,6 +355,9 @@ let eventEmitter = {
       this.effectDone = false
       eventBus.emit('playEffect', storyHandler.currentStoryUnit.effect)
     }
+    else{
+      eventBus.emit('removeEffect')
+    }
   },
 
   async transitionIn() {
