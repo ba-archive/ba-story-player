@@ -394,6 +394,7 @@ export let resourcesLoader = {
     this.addEmotionResources()
     this.addFXResources()
     this.addOtherSounds()
+    this.addBGEffectImgs()
     for (let unit of playerStore.allStoryUnit) {
       //添加人物spine
       if (unit.characters.length != 0) {
@@ -510,6 +511,19 @@ export let resourcesLoader = {
     for (let url of otherSoundUrls) {
       if (!this.loader.resources[url]) {
         this.loader.add(url, url)
+      }
+    }
+  },
+
+  /**
+   * 添加bgEffect相关图像资源
+   */
+  addBGEffectImgs() {
+    for (let imgs of playerStore.bgEffectImgMap.values()) {
+      for (let img of imgs) {
+        if (!this.loader.resources[img]) {
+          this.loader.add(img, utils.getResourcesUrl('bgEffectImgs', img))
+        }
       }
     }
   },

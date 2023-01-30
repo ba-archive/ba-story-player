@@ -6,6 +6,7 @@ specifiers:
   '@pixi/filter-color-overlay': ^4.0.0
   '@pixi/filter-crt': ^5.0.0
   '@pixi/filter-motion-blur': ^4.2.0
+  '@pixi/particle-emitter': ^5.0.8
   '@pixi/sound': <5.0.0
   '@types/node': ^18.11.9
   '@vitejs/plugin-vue': ^3.2.0
@@ -27,6 +28,7 @@ dependencies:
   '@pixi/filter-color-overlay': 4.2.0
   '@pixi/filter-crt': 5.1.1
   '@pixi/filter-motion-blur': 4.2.0
+  '@pixi/particle-emitter': 5.0.8
   '@pixi/sound': 4.3.1
   axios: registry.npmmirror.com/axios/1.1.3
   easy-typer-js: 2.1.0
@@ -107,9 +109,19 @@ packages:
       '@pixi/math': ^6.0.0
     dev: false
 
+  /@pixi/particle-emitter/5.0.8:
+    resolution: {integrity: sha512-OzuZ4+esQo+zJ0u3htuNHHMAE8Ixmr3nz3tEfrTGZHje1vnGyie3ANQj9F0V4OM47oi9jd70njVCmeb7bTkS9A==}
+    peerDependencies:
+      '@pixi/constants': '>=6.0.4 <8.0.0'
+      '@pixi/core': '>=6.0.4 <8.0.0'
+      '@pixi/display': '>=6.0.4 <8.0.0'
+      '@pixi/math': '>=6.0.4 <8.0.0'
+      '@pixi/sprite': '>=6.0.4 <8.0.0'
+      '@pixi/ticker': '>=6.0.4 <8.0.0'
+    dev: false
+
   /@pixi/sound/4.3.1:
     resolution: {integrity: sha512-KpzJIErU2UbgrrI/6cIbZ0BsWPUDma86TyB9vz7cyJ9W4MHVZx1EYCJ0CeWh2XGtvzbUVOozLPnR18ObPZKokA==}
-    engines: {node: '>=12', npm: '>=7', yarn: please-use-npm}
     peerDependencies:
       '@pixi/core': '>=5 <7'
       '@pixi/loaders': '>=5 <7'

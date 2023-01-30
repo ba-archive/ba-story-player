@@ -46,7 +46,7 @@ let bgEffectImgTable: BGEffectImgTable = {
   BG_UnderFire_R: [],
   BG_Love_L: [],
   'BG_ScrollB_0.5': [],
-  BG_Rain_L: [],
+  BG_Rain_L: ['HardRain.png'],
   BG_UnderFire: [],
   BG_WaveShort_F: [],
   BG_SandStorm_L: [],
@@ -72,7 +72,7 @@ let bgEffectImgTable: BGEffectImgTable = {
   'BG_ScrollR_0.5': [],
   BG_Snow_L: [],
   BG_Fireworks_L_BGOff_01: [],
-  'BG_ScrollR_1.0': ['HardRain.png']
+  'BG_ScrollR_1.0': []
 }
 
 let privateState: PrivateStates = {

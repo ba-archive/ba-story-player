@@ -47,7 +47,7 @@ Reflect.set(window, 'next', () => {
       <label>辅助工具选择</label>
       <select v-model="toolType">
         <option value="emotion">人物特效测试</option>
-        <option value="effect">特效特效</option>
+        <option value="effect">特效层特效</option>
       </select>
     </div>
     <ModifyEmotionOption class="absolute-right-center" v-if="toolType === 'emotion'" />
