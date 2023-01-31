@@ -40,10 +40,10 @@ let currentBGEffect: CurrentBGEffect
  */
 export async function playBGEffect(bgEffectItem: BGEffectExcelTableItem) {
   let effect = bgEffectItem.Effect
-  //此特效正在播放, 无需处理
-  if (effect === currentBGEffect?.effect) {
-    return
-  }
+  //此特效正在播放, 无需处理, 先移除保证开发便利
+  // if (effect === currentBGEffect?.effect) {
+  //   return
+  // }
   await removeBGEffect()
   let resources = playerStore.bgEffectImgMap.get(effect)
   if (resources) {
@@ -103,6 +103,7 @@ export let bgEffectHandlers: BGEffectHandlers = {
     let newRainConfig = { ...emitterConfigs('rain') }
     newRainConfig.spawnRect!.w = playerStore.app.view.width
     newRainConfig.spawnRect!.h = playerStore.app.view.height
+    newRainConfig.frequency = options.frequency
     let emitter = new Emitter(emitterContainer, upgradeConfig(newRainConfig, [resources[0].texture]))
     return emitterHelper(emitter)
   },
@@ -200,7 +201,7 @@ export let bgEffectHandlerOptions: BGEffectHandlerOptions = {
   BG_Love_L: {},
   "BG_ScrollB_0.5": {},
   BG_Rain_L: {
-    'frequency': 0.3
+    'frequency': 0.05
   },
   BG_UnderFire: {},
   BG_WaveShort_F: {},

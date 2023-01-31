@@ -26,8 +26,12 @@
       </select>
       <textarea :value="JSON.stringify(currentBGEffectItem, null, 2)"
         @input="event => { currentBGEffectItem = JSON.parse((event.target as HTMLTextAreaElement).value) }" />
+      <label>option(该参数仅当前起效)</label>
+      <textarea :value="JSON.stringify(bgEffectHandlerOptions[currentBGEffectType], null, 2)"
+        @input="event => { bgEffectHandlerOptions[currentBGEffectType] = JSON.parse((event.target as HTMLTextAreaElement).value) }" />
     </div>
     <button @click="playEffect">播放特效</button>
+    <button @click="removeEffect">移除特效</button>
   </div>
 </template>
 
@@ -38,6 +42,9 @@ import { wait } from '@/utils';
 import { computed, onMounted, ref, watch } from 'vue';
 import { resizeTextareas } from '../utils';
 import { resourcesLoader } from '@/index'
+import { removeEffect } from '@/layers/effectLayer'
+import { bgEffectHandlerOptions } from '@/layers/effectLayer/bgEffectHandlers'
+import { BGEffectType } from '@/types/excels';
 
 await resourcesLoader.loadExcels()
 let effectType = ref<'transition' | 'bgeffect' | 'other'>('transition')
@@ -84,7 +91,7 @@ for (let [key, item] of stores.BGEffectExcelTable.entries()) {
   }
 }
 let currentBGEffect = ref(0)
-let currentBGEffectType = ref('BG_Rain_L')
+let currentBGEffectType = ref<BGEffectType>('BG_Rain_L')
 let currentBGEffectItem = ref(stores.BGEffectExcelTable.get(effectNamesTable['BG_Rain_L'][0]))
 let currentBGEffectNames = computed(() => {
   if (effectNamesTable[currentBGEffectType.value]) {

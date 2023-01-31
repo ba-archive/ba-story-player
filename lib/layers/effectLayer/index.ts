@@ -35,6 +35,6 @@ export function effectInit() {
   eventBus.on('removeEffect', removeEffect)
 }
 
-async function removeEffect() {
+export async function removeEffect() {
   await removeBGEffect()
 }
