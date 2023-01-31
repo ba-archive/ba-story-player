@@ -1,19 +1,19 @@
 import Typed from "typed.js";
 declare module "typed.js" {
   declare interface TypedExtend extends Typed {
-    strings: string[];
-    pause: {
-      curStrPos: number;
-      curString: string;
-      status: boolean;
-      typewrite: boolean;
+    strings: string[]; // 要打印的内容
+    pause: { // 暂停时保存的回复参数
+      curStrPos: number; // 暂停前字符串指针位置
+      curString: string; // 暂停前打印的字符串
+      status: boolean; // 是否在暂停
+      typewrite: boolean; // 是否是在打印, 如果为false表示暂停前在删除
     };
-    strPos: number;
-    options: TypedOptions;
-    startDelay: number;
-    typingComplete: boolean;
-    timeout: Nodejs.Timeout;
-    isSt: boolean;
+    strPos: number; // 开始位置, 已废弃
+    options: TypedOptions; // 初始化参数
+    startDelay: number; // 开始时延, 已废弃
+    typingComplete: boolean; // 是否打印完成, 如果为true会忽略start()方法
+    timeout: Nodejs.Timeout; // 打字机内部循环handler
+    isSt: boolean; // 是否在显示特效字, 为true会在clearSt事件前将拿到的st特效append上去
   }
   declare interface TypedOptions {
     /**
