@@ -32,7 +32,7 @@
 import {onMounted, ref, computed, Ref, nextTick, onUnmounted} from 'vue'
 import eventBus from "@/eventBus";
 import Typed, {TypedExtend, TypedOptions} from "typed.js";
-import {ShowOption, ShowText, StText} from "@/types/events";
+import {Events, ShowOption, ShowText, StText} from "@/types/events";
 import {Text, TextEffectName} from "@/types/common";
 
 // 默认的打字机效果
@@ -102,22 +102,27 @@ function handleOption(e: ShowOption[]) {
  * 展示主标题
  */
 function handleShowTitle(e: string) {
-  proxyShowCoverTitle(titleContent, e)
+  proxyShowCoverTitle(titleContent, e).then(() => {
+    eventBus.emit("titleDone");
+  })
 }
 /**
  * 展示左上角位置标题
  */
 function handleShowPlace(e: string) {
-  proxyShowCoverTitle(placeContent, e)
+  proxyShowCoverTitle(placeContent, e);
 }
 /**
  * 统一方法, 通过css动画实现淡入淡出
  */
 function proxyShowCoverTitle(proxy: Ref<string>, value: string) {
   proxy.value = value;
-  setTimeout(() => {
-    proxy.value = "";
-  }, 3000)
+  return new Promise<void>((resolve) => {
+    setTimeout(() => {
+      proxy.value = "";
+      resolve();
+    }, 3000)
+  })
 }
 /**
  * 清除特效字
@@ -158,9 +163,12 @@ function handleShowStEvent(e: StText) {
         content: e.text.map(text => parseTextEffect(text).content).join(""),
         effects: []
       }, extendPos, "div").content;
+      eventBus.emit("stDone");
     } else if (stType === "serial") {
       showTextDialog(e.text.map(text => parseTextEffect(text)), stOutput.value, (content) => {
         return `<div style="${extendPos}">${content}</div>`
+      }).then(() => {
+        eventBus.emit("stDone");
       });
       typingInstance.isSt = true;
     }
@@ -222,64 +230,67 @@ function parseTextEffect(text: Text, extendStyle = "", tag = "span"): Text {
  * @param onParseContent 二次处理内容, 目前用于将st用div整体包裹实现定位
  */
 function showTextDialog(text: Text[], output: HTMLElement, onParseContent?: (source: string) => string) {
-  if (text.length === 0) return;
-  function parseContent(content: string) {
-    if (onParseContent) {
-      return onParseContent(content);
+  return new Promise<void>((resolve) => {
+    if (text.length === 0) return;
+    function parseContent(content: string) {
+      if (onParseContent) {
+        return onParseContent(content);
+      }
+      return content;
     }
-    return content;
-  }
-  let index = 1;
-  let last = text[0].content;
-  let firstContent = parseContent(text[0].content);
-  let lastStOutput = "";
-  /**
-   * 实现分段打印的核心函数
-   * 原理是每段打印完成后修改 pause 里的内容让打字机认为自己并没有完成打印而是暂停, 于是继续把替换进去的下一段文字打印出来
-   */
-  function onComplete(self: TypedExtend) {
-    if (index >= text.length) {
-      return;
+    let index = 1;
+    let last = text[0].content;
+    let firstContent = parseContent(text[0].content);
+    let lastStOutput = "";
+    /**
+     * 实现分段打印的核心函数
+     * 原理是每段打印完成后修改 pause 里的内容让打字机认为自己并没有完成打印而是暂停, 于是继续把替换进去的下一段文字打印出来
+     */
+    function onComplete(self: TypedExtend) {
+      if (index >= text.length) {
+        resolve();
+        return;
+      }
+      self.pause.status = true;
+      self.pause.typewrite = true;
+      const next = last + text[index].content;
+      if (onParseContent) {
+        const parse = lastStOutput + parseContent(next);
+        self.pause.curString = parse;
+        self.pause.curStrPos = parse.indexOf(last) + last.length;
+      } else {
+        self.pause.curStrPos = last.length;
+        self.pause.curString = lastStOutput + next;
+      }
+      last = next;
+      self.timeout = setTimeout(() => {
+        self.typingComplete = false;
+        self.start();
+      }, text[index].waitTime || 0);
+      index++;
     }
-    self.pause.status = true;
-    self.pause.typewrite = true;
-    const next = last + text[index].content;
-    if (onParseContent) {
-      const parse = lastStOutput + parseContent(next);
-      self.pause.curString = parse;
-      self.pause.curStrPos = parse.indexOf(last) + last.length;
+    // st的续约, 因为不能两个Typed同时持有一个对象, 所以采用将之前的内容作为已打印内容拼接的形式
+    if (typingInstance && typingInstance.isSt) {
+      lastStOutput = stOutput.value.innerHTML;
+      typingInstance.typingComplete = false;
+      typingInstance.pause.status = true;
+      typingInstance.pause.typewrite = true;
+      typingInstance.pause.curString = lastStOutput + firstContent;
+      typingInstance.pause.curStrPos = lastStOutput.length;
+      typingInstance.options.onComplete = onComplete;
+      typingInstance.start();
     } else {
-      self.pause.curStrPos = last.length;
-      self.pause.curString = lastStOutput + next;
+      // 全新清空
+      typingInstance?.stop();
+      typingInstance?.destroy();
+      output.innerHTML = "";
+      typingInstance = new Typed(output, {
+        ...TypedOptions,
+        strings: [lastStOutput + firstContent],
+        onComplete: onComplete
+      }) as TypedExtend;
     }
-    last = next;
-    self.timeout = setTimeout(() => {
-      self.typingComplete = false;
-      self.start();
-    }, text[index].waitTime || 0);
-    index++;
-  }
-  // st的续约, 因为不能两个Typed同时持有一个对象, 所以采用将之前的内容作为已打印内容拼接的形式
-  if (typingInstance && typingInstance.isSt) {
-    lastStOutput = stOutput.value.innerHTML;
-    typingInstance.typingComplete = false;
-    typingInstance.pause.status = true;
-    typingInstance.pause.typewrite = true;
-    typingInstance.pause.curString = lastStOutput + firstContent;
-    typingInstance.pause.curStrPos = lastStOutput.length;
-    typingInstance.options.onComplete = onComplete;
-    typingInstance.start();
-  } else {
-    // 全新清空
-    typingInstance?.stop();
-    typingInstance?.destroy();
-    output.innerHTML = "";
-    typingInstance = new Typed(output, {
-      ...TypedOptions,
-      strings: [lastStOutput + firstContent],
-      onComplete: onComplete
-    }) as TypedExtend;
-  }
+  })
 }
 
 const fontSizeBounds = computed(() => (props.playerHeight / 1080));
