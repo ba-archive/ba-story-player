@@ -46,6 +46,52 @@ function testSt() {
     stArgs: [[-1200,-530], "serial", 1]
   })
 }
+function testSt2() {
+  eventBus.emit("st", {
+    text: [{
+      content: "",
+      waitTime: 0,
+      effects: []
+    },{
+      content: "― 没想到",
+      waitTime: 1800,
+      effects: []
+    },{
+      content: "只过了",
+      waitTime: 500,
+      effects: []
+    },{
+      content: "几个月",
+      waitTime: 300,
+      effects: []
+    },{
+      content: "时间",
+      waitTime: 600,
+      effects: []
+    },{
+      content: "体力",
+      waitTime: 1100,
+      effects: []
+    },{
+      content: "就下降",
+      waitTime: 500,
+      effects: []
+    },{
+      content: "到了",
+      waitTime: 500,
+      effects: []
+    },{
+      content: "这种程度……",
+      waitTime: 200,
+      effects: []
+    }],
+    stArgs: [[-1200,-630], "serial", 1]
+  })
+}
+
+function clearSt() {
+  eventBus.emit("clearSt");
+}
 
 </script>
 
@@ -57,6 +103,8 @@ function testSt() {
     </div>
     <button @click="testDialog">文本框测试</button>
     <button style="margin-left:1%" @click="testSt">st测试</button>
+    <button style="margin-left:1%" @click="testSt2">st测试2</button>
+    <button style="margin-left:1%" @click="clearSt">clearSt</button>
     <button style="margin-left:1%" @click="() => {  eventBus.emit('next') }">next</button>
   </div>
 </template>

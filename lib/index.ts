@@ -3,7 +3,6 @@ import { bgInit } from "@/layers/bgLayer";
 import { characterInit } from "@/layers/characterLayer";
 import { effectInit } from '@/layers/effectLayer';
 import { soundInit } from "@/layers/soundLayer";
-import { textInit } from "@/layers/textLayer";
 import { translate } from '@/layers/translationLayer';
 import { initPrivateState, usePlayerStore } from "@/stores";
 import { StoryRawUnit, StoryUnit } from "@/types/common";
@@ -28,6 +27,7 @@ export async function init(elementID: string, height: number, width: number, sto
 
   playerStore = usePlayerStore()
   privateState = initPrivateState()
+  console.log(privateState);
   utils.setDataUrl(dataUrl)
   privateState.dataUrl = dataUrl
   privateState.language = language
@@ -53,7 +53,6 @@ export async function init(elementID: string, height: number, width: number, sto
   await resourcesLoader.init(app.loader)
   privateState.allStoryUnit = translate(story)
 
-  textInit()
   bgInit()
   characterInit()
   soundInit()
@@ -99,7 +98,7 @@ let storyHandler = {
   },
 
   /**
-   * 通过下标递增更新当前故事节点 
+   * 通过下标递增更新当前故事节点
    */
   storyIndexIncrement() {
     let currentSelectionGroup = this.currentStoryUnit.SelectionGroup
@@ -117,8 +116,8 @@ let storyHandler = {
 
   /**
    * 根据选项控制故事节点
-   * @param option 
-   * @returns 
+   * @param option
+   * @returns
    */
   select(option: number) {
     if (option === 0) {
@@ -416,7 +415,7 @@ let resourcesLoader = {
 
   /**
    * 加载资源并在加载完成后执行callback
-   * @param callback 
+   * @param callback
    */
   load(callback: () => void) {
     let hasLoad = false

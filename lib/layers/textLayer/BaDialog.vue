@@ -29,7 +29,7 @@
 
 <script setup lang="ts">
 
-import {onMounted, ref, computed, Ref, nextTick} from 'vue'
+import {onMounted, ref, computed, Ref, nextTick, onUnmounted} from 'vue'
 import eventBus from "@/eventBus";
 import Typed, {TypedExtend, TypedOptions} from "typed.js";
 import {ShowOption, ShowText, StText} from "@/types/events";
@@ -58,9 +58,11 @@ const name = ref<string>();
 const nickName = ref<string>();
 // 在执行st特效时置为false以隐藏对话框
 const showDialog = ref<boolean>(true);
-let typingInstance: TypedExtend | null;
+let typingInstance: TypedExtend;
 function skipText() {
   if (selection.value.length !== 0) return;
+  // 显示st期间不允许跳过
+  if (!showDialog) return;
   if (typingInstance.typingComplete) {
     eventBus.emit("next");
   } else {
@@ -68,11 +70,7 @@ function skipText() {
     typingInstance.stop();
     typingInstance.destroy();
     typingInstance.typingComplete = true;
-    if (showDialog) {
-      typewriterOutput.value.innerHTML = typingInstance.strings.pop()
-    } else {
-      stOutput.value.innerHTML = typingInstance.strings.join("")
-    }
+    typewriterOutput.value.innerHTML = typingInstance.strings.pop()
   }
 }
 
@@ -90,12 +88,22 @@ function handleSelect(select: number) {
 onMounted(() => {
   eventBus.on("showTitle", handleShowTitle);
   eventBus.on("showPlace", handleShowPlace);
-  // 监听showText事件
   eventBus.on('showText', handleShowTextEvent);
   eventBus.on('st', handleShowStEvent);
-  eventBus.on("option", (e) => { selection.value = e });
+  eventBus.on('clearSt', handleClearSt);
+  eventBus.on("option", handleOption);
 });
-
+onUnmounted(() => {
+  eventBus.off("showTitle", handleShowTitle);
+  eventBus.off("showPlace", handleShowPlace);
+  eventBus.off('showText', handleShowTextEvent);
+  eventBus.off('st', handleShowStEvent);
+  eventBus.off('clearSt', handleClearSt);
+  eventBus.off("option", handleOption);
+})
+function handleOption(e: ShowOption[]) {
+  selection.value = e;
+}
 function handleShowTitle(e: string) {
   proxyShowCoverTitle(titleContent, e)
 }
@@ -110,35 +118,40 @@ function proxyShowCoverTitle(proxy: Ref<string>, value: string) {
     proxy.value = "";
   }, 3000)
 }
-
+function handleClearSt() {
+  // 清除上次输入
+  // 显示st时dialog必定是隐藏的
+  if (!showDialog.value) {
+    typingInstance?.stop();
+    typingInstance?.destroy();
+  }
+}
 function handleShowStEvent(e: StText) {
   if (!e.stArgs || !Array.isArray(e.stArgs) || e.stArgs.length !== 3) {
-    console.error("处理st特效失败", e);
+    console.error("st特效参数不足", e);
     return;
   }
   // 显示st时隐藏对话框
   showDialog.value = false;
-  const stPos = e.stArgs[0];
-  const stType = e.stArgs[1];
-  const x = Math.floor(((stWidth / 2) + stPos[0]) * stPositionBounds.value.width);
-  const y = Math.floor(((stHeight / 2) - stPos[1]) * stPositionBounds.value.height);
-  debugger
-  const extendPos = `position: absolute; left: ${x}px; top: ${y}px; width: auto`
-  // const unused = e.stArgs[3];
-  if (stType === "instant") {
-    stOutput.value.innerHTML = parseTextEffect({
-      content: e.text.map(text => parseTextEffect(text, "", "span")).join(""),
-      effects: []
-    }, extendPos);
-  } else if (stType === "serial") {
-    // typingInstance = new Typed(typewriterOutput.value, {
-    //   ...TypedOptions,
-    //   strings: [text.content],
-    //   onComplete(self: TypedExtend) {
-    //     self.isEnd = true;
-    //   }
-    // });
-  }
+  nextTick(() => {
+    const stPos = e.stArgs[0];
+    const stType = e.stArgs[1];
+    const x = Math.floor(((stWidth / 2) + stPos[0]) * stPositionBounds.value.width);
+    const y = Math.floor(((stHeight / 2) - stPos[1]) * stPositionBounds.value.height);
+    const extendPos = `position: absolute; left: ${x}px; top: ${y}px; width: auto`
+    // const unused = e.stArgs[3];
+    if (stType === "instant") {
+      stOutput.value.innerHTML = parseTextEffect({
+        content: e.text.map(text => parseTextEffect(text).content).join(""),
+        effects: []
+      }, extendPos, "div").content;
+    } else if (stType === "serial") {
+      showTextDialog(e.text.map(text => parseTextEffect(text)), stOutput.value, (content) => {
+        return `<div style="${extendPos}">${content}</div>`
+      });
+      typingInstance.isSt = true;
+    }
+  })
 }
 
 function handleShowTextEvent(e: ShowText) {
@@ -148,11 +161,17 @@ function handleShowTextEvent(e: ShowText) {
     name.value = e.speaker?.name;
     // 设置次级标题
     nickName.value = e.speaker?.nickName;
-    showTextDialog(e.text.map(text => parseTextEffect(text, "", "span")));
+    // 清除上次输入
+    typingInstance?.stop();
+    typingInstance?.destroy();
+    typingInstance && (typingInstance.isSt = false);
+    // 显示
+    showTextDialog(e.text.map(text => parseTextEffect(text)), typewriterOutput.value);
+    typingInstance.isSt = false;
   })
 }
 
-function parseTextEffect(text: Text, extendStyle = "", tag = "div"): Text {
+function parseTextEffect(text: Text, extendStyle = "", tag = "span"): Text {
   const effects = text.effects;
   // TODO parse value
   const rt = (effects.filter(effect => effect.name === "ruby")[0] || {value: []}).value.join("")
@@ -173,33 +192,77 @@ function parseTextEffect(text: Text, extendStyle = "", tag = "div"): Text {
   }
   return text;
 }
-
-function showTextDialog(text: Text[]) {
+function showTextDialog(text: Text[], output: HTMLElement, onParseContent?: (source: string) => string) {
   if (text.length === 0) return;
-  typingInstance?.stop();
-  typingInstance?.destroy();
+  function parseContent(content: string) {
+    if (onParseContent) {
+      return onParseContent(content);
+    }
+    return content;
+  }
   let index = 1;
-  let last: string = text[0].content;
-  typingInstance = new Typed(typewriterOutput.value, {
-    ...TypedOptions,
-    strings: [text[0].content],
-    onComplete(self: TypedExtend) {
+  let last = text[0].content;
+  let firstContent = parseContent(text[0].content);
+  let lastStOutput = "";
+  // st的续约, 因为不能两个Typed同时持有一个对象,
+  if (typingInstance && typingInstance.isSt) {
+    lastStOutput = stOutput.value.innerHTML;
+    typingInstance.typingComplete = false;
+    typingInstance.pause.status = true;
+    typingInstance.pause.typewrite = true;
+    typingInstance.pause.curString = lastStOutput + firstContent;
+    typingInstance.pause.curStrPos = lastStOutput.length;
+    typingInstance.options.onComplete = function (self: TypedExtend) {
       if (index < text.length) {
-        self.pause.curStrPos = last.length;
         self.pause.status = true;
         self.pause.typewrite = true;
         const next = last + text[index].content;
-        self.pause.curString = next;
+        if (onParseContent) {
+          const parse = lastStOutput + parseContent(next);
+          self.pause.curString = parse;
+          self.pause.curStrPos = parse.indexOf(last) + last.length;
+        } else {
+          self.pause.curStrPos = last.length;
+          self.pause.curString = lastStOutput + next;
+        }
         last = next;
-        setTimeout(() => {
+        self.timeout = setTimeout(() => {
           self.typingComplete = false;
           self.start();
         }, text[index].waitTime || 0);
         index++;
       }
     }
-  });
-  typingInstance.start();
+    typingInstance.start();
+  } else {
+    // 全新清空
+    output.innerHTML = "";
+    typingInstance = new Typed(output, {
+      ...TypedOptions,
+      strings: [lastStOutput + firstContent],
+      onComplete(self: TypedExtend) {
+        if (index < text.length) {
+          self.pause.status = true;
+          self.pause.typewrite = true;
+          const next = last + text[index].content;
+          if (onParseContent) {
+            const parse = lastStOutput + parseContent(next);
+            self.pause.curString = parse;
+            self.pause.curStrPos = parse.indexOf(last) + last.length;
+          } else {
+            self.pause.curStrPos = last.length;
+            self.pause.curString = lastStOutput + next;
+          }
+          last = next;
+          self.timeout = setTimeout(() => {
+            self.typingComplete = false;
+            self.start();
+          }, text[index].waitTime || 0);
+          index++;
+        }
+      }
+    }) as TypedExtend;
+  }
 }
 
 const fontSizeBounds = computed(() => (props.playerHeight / 1080));
@@ -299,7 +362,7 @@ $st-z-index: 5;
       transition: width 0.3s, height 0.3s;
     }
     .select-item-active {
-      transform: scale(0.5);
+      transform: scale(0.8);
     }
   }
   .title-container {
@@ -337,6 +400,7 @@ $st-z-index: 5;
     top: 0;
     left: 0;
     z-index: $text-layer-z-index + $st-z-index;
+    color: white;
   }
   .fade-in-out {
     animation: fade-in-out 3s;

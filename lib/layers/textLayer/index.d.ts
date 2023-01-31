@@ -12,6 +12,8 @@ declare module "typed.js" {
     options: TypedOptions;
     startDelay: number;
     typingComplete: boolean;
+    timeout: Nodejs.Timeout;
+    isSt: boolean;
   }
   declare interface TypedOptions {
     /**
