@@ -42,7 +42,12 @@ export interface PrivateStates {
   /**
    * 已经展示过的语句的集合, 用于ui层显示日志
    */
-  logText: ShowText[],
+  logText: LogText[],
+  /**
+     * 故事简要概述
+     */
+  storySummary: StorySummary,
+
 
 
   //资源管理
@@ -91,10 +96,6 @@ export interface PublicStates {
 export interface BasicGetters {
   app: Application
 
-  /**
-   * 故事简要概述
-   */
-  storySummary: string
 
   CharacterName: (name: string) => number | undefined
 
@@ -147,4 +148,33 @@ export interface Actions {
    * @returns 
    */
   setL2DSpineUrl: (url: string) => void
+}
+
+export interface LogText {
+  /**
+   * user: 用户选项
+   * character: 人物对话, 有头像
+   * none: 无所属对话, 此时name不存在
+   */
+  type: 'user' | 'character' | 'none'
+  text: string
+  /**
+   * 人物名
+   */
+  name?: string
+  /**
+   * 头像地址
+   */
+  avatarUrl?: string
+}
+
+export interface StorySummary {
+  /**
+   * 章节名
+   */
+  chapterName: string,
+  /**
+   * 简介
+   */
+  summary: string
 }

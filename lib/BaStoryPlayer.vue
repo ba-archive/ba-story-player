@@ -5,7 +5,7 @@ import { StoryRawUnit } from '@/types/common';
 import eventBus from "@/eventBus";
 //@ts-ignore
 import BaDialog from "@/layers/textLayer/BaDialog.vue";
-import { Language } from './types/store';
+import { Language, StorySummary } from '@/types/store';
 
 let props = defineProps<{
   story: StoryRawUnit[]
@@ -14,9 +14,10 @@ let props = defineProps<{
   width: number
   language: Language
   username: string
+  storySummary: StorySummary
 }>()
 
-onMounted(() => { init('player__main', props.height, props.width, props.story, props.dataUrl, props.language, props.username) })
+onMounted(() => { init('player__main', props.height, props.width, props.story, props.dataUrl, props.language, props.username, props.storySummary) })
 
 /**
  * 测试文本框
@@ -41,7 +42,7 @@ function TestDialog() {
         :style="{ marginTop: `${height / 2}px`, width: `${width}px`, height: `${height / 2}px` }"></BaDialog>
     </div>
     <button @click="TestDialog">文本框测试</button>
-    <button style="margin-left:1%" @click="() => {  eventBus.emit('next') }">next</button>
+    <button style="margin-left:1%" @click="() => { eventBus.emit('next') }">next</button>
   </div>
 </template>
 
