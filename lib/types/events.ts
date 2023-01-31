@@ -65,9 +65,17 @@ export type Events = {
    */
   skip: undefined
   /**
-   * 自动模式切换
+   * 自动模式
    */
   auto: undefined
+  /**
+   * 停止自动模式
+   */
+  stopAuto: undefined
+  /**
+   * 隐藏对话框
+   */
+  hideDialog: undefined
   hidemenu: undefined
   showmenu: undefined
 

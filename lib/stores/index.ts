@@ -39,11 +39,19 @@ let privateState: PrivateStates = {
   dataUrl: '',
   app: null,
   l2dSpineUrl: '',
+  storySummary: {
+    chapterName: '',
+    summary: ''
+  },
 
   allStoryUnit: [],
 
   //文字层
-  logText: [],
+  logText: [
+    { type: 'user', text: '用户对话', name: '用户名' },
+    { type: 'character', text: '人物对话', name: '用户名', avatarUrl: '/avatar.webp' },
+    { type: 'none', text: '无特定人物剧情语句' }
+  ],
 
   //背景层
   bgInstance: null,
@@ -66,11 +74,6 @@ let getterFunctions: GetterFunctions = {
     }
     return privateState.app!
   },
-
-  storySummary() {
-    return ''
-  },
-
 
   CharacterName: () => (name: string) => {
     return privateState.characterNameTable.get(name)!
@@ -116,7 +119,7 @@ let actions: Actions = {
     privateState.bgInstance = instance
   },
   setLogText(logText) {
-    privateState.logText = logText
+    //to do
   },
   setL2DSpineUrl(url) {
     privateState.l2dSpineUrl = url
