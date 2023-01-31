@@ -1,19 +1,33 @@
 import { usePlayerStore } from "@/stores";
 import { BGEffectHandlerOptions, BGEffectHandlers, CurrentBGEffect as CurrentBGEffect, EffectRemoveFunction } from "@/types/effectLayer";
 import { Container, Sprite } from "pixi.js";
-import { Emitter, upgradeConfig } from '@pixi/particle-emitter'
-import rainConfig from './emitterConfigs/rain.json'
+import { Emitter, EmitterConfigV2, upgradeConfig } from '@pixi/particle-emitter'
 import { BGEffectExcelTableItem } from "@/types/excels";
 
 /**
  * app和bgInstance请从此处调用
  */
 let playerStore = usePlayerStore()
+
 /**
  * 给emitter用的container
  */
 export let emitterContainer = new Container()
 emitterContainer.zIndex = 15
+
+let emitterConfigsRaw = import.meta.glob<EmitterConfigV2>('./emitterConfigs/*.json', { eager: true })
+/**
+ * 获取emitter config
+ * @param filename 文件名, 不需要加.json后缀
+ * @returns 
+ */
+function emitterConfigs(filename: string) {
+  let config = Reflect.get(emitterConfigsRaw, `./emitterConfigs/${filename}.json`)
+  if (!config) {
+    throw new Error('emitter参数获取失败, 文件名错误或文件不存在')
+  }
+  return config
+}
 /**
  * 当前播放的BGEffect
  */
@@ -86,11 +100,10 @@ export let bgEffectHandlers: BGEffectHandlers = {
     throw new Error("该BGEffect处理函数未实现");
   },
   BG_Rain_L: async function (resources, setting, options) {
-    let newRainConfig = { ...rainConfig }
-    newRainConfig.spawnRect.w = playerStore.app.view.width
-    newRainConfig.spawnRect.h = playerStore.app.view.height
+    let newRainConfig = { ...emitterConfigs('rain') }
+    newRainConfig.spawnRect!.w = playerStore.app.view.width
+    newRainConfig.spawnRect!.h = playerStore.app.view.height
     let emitter = new Emitter(emitterContainer, upgradeConfig(newRainConfig, [resources[0].texture]))
-
     return emitterHelper(emitter)
   },
   BG_UnderFire: async function (resources, setting, options) {
