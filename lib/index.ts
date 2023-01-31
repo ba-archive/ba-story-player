@@ -6,11 +6,12 @@ import { soundInit } from "@/layers/soundLayer";
 import { translate } from '@/layers/translationLayer';
 import { initPrivateState, usePlayerStore } from "@/stores";
 import { StoryRawUnit, StoryUnit } from "@/types/common";
-import { Language } from "@/types/store";
+import { Language, StorySummary } from "@/types/store";
 import axios from 'axios';
 import { SpineParser } from 'pixi-spine';
 import { Application, Loader, settings, Text } from "pixi.js";
 import * as utils from '@/utils'
+import { getOtherSoundUrls } from "@/utils";
 
 let playerStore: ReturnType<typeof usePlayerStore>
 let privateState: ReturnType<typeof initPrivateState>
@@ -21,7 +22,7 @@ let l2dVoiceExcelTable = {
 /**
  * 调用各层的初始化函数
  */
-export async function init(elementID: string, height: number, width: number, story: StoryRawUnit[], dataUrl: string, language: Language, userName: string) {
+export async function init(elementID: string, height: number, width: number, story: StoryRawUnit[], dataUrl: string, language: Language, userName: string, storySummary: StorySummary) {
   //缓解图片缩放失真
   settings.MIPMAP_TEXTURES = 2
 
@@ -32,6 +33,7 @@ export async function init(elementID: string, height: number, width: number, sto
   privateState.dataUrl = dataUrl
   privateState.language = language
   privateState.userName = userName
+  privateState.storySummary = storySummary
   //加入判断防止vite热更新重新创建app导致加载资源错误
   if (!privateState.app) {
     privateState.app = new Application({ height, width })
@@ -63,6 +65,7 @@ export async function init(elementID: string, height: number, width: number, sto
   resourcesLoader.load(() => {
     app.stage.removeChild(loadingText)
     loadingText.destroy()
+    console.log(playerStore)
     //开始发送事件
     eventEmitter.init()
   })
@@ -388,6 +391,7 @@ let resourcesLoader = {
   addLoadResources() {
     this.addEmotionResources()
     this.addFXResources()
+    this.addOtherSounds()
     for (let unit of playerStore.allStoryUnit) {
       //添加人物spine
       if (unit.characters.length != 0) {
@@ -490,6 +494,18 @@ let resourcesLoader = {
     for (let voiceFileName of l2dVoiceExcelTable[voicePath]) {
       this.loader.add(voiceFileName, `${voicePath}/${voiceFileName}`
       )
+    }
+  },
+
+  /**
+   * 添加其他特效音
+   */
+  addOtherSounds() {
+    let otherSoundUrls = getOtherSoundUrls()
+    for (let url of otherSoundUrls) {
+      if (!this.loader.resources[url]) {
+        this.loader.add(url, url)
+      }
     }
   },
 

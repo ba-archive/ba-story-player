@@ -1,4 +1,5 @@
 import { Actions, GetterFunctions, Getters, PrivateStates, PublicStates } from '@/types/store'
+import { getResourcesUrl } from '@/utils'
 
 let characterNameTable = {
   '유우카 체육복ND': 4179367264,
@@ -38,11 +39,19 @@ let privateState: PrivateStates = {
   dataUrl: '',
   app: null,
   l2dSpineUrl: '',
+  storySummary: {
+    chapterName: '',
+    summary: ''
+  },
 
   allStoryUnit: [],
 
   //文字层
-  logText: [],
+  logText: [
+    { type: 'user', text: '用户对话', name: '用户名' },
+    { type: 'character', text: '人物对话', name: '用户名', avatarUrl: '/avatar.webp' },
+    { type: 'none', text: '无特定人物剧情语句' }
+  ],
 
   //背景层
   bgInstance: null,
@@ -65,11 +74,6 @@ let getterFunctions: GetterFunctions = {
     }
     return privateState.app!
   },
-
-  storySummary() {
-    return ''
-  },
-
 
   CharacterName: () => (name: string) => {
     return privateState.characterNameTable.get(name)!
@@ -97,7 +101,11 @@ let getterFunctions: GetterFunctions = {
    * 获取emotion的对应声音资源的url, 传入的参数是emotion的名字
    */
   emotionSoundUrl: () => (emotionName) => {
-    return `${privateState.dataUrl}/Audio/Sound/SFX_Emoticon_Motion_${emotionName}.wav`
+    return getResourcesUrl('emotionSound', `SFX_Emoticon_Motion_${emotionName}`)
+  },
+
+  otherSoundUrl: () => (sound) => {
+    return getResourcesUrl('otherSound', sound)
   },
 
   l2dSpineData() {
@@ -111,7 +119,7 @@ let actions: Actions = {
     privateState.bgInstance = instance
   },
   setLogText(logText) {
-    privateState.logText = logText
+    //to do
   },
   setL2DSpineUrl(url) {
     privateState.l2dSpineUrl = url

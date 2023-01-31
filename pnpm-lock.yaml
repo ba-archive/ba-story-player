@@ -6,6 +6,7 @@ specifiers:
   '@pixi/filter-color-overlay': ^4.0.0
   '@pixi/filter-crt': ^5.0.0
   '@pixi/filter-motion-blur': ^4.2.0
+  '@pixi/sound': <5.0.0
   '@types/node': ^18.11.9
   '@vitejs/plugin-vue': ^3.2.0
   axios: ^1.1.3
@@ -27,6 +28,7 @@ dependencies:
   '@pixi/filter-color-overlay': 4.2.0
   '@pixi/filter-crt': 5.1.1
   '@pixi/filter-motion-blur': 4.2.0
+  '@pixi/sound': 4.3.1
   axios: registry.npmmirror.com/axios/1.1.3
   filter-adjustment^5.0.0: link:@pixi/filter-adjustment^5.0.0
   gsap: registry.npmmirror.com/gsap/3.11.3
@@ -141,6 +143,19 @@ packages:
     optionalDependencies:
       fsevents: 2.3.2
     dev: true
+  /@pixi/sound/4.3.1:
+    resolution: {integrity: sha512-KpzJIErU2UbgrrI/6cIbZ0BsWPUDma86TyB9vz7cyJ9W4MHVZx1EYCJ0CeWh2XGtvzbUVOozLPnR18ObPZKokA==}
+    engines: {node: '>=12', npm: '>=7', yarn: please-use-npm}
+    peerDependencies:
+      '@pixi/core': '>=5 <7'
+      '@pixi/loaders': '>=5 <7'
+      '@pixi/ticker': '>=5 <7'
+      '@pixi/utils': '>=5 <7'
+    dev: false
+
+  /easy-typer-js/2.1.0:
+    resolution: {integrity: sha512-P1G1oPO26lPfuPdaS3KyywFc36HRVKBJvzxJiOMbn5+Z3n9JLzhTT4cJK121mnjujyOWQiRla4ikHZQHPcoa/g==}
+    dev: false
 
   /esbuild-android-64/0.15.13:
     resolution: {integrity: sha512-yRorukXBlokwTip+Sy4MYskLhJsO0Kn0/Fj43s1krVblfwP+hMD37a4Wmg139GEsMLl+vh8WXp2mq/cTA9J97g==}

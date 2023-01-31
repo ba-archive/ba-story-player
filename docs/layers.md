@@ -1,7 +1,7 @@
 # 通用
 每层需提供一个init函数用于注册event handler(如果是组件类型则需自行使用eventBus注册).
 ## 资源访问
-通过`@/stores`的`usePlayerStore`获取资源工具类
+通过`@/stores`的`usePlayerStore`获取资源工具类, 注意请获取整个对象而不是某个属性, 不然可能会导致数据过时.
 可访问getter:
 `app`: pixi-Application实例
 ## 事件管理
@@ -60,10 +60,13 @@ interface CharacterEffect{
 
 参数:
 ```ts
-interface PlayAudio{
-    bgmUrl?:string
-    soundUrl?:string
-    voiceJPUrl?:string
+export interface PlayAudio {
+  bgm?: {
+    url?: string
+    bgmArgs: BGMExcelTableItem
+  }
+  soundUrl?: string
+  voiceJPUrl?: string
 }
 ```
 `playEmotionAudio`: 播放人物情绪动作特效音, 参数是一个string代表人物的情绪动作
@@ -71,17 +74,58 @@ interface PlayAudio{
 `playSelectSound`: 播放选择时的特效音
 
 ## 可使用getter
-`otherSound`: 获取其他声音资源url
+`otherSoundUrl`: 获取其他声音资源url
+
 `emotionSoundUrl`: 获取emotion特效对应的特效音
 
 # UI层
 UI层负责UI的相关功能
 ## 发出事件
 `skip`: 跳过剧情
+
 `auto`: 启动自动模式
+
+`stopAuto`: 自动模式停止
+
+`hideDialog`: 隐藏对话框
+## 接受事件
+`hidemenu`: 隐藏ui
+
+`showmenu`: 显示ui
 ## 可使用getter
 `logText`: 已播放剧情语句
+```ts
+export interface LogText {
+  /**
+   * user: 用户选项
+   * character: 人物对话, 有头像
+   * none: 无所属对话, 此时name不存在
+   */
+  type: 'user' | 'character' | 'none'
+  text: string
+  /**
+   * 人物名
+   */
+  name?: string
+  /**
+   * 头像地址
+   */
+  avatarUrl?: string
+}
+```
 `storySummary`: 剧情梗概
+```ts
+export interface StorySummary {
+  /**
+   * 章节名
+   */
+  chapterName: string,
+  /**
+   * 简介
+   */
+  summary: string
+}
+```
 # 文字层
 文字层负责有对话框文字, 无对话框文字, 选项的显示.
 ## 发出事件
@@ -147,6 +191,8 @@ interface Option {
     text: string
 }
 ```
+
+`hideDialog`: 隐藏对话框
 ## 发出事件
 `next`: 进入下一语句
     
@@ -163,8 +209,10 @@ interface Option {
 `effectDone`: 特效播放完成时发出的事件
 # L2D层
 L2D层用于播放L2D
+## 发出事件
+`animationDone`: 当前l2d动画播放完成
 ## 接收事件
-`playL2D`: 加载L2D
+`playL2D`: 加载L2D, 播放l2d初始动画
 
 `changeAnimation`: 更换动画, 接受一个string参数作为动画名
 
