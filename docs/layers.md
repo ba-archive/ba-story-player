@@ -86,6 +86,8 @@ UI层负责UI的相关功能
 `auto`: 启动自动模式
 
 `stopAuto`: 自动模式停止
+
+`hideDialog`: 隐藏对话框
 ## 接受事件
 `hidemenu`: 隐藏ui
 
