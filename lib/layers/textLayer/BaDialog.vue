@@ -1,7 +1,7 @@
 <template>
   <div class="container" @click="skipText" :style="{ height: `${playerHeight}px` }" @mouseup="selectionSelect = -1">
     <div class="container-inner">
-      <div class="st-container" ref="stOutput" />
+      <div class="st-container" ref="stOutput" :style="{fontSize: `${standardFontSize}rem`}" />
       <div class="title-container" :class="{ 'fade-in-out': titleContent }" v-if="titleContent"><div>{{ titleContent
         }}</div></div>
       <div class="place-container" :class="{ 'fade-in-out': placeContent }" v-if="placeContent"><div>{{ placeContent }}</div></div>
@@ -21,7 +21,7 @@
           <div :style="{fontSize: `${fontSize(2)}rem`}" class="department">{{nickName}}</div>
         </div>
         <hr>
-        <div ref="typewriterOutput" :style="{fontSize: `${fontSize(2.5)}rem`}" class="content" />
+        <div ref="typewriterOutput" :style="{fontSize: `${standardFontSize}rem`}" class="content" />
       </div>
     </div>
   </div>
@@ -32,8 +32,9 @@
 import {onMounted, ref, computed, Ref, nextTick, onUnmounted} from 'vue'
 import eventBus from "@/eventBus";
 import Typed, {TypedExtend, TypedOptions} from "typed.js";
-import {Events, ShowOption, ShowText, StText} from "@/types/events";
+import {ShowOption, ShowText, StText} from "@/types/events";
 import {Text, TextEffectName} from "@/types/common";
+import {deepCopyObject} from "@/utils";
 
 // 默认的打字机效果
 const TypedOptions: TypedOptions = {
@@ -144,6 +145,7 @@ function handleShowStEvent(e: StText) {
     console.error("st特效参数不足", e);
     return;
   }
+  e = deepCopyObject(e);
   // 显示st时隐藏对话框
   showDialog.value = false;
   // 因为是vdom操作所以等生效后继续
@@ -165,7 +167,12 @@ function handleShowStEvent(e: StText) {
       }, extendPos, "div").content;
       eventBus.emit("stDone");
     } else if (stType === "serial") {
-      showTextDialog(e.text.map(text => parseTextEffect(text)), stOutput.value, (content) => {
+      showTextDialog(e.text.map(text => {
+        // 为啥要这样, 因为这个库在空字符时会删除当前的内容重新打印, 导致一句话出现两次的bug
+        text.content = text.content || "&zwj;";
+        return text;
+      }).map(text => parseTextEffect(text))
+        , stOutput.value, (content) => {
         return `<div style="${extendPos}">${content}</div>`
       }).then(() => {
         eventBus.emit("stDone");
@@ -179,6 +186,7 @@ function handleShowStEvent(e: StText) {
  */
 function handleShowTextEvent(e: ShowText) {
   showDialog.value = true;
+  e = deepCopyObject(e);
   nextTick(() => {
     // 设置昵称
     name.value = e.speaker?.name;
@@ -210,7 +218,7 @@ function parseTextEffect(text: Text, extendStyle = "", tag = "span"): Text {
     if (name === "color") {
       return `color: ${value}`;
     } else if (name === "fontsize") {
-      return `font-size: ${Math.floor(Number(Number(value) * fontSizeBounds.value))}px`
+      return `font-size: ${unityFontSizeToHTMLSize(Number(value))}rem`
     }
     // 暂时废弃, 没办法处理字体自适应
     return (StyleEffectTemplate[effect.name] || "").replace("${value}", effect.value.join(""))
@@ -231,7 +239,10 @@ function parseTextEffect(text: Text, extendStyle = "", tag = "span"): Text {
  */
 function showTextDialog(text: Text[], output: HTMLElement, onParseContent?: (source: string) => string) {
   return new Promise<void>((resolve) => {
-    if (text.length === 0) return;
+    if (text.length === 0) {
+      resolve();
+      return;
+    }
     function parseContent(content: string) {
       if (onParseContent) {
         return onParseContent(content);
@@ -248,7 +259,9 @@ function showTextDialog(text: Text[], output: HTMLElement, onParseContent?: (sou
      */
     function onComplete(self: TypedExtend) {
       if (index >= text.length) {
-        resolve();
+        setTimeout(() => {
+          resolve();
+        }, 100)
         return;
       }
       self.pause.status = true;
@@ -278,7 +291,9 @@ function showTextDialog(text: Text[], output: HTMLElement, onParseContent?: (sou
       typingInstance.pause.curString = lastStOutput + firstContent;
       typingInstance.pause.curStrPos = lastStOutput.length;
       typingInstance.options.onComplete = onComplete;
-      typingInstance.start();
+      setTimeout(() => {
+        typingInstance.start();
+      }, text[0].waitTime || 0)
     } else {
       // 全新清空
       typingInstance?.stop();
@@ -286,6 +301,7 @@ function showTextDialog(text: Text[], output: HTMLElement, onParseContent?: (sou
       output.innerHTML = "";
       typingInstance = new Typed(output, {
         ...TypedOptions,
+        startDelay: text[0].waitTime || 0,
         strings: [lastStOutput + firstContent],
         onComplete: onComplete
       }) as TypedExtend;
@@ -301,6 +317,20 @@ const stPositionBounds = computed(() => ({ width: props.playerWidth / stWidth, h
 // 按比例缩放文字
 function fontSize(multi: number) {
   return fontSizeBounds.value * multi;
+}
+const standardFontSize = computed(() => fontSize(2.5));
+/**
+ * 以64作为标准字体大小?
+ * @param size
+ */
+function unityFontSizeToHTMLSize(size: number) {
+  if (size === 64) {
+    return standardFontSize.value;
+  } else if (size < 64) {
+    return fontSize(2);
+  } else {
+    return fontSize(3);
+  }
 }
 onMounted(() => {
   eventBus.on("showTitle", handleShowTitle);

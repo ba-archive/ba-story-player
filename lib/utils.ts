@@ -5,7 +5,7 @@ let otherSoundMap: OtherSoundsUrls
 
 /**
  * 设置数据站点
- * @param url 
+ * @param url
  */
 export function setDataUrl(url: string): void {
   dataUrl = url
@@ -16,7 +16,7 @@ export function setDataUrl(url: string): void {
 
 /**
  * 获取其他特效音资源, 用于本体资源加载
- * @returns 
+ * @returns
  */
 export function getOtherSoundUrls(): string[] {
   return Object.values(otherSoundMap)
@@ -25,9 +25,9 @@ export function getOtherSoundUrls(): string[] {
 
 /**
  * 根据资源类型和参数获取资源地址, 可根据服务器实际情况修改
- * @param type 
- * @param arg 
- * @returns 
+ * @param type
+ * @param arg
+ * @returns
  */
 export function getResourcesUrl(type: ResourcesTypes, arg: string): string {
   switch (type) {
@@ -58,4 +58,11 @@ export function getResourcesUrl(type: ResourcesTypes, arg: string): string {
     default:
       return ''
   }
+}
+
+/**
+ * 字面意思, 深拷贝json
+ */
+export function deepCopyObject<T>(object: T): T {
+  return JSON.parse(JSON.stringify(object));
 }
