@@ -176,6 +176,8 @@ let eventEmitter = {
     })
     eventBus.on('effectDone', () => eventEmitter.effectDone = true)
     eventBus.on('characterDone', () => eventEmitter.characterDone = true)
+    eventBus.on('titleDone', () => this.titleDone = true)
+    eventBus.on('stDone', () => this.stDone = true)
     eventBus.on('auto', () => console.log('auto!'))
 
     this.storyPlay()
@@ -210,6 +212,7 @@ let eventEmitter = {
     let currentStoryUnit = storyHandler.currentStoryUnit
     switch (currentStoryUnit.type) {
       case 'title':
+        this.titleDone = false
         if (currentStoryUnit.textAbout.word) {
           eventBus.emit('showTitle', currentStoryUnit.textAbout.word)
         }
@@ -228,6 +231,7 @@ let eventEmitter = {
         }
         break
       case 'st':
+        this.stDone = false
         if (currentStoryUnit.textAbout.st) {
           if (currentStoryUnit.textAbout.st.stArgs) {
             eventBus.emit('st', {
@@ -253,6 +257,9 @@ let eventEmitter = {
         }
         break
       case 'effectOnly':
+        if (currentStoryUnit.textAbout.st?.clearSt) {
+          eventBus.emit('clearSt')
+        }
         break
       //to do
       // case 'continue':
@@ -268,7 +275,7 @@ let eventEmitter = {
           clearInterval(interval)
           resolve()
         }
-        else if (Date.now() - startTime >= 5000) {
+        else if (Date.now() - startTime >= 50000) {
           reject('特效长时间未完成')
         }
       })
