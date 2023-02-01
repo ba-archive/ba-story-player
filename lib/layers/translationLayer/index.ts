@@ -148,7 +148,7 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
           unit.textAbout.st.clearSt = true
           break
         case '#wait':
-          unit.effect.otherEffect.push({ type: 'wait', args: [scriptUnits[1]] })
+          unit.effect.otherEffect.push({ type: 'wait', args: Number(scriptUnits[1]) })
           break
         case '#fontsize':
           for (let i = 0; i < unit.textAbout.showText.text.length; ++i) {
@@ -170,7 +170,7 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
           unit.effect.otherEffect.push({ type: 'zmc', args: scriptUnits.slice(1) })
           break
         case '#bgshake':
-          unit.effect.otherEffect.push({ type: 'bgshake', args: [] })
+          unit.effect.otherEffect.push({ type: 'bgshake' })
           break
         case '#video':
           //处理情况为 #video;Scenario/Main/22000_MV_Video;Scenario/Main/22000_MV_Sound

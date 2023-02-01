@@ -87,9 +87,23 @@ export interface TextEffect {
   value: string[],
 }
 
-export interface Effect {
-  type: 'wait' | 'zmc' | 'bgshake'
-  args: Array<string>
+
+export type Effect = {
+  type: 'wait'
+  /**
+   * 单位为ms
+   */
+  args: number
+} | {
+  type: 'zmc'
+  /**
+   * [类型, 位置, 缩放?, unknown]
+   * move时位置为起始或终结位置
+   * ['move' | 'instant', [number, number], number, number?]
+   */
+  args: string[]
+} | {
+  type: 'bgshake'
 }
 
 export interface StoryRawUnit {
