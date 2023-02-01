@@ -11,9 +11,9 @@ import BaDialog from "./components/BaDialog.vue";
         <BaButton>MENU</BaButton>
       </div>
       <div class="baui-menu-options lean-rect">
-        <img class="ba-menu-option hidden-ui" src="./assets/pan-arrow.svg" />
-        <img class="ba-menu-option chat-log" src="./assets/menu.svg" />
-        <img class="ba-menu-option skip-chat" src="./assets/fast-forward.svg" />
+        <button class="button-nostyle ba-menu-option"><img src="./assets/pan-arrow.svg" /></button>
+        <button class="button-nostyle ba-menu-option"><img src="./assets/menu.svg" /></button>
+        <button class="button-nostyle ba-menu-option"><img src="./assets/fast-forward.svg" /></button>
       </div>
     </div>
     <BaDialog id="ba-story-summery" :title="'概要'" style="visibility: hidden;"> Hello, World </BaDialog>
@@ -25,11 +25,18 @@ import BaDialog from "./components/BaDialog.vue";
   transform: skew(-10deg);
 }
 
+.button-nostyle {
+    margin: 0;
+    padding: 0;
+    border: none;
+}
+
 .right-top {
   position: absolute;
   top: 0;
   right: 0;
   padding: 1.5%;
+  user-select: none;
 }
 
 .baui {
@@ -50,26 +57,19 @@ import BaDialog from "./components/BaDialog.vue";
     grid-template-columns: repeat(3, 1fr);
     margin-top: 9px;
     padding: 12px 12px;
-    border-radius: 4px;
+    border-radius: 6px;
     background-color: rgba(244, 244, 244, 0.6);
+    overflow: hidden;
 
-    img.ba-menu-option {
+    .ba-menu-option {
       display: block;
       font-size: 24px;
       background-color: #2c4565;
       border-radius: 3px;
       padding: 4px 8px;
 
-      & hidden-ui {
-        background-color: red;
-      }
-
-      & hidden-ui {
-        background-color: blue;
-      }
-
-      & hidden-ui {
-        background-color: yellow;
+      img {
+        display: block;
       }
     }
   }

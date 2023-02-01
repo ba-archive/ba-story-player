@@ -16,7 +16,7 @@ const props = defineProps({
 <style lang="scss" scoped>
 .ba-button {
   padding: 6px 16px;
-  border-radius: 4px;
+  border-radius: 5px;
   border: solid 1px rgb(133, 133, 133);
   font-size: 18px;
   font-weight: bold;
