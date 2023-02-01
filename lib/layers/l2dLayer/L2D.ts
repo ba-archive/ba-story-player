@@ -2,7 +2,7 @@ import { Spine } from "pixi-spine";
 import eventBus from "@/eventBus";
 import { usePlayerStore } from "@/stores";
 import { getResourcesUrl } from "@/utils";
-import { Application } from "pixi.js";
+import gsap from "gsap";
 
 export function L2DInit() {
   const { app } = usePlayerStore();
@@ -11,8 +11,8 @@ export function L2DInit() {
   // 背景混合或者其他播放 spine, 如普通星野和运动邮箱
   let otherItems: Spine[];
   // 当前顶层的spine index
-  let currentIndex: number = 100;
-  let startAnimations: { animation: string; spine: Spine }[];
+  let currentIndex: number = 0;
+  let startAnimations: { animation: string; spine: Spine; fade?: boolean }[];
   // 接收动画消息
   eventBus.on("changeAnimation", (e) => {
     const temAnimation = e.replace(/_(A|M)/, "");
@@ -35,6 +35,7 @@ export function L2DInit() {
     const { l2dSpineData, curL2dConfig } = usePlayerStore();
     // 动画是否已经播放, true 代表播放完成
     const hasPlayedAnimation = {} as { [key: string]: boolean };
+    currentIndex = 0;
     // 设置 spine 播放信息
     function setSpinePlayInfo({
       item,
@@ -61,6 +62,11 @@ export function L2DInit() {
         // spine中事件回调
         start: function (entry: any) {
           const entryAnimationName = entry.animation.name + item.name;
+          const duration = entry.animation.duration;
+          if (startAnimations[currentIndex - 1]?.fade) {
+            // 在快结束的时候触发 fade
+            setTimeout(fadeEffect, (duration - 0.8) * 1000);
+          }
           // 如果没有播放过的话就设置播放状态为播放
           if (!hasPlayedAnimation[entryAnimationName]) {
             eventBus.emit("l2dAnimationDone", {
@@ -80,9 +86,10 @@ export function L2DInit() {
           const entryAnimationName = entry.animation.name + item.name;
           if (
             entryAnimationName.includes("Idle") &&
-            startAnimations.length > 0
+            startAnimations[currentIndex]
           ) {
-            const curStartAnimations = startAnimations.shift()!;
+            const curStartAnimations = startAnimations[currentIndex]!;
+            currentIndex += 1;
             app.stage.addChild(curStartAnimations.spine);
             // 待机动画 Idle 循环播放, 为空时代表起始动画播放完成, 开始播放待机动画
             // 必须要先加入 app 才能播放
@@ -90,7 +97,7 @@ export function L2DInit() {
               let e = curStartAnimations.spine.state.setAnimation(
                 0,
                 curStartAnimations.animation,
-                startAnimations.length === 0
+                !startAnimations[currentIndex] // 最后一个待机动作循环
               );
             }, 4);
             return;
@@ -130,12 +137,12 @@ export function L2DInit() {
           app.loader.resources[getResourcesUrl("otherL2dSpine", i)].spineData!
         );
         temItem.name = i;
-        setSpinePlayInfo({ item: temItem, zIndex: currentIndex + idx + 1 });
+        setSpinePlayInfo({ item: temItem, zIndex: 100 + idx + 1 });
         return temItem;
       });
     }
-    setSpinePlayInfo({ item: mainItem, zIndex: currentIndex });
-    // 起始动画
+    setSpinePlayInfo({ item: mainItem, zIndex: 100 });
+    // 注意!!! 起始动画中最后一个动作是塞入的待机动作
     startAnimations = mainItem.spineData.animations
       .map((i) => i.name)
       .filter((i) => i.startsWith("Start_Idle"))
@@ -149,7 +156,7 @@ export function L2DInit() {
     if (curL2dConfig?.playQue) {
       startAnimations = curL2dConfig.playQue.map((i) => {
         return {
-          animation: i.animation,
+          ...i,
           // playQue 中的name和otherSpine中的一致
           spine:
             i.name === curL2dConfig.name
@@ -161,19 +168,20 @@ export function L2DInit() {
     // 最后置入一个待机动作
     startAnimations.push({
       spine: mainItem,
-      animation: "Idle_01"
-    })
+      animation: "Idle_01",
+    });
     // 0轨道播放待机 部分没有做待机的动画,用try兜底避免throw
     try {
-      const curStartAnimations = startAnimations.shift()!;
-      app.stage.addChild(curStartAnimations.spine)
-      setTimeout(()=>{
+      const curStartAnimations = startAnimations[currentIndex]!;
+      currentIndex += 1;
+      app.stage.addChild(curStartAnimations.spine);
+      setTimeout(() => {
         curStartAnimations.spine.state.setAnimation(
           0,
           curStartAnimations.animation,
           false
         );
-      }, 4)
+      }, 4);
     } catch {}
   });
 }
@@ -191,4 +199,13 @@ function calcL2DSize(
   const width = (rawWidth / ratio) * 1.1; // 是根据spine呼吸时最小和正常的比例推测得到的, 不同的spine可能会有不同的最小比例...
   const height = (rawHeight / ratio) * 1.1;
   return { width, height, ratio };
+}
+function fadeEffect() {
+  let player = document.querySelector("#player") as HTMLDivElement;
+  player.style.backgroundColor = "white";
+  let playerCanvas = document.querySelector("#player canvas");
+  gsap.to(playerCanvas, { alpha: 0, duration: 1 });
+  setTimeout(() => {
+    gsap.to(playerCanvas, { alpha: 1, duration: 0.8 });
+  }, 1000);
 }

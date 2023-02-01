@@ -61,3 +61,10 @@ export function getResourcesUrl(type: ResourcesTypes, arg: string): string {
       return ''
   }
 }
+
+/**
+* wait in promise
+*/
+export function wait(milliseconds: number) {
+ return new Promise(resolve => setTimeout(resolve, milliseconds));
+}

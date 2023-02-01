@@ -12,7 +12,7 @@ import axios from 'axios';
 import { SpineParser } from 'pixi-spine';
 import { Application, Loader, settings, Text } from "pixi.js";
 import * as utils from '@/utils'
-import { getOtherSoundUrls } from "@/utils";
+import { getOtherSoundUrls, wait } from "@/utils";
 import { L2DInit } from "./layers/l2dLayer/L2D";
 
 let playerStore: ReturnType<typeof usePlayerStore>
@@ -553,9 +553,4 @@ window.baStory = storyHandler
 console.log('资源加载: ', window.baResource)
 console.log('资源调用: ', window.baStore)
 console.log('剧情进度: ', storyHandler)
-/**
- * wait in promise
- */
-function wait(milliseconds: number) {
-  return new Promise(resolve => setTimeout(resolve, milliseconds));
-}
+
