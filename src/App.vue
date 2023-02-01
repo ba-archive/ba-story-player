@@ -17,7 +17,7 @@ let storySummary = {
 </script>
 
 <template>
-  <div style="display:flex;justify-content: center;">
+  <div style="display:flex;justify-content: center;border: solid red 2px">
     <BaStoryPlayer :story="yuuka" data-url="https://yuuka.diyigemt.com/image/ba-all-data" :width="1000" :height="550"
       language="Cn" username="testUser" :story-summary="storySummary" />
     <!-- <ModifyEmotionOption /> -->

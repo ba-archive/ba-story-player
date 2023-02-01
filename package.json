@@ -34,6 +34,7 @@
     "mitt": "^3.0.0",
     "pixi-spine": "^3.1.0",
     "pixi.js": "^6.0.0",
+    "sass": "^1.58.0",
     "vue": "^3.2.41"
   },
   "devDependencies": {

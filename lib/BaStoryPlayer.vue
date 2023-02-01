@@ -5,6 +5,7 @@ import { StoryRawUnit } from '@/types/common';
 import eventBus from "@/eventBus";
 //@ts-ignore
 import BaDialog from "@/layers/textLayer/BaDialog.vue";
+import BaUI from "@/layers/uiLayer/BaUI.vue"
 import { Language, StorySummary } from '@/types/store';
 
 let props = defineProps<{
@@ -36,11 +37,12 @@ function TestDialog() {
 </script>
 
 <template>
-  <div id="player" :style="{ height: `${height}px` }">
+  <div id="player" :style="{ height: `${height}px`, position: 'relative' }">
     <div id="player__main">
       <BaDialog class="dialog" :dialog-height="height"
         :style="{ marginTop: `${height / 2}px`, width: `${width}px`, height: `${height / 2}px` }"></BaDialog>
     </div>
+    <BaUI/>
     <button @click="TestDialog">文本框测试</button>
     <button style="margin-left:1%" @click="() => { eventBus.emit('next') }">next</button>
   </div>
