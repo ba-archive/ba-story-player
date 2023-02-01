@@ -1,5 +1,5 @@
 <template>
-  <div class="container" @click="skipText" :style="{ height: `${playerHeight}px` }" @mouseup="selectionSelect = -1">
+  <div class="container" @click="moveToNext" :style="{ height: `${playerHeight}px` }" @mouseup="selectionSelect = -1">
     <div class="container-inner">
       <div class="st-container" ref="stOutput" :style="{fontSize: `${standardFontSize}rem`}" />
       <div class="title-container" :class="{ 'fade-in-out': titleContent }" v-if="titleContent"><div>{{ titleContent
@@ -28,7 +28,6 @@
 </template>
 
 <script setup lang="ts">
-
 import {onMounted, ref, computed, Ref, nextTick, onUnmounted} from 'vue'
 import eventBus from "@/eventBus";
 import Typed, {TypedExtend, TypedOptions} from "typed.js";
@@ -36,16 +35,10 @@ import {ShowOption, ShowText, StText} from "@/types/events";
 import {Text, TextEffectName} from "@/types/common";
 import {deepCopyObject} from "@/utils";
 
-// 默认的打字机效果
-const TypedOptions: TypedOptions = {
-  typeSpeed: 20, // 每个字速度 单位是ms
-  showCursor: false, // 是否显示虚拟光标
-  contentType: "html" // 内容类型 显然是html
-}
 const typewriterOutput = ref(); // 对话框el
 const stOutput = ref(); // st特效字el
 // 外部传入播放器高度,用于动态计算字体等数值
-const props = withDefaults(defineProps<IProps>(), {playerHeight: 0, playerWidth: 0});
+const props = withDefaults(defineProps<TextLayerProps>(), {playerHeight: 0, playerWidth: 0});
 // 选项
 const selection = ref<ShowOption[]>([]);
 // 按钮按下效果
@@ -64,10 +57,11 @@ let typingInstance: TypedExtend; // 全局打字机实例 因为不能有两个�
 /**
  * 单击屏幕后触发效果 next或者立即显示当前对话
  */
-function skipText() {
+function moveToNext() {
   if (selection.value.length !== 0) return; // 选项列表不为零, 不能跳过选择支
   if (!showDialog) return; // 显示st期间不允许跳过
-  if (typingInstance.typingComplete) { // 如果对话已经显示完成, 点击屏幕代表继续
+  // 没打过任何一行字(初始化)或者对话已经显示完成, 点击屏幕代表继续
+  if (!typingInstance || typingInstance.typingComplete) {
     eventBus.emit("next");
   } else { // 否则立即显示所有对话
     typingInstance.stop();
@@ -300,7 +294,7 @@ function showTextDialog(text: Text[], output: HTMLElement, onParseContent?: (sou
       typingInstance?.destroy();
       output.innerHTML = "";
       typingInstance = new Typed(output, {
-        ...TypedOptions,
+        ...DefaultTypedOptions,
         startDelay: text[0].waitTime || 0,
         strings: [lastStOutput + firstContent],
         onComplete: onComplete
@@ -357,13 +351,21 @@ const StyleEffectTemplate: StyleEffectTemplateMap = {
   fontsize: "font-size: ${value}px",
   ruby: ''
 }
-interface IProps {
-  playerHeight: number;
-  playerWidth: number;
+// 默认的打字机效果
+const DefaultTypedOptions: TypedOptions = {
+  typeSpeed: 20, // 每个字速度 单位是ms
+  showCursor: false, // 是否显示虚拟光标
+  fadeOut: true,
+  contentType: "html" // 内容类型 显然是html
 }
-
+/**
+ * 用来算比例的
+ */
+type TextLayerProps = {
+  playerHeight: number; // 整块视口的高
+  playerWidth: number; // 整块视口的宽
+}
 </script>
-
 <style scoped lang="scss">
 $border-radius: 3px;
 $dialog-z-index: 3;
