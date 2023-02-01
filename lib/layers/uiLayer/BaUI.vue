@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import BaButton from "@/layers/uiLayer/components/BaButton.vue";
+import BaDialog from "./components/BaDialog.vue";
 </script>
 
 <template>
@@ -15,6 +16,7 @@ import BaButton from "@/layers/uiLayer/components/BaButton.vue";
         <img class="ba-menu-option skip-chat" src="./assets/fast-forward.svg" />
       </div>
     </div>
+    <BaDialog id="ba-story-summery" :title="'概要'" style="visibility: hidden;"> Hello, World </BaDialog>
   </div>
 </template>
 
@@ -54,7 +56,7 @@ import BaButton from "@/layers/uiLayer/components/BaButton.vue";
     img.ba-menu-option {
       display: block;
       font-size: 24px;
-      background-color: #2C4565;
+      background-color: #2c4565;
       border-radius: 3px;
       padding: 4px 8px;
 

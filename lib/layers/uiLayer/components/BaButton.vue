@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import { PropType, Ref, ref } from 'vue';
+import { PropType, Ref, ref } from "vue";
 
 const props = defineProps({
-    style: String as PropType<"primary" | 'activate'>
+  style: String as PropType<"primary" | "activate">,
+  size: String as PropType<"large" | "middle" | "small">,
 });
-
 </script>
 
-<template>  
+<template>
   <button class="ba-button">
     <slot></slot>
   </button>
