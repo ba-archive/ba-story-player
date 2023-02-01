@@ -60,7 +60,7 @@ export async function init(elementID: string, height: number, width: number, sto
   textInit()
   bgInit()
   characterInit()
-  soundInit()
+  // soundInit()
   effectInit()
   L2DInit()
 
@@ -179,7 +179,7 @@ let eventEmitter = {
     })
     eventBus.on('effectDone', () => eventEmitter.effectDone = true)
     eventBus.on('characterDone', () => eventEmitter.characterDone = true)
-    eventBus.on('l2dAnimationDone', (e) => eventEmitter.l2dAnimationDone = e)
+    eventBus.on('l2dAnimationDone', (e) => eventEmitter.l2dAnimationDone = e.done)
     eventBus.on('auto', () => console.log('auto!'))
 
     this.storyPlay()
@@ -419,6 +419,9 @@ let resourcesLoader = {
 
       //添加l2d spine资源
       this.checkAndAdd(unit.l2d, 'spineUrl')
+      if(unit.l2d){
+        playerStore.curL2dConfig?.otherSpine.forEach(i=>this.checkAndAdd(utils.getResourcesUrl('otherL2dSpine', i)))
+      }
     }
   },
 

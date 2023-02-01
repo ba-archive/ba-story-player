@@ -8,7 +8,7 @@ let playerStore = usePlayerStore()
 
 /**
  * 判断是否是角色
- * @param s 
+ * @param s
  */
 export function isCharacter(s: string) {
   //类似#3
@@ -16,7 +16,7 @@ export function isCharacter(s: string) {
 }
 
 /**
- * 判断是否角色特效 
+ * 判断是否角色特效
  * @param s
  */
 export function isCharacterEffect(s: string) {
@@ -24,7 +24,7 @@ export function isCharacterEffect(s: string) {
 }
 
 /**
- * 判断当前字符串是否是选项 
+ * 判断当前字符串是否是选项
  * @param s 判断的字符串
  */
 export function isOption(s: string) {
@@ -36,9 +36,9 @@ export function isOption(s: string) {
 
 /**
  * 从原始文字生成Text[], 即带特效参数字符串
- * @param rawStoryUnit 
+ * @param rawStoryUnit
  * @param stm 是否为stm类型文字
- * @returns 
+ * @returns
  */
 export function generateText(rawStoryUnit: StoryRawUnit, stm?: boolean) {
   let rawText = getText(rawStoryUnit, playerStore.language)
@@ -137,7 +137,7 @@ export function getVoiceJPUrl(VoiceJp: string) {
 
 /**
  * 检查当前单元是否有背景覆盖变换, 有则删除该变换并返回变换的参数
- * @param unit 
+ * @param unit
  */
 export function checkBgOverlap(unit: StoryUnit) {
   if (unit.transition) {
@@ -149,15 +149,15 @@ export function checkBgOverlap(unit: StoryUnit) {
   }
 }
 
-export function getL2DUrl(BGFileName: string) {
+export function getL2DUrlAndName(BGFileName: string) {
   let filename = String(BGFileName).split('/').pop()?.replace('SpineBG_Lobby', '')
   filename = `${filename}_home`
-  return getResourcesUrl('l2dSpine', filename)
+  return {url: getResourcesUrl('l2dSpine', filename), name: filename}
 }
 
 /**
  * 根据韩文名获取name和nickname
- * @param name 
+ * @param name
  * @returns Speaker
  */
 export function getSpeaker(name: string) {

@@ -39,7 +39,7 @@ let privateState: PrivateStates = {
   dataUrl: '',
   app: null,
   l2dSpineUrl: '',
-
+  curL2dConfig: null,
   allStoryUnit: [],
 
   //文字层
@@ -121,6 +121,9 @@ let actions: Actions = {
   setL2DSpineUrl(url) {
     privateState.l2dSpineUrl = url
   },
+  setL2DConfig(val){
+    privateState.curL2dConfig = val
+  }
 }
 
 let store = {
