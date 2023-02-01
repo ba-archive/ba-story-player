@@ -60,7 +60,7 @@ export async function init(elementID: string, height: number, width: number, sto
   textInit()
   bgInit()
   characterInit()
-  // soundInit()
+  soundInit()
   effectInit()
   L2DInit()
 
