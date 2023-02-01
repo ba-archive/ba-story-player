@@ -15,7 +15,7 @@
       <textarea :value="JSON.stringify(currentTransitionItem, null, 2)"
         @input="event => { currentTransitionItem = JSON.parse((event.target as HTMLTextAreaElement).value) }" />
     </div>
-    <div v-if="effectType === 'bgeffect'">
+    <div v-else-if="effectType === 'bgeffect'">
       <label>effectType</label>
       <select v-model="currentBGEffectType" @change="effectTypeChange">
         <option v-for="effect in Object.keys(effectNamesTable)">{{ effect }}</option>
@@ -29,6 +29,20 @@
       <label>option(该参数仅当前起效)</label>
       <textarea :value="JSON.stringify(bgEffectHandlerOptions[currentBGEffectType], null, 2)"
         @input="event => { bgEffectHandlerOptions[currentBGEffectType] = JSON.parse((event.target as HTMLTextAreaElement).value) }" />
+    </div>
+    <div v-else-if="effectType === 'other'">
+      <label>otherEffect type</label>
+      <select v-model="currentOtherEffectType">
+        <option>zmc</option>
+        <option>wait</option>
+        <option>bgshake</option>
+      </select>
+      <div v-if="currentOtherEffectType === 'wait'">
+        <label>时长</label>
+        <input v-model="otherEffectArgs" type="number" />
+      </div>
+      <div v-else-if="currentOtherEffectType === 'zmc'">
+      </div>
     </div>
     <button @click="playEffect">播放特效</button>
     <button @click="removeEffect">移除特效</button>
@@ -45,6 +59,7 @@ import { resourcesLoader } from '@/index'
 import { removeEffect } from '@/layers/effectLayer'
 import { bgEffectHandlerOptions } from '@/layers/effectLayer/bgEffectHandlers'
 import { BGEffectType } from '@/types/excels';
+import { Effect } from '@/types/common';
 
 await resourcesLoader.loadExcels()
 let effectType = ref<'transition' | 'bgeffect' | 'other'>('transition')
@@ -64,6 +79,13 @@ async function playEffect() {
           otherEffect: []
         })
       }
+    case 'other':
+      eventBus.emit('playEffect', {
+        otherEffect: [{
+          type: currentOtherEffectType.value,
+          args: otherEffectArgs.value
+        }]
+      })
   }
 }
 let stores = usePlayerStore()
@@ -112,6 +134,10 @@ function effectTypeChange() {
   currentBGEffect.value = currentBGEffectNames.value[0]
   updateBGEffectItem()
 }
+
+//otherEffect
+let currentOtherEffectType = ref<Effect['type']>('wait')
+let otherEffectArgs = ref<any>()
 
 //缓存值以便刷新后正常使用
 let cache = {

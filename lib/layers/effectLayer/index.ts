@@ -1,5 +1,6 @@
 import eventBus from '@/eventBus'
 import { usePlayerStore } from '@/stores'
+import { wait } from '@/utils'
 import gsap from 'gsap'
 import { emitterContainer, playBGEffect, removeBGEffect } from './bgEffectHandlers'
 
@@ -25,11 +26,39 @@ export function effectInit() {
     }
   })
   eventBus.on('playEffect', async effects => {
+    let promiseArray: Array<Promise<any>> = []
     for (let effect of effects.otherEffect) {
+      switch (effect.type) {
+        case 'wait':
+          promiseArray.push(wait(effect.args))
+          break;
+        case 'bgshake':
+          let bgInstance = playerStore.bgInstance
+          if (bgInstance) {
+            let tl = gsap.timeline()
+            let fromX = bgInstance.x - bgInstance.width * 0.01
+            let toX = bgInstance.x + bgInstance.width * 0.01
+            tl.to(bgInstance, {
+              pixi: { x: `+=${fromX}` }, repeat: 1,
+              yoyo: true, duration: 0.1
+            })
+              .to(bgInstance, {
+                pixi: { x: `+=${toX}` },
+                repeat: 1,
+                yoyo: true,
+                duration: 0.1
+              })
+              .repeat(1)
+            promiseArray.push(tl.then())
+          }
+        default:
+          break;
+      }
     }
     if (effects.BGEffect) {
-      await playBGEffect(effects.BGEffect)
+      promiseArray.push(playBGEffect(effects.BGEffect))
     }
+    await Promise.allSettled(promiseArray)
     eventBus.emit('effectDone')
   })
   eventBus.on('removeEffect', removeEffect)
