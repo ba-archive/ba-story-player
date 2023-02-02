@@ -23,8 +23,8 @@ const props = defineProps({
           <span>{{ title }}</span>
         </h3>
         <i class="ba-dialog-close">X</i>
-        <slot></slot>
       </div>
+      <slot></slot>
     </div>
   </div>
 </template>
@@ -49,12 +49,17 @@ const props = defineProps({
 
     .ba-dialog-header {
       position: relative;
+      overflow: hidden;
+      background: no-repeat center/contain linear-gradient(58deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,1) 38%, rgba(255,255,255,1) 100%), url(../assets/UITex_BGPoliLight_2.png) rgb(164 216 237);
+      background-size: 100%;
+      background-position: 0 30%;
 
       .ba-dialog-title {
         margin: 8px 16px;
         font-size: 25px;
         font-weight: bold;
         text-align: center;
+        z-index: 1;
 
         span {
           display: inline-block;

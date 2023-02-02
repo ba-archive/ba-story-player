@@ -16,7 +16,7 @@ import BaDialog from "./components/BaDialog.vue";
         <button class="button-nostyle ba-menu-option"><img src="./assets/fast-forward.svg" /></button>
       </div>
     </div>
-    <BaDialog id="ba-story-summery" :title="'概要'" style="visibility: hidden;"> Hello, World </BaDialog>
+    <BaDialog id="ba-story-summery" :title="'概要'" style="visibility: inherit;"> Hello, World </BaDialog>
   </div>
 </template>
 
