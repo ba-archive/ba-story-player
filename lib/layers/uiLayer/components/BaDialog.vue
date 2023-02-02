@@ -135,6 +135,8 @@ watch(
     }
 
     .ba-dialog-content-wrapper {
+        // 阴影效果
+        margin-top: 2px;
         position: relative;
         flex: 1 1 auto;
         min-height: 0;
