@@ -4,18 +4,21 @@ import gsap from "gsap";
 
 const props = defineProps({
   bgcolor: String,
-  size: String as PropType<"large" | "middle" | "small">,
+  size: {
+    type: String as PropType<"large" | "middle" | "small">,
+    default: "small",
+  },
 });
 
 function effectBtnClick(ev: MouseEvent) {
   let tl = gsap.timeline();
-  tl.to(ev.target, { duration: 0.15, scale: 0.94 , ease: "power3.out"});
+  tl.to(ev.target, { duration: 0.15, scale: 0.94, ease: "power3.out" });
   tl.to(ev.target, { duration: 0.3, scale: 1 });
 }
 </script>
 
 <template>
-  <button class="ba-button" @click="effectBtnClick">
+  <button :class="['ba-button', size]" @click="effectBtnClick">
     <slot></slot>
   </button>
 </template>
@@ -25,38 +28,48 @@ function effectBtnClick(ev: MouseEvent) {
   position: relative;
   padding: 6px 16px;
   border-radius: 5px;
-  border: solid 1px rgb(133, 133, 133);
+  //   border:  solid 1px rgb(133, 133, 133);
+  border: none;
   font-size: 18px;
   font-weight: bold;
-  color: #2c4565;
+  color: #2d4665;
   background-color: #f3f5f6;
+  transform: skew(-10deg);
+  box-shadow: #2c3f4a 0 1px 2px;
 
-  .click-animation {
+  &.large {
+    padding: 8px 68px;
+    font-size: 25px;
+    border-radius: 10px;
   }
 
-  & polylight::after {
-    position: absolute;
-    top: 0;
-    left: 0;
-    content: "";
-    width: 100%;
-    height: 100%;
-    background-color: rgb(67, 191, 222);
-    background: url(../assets/UITex_BGPoliLight_3.png);
-    background-size: 180%;
-    background-position: 10% 10%;
-    mask-image: linear-gradient(
-      135deg,
-      rgba(255, 255, 255, 1) 0%,
-      rgba(255, 255, 255, 0) 51%,
-      rgba(255, 255, 255, 1) 100%
-    );
-    -webkit-mask-image: linear-gradient(
-      135deg,
-      rgba(255, 255, 255, 1) 0%,
-      rgba(255, 255, 255, 0) 51%,
-      rgba(255, 255, 255, 1) 100%
-    );
+  &.polylight {
+    background: no-repeat center/contain
+        linear-gradient(
+          145deg,
+          rgba(255, 255, 255, 0) 0%,
+          rgba(218, 238, 246, 0.9) 20%,
+          rgba(218, 238, 246, 0.9) 60%,
+          rgba(255, 255, 255, 0) 100%
+        ),
+      url(../assets/UITex_BGPoliLight_4.png) rgb(201, 226, 239);
+  }
+  &.polydark {
+    background: no-repeat center/contain
+        linear-gradient(
+          145deg,
+          rgba(255, 255, 255, 0) 0%,
+          rgb(117, 218, 248, 0.9) 20%,
+          rgba(117, 218, 248, 0.9) 60%,
+          rgba(255, 255, 255, 0) 100%
+        ),
+      url(../assets/UITex_BGPoliLight_4.png) rgb(62, 186, 240);
+  }
+
+  &[class*="poly"] {
+    background-size: 140%;
+    background-position: -15px 72%;
+    box-shadow: #98C0D7 0 1px 2px;
   }
 }
 </style>

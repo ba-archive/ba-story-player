@@ -28,8 +28,8 @@ watch(
       gsap.from(".ba-dialog-container", {
         opacity: 0,
         y: 100,
-        duration: .3,
-        ease: "power1.out"
+        duration: 0.3,
+        ease: "power1.out",
       });
     }
   }
@@ -53,10 +53,13 @@ watch(
           class="ba-dialog-close button-nostyle"
           @click="$emit('click', $event)"
         >
-          <i>X</i>
+          <i style="user-select: none">X</i>
         </button>
       </div>
-      <slot></slot>
+
+      <div style="flex: 1">
+        <slot></slot>
+      </div>
     </div>
   </div>
 </template>
@@ -69,9 +72,10 @@ watch(
   background: rgba(63, 63, 63, 0.4);
 
   .ba-dialog-container {
+    display: flex;
+    flex-flow: nowrap column;
     background-color: #f0f0f0;
     border-radius: 10px;
-    // border: solid 1px rgba(41, 41, 41, 0.464)
     position: absolute;
     left: 50%;
     top: 50%;
@@ -95,7 +99,7 @@ watch(
       box-shadow: #d1d8da 0 1px 2px 0px;
 
       .ba-dialog-title {
-        margin: 8px 16px;
+        margin: 8px 16px 0 8px;
         font-size: 25px;
         font-weight: bold;
         text-align: center;
