@@ -57,7 +57,7 @@ watch(
         </button>
       </div>
 
-      <div style="flex: 1">
+      <div class="ba-dialog-content-wrapper">
         <slot></slot>
       </div>
     </div>
@@ -97,6 +97,7 @@ watch(
       background-size: 100%;
       background-position: 0 30%;
       box-shadow: #d1d8da 0 1px 2px 0px;
+      flex: 0 0 auto;
 
       .ba-dialog-title {
         margin: 8px 16px 0 8px;
@@ -131,6 +132,12 @@ watch(
         top: 50%;
         transform: translateY(-50%);
       }
+    }
+
+    .ba-dialog-content-wrapper {
+        position: relative;
+        flex: 1 1 auto;
+        min-height: 0;
     }
   }
 }

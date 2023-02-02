@@ -3,7 +3,7 @@ import BaButton from "@/layers/uiLayer/components/BaButton.vue";
 import { onMounted, ref } from "vue";
 import gsap from "gsap";
 import BaDialog from "./components/BaDialog.vue";
-import BaChatLog from "./components/BaChatLog.vue";
+import BaChatLog from "./components/BaChatLog/BaChatLog.vue";
 
 let hiddenDialog = ref(true);
 let hiddenStoryLog = ref(true);
@@ -111,7 +111,7 @@ onMounted(() => {
     <BaDialog
       id="ba-story-log"
       :title="'对话记录'"
-      width="520px"
+      width="80%"
       height="90%"
       :show="!hiddenStoryLog"
       @click="hiddenStoryLog = !hiddenStoryLog"

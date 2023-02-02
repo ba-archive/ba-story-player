@@ -1,0 +1,52 @@
+<script lang="ts" setup>
+import BaChatMessage from "./BaChatMessage.vue";
+import { usePlayerStore } from "@/stores";
+
+let store = usePlayerStore();
+let chatMesasages = store.logText;
+</script>
+
+<template>
+  <div class="ba-chat-log">
+    <ul class="ba-chat-content">
+      <li
+        class="ba-chat-item"
+        v-for="(chatMessage, key) in chatMesasages"
+        :key="key"
+      >
+        <BaChatMessage :chat-message="chatMessage" />
+      </li>
+    </ul>
+  </div>
+</template>
+
+<style lang="scss" scoped>
+.ba-chat-log {
+  --ba-chat-log: 8px;
+  width: calc(100% - 2 * var(--ba-chat-log));
+  height: calc(100% - 2 * var(--ba-chat-log));
+  height: 431px;
+  background-color: #d5d5d5;
+  margin: var(--ba-chat-log);
+  border-radius: 0 0 7px 7px;
+  overflow-y: hidden;
+  position: relative;
+
+  ul.ba-chat-content {  
+    // position: absolute;
+    height: 100%;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    overflow-y: scroll;
+
+    // hide scrollbar
+    scrollbar-width: none;
+    &::-webkit-scrollbar {
+      display: none; /* Chrome Safari */
+    }
+    .ba-chat-item {
+    }
+  }
+}
+</style>
