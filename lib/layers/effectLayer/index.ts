@@ -8,21 +8,26 @@ import { emitterContainer, playBGEffect, removeBGEffect } from './bgEffectHandle
  * 初始化特效层, 订阅player的剧情信息.
  */
 export function effectInit() {
-  let player = document.querySelector('#player') as HTMLDivElement
   let playerStore = usePlayerStore()
   playerStore.app.stage.addChild(emitterContainer)
   eventBus.on('transitionIn', transition => {
-    if (transition.TransitionIn == 'fade') {
-      player.style.backgroundColor = 'black'
-      let playerMain = document.querySelector('#player__main')
-      gsap.to(playerMain, { alpha: 0, duration: transition.TransitionInDuration / 1000 })
+    switch (transition.TransitionIn) {
+      case 'fade':
+        playTransition('black', transition.TransitionInDuration, 'in')
+        break
+      case 'fade_white':
+        playTransition('white', transition.TransitionInDuration, 'in')
+        break
     }
   })
   eventBus.on('transitionOut', transition => {
-    if (transition.TransitionIn == 'fade') {
-      player.style.backgroundColor = 'black'
-      let playerMain = document.querySelector('#player__main')
-      gsap.to(playerMain, { alpha: 1, duration: transition.TransitionOutDuration / 1000 })
+    switch (transition.TransitionOut) {
+      case 'fade':
+        playTransition('black', transition.TransitionOutDuration, 'out')
+        break
+      case 'fade_white':
+        playTransition('white', transition.TransitionOutDuration, 'out')
+        break
     }
   })
   eventBus.on('playEffect', async effects => {
@@ -66,4 +71,24 @@ export function effectInit() {
 
 export async function removeEffect() {
   await removeBGEffect()
+}
+
+/**
+ * 播放器渐变特效
+ * @param color 渐变后的颜色
+ * @param durationMs 渐变时间, 单位为ms
+ * @param mode 渐变方式 in为淡入, out为淡出
+ */
+function playTransition(color: 'black' | 'white', durationMs: number, mode: 'in' | 'out') {
+  let player = document.querySelector('#player') as HTMLDivElement
+  player.style.backgroundColor = color
+  let playerMain = document.querySelector('#player__main')
+  switch (mode) {
+    case 'in':
+      gsap.fromTo(playerMain, { alpha: 1 }, { alpha: 0, duration: durationMs / 1000 })
+      break
+    case 'out':
+      gsap.fromTo(playerMain, { alpha: 0 }, { alpha: 1, duration: durationMs / 1000 })
+      break
+  }
 }
