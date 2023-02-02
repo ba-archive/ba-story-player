@@ -26,7 +26,7 @@ function debounce<T extends Function>(cb: T, wait = 20) {
 
 let handleBtnMenu = debounce((ev: MouseEvent) => {
   menuOpacity.value = menuOpacity.value === 0 ? 1 : 0;
-  if (hiddenMenu) {
+  if (hiddenMenu.value) {
     hiddenMenu.value = false;
   } else {
     setTimeout(() => {
