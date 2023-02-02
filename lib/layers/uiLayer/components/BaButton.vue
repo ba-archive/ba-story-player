@@ -36,6 +36,7 @@ function effectBtnClick(ev: MouseEvent) {
   background-color: #f3f5f6;
   transform: skew(-10deg);
   box-shadow: #2c3f4a 0 1px 2px;
+  transition: background-color .3s;
 
   &.large {
     padding: 8px 68px;
