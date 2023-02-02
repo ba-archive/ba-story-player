@@ -25,7 +25,6 @@ let chatMesasages = store.logText;
   --ba-chat-log: 8px;
   width: calc(100% - 2 * var(--ba-chat-log));
   height: calc(100% - 2 * var(--ba-chat-log));
-  height: 431px;
   background-color: #d5d5d5;
   margin: var(--ba-chat-log);
   border-radius: 0 0 7px 7px;
