@@ -45,6 +45,7 @@ const CharacterLayerInstance: CharacterLayer = {
     app.stage.sortableChildren = true;
     document.addEventListener("resize", this.onWindowResize);
     eventBus.on("showCharacter", showCharacter);
+    eventBus.on("hide", () => Reflect.apply(this.hideCharacter, this, []))
     this.effectPlayerMap.set("emotion", CharacterEmotionPlayerInstance);
     this.effectPlayerMap.set("action", CharacterEffectPlayerInstance);
     this.effectPlayerMap.set("fx", characterFXPlayer);
@@ -137,6 +138,20 @@ const CharacterLayerInstance: CharacterLayer = {
         ...item,
         instance: this.getCharacterSpineInstance(item.CharacterName)!
       };
+    })
+  },
+  hideCharacter() {
+    const { currentCharacterMap } = usePlayerStore()
+    currentCharacterMap.forEach(character => {
+      character.instance.visible = false
+      character.instance.scale.set(1)
+      // 设置锚点到左上角
+      character.instance.pivot = {
+        x: Character_Initial_Pivot_Proportion.x * character.instance.width,
+        y: Character_Initial_Pivot_Proportion.y * character.instance.height,
+      };
+      // 设置缩放比列
+      character.instance.scale.set(this.characterScale);
     })
   },
   showCharacter(data: ShowCharacter): boolean {
