@@ -3,15 +3,37 @@ import BaButton from "@/layers/uiLayer/components/BaButton.vue";
 import { onMounted, ref } from "vue";
 import gsap from "gsap";
 import BaDialog from "./components/BaDialog.vue";
+import BaChatLog from "./components/BaChatLog.vue";
 
 let hiddenDialog = ref(true);
 let hiddenStoryLog = ref(true);
 let fastMode = ref(false);
 let hiddenMenu = ref(true);
+let menuOpacity = ref(0);
 
-function handleBtnAuto(ev: MouseEvent) {
-  console.log(ev);
+// https://gist.github.com/ca0v/73a31f57b397606c9813472f7493a940
+function debounce<T extends Function>(cb: T, wait = 20) {
+  let h = 0;
+  let callable = (...args: any) => {
+    if (!h) {
+      cb(...args);
+      clearTimeout(h);
+      h = setTimeout(() => (h = 0), wait) as unknown as number;
+    }
+  };
+  return <T>(<any>callable);
 }
+
+let handleBtnMenu = debounce((ev: MouseEvent) => {
+  menuOpacity.value = menuOpacity.value === 0 ? 1 : 0;
+  if (hiddenMenu) {
+    hiddenMenu.value = false;
+  } else {
+    setTimeout(() => {
+      hiddenMenu.value = true;
+    }, 200);
+  }
+}, 200);
 
 function effectBtnClick(ev: Event) {
   let tl = gsap.timeline();
@@ -37,7 +59,7 @@ onMounted(() => {
           AUTO
         </BaButton>
         <BaButton
-          @click="hiddenMenu = !hiddenMenu"
+          @click="handleBtnMenu"
           :class="{ 'ba-button-menu': true, activated: !hiddenMenu }"
         >
           MENU
@@ -46,7 +68,10 @@ onMounted(() => {
 
       <div
         class="baui-menu-options lean-rect"
-        :style="{ opacity: hiddenMenu === true ? 0 : 1 }"
+        :style="{
+          opacity: menuOpacity,
+          visibility: hiddenMenu === true ? 'hidden' : 'initial',
+        }"
       >
         <button class="button-nostyle ba-menu-option">
           <img src="./assets/pan-arrow.svg" />
@@ -91,6 +116,7 @@ onMounted(() => {
       :show="!hiddenStoryLog"
       @click="hiddenStoryLog = !hiddenStoryLog"
     >
+      <BaChatLog />
     </BaDialog>
   </div>
 </template>
@@ -147,7 +173,7 @@ onMounted(() => {
     border-radius: 6px;
     background-color: rgba(244, 244, 244, 0.6);
     overflow: hidden;
-    transition: opacity .2s;
+    transition: opacity 0.2s;
 
     .ba-menu-option {
       display: block;
@@ -155,7 +181,7 @@ onMounted(() => {
       background-color: #2c4565;
       border-radius: 3px;
       padding: 4px 8px;
-      transition: background-color .3s ease-out;
+      transition: background-color 0.3s ease-out;
 
       &:hover {
         background-color: #243955;
