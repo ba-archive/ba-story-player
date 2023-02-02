@@ -22,6 +22,10 @@ import { MotionBlurFilter } from '@pixi/filter-motion-blur'
 const AnimationIdleTrack = 0; // 光环动画track index
 const AnimationFaceTrack = 1; // 差分切换
 const AnimationEyeCloseTrack = 2; // TODO 眨眼动画
+/**
+ * 角色初始的pivot相对与长宽的比例, 当前值代表左上角
+ */
+export const Character_Initial_Pivot_Proportion = { x: -1 / 2, y: -1 / 2 }
 
 PixiPlugin.registerPIXI(PIXI)
 gsap.registerPlugin(PixiPlugin)
@@ -115,7 +119,10 @@ const CharacterLayerInstance: CharacterLayer = {
       this.characterScale = screenHeight / (spine.height - screenHeight);
     }
     // 设置锚点到左上角
-    spine.pivot.set(-spine.width / 2, -spine.height / 2,);
+    spine.pivot = {
+      x: Character_Initial_Pivot_Proportion.x * spine.width,
+      y: Character_Initial_Pivot_Proportion.y * spine.height,
+    };
     // 设置缩放比列
     spine.scale.set(this.characterScale);
     // 不显示
