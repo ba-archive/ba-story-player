@@ -48,11 +48,11 @@ function effectBtnClick(ev: MouseEvent) {
         linear-gradient(
           145deg,
           rgba(255, 255, 255, 0) 0%,
-          rgba(218, 238, 246, 0.9) 20%,
-          rgba(218, 238, 246, 0.9) 60%,
+          rgba(227, 247, 255, 0.9) 20%,
+          rgba(227, 247, 255, 0.9) 60%,
           rgba(255, 255, 255, 0) 100%
         ),
-      url(../assets/UITex_BGPoliLight_4.png) rgb(201, 226, 239);
+      url(../assets/UITex_BGPoliLight_4.png) rgb(128, 208, 255);
   }
   &.polydark {
     background: no-repeat center/contain
@@ -63,7 +63,7 @@ function effectBtnClick(ev: MouseEvent) {
           rgba(117, 218, 248, 0.9) 60%,
           rgba(255, 255, 255, 0) 100%
         ),
-      url(../assets/UITex_BGPoliLight_4.png) rgb(62, 186, 240);
+      url(../assets/UITex_BGPoliLight_4.png) rgb(106, 224, 251);
   }
 
   &[class*="poly"] {

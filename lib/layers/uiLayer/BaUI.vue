@@ -155,7 +155,7 @@ onMounted(() => {
             rgba(240, 240, 240, .6) 70%,
             rgba(240, 240, 240, 0) 100%
           ),
-          80px 45% url(./assets/UITex_BGPoliLight_1.png) rgb(210, 228, 236);
+          80px 45% url(./assets/UITex_BGPoliLight_1.png) rgb(164 216 237);
       background-size: 100%;
     }
     color: #32363c;
