@@ -2,6 +2,7 @@
 import BaStoryPlayer from '../lib/BaStoryPlayer.vue'
 import yuuka from './data/yuuka.json'
 import eventBus from '../lib/eventBus'
+import {storyHandler,resourcesLoader} from '../lib/index'
 import ModifyEmotionOption from './components/ModifyEmotionOption.vue';
 
 window.eventBus=eventBus
@@ -10,6 +11,16 @@ window.next=()=>{
   eventBus.emit('effectDone')
   eventBus.emit('next')
 }
+window.baResource = resourcesLoader // 方便查看资源加载情况
+window.baStory = storyHandler
+console.log('资源加载: ', window.baResource)
+console.log('资源调用: ', window.baStore)
+console.log('剧情进度: ', storyHandler)
+
+eventBus.on('*', (type, e) => {
+  if(!(type==='l2dAnimationDone' && e.animation.startsWith('Idle_01') )) 
+    console.log('事件类型', type, '值', e)
+})
 
 </script>
 

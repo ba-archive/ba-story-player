@@ -42,11 +42,6 @@ export async function init(elementID: string, height: number, width: number, sto
   let app = playerStore.app
   document.querySelector(`#${elementID}`)?.appendChild(app.view)
 
-  //打印事件到控制台便于测试, 正式版请移除
-  eventBus.on('*', (type, e) => {
-    console.log('事件类型', type, '值', e)
-  })
-
   Loader.registerPlugin(SpineParser);
 
   //添加加载文字并加载初始化资源以便翻译层进行翻译
@@ -78,8 +73,8 @@ export async function init(elementID: string, height: number, width: number, sto
 /**
  * 处理故事进度对象
  */
-let storyHandler = {
-  currentStoryIndex: 58,
+export let storyHandler = {
+  currentStoryIndex: 0,
 
   get currentStoryUnit(): StoryUnit {
     if (playerStore && playerStore.allStoryUnit.length > this.currentStoryIndex) {
@@ -381,7 +376,7 @@ let eventEmitter = {
 /**
  * 资源加载处理对象
  */
-let resourcesLoader = {
+export let resourcesLoader = {
   loader: new Loader(),
   /**
    * 初始化, 预先加载表资源供翻译层使用
@@ -548,9 +543,3 @@ let resourcesLoader = {
     })
   }
 }
-window.baResource = resourcesLoader // 方便查看资源加载情况
-window.baStory = storyHandler
-console.log('资源加载: ', window.baResource)
-console.log('资源调用: ', window.baStore)
-console.log('剧情进度: ', storyHandler)
-
