@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import { ref } from "vue";
+
 const props = defineProps({
   width: {
     type: String,
@@ -10,6 +12,13 @@ const props = defineProps({
   },
   title: String,
 });
+
+let activated = ref(false);
+
+const emit = defineEmits<{
+  (ev: "click", event: PointerEvent): void;
+}>();
+
 </script>
 
 <template>
@@ -22,7 +31,9 @@ const props = defineProps({
         <h3 class="ba-dialog-title">
           <span>{{ title }}</span>
         </h3>
-        <i class="ba-dialog-close">X</i>
+        <button class="ba-dialog-close button-nostyle" @click="$emit('click', $event)">
+          <i>X</i>
+        </button>
       </div>
       <slot></slot>
     </div>
@@ -38,7 +49,7 @@ const props = defineProps({
 
   .ba-dialog-container {
     background-color: #f0f0f0;
-    border-radius: 16px;
+    border-radius: 10px;
     // border: solid 1px rgba(41, 41, 41, 0.464)
     position: absolute;
     left: 50%;
@@ -50,16 +61,24 @@ const props = defineProps({
     .ba-dialog-header {
       position: relative;
       overflow: hidden;
-      background: no-repeat center/contain linear-gradient(58deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,1) 38%, rgba(255,255,255,1) 100%), url(../assets/UITex_BGPoliLight_2.png) rgb(164 216 237);
+      background: no-repeat center/contain
+          linear-gradient(
+            58deg,
+            rgba(240, 240, 240, 0.1) 0%,
+            rgba(240, 240, 240, 1) 38%,
+            rgba(240, 240, 240, 1) 100%
+          ),
+        url(../assets/UITex_BGPoliLight_2.png) rgb(164 216 237);
       background-size: 100%;
       background-position: 0 30%;
+      box-shadow: #d1d8da 0 1px 2px 0px;
 
       .ba-dialog-title {
         margin: 8px 16px;
         font-size: 25px;
         font-weight: bold;
         text-align: center;
-        z-index: 1;
+        user-select: none;
 
         span {
           display: inline-block;
@@ -74,11 +93,18 @@ const props = defineProps({
       }
 
       .ba-dialog-close {
+        display: inline;
+        background-color: initial;
+        margin: 0;
+        padding: 0;
+        border: none;
         position: absolute;
         font-size: 25px;
+        font-weight: bold;
         margin-right: 16px;
         right: 0;
-        top: 0;
+        top: 50%;
+        transform: translateY(-50%);
       }
     }
   }

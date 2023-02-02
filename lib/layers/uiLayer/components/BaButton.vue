@@ -1,14 +1,21 @@
 <script setup lang="ts">
 import { PropType, Ref, ref } from "vue";
+import gsap from "gsap";
 
 const props = defineProps({
-  style: String as PropType<"primary" | "activate">,
+  bgcolor: String,
   size: String as PropType<"large" | "middle" | "small">,
 });
+
+function handleClick(ev: MouseEvent) {
+  let tl = gsap.timeline();
+  tl.to(ev.target, { duration: 0.15, scale: 0.92 , ease: "power3.out"});
+  tl.to(ev.target, { duration: 0.3, scale: 1 });
+}
 </script>
 
 <template>
-  <button class="ba-button">
+  <button class="ba-button" @click="handleClick">
     <slot></slot>
   </button>
 </template>
@@ -22,15 +29,19 @@ const props = defineProps({
   font-size: 18px;
   font-weight: bold;
   color: #2c4565;
+  background-color: #f3f5f6;
 
-  background-color: rgb(67, 191, 222);
-  &::after {
+  .click-animation {
+  }
+
+  & polylight::after {
     position: absolute;
     top: 0;
     left: 0;
     content: "";
     width: 100%;
     height: 100%;
+    background-color: rgb(67, 191, 222);
     background: url(../assets/UITex_BGPoliLight_3.png);
     background-size: 180%;
     background-position: 10% 10%;

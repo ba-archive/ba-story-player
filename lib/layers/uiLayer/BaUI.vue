@@ -1,22 +1,58 @@
 <script lang="ts" setup>
 import BaButton from "@/layers/uiLayer/components/BaButton.vue";
+import { ref } from "vue";
 import BaDialog from "./components/BaDialog.vue";
+
+let hiddenDialog = ref(true);
+
+function handleBtnAuto(ev: MouseEvent) {
+  console.log(ev);
+}
+
+function handleBtnMenu(ev: MouseEvent) {
+  console.log(ev);
+}
+
+function handleDialogOpen(ev: MouseEvent) {
+    hiddenDialog.value = false
+}
+
+function handleDialogClose(ev: MouseEvent) {
+    hiddenDialog.value = true
+}
+
 </script>
 
 <template>
   <div class="baui">
     <div class="right-top">
+
       <div class="baui-button-group lean-rect">
-        <BaButton>AUTO</BaButton>
-        <BaButton>MENU</BaButton>
+        <BaButton @click="handleBtnAuto">AUTO</BaButton>
+        <BaButton @click="handleBtnMenu">MENU</BaButton>
       </div>
+
       <div class="baui-menu-options lean-rect">
-        <button class="button-nostyle ba-menu-option"><img src="./assets/pan-arrow.svg" /></button>
-        <button class="button-nostyle ba-menu-option"><img src="./assets/menu.svg" /></button>
-        <button class="button-nostyle ba-menu-option"><img src="./assets/fast-forward.svg" /></button>
+        <button class="button-nostyle ba-menu-option">
+          <img src="./assets/pan-arrow.svg" />
+        </button>
+        <button class="button-nostyle ba-menu-option" @click="handleDialogOpen">
+          <img src="./assets/menu.svg" />
+        </button>
+        <button class="button-nostyle ba-menu-option">
+          <img src="./assets/fast-forward.svg" />
+        </button>
       </div>
+
     </div>
-    <BaDialog id="ba-story-summery" :title="'概要'" style="visibility: inherit;"> Hello, World </BaDialog>
+    <BaDialog
+      id="ba-story-summery"
+      :title="'概要'"
+      :style="{ visibility: hiddenDialog === true ? 'hidden' : 'initial' }"
+      @click="handleDialogClose"
+    >
+      Hello, World
+    </BaDialog>
   </div>
 </template>
 
@@ -26,9 +62,10 @@ import BaDialog from "./components/BaDialog.vue";
 }
 
 .button-nostyle {
-    margin: 0;
-    padding: 0;
-    border: none;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background-color: initial;
 }
 
 .right-top {
