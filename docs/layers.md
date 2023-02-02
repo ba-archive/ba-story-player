@@ -84,10 +84,48 @@ UI层负责UI的相关功能
 `skip`: 跳过剧情
 
 `auto`: 启动自动模式
+
+`stopAuto`: 自动模式停止
+
+`hideDialog`: 隐藏对话框
+## 接受事件
+`hidemenu`: 隐藏ui
+
+`showmenu`: 显示ui
 ## 可使用getter
 `logText`: 已播放剧情语句
-
+```ts
+export interface LogText {
+  /**
+   * user: 用户选项
+   * character: 人物对话, 有头像
+   * none: 无所属对话, 此时name不存在
+   */
+  type: 'user' | 'character' | 'none'
+  text: string
+  /**
+   * 人物名
+   */
+  name?: string
+  /**
+   * 头像地址
+   */
+  avatarUrl?: string
+}
+```
 `storySummary`: 剧情梗概
+```ts
+export interface StorySummary {
+  /**
+   * 章节名
+   */
+  chapterName: string,
+  /**
+   * 简介
+   */
+  summary: string
+}
+```
 # 文字层
 文字层负责有对话框文字, 无对话框文字, 选项的显示.
 ## 发出事件
@@ -153,6 +191,8 @@ interface Option {
     text: string
 }
 ```
+
+`hideDialog`: 隐藏对话框
 ## 发出事件
 `next`: 进入下一语句
 

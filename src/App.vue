@@ -5,8 +5,8 @@ import eventBus from '../lib/eventBus'
 import {storyHandler,resourcesLoader} from '../lib/index'
 import ModifyEmotionOption from './components/ModifyEmotionOption.vue';
 
-window.eventBus=eventBus
-window.next=()=>{
+window.eventBus = eventBus
+window.next = () => {
   eventBus.emit('characterDone')
   eventBus.emit('effectDone')
   eventBus.emit('next')
@@ -22,6 +22,10 @@ eventBus.on('*', (type, e) => {
     console.log('事件类型', type, '值', e)
 })
 
+let storySummary = {
+  chapterName: '章节名',
+  summary: '总之就是总结'
+}
 </script>
 
 <template>
@@ -32,6 +36,7 @@ eventBus.on('*', (type, e) => {
     :height="550"
     language="Cn"
     username="testUser"
+    :story-summary="storySummary"
     />
     <!-- <ModifyEmotionOption /> -->
   </div>
