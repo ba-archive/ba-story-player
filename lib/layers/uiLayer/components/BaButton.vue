@@ -7,15 +7,15 @@ const props = defineProps({
   size: String as PropType<"large" | "middle" | "small">,
 });
 
-function handleClick(ev: MouseEvent) {
+function effectBtnClick(ev: MouseEvent) {
   let tl = gsap.timeline();
-  tl.to(ev.target, { duration: 0.15, scale: 0.92 , ease: "power3.out"});
+  tl.to(ev.target, { duration: 0.15, scale: 0.94 , ease: "power3.out"});
   tl.to(ev.target, { duration: 0.3, scale: 1 });
 }
 </script>
 
 <template>
-  <button class="ba-button" @click="handleClick">
+  <button class="ba-button" @click="effectBtnClick">
     <slot></slot>
   </button>
 </template>

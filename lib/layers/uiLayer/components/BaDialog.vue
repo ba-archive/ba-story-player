@@ -1,5 +1,7 @@
 <script lang="ts" setup>
-import { ref } from "vue";
+import { watch } from "vue";
+import { onMounted, ref } from "vue";
+import gsap from "gsap";
 
 const props = defineProps({
   width: {
@@ -11,18 +13,34 @@ const props = defineProps({
     default: "400px",
   },
   title: String,
+  show: Boolean,
+  showAnimation: Boolean, // 当对话框出现时是否展示动画
 });
-
-let activated = ref(false);
 
 const emit = defineEmits<{
   (ev: "click", event: PointerEvent): void;
 }>();
 
+watch(
+  () => props.show,
+  (newValue) => {
+    if (newValue === true) {
+      gsap.from(".ba-dialog-container", {
+        opacity: 0,
+        y: 100,
+        duration: .3,
+        ease: "power1.out"
+      });
+    }
+  }
+);
 </script>
 
 <template>
-  <div class="ba-dialog">
+  <div
+    class="ba-dialog"
+    :style="{ visibility: show === false ? 'hidden' : 'initial' }"
+  >
     <div
       class="ba-dialog-container"
       :style="{ width: props.width, height: props.height }"
@@ -31,7 +49,10 @@ const emit = defineEmits<{
         <h3 class="ba-dialog-title">
           <span>{{ title }}</span>
         </h3>
-        <button class="ba-dialog-close button-nostyle" @click="$emit('click', $event)">
+        <button
+          class="ba-dialog-close button-nostyle"
+          @click="$emit('click', $event)"
+        >
           <i>X</i>
         </button>
       </div>

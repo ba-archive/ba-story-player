@@ -1,55 +1,61 @@
 <script lang="ts" setup>
 import BaButton from "@/layers/uiLayer/components/BaButton.vue";
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
+import gsap from "gsap";
 import BaDialog from "./components/BaDialog.vue";
 
 let hiddenDialog = ref(true);
+let hiddenMenu = ref(true);
 
 function handleBtnAuto(ev: MouseEvent) {
   console.log(ev);
 }
 
-function handleBtnMenu(ev: MouseEvent) {
-  console.log(ev);
+function effectBtnClick(ev: Event) {
+  let tl = gsap.timeline();
+  tl.to(ev.currentTarget, { duration: 0.15, scale: 0.94, ease: "power3.out" });
+  tl.to(ev.currentTarget, { duration: 0.3, scale: 1 });
 }
-
-function handleDialogOpen(ev: MouseEvent) {
-    hiddenDialog.value = false
-}
-
-function handleDialogClose(ev: MouseEvent) {
-    hiddenDialog.value = true
-}
+onMounted(() => {
+  document.querySelectorAll(".ba-menu-option").forEach((elem) => {
+    console.log(elem);
+    elem.addEventListener("click", effectBtnClick);
+  });
+});
 
 </script>
 
 <template>
   <div class="baui">
     <div class="right-top">
-
       <div class="baui-button-group lean-rect">
         <BaButton @click="handleBtnAuto">AUTO</BaButton>
-        <BaButton @click="handleBtnMenu">MENU</BaButton>
+        <BaButton @click="hiddenMenu = !hiddenMenu">MENU</BaButton>
       </div>
 
-      <div class="baui-menu-options lean-rect">
+      <div
+        class="baui-menu-options lean-rect"
+        :style="{ visibility: hiddenMenu === true ? 'hidden' : 'initial' }"
+      >
         <button class="button-nostyle ba-menu-option">
           <img src="./assets/pan-arrow.svg" />
         </button>
-        <button class="button-nostyle ba-menu-option" @click="handleDialogOpen">
+        <button class="button-nostyle ba-menu-option">
           <img src="./assets/menu.svg" />
         </button>
-        <button class="button-nostyle ba-menu-option">
+        <button
+          class="button-nostyle ba-menu-option"
+          @click="hiddenDialog = false"
+        >
           <img src="./assets/fast-forward.svg" />
         </button>
       </div>
-
     </div>
     <BaDialog
       id="ba-story-summery"
       :title="'概要'"
-      :style="{ visibility: hiddenDialog === true ? 'hidden' : 'initial' }"
-      @click="handleDialogClose"
+      :show="!hiddenDialog"
+      @click="hiddenDialog = true"
     >
       Hello, World
     </BaDialog>
