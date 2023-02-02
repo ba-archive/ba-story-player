@@ -12,7 +12,8 @@ import axios from 'axios';
 import { SpineParser } from 'pixi-spine';
 import { Application, Loader, settings, Text } from "pixi.js";
 import * as utils from '@/utils'
-import { getOtherSoundUrls } from "@/utils";
+import { getOtherSoundUrls, wait } from "@/utils";
+import { L2DInit } from "./layers/l2dLayer/L2D";
 
 let playerStore: ReturnType<typeof usePlayerStore>
 let privateState: ReturnType<typeof initPrivateState>
@@ -42,9 +43,6 @@ export async function init(elementID: string, height: number, width: number, sto
   let app = playerStore.app
   document.querySelector(`#${elementID}`)?.appendChild(app.view)
 
-  //打印事件到控制台便于测试, 正式版请移除
-  eventBus.on('*', (type, e) => console.log(type, e))
-
   Loader.registerPlugin(SpineParser);
 
   //添加加载文字并加载初始化资源以便翻译层进行翻译
@@ -60,6 +58,7 @@ export async function init(elementID: string, height: number, width: number, sto
   characterInit()
   soundInit()
   effectInit()
+  L2DInit()
 
   //加载剩余资源
   resourcesLoader.addLoadResources()
@@ -76,7 +75,7 @@ export async function init(elementID: string, height: number, width: number, sto
 /**
  * 处理故事进度对象
  */
-let storyHandler = {
+export let storyHandler = {
   currentStoryIndex: 0,
 
   get currentStoryUnit(): StoryUnit {
@@ -102,7 +101,7 @@ let storyHandler = {
   },
 
   /**
-   * 通过下标递增更新当前故事节点 
+   * 通过下标递增更新当前故事节点
    */
   storyIndexIncrement() {
     let currentSelectionGroup = this.currentStoryUnit.SelectionGroup
@@ -120,8 +119,8 @@ let storyHandler = {
 
   /**
    * 根据选项控制故事节点
-   * @param option 
-   * @returns 
+   * @param option
+   * @returns
    */
   select(option: number) {
     while (this.currentStoryUnit.SelectionGroup != option) {
@@ -146,6 +145,7 @@ let storyHandler = {
  * 事件发送控制对象
  */
 let eventEmitter = {
+  /** 当前是否处于l2d播放中, 并不特指l2d某个动画 */
   l2dPlaying: false,
   voiceIndex: 1,
   playL2dVoice: true,
@@ -153,9 +153,11 @@ let eventEmitter = {
   effectDone: true,
   titleDone: true,
   stDone: true,
+  /** 当前l2d动画是否播放完成 */
+  l2dAnimationDone: true,
 
   get unitDone() {
-    return this.characterDone && this.effectDone && this.titleDone && this.stDone
+    return this.characterDone && this.effectDone && this.titleDone && this.stDone && this.l2dAnimationDone
   },
 
   /**
@@ -174,6 +176,7 @@ let eventEmitter = {
     })
     eventBus.on('effectDone', () => eventEmitter.effectDone = true)
     eventBus.on('characterDone', () => eventEmitter.characterDone = true)
+    eventBus.on('l2dAnimationDone', (e) => eventEmitter.l2dAnimationDone = e.done)
     eventBus.on('auto', () => console.log('auto!'))
 
     this.storyPlay()
@@ -183,8 +186,7 @@ let eventEmitter = {
    * 播放故事直到对话框或选项出现
    */
   async storyPlay() {
-    while (!['text', 'option'].includes(storyHandler.currentStoryUnit.type)) {
-      console.log(storyHandler.currentStoryUnit.type)
+    while (!['text', 'option'].includes(storyHandler.currentStoryUnit.type) && !storyHandler.currentStoryUnit.l2d) {
       await this.emitEvents()
       storyHandler.storyIndexIncrement()
     }
@@ -195,6 +197,8 @@ let eventEmitter = {
    * 根据当前剧情发送事件
    */
   async emitEvents() {
+    // TODO: 上线注释, 也可以不注释
+    console.log('剧情进度: '+ storyHandler.currentStoryIndex, storyHandler.currentStoryUnit)
     await this.transitionIn()
     this.hide()
     this.showBg()
@@ -311,8 +315,8 @@ let eventEmitter = {
   playL2d() {
     if (storyHandler.currentStoryUnit.l2d) {
       if (storyHandler.currentStoryUnit.l2d.animationName === 'Idle_01') {
-        eventBus.emit('playL2D')
         playerStore.setL2DSpineUrl(storyHandler.currentStoryUnit.l2d.spineUrl)
+        eventBus.emit('playL2D')
         this.l2dPlaying = true
       }
       else {
@@ -374,7 +378,7 @@ let eventEmitter = {
 /**
  * 资源加载处理对象
  */
-let resourcesLoader = {
+export let resourcesLoader = {
   loader: new Loader(),
   /**
    * 初始化, 预先加载表资源供翻译层使用
@@ -412,12 +416,15 @@ let resourcesLoader = {
 
       //添加l2d spine资源
       this.checkAndAdd(unit.l2d, 'spineUrl')
+      if(unit.l2d){
+        playerStore.curL2dConfig?.otherSpine.forEach(i=>this.checkAndAdd(utils.getResourcesUrl('otherL2dSpine', i)))
+      }
     }
   },
 
   /**
    * 加载资源并在加载完成后执行callback
-   * @param callback 
+   * @param callback
    */
   load(callback: () => void) {
     let hasLoad = false
@@ -537,12 +544,4 @@ let resourcesLoader = {
       }
     })
   }
-}
-
-
-/**
- * wait in promise
- */
-function wait(milliseconds: number) {
-  return new Promise(resolve => setTimeout(resolve, milliseconds));
 }

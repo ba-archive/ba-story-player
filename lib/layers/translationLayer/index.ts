@@ -3,6 +3,7 @@ import { EmotionWord } from "@/types/characterLayer";
 import { StoryRawUnit, StoryUnit } from "@/types/common";
 import { StArgs } from '@/types/events';
 import { getResourcesUrl } from '@/utils';
+import { l2dConfig } from '../l2dLayer/l2dConfig';
 import * as utils from "./utils";
 
 let emotionWordTable: { [index: string]: EmotionWord } = {
@@ -78,8 +79,11 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
           }
         }
         else if (BGItem.BGType === 'Spine') {
+          // 取第一次出现的 l2d 作为配置
+          const l2dInfo = utils.getL2DUrlAndName(BGItem.BGFileName)
+          playerStore.setL2DConfig(playerStore.curL2dConfig || l2dConfig[l2dInfo.name])
           unit.l2d = {
-            spineUrl: utils.getL2DUrl(BGItem.BGFileName),
+            spineUrl: l2dInfo.url,
             animationName: BGItem.AnimationName
           }
         }

@@ -39,6 +39,7 @@ let privateState: PrivateStates = {
   dataUrl: '',
   app: null,
   l2dSpineUrl: '',
+  curL2dConfig: null,
   storySummary: {
     chapterName: '',
     summary: ''
@@ -124,6 +125,9 @@ let actions: Actions = {
   setL2DSpineUrl(url) {
     privateState.l2dSpineUrl = url
   },
+  setL2DConfig(val){
+    privateState.curL2dConfig = val
+  }
 }
 
 let store = {
@@ -156,4 +160,6 @@ export let usePlayerStore = () => {
 /**
  * 返回可修改的privateState, 仅本体在初始化时可调用
  */
-export let initPrivateState = () => privateState
+export let initPrivateState = () => privateState;
+
+window.baStore = store // 存一个随时可以查看值

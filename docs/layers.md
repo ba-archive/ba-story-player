@@ -15,7 +15,7 @@
 ## 接收事件
 `showCharacter`
 展示人物
-参数: 
+参数:
 ```ts
  interface ShowCharacter{
       characters: Character[],
@@ -27,7 +27,7 @@
       face: number,
       highlight: boolean
 }
-    
+
 interface CharacterEffect{
       target: number //注意指的是position
        type:'emotion'|'action'|'signal'|'fx'
@@ -161,15 +161,15 @@ interface TextEffect {
 ```
 
 `st`: 显示无对话框文字
-参数: 
+参数:
 ```ts
 interface StText{
   text: Text[]
-  stArgs:[number[],'serial'|'instant',number] 
+  stArgs:[number[],'serial'|'instant',number]
 }
 
 ```
-stArgs: 
+stArgs:
 第一个参数代表位置, 一般由两个数组成
 位置示意图:
 ![](./img/text-position.png)
@@ -195,7 +195,7 @@ interface Option {
 `hideDialog`: 隐藏对话框
 ## 发出事件
 `next`: 进入下一语句
-    
+
 `select`: 选择后加入下一剧情语句, 需要带一个number类型的参数
 
 `playSelectSound`: 播放选择时的特效音
@@ -209,6 +209,8 @@ interface Option {
 `effectDone`: 特效播放完成时发出的事件
 # L2D层
 L2D层用于播放L2D
+## live2D 动画
+关于查看 spine 中有的动画, 参考 https://www.bilibili.com/read/cv18073492
 ## 发出事件
 `animationDone`: 当前l2d动画播放完成
 ## 接收事件
