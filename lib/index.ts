@@ -198,7 +198,7 @@ let eventEmitter = {
    */
   async emitEvents() {
     // TODO: 上线注释, 也可以不注释
-    console.log('剧情进度: '+ storyHandler.currentStoryIndex, storyHandler.currentStoryUnit)
+    console.log('剧情进度: ' + storyHandler.currentStoryIndex, storyHandler.currentStoryUnit)
     await this.transitionIn()
     this.hide()
     this.showBg()
@@ -355,7 +355,7 @@ let eventEmitter = {
       this.effectDone = false
       eventBus.emit('playEffect', storyHandler.currentStoryUnit.effect)
     }
-    else{
+    else {
       eventBus.emit('removeEffect')
     }
   },
@@ -420,8 +420,8 @@ export let resourcesLoader = {
 
       //添加l2d spine资源
       this.checkAndAdd(unit.l2d, 'spineUrl')
-      if(unit.l2d){
-        playerStore.curL2dConfig?.otherSpine.forEach(i=>this.checkAndAdd(utils.getResourcesUrl('otherL2dSpine', i)))
+      if (unit.l2d) {
+        playerStore.curL2dConfig?.otherSpine.forEach(i => this.checkAndAdd(utils.getResourcesUrl('otherL2dSpine', i)))
       }
     }
   },

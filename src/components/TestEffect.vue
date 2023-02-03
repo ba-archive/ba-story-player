@@ -139,16 +139,17 @@ function effectTypeChange() {
 }
 
 //otherEffect
-let currentOtherEffectType = ref<Effect['type']>('wait')
-let otherEffectArgs = ref<any>()
+let currentOtherEffectType = ref<Effect['type']>('zmc')
+let defaultZmcArgs: ZmcArgs = {
+  type: 'move',
+  position: [0, -222],
+  size: 2528,
+  duration: 10
+}
+let otherEffectArgs = ref<any>(defaultZmcArgs)
 watch(currentOtherEffectType, () => {
   if (currentOtherEffectType.value === 'zmc') {
-    otherEffectArgs.value = {
-      type: 'move',
-      position: [0, 222],
-      size: 2528,
-      duration: 2000
-    } as ZmcArgs
+    otherEffectArgs.value = defaultZmcArgs
   }
   nextTick(() => resizeTextareas())
 })
