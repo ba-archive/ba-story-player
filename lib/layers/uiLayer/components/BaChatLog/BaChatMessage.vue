@@ -29,7 +29,7 @@ const props = defineProps({
   z-index: 0;
   display: flex;
   .ba-chat-message-avatar {
-    height: 60px;
+    height: 70px;
     margin: 16px 8px;
     object-fit: cover;
     aspect-ratio: 91 / 72;
@@ -41,7 +41,7 @@ const props = defineProps({
   }
   .ba-chat-message-bubble {
     position: relative;
-    margin: 12px 24px 12px 0;
+    margin: 8px 24px 4px 0;
     flex: 1;
 
     .ba-chat-message-bubble-name-bg {
@@ -88,8 +88,9 @@ const props = defineProps({
     }
 
     .ba-chat-message-text {
+      font-size: 15px;
       margin: 8px 24px;
-      min-height: 83.6px;
+      min-height: 80px;
     }
   }
 }

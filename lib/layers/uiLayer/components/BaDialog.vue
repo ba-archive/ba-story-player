@@ -135,11 +135,21 @@ watch(
     }
 
     .ba-dialog-content-wrapper {
-        // 阴影效果
-        margin-top: 2px;
-        position: relative;
-        flex: 1 1 auto;
-        min-height: 0;
+      // 阴影效果
+      margin-top: 2px;
+      position: relative;
+      flex: 1 1 auto;
+      min-height: 0;
+
+      background: no-repeat right bottom/contain
+          linear-gradient(
+            135deg,
+            rgba(255, 255, 255, 1) 0%,
+            rgba(255, 255, 255, 1) 67%,
+            rgba(255, 255, 255, 0.85) 85%,
+            rgba(255, 255, 255, 0) 100%
+          ),
+        repeat right -30% bottom/50% url(../assets/UITex_BGPoliLight_4.png) rgb(135, 196, 232);
     }
   }
 }
