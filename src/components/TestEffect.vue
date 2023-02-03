@@ -42,6 +42,9 @@
         <input v-model="otherEffectArgs" type="number" />
       </div>
       <div v-else-if="currentOtherEffectType === 'zmc'">
+        <label style="display: block;">参数</label>
+        <textarea :value="JSON.stringify(otherEffectArgs, null, 2)"
+          @input="event => { otherEffectArgs = JSON.parse((event.target as HTMLTextAreaElement).value) }" />
       </div>
     </div>
     <button @click="playEffect">播放特效</button>
@@ -53,13 +56,13 @@
 import eventBus from '@/eventBus';
 import { usePlayerStore } from '@/stores/index';
 import { wait } from '@/utils';
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import { resizeTextareas } from '../utils';
 import { resourcesLoader } from '@/index'
 import { removeEffect } from '@/layers/effectLayer'
 import { bgEffectHandlerOptions } from '@/layers/effectLayer/bgEffectHandlers'
 import { BGEffectType } from '@/types/excels';
-import { Effect } from '@/types/common';
+import { Effect, ZmcArgs } from '@/types/common';
 
 await resourcesLoader.loadExcels()
 let effectType = ref<'transition' | 'bgeffect' | 'other'>('transition')
@@ -138,6 +141,17 @@ function effectTypeChange() {
 //otherEffect
 let currentOtherEffectType = ref<Effect['type']>('wait')
 let otherEffectArgs = ref<any>()
+watch(currentOtherEffectType, () => {
+  if (currentOtherEffectType.value === 'zmc') {
+    otherEffectArgs.value = {
+      type: 'move',
+      position: [0, 222],
+      size: 2528,
+      duration: 2000
+    } as ZmcArgs
+  }
+  nextTick(() => resizeTextareas())
+})
 
 //缓存值以便刷新后正常使用
 let cache = {
