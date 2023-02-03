@@ -289,6 +289,7 @@ let eventEmitter = {
         this.l2dPlaying = false
       }
     }
+    // eventBus.emit('showBg', 'https://yuuka.cdn.diyigemt.com/image/ba-all-data/UIs/03_Scenario/01_Background/BG_CS_PR_16.jpg')
   },
 
   /**
@@ -394,6 +395,9 @@ export let resourcesLoader = {
    * 添加所有资源
    */
   addLoadResources() {
+    // this.loader.add('https://yuuka.cdn.diyigemt.com/image/ba-all-data/UIs/03_Scenario/01_Background/BG_CS_PR_16.jpg',
+    //   'https://yuuka.cdn.diyigemt.com/image/ba-all-data/UIs/03_Scenario/01_Background/BG_CS_PR_16.jpg'
+    // )
     this.addEmotionResources()
     this.addFXResources()
     this.addOtherSounds()

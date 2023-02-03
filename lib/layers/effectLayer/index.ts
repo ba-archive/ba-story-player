@@ -47,7 +47,7 @@ export function effectInit() {
           break
         case 'zmc':
           if (bgInstance) {
-            promiseArray.push(playZmc(bgInstance, effect.args, playerStore.app))
+            promiseArray.push(zmcPlayer.playZmc(bgInstance, effect.args, playerStore.app))
           }
           break
         default:
@@ -65,6 +65,8 @@ export function effectInit() {
 
 export async function removeEffect() {
   await removeBGEffect()
+  let { bgInstance } = usePlayerStore()
+  zmcPlayer.removeZmc(bgInstance)
 }
 
 /**
@@ -73,7 +75,7 @@ export async function removeEffect() {
  * @param durationMs 渐变时间, 单位为ms
  * @param mode 渐变方式 in为淡入, out为淡出
  */
-function playTransition(color: 'black' | 'white', durationMs: number, mode: 'in' | 'out') {
+function playTransition(color: 'black' | 'white', durationMs: number, mode: 'in' | 'out'): void {
   let player = document.querySelector('#player') as HTMLDivElement
   player.style.backgroundColor = color
   let playerMain = document.querySelector('#player__main')
@@ -91,7 +93,7 @@ function playTransition(color: 'black' | 'white', durationMs: number, mode: 'in'
  * 背景摇晃
  * @param bgInstance 背景图片实例
  */
-async function playBgShake(bgInstance: Sprite) {
+async function playBgShake(bgInstance: Sprite): Promise<void> {
   let tl = gsap.timeline()
   let fromX = bgInstance.x - bgInstance.width * 0.01
   let toX = bgInstance.x + bgInstance.width * 0.01
@@ -109,35 +111,59 @@ async function playBgShake(bgInstance: Sprite) {
     .then()
 }
 
-/**
- * 根据参数执行zmc效果
- * @param bgInstance 背景图片实例
- * @param args zmc参数
- * @param app pixi Application实例
- */
-async function playZmc(bgInstance: Sprite, args: ZmcArgs, app: Application) {
-  bgInstance.scale.set(1)
-  bgInstance.anchor.set(0.5, 0.5)
-  //大小算法尚不明确
-  bgInstance.scale.set(args.size / bgInstance.width * 0.5)
-  switch (args.type) {
-    case 'instant':
-      bgInstance.pivot.x += args.position[0]
-      //y轴方向与pixi默认方向相反
-      bgInstance.pivot.y += -args.position[1]
-      bgInstance.position.set(app.screen.width / 2, app.screen.height / 2)
-      break
-    case 'move':
-      if (args.duration !== 10) {
-        await gsap.to(bgInstance, {
-          pixi: { x: `+=${args.position[0]}`, y: `+=${args.position[1]}` },
-          duration: args.duration / 1000
-        }).then()
-      }
-      else {
+const Default_Scale = 100
+let zmcPlayer = {
+  bgInstanceOriginScale: Default_Scale,
+  bgInstanceOriginPosition: { x: 0, y: 0 },
+  /**
+   * 根据参数执行zmc效果
+   * @param bgInstance 背景图片实例
+   * @param args zmc参数
+   * @param app pixi Application实例
+   */
+  async playZmc(bgInstance: Sprite, args: ZmcArgs, app: Application): Promise<void> {
+    if (this.bgInstanceOriginScale === Default_Scale) {
+      this.bgInstanceOriginScale = bgInstance.scale.x
+      this.bgInstanceOriginPosition = bgInstance.position.clone()
+    }
+    bgInstance.scale.set(1)
+    bgInstance.anchor.set(0.5, 0.5)
+    //大小算法尚不明确, 先用一个魔法数代替
+    bgInstance.scale.set(args.size / bgInstance.width * (7 / 8) * this.bgInstanceOriginScale)
+    switch (args.type) {
+      case 'instant':
         bgInstance.pivot.x += args.position[0]
+        //y轴方向与pixi默认方向相反
         bgInstance.pivot.y += -args.position[1]
         bgInstance.position.set(app.screen.width / 2, app.screen.height / 2)
+        break
+      case 'move':
+        if (args.duration !== 10) {
+          //不清楚具体如何作用, 经测试大概需要乘以原来缩放的1.5倍
+          let positionProportion = this.bgInstanceOriginScale * 1.5
+          await gsap.to(bgInstance, {
+            pixi: { x: `+=${args.position[0] * positionProportion}`, y: `+=${args.position[1] * positionProportion}` },
+            duration: args.duration / 1000
+          }).then()
+        }
+        else {
+          bgInstance.pivot.x += args.position[0]
+          bgInstance.pivot.y += -args.position[1]
+          bgInstance.position.set(app.screen.width / 2, app.screen.height / 2)
+        }
+    }
+  },
+
+  /**
+   * 移除zmc特效
+   */
+  async removeZmc(bgInstance: Sprite | null) {
+    if (bgInstance) {
+      if (this.bgInstanceOriginScale !== Default_Scale) {
+        bgInstance.scale.set(this.bgInstanceOriginScale)
+        bgInstance.pivot.set(0, 0)
+        bgInstance.position = this.bgInstanceOriginPosition
       }
+    }
   }
 }
