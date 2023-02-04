@@ -47,7 +47,7 @@ let bgEffectImgTable: BGEffectImgTable = {
   BG_Love_L: [],
   'BG_ScrollB_0.5': [],
   BG_Rain_L: ['HardRain.png'],
-  BG_UnderFire: [],
+  BG_UnderFire: ['FX_TEX_Smoke_17.png', 'fire1.svg', 'fire2.svg', 'fire3.svg', 'HardRain.png'],
   BG_WaveShort_F: [],
   BG_SandStorm_L: [],
   'BG_ScrollT_1.5': [],
@@ -168,7 +168,7 @@ let actions: Actions = {
   setL2DSpineUrl(url) {
     privateState.l2dSpineUrl = url
   },
-  setL2DConfig(val){
+  setL2DConfig(val) {
     privateState.curL2dConfig = val
   }
 }

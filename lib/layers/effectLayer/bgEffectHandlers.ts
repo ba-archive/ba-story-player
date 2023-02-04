@@ -1,8 +1,8 @@
 import { usePlayerStore } from "@/stores";
-import { BGEffectHandlerOptions, BGEffectHandlers, CurrentBGEffect as CurrentBGEffect, EffectRemoveFunction } from "@/types/effectLayer";
-import { Container, Sprite } from "pixi.js";
-import { Emitter, EmitterConfigV2, upgradeConfig } from '@pixi/particle-emitter'
+import { BGEffectHandlerOptions, BGEffectHandlers, CurrentBGEffect, EffectRemoveFunction } from "@/types/effectLayer";
 import { BGEffectExcelTableItem } from "@/types/excels";
+import { Emitter, EmitterConfigV2, EmitterConfigV3, upgradeConfig } from '@pixi/particle-emitter';
+import { Container, Sprite, Spritesheet, Texture } from "pixi.js";
 
 /**
  * app和bgInstance请从此处调用
@@ -14,8 +14,9 @@ let playerStore = usePlayerStore()
  */
 export let emitterContainer = new Container()
 emitterContainer.zIndex = 15
+emitterContainer.sortableChildren = true
 
-let emitterConfigsRaw = import.meta.glob<EmitterConfigV2>('./emitterConfigs/*.json', { eager: true })
+let emitterConfigsRaw = import.meta.glob<EmitterConfigV2 | EmitterConfigV3>('./emitterConfigs/*.json', { eager: true })
 /**
  * 获取emitter config
  * @param filename 文件名, 不需要加.json后缀
@@ -100,7 +101,7 @@ export let bgEffectHandlers: BGEffectHandlers = {
     throw new Error("该BGEffect处理函数未实现");
   },
   BG_Rain_L: async function (resources, setting, options) {
-    let newRainConfig = { ...emitterConfigs('rain') }
+    let newRainConfig: EmitterConfigV2 = { ...emitterConfigs('rain') }
     newRainConfig.spawnRect!.w = playerStore.app.view.width
     newRainConfig.spawnRect!.h = playerStore.app.view.height
     newRainConfig.frequency = options.frequency
@@ -108,7 +109,75 @@ export let bgEffectHandlers: BGEffectHandlers = {
     return emitterHelper(emitter)
   },
   BG_UnderFire: async function (resources, setting, options) {
-    throw new Error("该BGEffect处理函数未实现");
+    let ininX = playerStore.app.screen.width * 7 / 8
+    let ininY = playerStore.app.screen.height * 7 / 8
+
+    //烟雾效果, 通过spreetsheet实现烟雾散开
+    let smokeContainer = new Container()
+    emitterContainer.addChild(smokeContainer)
+    smokeContainer.zIndex = 1
+    let smokeConifg: EmitterConfigV3 = { ...emitterConfigs('smoke') as EmitterConfigV3 }
+    smokeConifg.pos = {
+      x: ininX,
+      y: ininY
+    }
+    let smokeAnimationsName = 'smoke'
+    let smokeSpritesheet = await loadSpriteSheet(resources[0], { x: 3, y: 3 }, smokeAnimationsName)
+    smokeConifg.behaviors[3].config.anim.textures = Reflect.get(smokeSpritesheet.animations, smokeAnimationsName)
+    let smokeEmitter = new Emitter(smokeContainer, smokeConifg)
+    let smokeRemover = emitterHelper(smokeEmitter)
+
+    //火焰效果, emitter随机从三个素材中选一个发出
+    let fireContainer = new Container()
+    emitterContainer.addChild(fireContainer)
+    fireContainer.zIndex = 2
+    let fireConfig: EmitterConfigV3 = { ...emitterConfigs('fire') as EmitterConfigV3 }
+    fireConfig.pos = {
+      x: ininX,
+      y: ininY
+    }
+    let fireImgs = resources.slice(1, 4)
+    for (let i = 0; i < 3; ++i) {
+      //textureRandom behaviors
+      fireConfig.behaviors[2].config.textures.push(fireImgs[i].texture)
+    }
+    let fireEmitter = new Emitter(fireContainer, fireConfig)
+    let fireRemover = emitterHelper(fireEmitter)
+
+    let firelineContainer = new Container()
+    emitterContainer.addChild(firelineContainer)
+    firelineContainer.zIndex = 0
+    let firelineConfig: EmitterConfigV3 = { ...emitterConfigs('fireline') as EmitterConfigV3 }
+    firelineConfig.behaviors[0].config.texture = resources[4].texture
+    firelineConfig.pos = {
+      x: ininX,
+      y: ininY
+    }
+    let fireLineEmitter = new Emitter(firelineContainer, firelineConfig)
+    let firelineRemover = emitterHelper(fireLineEmitter)
+
+    let posX = smokeEmitter.spawnPos.x
+    let posY = smokeEmitter.spawnPos.y
+
+    //原点向左移动, 移出屏幕后停止
+    await new Promise<void>(resolve => {
+      let underfirePlay = setInterval(async () => {
+        if (posX <= -ininX) {
+          clearInterval(underfirePlay)
+          await smokeRemover()
+          await fireRemover()
+          await firelineRemover()
+          resolve()
+          return
+        }
+        posX -= playerStore.app.screen.width / 5
+        smokeEmitter.updateSpawnPos(posX, posY)
+        fireEmitter.updateSpawnPos(posX, posY)
+        fireLineEmitter.updateSpawnPos(posX, posY)
+      }, 140)
+    })
+
+    return () => Promise.resolve()
   },
   BG_WaveShort_F: async function (resources, setting, options) {
     throw new Error("该BGEffect处理函数未实现");
@@ -270,4 +339,50 @@ function emitterHelper(emitter: Emitter, stopCallback?: () => void): EffectRemov
   update();
 
   return stop
+}
+
+
+/**
+ * 根据给定的信息, 加载spriteSheet
+ * @param img spriteSheet原图片Sprite
+ * @param quantity x, y方向上小图片的个数
+ * @param animationsName 该图片组成的动画的名字, 用于访问资源
+ */
+async function loadSpriteSheet(img: Sprite, quantity: { x: number, y: number }, animationsName: string): Promise<Spritesheet> {
+  // Create object to store sprite sheet data
+  let atlasData = {
+    frames: {
+    },
+    meta: {
+      scale: '1'
+    },
+    animations: {
+    } as Record<string, string[]>
+  }
+  Reflect.set(atlasData.animations, animationsName, [])
+
+  img.scale.set(1)
+  let xNum = quantity.x
+  let yNum = quantity.y
+  let width = img.width / xNum
+  let height = img.height / yNum
+  for (let i = 0; i < xNum * yNum; ++i) {
+    Reflect.set(atlasData.frames, `smoke${i}`, {
+      frame: { x: width * (i % xNum), y: height * (Math.trunc(i / xNum)), w: width, h: height },
+      sourceSize: { w: width, h: height },
+      spriteSourceSize: { x: 0, y: 0, w: width, h: height }
+    })
+    atlasData.animations[animationsName].push(`${animationsName}${i}`)
+  }
+
+  // Create the SpriteSheet from data and image
+  const spritesheet = new Spritesheet(
+    img.texture,
+    atlasData
+  );
+
+  // Generate all the Textures asynchronously
+  await spritesheet.parse();
+
+  return spritesheet
 }
