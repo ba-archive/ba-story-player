@@ -1,15 +1,31 @@
 <script lang="ts" setup>
 import BaButton from "@/layers/uiLayer/components/BaButton.vue";
-import { onMounted, ref } from "vue";
+import { onMounted, ref, watchEffect } from "vue";
 import gsap from "gsap";
 import BaDialog from "./components/BaDialog.vue";
 import BaChatLog from "./components/BaChatLog/BaChatLog.vue";
+import eventBus from "@/eventBus";
 
-let hiddenDialog = ref(true);
+let hiddenSummary = ref(true);
 let hiddenStoryLog = ref(true);
-let fastMode = ref(false);
+let autoMode = ref(false);
 let hiddenMenu = ref(true);
 let menuOpacity = ref(0);
+
+function handleBtnHiddenUi() {
+  eventBus.emit("hideDialog");
+}
+function handleBtnAutoMode() {
+  autoMode.value = !autoMode.value;
+  if (autoMode.value) {
+    eventBus.emit("auto");
+  } else {
+    eventBus.emit("auto");
+  }
+}
+function handleBtnSkipSummary() {
+  hiddenSummary.value = false;
+}
 
 // https://gist.github.com/ca0v/73a31f57b397606c9813472f7493a940
 function debounce<T extends Function>(cb: T, wait = 20) {
@@ -24,10 +40,14 @@ function debounce<T extends Function>(cb: T, wait = 20) {
   return <T>(<any>callable);
 }
 
-let handleBtnMenu = debounce((ev: MouseEvent) => {
+let handleBtnMenu = debounce(() => {
   menuOpacity.value = menuOpacity.value === 0 ? 1 : 0;
   if (hiddenMenu.value) {
     hiddenMenu.value = false;
+    // 一段时间后自动影藏
+    setTimeout(() => {
+      if (!hiddenMenu.value) handleBtnMenu();
+    }, 6666);
   } else {
     setTimeout(() => {
       hiddenMenu.value = true;
@@ -53,8 +73,8 @@ onMounted(() => {
     <div class="right-top">
       <div class="baui-button-group">
         <BaButton
-          @click="fastMode = !fastMode"
-          :class="{ 'ba-button-auto': true, activated: fastMode }"
+          @click="handleBtnAutoMode"
+          :class="{ 'ba-button-auto': true, activated: autoMode }"
         >
           AUTO
         </BaButton>
@@ -73,7 +93,10 @@ onMounted(() => {
           visibility: hiddenMenu === true ? 'hidden' : 'initial',
         }"
       >
-        <button class="button-nostyle ba-menu-option">
+        <button
+          class="button-nostyle ba-menu-option"
+          @click="handleBtnHiddenUi"
+        >
           <img src="./assets/pan-arrow.svg" />
         </button>
         <button
@@ -84,7 +107,7 @@ onMounted(() => {
         </button>
         <button
           class="button-nostyle ba-menu-option"
-          @click="hiddenDialog = false"
+          @click="handleBtnSkipSummary"
         >
           <img src="./assets/fast-forward.svg" />
         </button>
@@ -93,8 +116,8 @@ onMounted(() => {
     <BaDialog
       id="ba-story-summery"
       :title="'概要'"
-      :show="!hiddenDialog"
-      @click="hiddenDialog = true"
+      :show="!hiddenSummary"
+      @close="hiddenSummary = true"
     >
       <div class="ba-story-summery-container">
         <h4 class="ba-story-summery-title">有计划的消费</h4>
@@ -104,7 +127,9 @@ onMounted(() => {
         <p class="ba-story-summery-tip">※ 是否略过此剧情？</p>
         <div class="ba-story-summery-button-group">
           <BaButton size="large" class="polylight">取消</BaButton>
-          <BaButton size="large" class="polydark">确认</BaButton>
+          <BaButton size="large" class="polydark" @click="eventBus.emit('skip')"
+            >确认</BaButton
+          >
         </div>
       </div>
     </BaDialog>
@@ -114,7 +139,7 @@ onMounted(() => {
       width="80%"
       height="90%"
       :show="!hiddenStoryLog"
-      @click="hiddenStoryLog = !hiddenStoryLog"
+      @close="hiddenStoryLog = !hiddenStoryLog"
     >
       <BaChatLog />
     </BaDialog>
@@ -156,6 +181,11 @@ onMounted(() => {
       &:hover {
         background-color: #c7c8c9;
       }
+    }
+
+    .ba-button-auto.activated {
+      background: no-repeat right -17% bottom/contain url(./assets/Common_Btn_Normal_Y_S_Pt.png)
+        #efe34b;
     }
 
     .ba-button-menu.activated {

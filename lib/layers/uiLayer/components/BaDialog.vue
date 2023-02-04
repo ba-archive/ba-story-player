@@ -18,7 +18,7 @@ const props = defineProps({
 });
 
 const emit = defineEmits<{
-  (ev: "click", event: PointerEvent): void;
+  (ev: "close", event: PointerEvent): void;
 }>();
 
 watch(
@@ -40,6 +40,7 @@ watch(
   <div
     class="ba-dialog"
     :style="{ visibility: show === false ? 'hidden' : 'initial' }"
+    @click.self="$emit('close', $event)"
   >
     <div
       class="ba-dialog-container"
@@ -51,7 +52,7 @@ watch(
         </h3>
         <button
           class="ba-dialog-close button-nostyle"
-          @click="$emit('click', $event)"
+          @click="$emit('close', $event)"
         >
           <i style="user-select: none">X</i>
         </button>
