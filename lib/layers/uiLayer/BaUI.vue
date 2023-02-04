@@ -1,10 +1,11 @@
 <script lang="ts" setup>
 import BaButton from "@/layers/uiLayer/components/BaButton.vue";
-import { onMounted, ref, watchEffect } from "vue";
+import { onMounted, ref } from "vue";
 import gsap from "gsap";
 import BaDialog from "./components/BaDialog.vue";
 import BaChatLog from "./components/BaChatLog/BaChatLog.vue";
 import eventBus from "@/eventBus";
+import { usePlayerStore } from "@/stores";
 
 let hiddenAllUI = ref(false);
 let hiddenSummary = ref(true);
@@ -12,6 +13,9 @@ let hiddenStoryLog = ref(true);
 let autoMode = ref(false);
 let hiddenMenu = ref(true);
 let menuOpacity = ref(0);
+
+let store = usePlayerStore();
+let storySummary = store.storySummary
 
 eventBus.on("hidemenu", ()=>{
   hiddenAllUI.value = true
@@ -70,7 +74,6 @@ function effectBtnClick(ev: Event) {
 }
 onMounted(() => {
   document.querySelectorAll(".ba-menu-option").forEach((elem) => {
-    console.log(elem);
     elem.addEventListener("click", effectBtnClick);
   });
 });
@@ -128,9 +131,9 @@ onMounted(() => {
       @close="hiddenSummary = true"
     >
       <div class="ba-story-summery-container">
-        <h4 class="ba-story-summery-title">有计划的消费</h4>
+        <h4 class="ba-story-summery-title">{{ storySummary.chapterName }}</h4>
         <p class="ba-story-summery-text">
-          邮箱来到夏莱的办公室转交报告时，轻眼目睹老师毫无节制的生活习惯。邮箱一遍替老师整理发票一边碎碎碎念。
+          {{ storySummary.summary }}
         </p>
         <p class="ba-story-summery-tip">※ 是否略过此剧情？</p>
         <div class="ba-story-summery-button-group">

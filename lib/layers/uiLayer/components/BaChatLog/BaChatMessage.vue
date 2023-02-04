@@ -35,6 +35,11 @@ const props = defineProps({
     aspect-ratio: 91 / 72;
     border-radius: 16px;
 
+    &[src=""],
+    &:not([src]) {
+      opacity: 0;
+    }
+
     // 素材已经是斜着的图片了。这样实现会到时有两个角不是圆角
     -webkit-clip-path: polygon(14% 0, 100% 0%, 86% 100%, 0% 100%);
     clip-path: polygon(14% 0, 100% 0%, 86% 100%, 0% 100%);
@@ -83,7 +88,7 @@ const props = defineProps({
     }
 
     .ba-chat-message-name {
-    min-height: 23.4px;
+      min-height: 23.4px;
       margin: 4px 24px;
     }
 
