@@ -82,6 +82,7 @@ async function playEffect() {
           otherEffect: []
         })
       }
+      break
     case 'other':
       eventBus.emit('playEffect', {
         otherEffect: [{
@@ -89,6 +90,7 @@ async function playEffect() {
           args: otherEffectArgs.value
         }]
       })
+      break
   }
 }
 let stores = usePlayerStore()
