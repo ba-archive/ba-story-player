@@ -6,11 +6,19 @@ import BaDialog from "./components/BaDialog.vue";
 import BaChatLog from "./components/BaChatLog/BaChatLog.vue";
 import eventBus from "@/eventBus";
 
+let hiddenAllUI = ref(false);
 let hiddenSummary = ref(true);
 let hiddenStoryLog = ref(true);
 let autoMode = ref(false);
 let hiddenMenu = ref(true);
 let menuOpacity = ref(0);
+
+eventBus.on("hidemenu", ()=>{
+  hiddenAllUI.value = true
+})
+eventBus.on("showmenu", ()=>{
+  hiddenAllUI.value = true
+})
 
 function handleBtnHiddenUi() {
   eventBus.emit("hideDialog");
@@ -20,7 +28,7 @@ function handleBtnAutoMode() {
   if (autoMode.value) {
     eventBus.emit("auto");
   } else {
-    eventBus.emit("auto");
+    eventBus.emit("stopAuto");
   }
 }
 function handleBtnSkipSummary() {
@@ -69,7 +77,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="baui">
+  <div class="baui" style="{visibility: hiddenAllUI;}">
     <div class="right-top">
       <div class="baui-button-group">
         <BaButton
