@@ -2,7 +2,9 @@ import { usePlayerStore } from "@/stores";
 import { BGEffectHandlerOptions, BGEffectHandlers, CurrentBGEffect, EffectRemoveFunction } from "@/types/effectLayer";
 import { BGEffectExcelTableItem } from "@/types/excels";
 import { Emitter, EmitterConfigV2, EmitterConfigV3, upgradeConfig } from '@pixi/particle-emitter';
-import { Container, Sprite, Spritesheet, Texture } from "pixi.js";
+import { Container, Sprite } from "pixi.js";
+import { BG_Dust_L } from "./emitterFunction/BG_Dust_L";
+import { loadSpriteSheet } from "./util";
 
 /**
  * app和bgInstance请从此处调用
@@ -20,9 +22,9 @@ let emitterConfigsRaw = import.meta.glob<EmitterConfigV2 | EmitterConfigV3>('./e
 /**
  * 获取emitter config
  * @param filename 文件名, 不需要加.json后缀
- * @returns 
+ * @returns
  */
-function emitterConfigs(filename: string) {
+export function emitterConfigs(filename: string) {
   let config = Reflect.get(emitterConfigsRaw, `./emitterConfigs/${filename}.json`)
   if (!config) {
     throw new Error('emitter参数获取失败, 文件名错误或文件不存在')
@@ -36,8 +38,8 @@ let currentBGEffect: CurrentBGEffect
 
 /**
  * 播放对应的BGEffect
- * @param bgEffectItem 
- * @returns 
+ * @param bgEffectItem
+ * @returns
  */
 export async function playBGEffect(bgEffectItem: BGEffectExcelTableItem) {
   let effect = bgEffectItem.Effect
@@ -112,7 +114,7 @@ export let bgEffectHandlers: BGEffectHandlers = {
     let ininX = playerStore.app.screen.width * 7 / 8
     let ininY = playerStore.app.screen.height * 7 / 8
 
-    //烟雾效果, 通过spreetsheet实现烟雾散开
+    //烟雾效果, 通过spritesheet实现烟雾散开
     let smokeContainer = new Container()
     emitterContainer.addChild(smokeContainer)
     smokeContainer.zIndex = 1
@@ -197,9 +199,7 @@ export let bgEffectHandlers: BGEffectHandlers = {
   BG_Love_L_BGOff: async function (resources, setting, options) {
     throw new Error("该BGEffect处理函数未实现");
   },
-  BG_Dust_L: async function (resources, setting, options) {
-    throw new Error("该BGEffect处理函数未实现");
-  },
+  BG_Dust_L: BG_Dust_L,
   "BG_ScrollL_0.5": async function (resources, setting, options) {
     throw new Error("该BGEffect处理函数未实现");
   },
@@ -301,11 +301,11 @@ export let bgEffectHandlerOptions: BGEffectHandlerOptions = {
 
 /**
  * emitter工具函数, 会自动启动emitter并返回一个终止函数
- * @param emitter 
- * @param stopCallback 终止函数中调用的函数 
+ * @param emitter
+ * @param stopCallback 终止函数中调用的函数
  * @returns 终止函数, 功能是停止当前emitter并回收
  */
-function emitterHelper(emitter: Emitter, stopCallback?: () => void): EffectRemoveFunction {
+export function emitterHelper(emitter: Emitter, stopCallback?: () => void): EffectRemoveFunction {
   let elapsed = Date.now();
   let stopFlag = false
   // Update function every frame
@@ -342,47 +342,3 @@ function emitterHelper(emitter: Emitter, stopCallback?: () => void): EffectRemov
 }
 
 
-/**
- * 根据给定的信息, 加载spriteSheet
- * @param img spriteSheet原图片Sprite
- * @param quantity x, y方向上小图片的个数
- * @param animationsName 该图片组成的动画的名字, 用于访问资源
- */
-async function loadSpriteSheet(img: Sprite, quantity: { x: number, y: number }, animationsName: string): Promise<Spritesheet> {
-  // Create object to store sprite sheet data
-  let atlasData = {
-    frames: {
-    },
-    meta: {
-      scale: '1'
-    },
-    animations: {
-    } as Record<string, string[]>
-  }
-  Reflect.set(atlasData.animations, animationsName, [])
-
-  img.scale.set(1)
-  let xNum = quantity.x
-  let yNum = quantity.y
-  let width = img.width / xNum
-  let height = img.height / yNum
-  for (let i = 0; i < xNum * yNum; ++i) {
-    Reflect.set(atlasData.frames, `smoke${i}`, {
-      frame: { x: width * (i % xNum), y: height * (Math.trunc(i / xNum)), w: width, h: height },
-      sourceSize: { w: width, h: height },
-      spriteSourceSize: { x: 0, y: 0, w: width, h: height }
-    })
-    atlasData.animations[animationsName].push(`${animationsName}${i}`)
-  }
-
-  // Create the SpriteSheet from data and image
-  const spritesheet = new Spritesheet(
-    img.texture,
-    atlasData
-  );
-
-  // Generate all the Textures asynchronously
-  await spritesheet.parse();
-
-  return spritesheet
-}

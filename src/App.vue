@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import BaStoryPlayer from '../lib/BaStoryPlayer.vue'
 import yuuka from './data/yuuka.json'
+import prologue from './data/prologue1.1.json'
 import eventBus from '../lib/eventBus'
 import { storyHandler, resourcesLoader } from '../lib/index'
 import ModifyEmotionOption from './components/ModifyEmotionOption.vue';

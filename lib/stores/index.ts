@@ -54,7 +54,7 @@ let bgEffectImgTable: BGEffectImgTable = {
   BG_Shining_L: [],
   'BG_ScrollB_1.0': [],
   BG_Love_L_BGOff: [],
-  BG_Dust_L: [],
+  BG_Dust_L: ['FX_TEX_Smoke_Scroll_23.png', 'dust_spark.png'],
   'BG_ScrollL_0.5': [],
   'BG_ScrollL_1.0': [],
   BG_Ash_Black: [],
