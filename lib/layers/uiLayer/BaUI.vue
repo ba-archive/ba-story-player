@@ -56,10 +56,10 @@ let handleBtnMenu = debounce(() => {
   menuOpacity.value = menuOpacity.value === 0 ? 1 : 0;
   if (hiddenMenu.value) {
     hiddenMenu.value = false;
-    // 一段时间后自动影藏
-    setTimeout(() => {
-      if (!hiddenMenu.value) handleBtnMenu();
-    }, 6666);
+    // todo 一段时间后自动影藏
+    // setTimeout(() => {
+    //   if (!hiddenMenu.value) handleBtnMenu();
+    // }, 6666);
   } else {
     setTimeout(() => {
       hiddenMenu.value = true;
