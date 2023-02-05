@@ -21,7 +21,7 @@ eventBus.on("hidemenu", ()=>{
   hiddenAllUI.value = true
 })
 eventBus.on("showmenu", ()=>{
-  hiddenAllUI.value = true
+  hiddenAllUI.value = false
 })
 
 function handleBtnHiddenUi() {
