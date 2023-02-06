@@ -111,8 +111,9 @@ export let bgEffectHandlers: BGEffectHandlers = {
     return emitterHelper(emitter)
   },
   BG_UnderFire: async function (resources, setting, options) {
-    let ininX = playerStore.app.screen.width * 7 / 8
-    let ininY = playerStore.app.screen.height * 7 / 8
+    let { height: appHeight, width: appWidth } = playerStore.app.screen
+    let ininX = appWidth * 7 / 8
+    let ininY = appHeight * 7 / 8
 
     //烟雾效果, 通过spritesheet实现烟雾散开
     let smokeContainer = new Container()
@@ -125,7 +126,15 @@ export let bgEffectHandlers: BGEffectHandlers = {
     }
     let smokeAnimationsName = 'smoke'
     let smokeSpritesheet = await loadSpriteSheet(resources[0], { x: 3, y: 3 }, smokeAnimationsName)
-    smokeConifg.behaviors[3].config.anim.textures = Reflect.get(smokeSpritesheet.animations, smokeAnimationsName)
+    smokeConifg.behaviors[0].config.anim.textures = Reflect.get(smokeSpritesheet.animations, smokeAnimationsName)
+    let smokeImageHeight = resources[0].height / 3
+    //根据高度算缩放比例
+    let smokeScale = ((2 / 5) * appHeight) / smokeImageHeight
+    Reflect.set(smokeConifg.behaviors[1].config, 'min', smokeScale)
+    Reflect.set(smokeConifg.behaviors[1].config, 'max', smokeScale + 0.5)
+    let smokeMoveSpeed = (1 / 2) * appHeight
+    Reflect.set(smokeConifg.behaviors[2].config, 'min', smokeMoveSpeed)
+    Reflect.set(smokeConifg.behaviors[2].config, 'max', smokeMoveSpeed + 10)
     let smokeEmitter = new Emitter(smokeContainer, smokeConifg)
     let smokeRemover = emitterHelper(smokeEmitter)
 
@@ -139,6 +148,17 @@ export let bgEffectHandlers: BGEffectHandlers = {
       y: ininY
     }
     let fireImgs = resources.slice(1, 4)
+    let fireScale = ((1 / 3) * appHeight) / fireImgs[0].height
+    Reflect.set(fireConfig.behaviors[0].config.scale, 'list', [
+      {
+        "value": fireScale,
+        "time": 0
+      },
+      {
+        "value": fireScale - 0.1,
+        "time": 1
+      }
+    ])
     for (let i = 0; i < 3; ++i) {
       //textureRandom behaviors
       fireConfig.behaviors[2].config.textures.push(fireImgs[i].texture)
@@ -150,11 +170,18 @@ export let bgEffectHandlers: BGEffectHandlers = {
     emitterContainer.addChild(firelineContainer)
     firelineContainer.zIndex = 0
     let firelineConfig: EmitterConfigV3 = { ...emitterConfigs('fireline') as EmitterConfigV3 }
-    firelineConfig.behaviors[0].config.texture = resources[4].texture
+    let firelineImage = resources[4]
+    firelineConfig.behaviors[0].config.texture = firelineImage.texture
     firelineConfig.pos = {
       x: ininX,
       y: ininY
     }
+    let firelineScale = (1 / 16 * appHeight) / firelineImage.height
+    Reflect.set(firelineConfig.behaviors[1].config, 'min', firelineScale - 0.2)
+    Reflect.set(firelineConfig.behaviors[1].config, 'max', firelineScale)
+    let firelineMoveSpeed = 2 * appHeight
+    Reflect.set(firelineConfig.behaviors[2].config, 'min', firelineMoveSpeed * 0.95)
+    Reflect.set(firelineConfig.behaviors[2].config, 'max', firelineMoveSpeed)
     let fireLineEmitter = new Emitter(firelineContainer, firelineConfig)
     let firelineRemover = emitterHelper(fireLineEmitter)
 
@@ -176,7 +203,7 @@ export let bgEffectHandlers: BGEffectHandlers = {
         smokeEmitter.updateSpawnPos(posX, posY)
         fireEmitter.updateSpawnPos(posX, posY)
         fireLineEmitter.updateSpawnPos(posX, posY)
-      }, 140)
+      }, 100)
     })
 
     return () => Promise.resolve()

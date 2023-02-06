@@ -12,6 +12,22 @@
   },
   "behaviors": [
     {
+      "type": "animatedSingle",
+      "config": {
+        "anim": {
+          "framerate": 25,
+          "textures": []
+        }
+      }
+    },
+    {
+      "type": "scaleStatic",
+      "config": {
+        "min": 2.5,
+        "max": 3
+      }
+    },
+    {
       "type": "moveSpeedStatic",
       "config": {
         "min": 300,
@@ -50,15 +66,6 @@
       }
     },
     {
-      "type": "animatedSingle",
-      "config": {
-        "anim": {
-          "framerate": 20,
-          "textures": []
-        }
-      }
-    },
-    {
       "type": "spawnShape",
       "config": {
         "type": "rect",
@@ -68,13 +75,6 @@
           "w": 60,
           "h": 0
         }
-      }
-    },
-    {
-      "type": "scaleStatic",
-      "config": {
-        "min": 2.5,
-        "max": 3
       }
     }
   ]

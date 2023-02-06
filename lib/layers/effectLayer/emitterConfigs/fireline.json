@@ -3,7 +3,7 @@
     "min": 1,
     "max": 1.5
   },
-  "frequency": 0.2,
+  "frequency": 0.1,
   "maxParticles": 1000,
   "addAtBack": false,
   "pos": {
@@ -15,6 +15,13 @@
       "type": "textureSingle",
       "config": {
         "texture": null
+      }
+    },
+    {
+      "type": "scaleStatic",
+      "config": {
+        "min": 0.4,
+        "max": 0.6
       }
     },
     {
@@ -44,13 +51,6 @@
           "w": 60,
           "h": 0
         }
-      }
-    },
-    {
-      "type": "scaleStatic",
-      "config": {
-        "min": 0.4,
-        "max": 0.6
       }
     }
   ]

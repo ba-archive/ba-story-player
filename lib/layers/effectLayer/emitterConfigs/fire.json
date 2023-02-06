@@ -15,20 +15,7 @@
       "type": "scale",
       "config": {
         "scale": {
-          "list": [
-            {
-              "value": 1,
-              "time": 0
-            },
-            {
-              "value": 1,
-              "time": 0.5
-            },
-            {
-              "value": 0.9,
-              "time": 1
-            }
-          ]
+          "list": []
         },
         "minMult": 0.5
       }
@@ -64,7 +51,7 @@
     {
       "type": "colorStatic",
       "config": {
-        "color": "#f49b4e"
+        "color": "#fa8057"
       }
     }
   ]
