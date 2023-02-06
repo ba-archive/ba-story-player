@@ -1,6 +1,6 @@
 import type { Spine } from 'pixi-spine';
 import { PlayAudio, PlayEffect, ShowOption, ShowText, StArgs } from './events';
-import { BGEffectExcelTableItem, TransitionTableItem } from './excels';
+import { TransitionTableItem } from './excels';
 export type StoryType = "title" | "place" | "text" | "option" | "st" | "effectOnly" | 'continue'
 
 export type Dict<T> = {
@@ -87,9 +87,31 @@ export interface TextEffect {
   value: string[],
 }
 
-export interface Effect {
-  type: 'wait' | 'zmc' | 'bgshake'
-  args: Array<string>
+/**
+ * zmc参数, 当duration为10时代表是move起始
+ */
+export type ZmcArgs = {
+  type: 'move',
+  position: [number, number],
+  size: number,
+  duration: number
+} | {
+  type: 'instant'
+  position: [number, number],
+  size: number,
+}
+
+export type Effect = {
+  type: 'wait'
+  /**
+   * 单位为ms
+   */
+  args: number
+} | {
+  type: 'zmc'
+  args: ZmcArgs
+} | {
+  type: 'bgshake'
 }
 
 export interface StoryRawUnit {

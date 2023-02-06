@@ -1,6 +1,6 @@
 import { usePlayerStore } from '@/stores';
 import { EmotionWord } from "@/types/characterLayer";
-import { StoryRawUnit, StoryUnit } from "@/types/common";
+import { StoryRawUnit, StoryUnit, ZmcArgs } from "@/types/common";
 import { StArgs } from '@/types/events';
 import { getResourcesUrl } from '@/utils';
 import { l2dConfig } from '../l2dLayer/l2dConfig';
@@ -148,7 +148,7 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
           unit.textAbout.st.clearSt = true
           break
         case '#wait':
-          unit.effect.otherEffect.push({ type: 'wait', args: [scriptUnits[1]] })
+          unit.effect.otherEffect.push({ type: 'wait', args: Number(scriptUnits[1]) })
           break
         case '#fontsize':
           for (let i = 0; i < unit.textAbout.showText.text.length; ++i) {
@@ -167,10 +167,26 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
           unit.show = 'menu'
           break
         case '#zmc':
-          unit.effect.otherEffect.push({ type: 'zmc', args: scriptUnits.slice(1) })
+          let args: ZmcArgs
+          if (scriptUnits.length === 4) {
+            args = {
+              type: scriptUnits[1] as 'move',
+              position: scriptUnits[2].split(',').map(Number) as [number, number],
+              size: Number(scriptUnits[3]),
+              duration: Number(scriptUnits[4])
+            }
+          }
+          else {
+            args = {
+              type: scriptUnits[1] as 'instant',
+              position: scriptUnits[2].split(',').map(Number) as [number, number],
+              size: Number(scriptUnits[3]),
+            }
+          }
+          unit.effect.otherEffect.push({ type: 'zmc', args })
           break
         case '#bgshake':
-          unit.effect.otherEffect.push({ type: 'bgshake', args: [] })
+          unit.effect.otherEffect.push({ type: 'bgshake' })
           break
         case '#video':
           //处理情况为 #video;Scenario/Main/22000_MV_Video;Scenario/Main/22000_MV_Sound

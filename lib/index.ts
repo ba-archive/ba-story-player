@@ -198,7 +198,7 @@ let eventEmitter = {
    */
   async emitEvents() {
     // TODO: 上线注释, 也可以不注释
-    console.log('剧情进度: '+ storyHandler.currentStoryIndex, storyHandler.currentStoryUnit)
+    console.log('剧情进度: ' + storyHandler.currentStoryIndex, storyHandler.currentStoryUnit)
     await this.transitionIn()
     this.hide()
     this.showBg()
@@ -289,6 +289,7 @@ let eventEmitter = {
         this.l2dPlaying = false
       }
     }
+    // eventBus.emit('showBg', 'https://yuuka.cdn.diyigemt.com/image/ba-all-data/UIs/03_Scenario/01_Background/BG_CS_PR_16.jpg')
   },
 
   /**
@@ -355,6 +356,9 @@ let eventEmitter = {
       this.effectDone = false
       eventBus.emit('playEffect', storyHandler.currentStoryUnit.effect)
     }
+    else {
+      eventBus.emit('removeEffect')
+    }
   },
 
   async transitionIn() {
@@ -391,9 +395,13 @@ export let resourcesLoader = {
    * 添加所有资源
    */
   addLoadResources() {
+    // this.loader.add('https://yuuka.cdn.diyigemt.com/image/ba-all-data/UIs/03_Scenario/01_Background/BG_CS_PR_16.jpg',
+    //   'https://yuuka.cdn.diyigemt.com/image/ba-all-data/UIs/03_Scenario/01_Background/BG_CS_PR_16.jpg'
+    // )
     this.addEmotionResources()
     this.addFXResources()
     this.addOtherSounds()
+    this.addBGEffectImgs()
     for (let unit of playerStore.allStoryUnit) {
       //添加人物spine
       if (unit.characters.length != 0) {
@@ -416,8 +424,8 @@ export let resourcesLoader = {
 
       //添加l2d spine资源
       this.checkAndAdd(unit.l2d, 'spineUrl')
-      if(unit.l2d){
-        playerStore.curL2dConfig?.otherSpine.forEach(i=>this.checkAndAdd(utils.getResourcesUrl('otherL2dSpine', i)))
+      if (unit.l2d) {
+        playerStore.curL2dConfig?.otherSpine.forEach(i => this.checkAndAdd(utils.getResourcesUrl('otherL2dSpine', i)))
       }
     }
   },
@@ -510,6 +518,19 @@ export let resourcesLoader = {
     for (let url of otherSoundUrls) {
       if (!this.loader.resources[url]) {
         this.loader.add(url, url)
+      }
+    }
+  },
+
+  /**
+   * 添加bgEffect相关图像资源
+   */
+  addBGEffectImgs() {
+    for (let imgs of playerStore.bgEffectImgMap.values()) {
+      for (let img of imgs) {
+        if (!this.loader.resources[img]) {
+          this.loader.add(img, utils.getResourcesUrl('bgEffectImgs', img))
+        }
       }
     }
   },

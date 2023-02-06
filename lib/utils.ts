@@ -57,6 +57,8 @@ export function getResourcesUrl(type: ResourcesTypes, arg: string): string {
       return `${dataUrl}/${arg}.jpg`
     case 'otherSound':
       return Reflect.get(otherSoundMap, arg) || ''
+    case 'bgEffectImgs':
+      return `${dataUrl}/effectTexture/${arg}`
     default:
       return ''
   }

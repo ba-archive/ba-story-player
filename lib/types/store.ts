@@ -84,6 +84,7 @@ export interface PrivateStates {
    */
   emotionResourcesTable: Map<string, string[]>,
   fxImageTable: Map<string, string[]>,
+  bgEffectImgMap: Map<string,string[]>
 }
 
 /**
