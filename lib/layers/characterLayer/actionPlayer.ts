@@ -71,12 +71,15 @@ const CharacterEffectPlayerInstance: CharacterEffectPlayer = {
     return timeLinePromise(tl)
 
   }, closeup(instance: CharacterEffectInstance, options): Promise<void> {
+    const PositionXOffset = 0.55 * instance.instance.width
     let scale = instance.instance.scale.x * options.scale
     instance.instance.scale.set(scale)
+    instance.instance.pivot.x = instance.instance.width / scale * 0.05
+    instance.instance.position.x += PositionXOffset
 
     return Promise.resolve()
   }, d(instance: CharacterEffectInstance, options): Promise<void> {
-    let colorFilter = instance.instance.filters![instance.instance.filters!.length-1] as ColorOverlayFilter
+    let colorFilter = instance.instance.filters![instance.instance.filters!.length - 1] as ColorOverlayFilter
     let tl = gsap.timeline()
 
     tl.to(colorFilter, { alpha: 1, duration: options.duration })
@@ -204,6 +207,15 @@ const POS_INDEX_MAP = {
  */
 function calcSpineStagePosition(character: Spine, position: number): PositionOffset {
   const { screenWidth, screenHeight } = getStageSize();
+  //当角色pivot x变为人物中心附近时改变计算算法
+  let centerXOffset = character.width * 0.1 / character.scale.x
+  if (Math.abs(character.pivot.x) <= centerXOffset) {
+    return {
+      x: screenWidth / 5 * (position - 1) + (screenWidth / 5) / 2,
+      y: screenHeight * 0.3
+    }
+  }
+
   return {
     x: screenWidth / 5 * (position - 1) - (character.width * character.scale.x / 2),
     y: screenHeight * 0.3

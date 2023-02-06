@@ -22,6 +22,10 @@ import { MotionBlurFilter } from '@pixi/filter-motion-blur'
 const AnimationIdleTrack = 0; // 光环动画track index
 const AnimationFaceTrack = 1; // 差分切换
 const AnimationEyeCloseTrack = 2; // TODO 眨眼动画
+/**
+ * 角色初始的pivot相对与长宽的比例, 当前值代表左上角
+ */
+export const Character_Initial_Pivot_Proportion = { x: -1 / 2, y: -1 / 2 }
 
 PixiPlugin.registerPIXI(PIXI)
 gsap.registerPlugin(PixiPlugin)
@@ -41,6 +45,7 @@ const CharacterLayerInstance: CharacterLayer = {
     app.stage.sortableChildren = true;
     document.addEventListener("resize", this.onWindowResize);
     eventBus.on("showCharacter", showCharacter);
+    eventBus.on("hide", () => Reflect.apply(this.hideCharacter, this, []))
     this.effectPlayerMap.set("emotion", CharacterEmotionPlayerInstance);
     this.effectPlayerMap.set("action", CharacterEffectPlayerInstance);
     this.effectPlayerMap.set("fx", characterFXPlayer);
@@ -115,7 +120,10 @@ const CharacterLayerInstance: CharacterLayer = {
       this.characterScale = screenHeight / (spine.height - screenHeight);
     }
     // 设置锚点到左上角
-    spine.pivot.set(-spine.width / 2, -spine.height / 2,);
+    spine.pivot = {
+      x: Character_Initial_Pivot_Proportion.x * spine.width,
+      y: Character_Initial_Pivot_Proportion.y * spine.height,
+    };
     // 设置缩放比列
     spine.scale.set(this.characterScale);
     // 不显示
@@ -130,6 +138,20 @@ const CharacterLayerInstance: CharacterLayer = {
         ...item,
         instance: this.getCharacterSpineInstance(item.CharacterName)!
       };
+    })
+  },
+  hideCharacter() {
+    const { currentCharacterMap } = usePlayerStore()
+    currentCharacterMap.forEach(character => {
+      character.instance.visible = false
+      character.instance.scale.set(1)
+      // 设置锚点到左上角
+      character.instance.pivot = {
+        x: Character_Initial_Pivot_Proportion.x * character.instance.width,
+        y: Character_Initial_Pivot_Proportion.y * character.instance.height,
+      };
+      // 设置缩放比列
+      character.instance.scale.set(this.characterScale);
     })
   },
   showCharacter(data: ShowCharacter): boolean {
