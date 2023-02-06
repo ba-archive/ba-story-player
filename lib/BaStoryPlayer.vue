@@ -53,6 +53,5 @@ function TestDialog() {
 
 .dialog {
   position: absolute;
-  visibility: hidden;
 }
 </style>
