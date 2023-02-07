@@ -2,6 +2,7 @@
  * 初始化背景层, 订阅player的剧情信息.
  */
 import { Sprite, LoaderResource } from "pixi.js";
+import gsap from "gsap";
 
 import { BgLayer } from "@/types/bgLayer";
 import { Dict } from "@/types/common";
@@ -38,17 +39,18 @@ const BgLayerInstance: BgLayer = {
   /**
    * 事件监听处理函数
    */
-  handleShowBg(name: string) {
-    const { app, bgInstance: oldInstance, setBgInstance } = usePlayerStore();
-    const { loader } = app;
+  handleShowBg({ url, overlap }) {
+    const { app: { loader } } = usePlayerStore();
 
     loader.load((loader, resources) => {
-      const instance = this.getBgSpriteFromResource(resources, name);
+      const instance = this.getBgSpriteFromResource(resources, url);
 
       if (instance) {
-        app.stage.addChild(instance);
-        oldInstance && app.stage.removeChild(oldInstance);
-        setBgInstance(instance);
+        if (overlap) {
+          this.loadBgOverlap(instance, overlap);
+        } else {
+          this.loadBg(instance);
+        }
       }
     });
   },
@@ -77,6 +79,27 @@ const BgLayerInstance: BgLayer = {
 
     return sprite;
   },
+  loadBg(instance: Sprite) {
+    const { app, bgInstance: oldInstance, setBgInstance } = usePlayerStore();
+
+    app.stage.addChild(instance);
+    setBgInstance(instance);
+
+    oldInstance && app.stage.removeChild(oldInstance);
+  },
+  async loadBgOverlap(instance: Sprite, overlap: number) {
+    const { app, bgInstance: oldInstance, setBgInstance } = usePlayerStore();
+    let tl = gsap.timeline();
+
+    app.stage.addChild(instance);
+    setBgInstance(instance);
+
+    await tl
+      .fromTo(instance, { alpha: 0 }, { alpha: 1, duration: overlap / 1000 })
+      .fromTo(oldInstance, { alpha: 1 }, { alpha: 0, duration: overlap / 1000 }, '<')
+
+    oldInstance && app.stage.removeChild(oldInstance);
+  },
 };
 
 /**
@@ -88,7 +111,11 @@ function calcImageCoverSize(
   viewportWidth: number,
   viewportHeight: number
 ) {
-  const ratio = Math.min(rawWidth / viewportWidth, rawHeight / viewportHeight);
+  // 整体 scale 1.02 倍 (bgshake)
+  const ratio = Math.min(
+    rawWidth / (viewportWidth * 1.02),
+    rawHeight / (viewportHeight * 1.02)
+  );
   const width = rawWidth / ratio;
   const height = rawHeight / ratio;
   const x = (viewportWidth - width) / 2;
