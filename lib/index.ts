@@ -23,10 +23,11 @@ let l2dVoiceExcelTable = {
 /**
  * 调用各层的初始化函数
  */
-export async function init(elementID: string, props: PlayerProps) {
+export async function init(elementID: string, props: PlayerProps, endCallback: () => void) {
   //缓解图片缩放失真
   settings.MIPMAP_TEXTURES = 2
 
+  storyHandler.endCallback = endCallback
   playerStore = usePlayerStore()
   privateState = initPrivateState()
   utils.setDataUrl(props.dataUrl)
@@ -76,6 +77,7 @@ export async function init(elementID: string, props: PlayerProps) {
  */
 export let storyHandler = {
   currentStoryIndex: 0,
+  endCallback: () => { },
 
   get currentStoryUnit(): StoryUnit {
     if (playerStore && playerStore.allStoryUnit.length > this.currentStoryIndex) {
@@ -103,16 +105,16 @@ export let storyHandler = {
    * 通过下标递增更新当前故事节点
    */
   storyIndexIncrement() {
+    if (this.checkEnd()) {
+      return
+    }
     let currentSelectionGroup = this.currentStoryUnit.SelectionGroup
     this.currentStoryIndex++
-    while (![0, currentSelectionGroup].includes(this.currentStoryUnit.SelectionGroup)
-      && this.currentStoryIndex < playerStore.allStoryUnit.length
-    ) {
+    while (!this.checkEnd() &&
+      ![0, currentSelectionGroup].includes(this.currentStoryUnit.SelectionGroup)) {
       this.currentStoryIndex++
     }
-    if (this.currentStoryIndex >= playerStore.allStoryUnit.length) {
-      return false
-    }
+
     return true
   },
 
@@ -142,10 +144,23 @@ export let storyHandler = {
   },
 
   /**
+   * 检查故事是否已经结束, 结束则调用结束函数结束播放
+   */
+  checkEnd() {
+    if (playerStore.allStoryUnit.length <= this.currentStoryIndex) {
+      this.end()
+      return true
+    }
+
+    return false
+  },
+
+  /**
    * 结束播放
    */
   end() {
     console.log('播放结束')
+    this.endCallback()
   },
 }
 

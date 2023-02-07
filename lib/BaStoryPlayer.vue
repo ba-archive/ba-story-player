@@ -18,7 +18,9 @@ let props = defineProps<{
   storySummary: StorySummary
 }>()
 
-onMounted(() => { init('player__main', props)})
+let emitter = defineEmits(['end'])
+
+onMounted(() => { init('player__main', props, () => emitter('end')) })
 
 /**
  * 测试文本框
