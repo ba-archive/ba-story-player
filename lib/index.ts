@@ -6,13 +6,12 @@ import { soundInit } from "@/layers/soundLayer";
 import { textInit } from "@/layers/textLayer";
 import { translate } from '@/layers/translationLayer';
 import { initPrivateState, usePlayerStore } from "@/stores";
-import { PlayerProps, StoryRawUnit, StoryUnit } from "@/types/common";
-import { Language, StorySummary } from "@/types/store";
+import { PlayerProps, StoryUnit } from "@/types/common";
+import * as utils from '@/utils';
+import { getOtherSoundUrls, wait } from "@/utils";
 import axios from 'axios';
 import { SpineParser } from 'pixi-spine';
 import { Application, Loader, settings, Text } from "pixi.js";
-import * as utils from '@/utils'
-import { getOtherSoundUrls, wait } from "@/utils";
 import { L2DInit } from "./layers/l2dLayer/L2D";
 
 let playerStore: ReturnType<typeof usePlayerStore>

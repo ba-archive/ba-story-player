@@ -1,8 +1,8 @@
 <script lang="ts" setup>
-import { onMounted } from 'vue';
-import { init } from '@/index';
-import { PlayerProps, StoryRawUnit } from '@/types/common';
 import eventBus from "@/eventBus";
+import { init } from '@/index';
+import { StoryRawUnit } from '@/types/common';
+import { onMounted } from 'vue';
 //@ts-ignore
 import BaDialog from "@/layers/textLayer/BaDialog.vue";
 import { Language, StorySummary } from '@/types/store';
