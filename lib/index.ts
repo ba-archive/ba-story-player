@@ -6,7 +6,7 @@ import { soundInit } from "@/layers/soundLayer";
 import { textInit } from "@/layers/textLayer";
 import { translate } from '@/layers/translationLayer';
 import { initPrivateState, usePlayerStore } from "@/stores";
-import { StoryRawUnit, StoryUnit } from "@/types/common";
+import { PlayerProps, StoryRawUnit, StoryUnit } from "@/types/common";
 import { Language, StorySummary } from "@/types/store";
 import axios from 'axios';
 import { SpineParser } from 'pixi-spine';
@@ -24,20 +24,20 @@ let l2dVoiceExcelTable = {
 /**
  * 调用各层的初始化函数
  */
-export async function init(elementID: string, height: number, width: number, story: StoryRawUnit[], dataUrl: string, language: Language, userName: string, storySummary: StorySummary) {
+export async function init(elementID: string, props: PlayerProps) {
   //缓解图片缩放失真
   settings.MIPMAP_TEXTURES = 2
 
   playerStore = usePlayerStore()
   privateState = initPrivateState()
-  utils.setDataUrl(dataUrl)
-  privateState.dataUrl = dataUrl
-  privateState.language = language
-  privateState.userName = userName
-  privateState.storySummary = storySummary
+  utils.setDataUrl(props.dataUrl)
+  privateState.dataUrl = props.dataUrl
+  privateState.language = props.language
+  privateState.userName = props.userName
+  privateState.storySummary = props.storySummary
   //加入判断防止vite热更新重新创建app导致加载资源错误
   if (!privateState.app) {
-    privateState.app = new Application({ height, width })
+    privateState.app = new Application({ height: props.height, width: props.width })
   }
 
   let app = playerStore.app
@@ -51,7 +51,7 @@ export async function init(elementID: string, height: number, width: number, sto
   loadingText.x = app.screen.width - 150
   app.stage.addChild(loadingText)
   await resourcesLoader.init(app.loader)
-  privateState.allStoryUnit = translate(story)
+  privateState.allStoryUnit = translate(props.story)
 
   textInit()
   bgInit()
