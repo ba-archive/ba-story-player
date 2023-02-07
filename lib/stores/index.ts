@@ -157,8 +157,32 @@ let actions: Actions = {
   setBgInstance(instance) {
     privateState.bgInstance = instance
   },
-  setLogText(logText) {
-    //to do
+  updateLogText(newLog) {
+    if ('SelectionGroup' in newLog) {
+      privateState.logText.push({
+        type: 'user',
+        text: newLog.text
+      })
+    }
+    else {
+      let text = ''
+      for (let textPart of newLog.text) {
+        text += textPart.content
+      }
+      if (newLog.speaker) {
+        privateState.logText.push({
+          type: 'character',
+          text,
+          avatarUrl: newLog.avatarUrl
+        })
+      }
+      else {
+        privateState.logText.push({
+          type: 'none',
+          text
+        })
+      }
+    }
   },
   setL2DSpineUrl(url) {
     privateState.l2dSpineUrl = url

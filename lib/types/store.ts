@@ -1,6 +1,6 @@
 import { Application, Sprite } from "pixi.js"
 import { CharacterInstance, StoryUnit } from "./common"
-import { ShowText } from './events'
+import { ShowOption, ShowText } from './events'
 import { BGEffectExcelTableItem, BGMExcelTableItem, BGNameExcelTableItem, CharacterNameExcelTableItem, TransitionTableItem } from "./excels"
 import { IL2dConfig } from "./l2d"
 import { OtherSounds } from "./resources"
@@ -80,7 +80,7 @@ export interface PrivateStates {
    */
   emotionResourcesTable: Map<string, string[]>,
   fxImageTable: Map<string, string[]>,
-  bgEffectImgMap: Map<string,string[]>
+  bgEffectImgMap: Map<string, string[]>
 }
 
 /**
@@ -134,11 +134,11 @@ export type Getters = Readonly<BasicGetters>
 export interface Actions {
   setBgInstance: (sprite: Sprite) => void
   /**
-   * 设置logText的值, 即已经显示过的文字
-   * @param logText
+   * 更新logText的值, 即已经显示过的文字和选项
+   * @param newLog 新加入log的值, 可为对话或选项
    * @returns
    */
-  setLogText: (logText: ShowText[]) => void
+  updateLogText: (newLog: ShowText | ShowOption) => void
   /**
    * 设置l2d的spine数据地址便于l2d层获取spinedata
    * @param url
