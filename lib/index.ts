@@ -131,6 +131,16 @@ export let storyHandler = {
 
     return true
   },
+  /**
+    * 播放故事直到对话框或选项出现
+    */
+  async storyPlay() {
+    while (!['text', 'option'].includes(storyHandler.currentStoryUnit.type) && !storyHandler.currentStoryUnit.l2d) {
+      await eventEmitter.emitEvents()
+      storyHandler.storyIndexIncrement()
+    }
+    await eventEmitter.emitEvents()
+  },
 
   /**
    * 结束播放
@@ -167,30 +177,19 @@ let eventEmitter = {
     eventBus.on('next', () => {
       if (this.unitDone) {
         storyHandler.storyIndexIncrement()
-        this.storyPlay()
+        storyHandler.storyPlay()
       }
     })
     eventBus.on('select', e => {
       storyHandler.select(e)
-      this.storyPlay()
+      storyHandler.storyPlay()
     })
     eventBus.on('effectDone', () => eventEmitter.effectDone = true)
     eventBus.on('characterDone', () => eventEmitter.characterDone = true)
     eventBus.on('l2dAnimationDone', (e) => eventEmitter.l2dAnimationDone = e.done)
     eventBus.on('auto', () => console.log('auto!'))
 
-    this.storyPlay()
-  },
-
-  /**
-   * 播放故事直到对话框或选项出现
-   */
-  async storyPlay() {
-    while (!['text', 'option'].includes(storyHandler.currentStoryUnit.type) && !storyHandler.currentStoryUnit.l2d) {
-      await this.emitEvents()
-      storyHandler.storyIndexIncrement()
-    }
-    await this.emitEvents()
+    storyHandler.storyPlay()
   },
 
   /**
