@@ -122,8 +122,10 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
           //无立绘时的对话框对话, 可能有名字
           unit.type = 'text'
           unit.textAbout.showText.text = utils.generateText(rawStoryUnit)
+          let characterInfo = utils.getCharacterInfo(scriptUnits[1])
           if (scriptUnits.length === 3) {
-            unit.textAbout.showText.speaker = utils.getSpeaker(scriptUnits[1])
+            unit.textAbout.showText.speaker = characterInfo?.speaker
+            unit.textAbout.showText.avatarUrl = characterInfo?.avatarUrl
           }
           break
         case '#st':
@@ -197,29 +199,26 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
           break
         default:
           if (utils.isCharacter(scriptType)) {
-            let CharacterName = playerStore.characterNameTable.get(scriptUnits[1])
-            if (CharacterName) {
-              let signal = false
-              let characterInfo = playerStore.CharacterNameExcelTable.get(CharacterName)
-              let spineUrl = ''
-              if (characterInfo) {
-                //添加全息人物特效
-                if (characterInfo.Shape === 'Signal') {
-                  signal = true
-                }
-                //添加人物spineUrl
-                let temp = String(characterInfo.SpinePrefabName).split('/')
-                temp = temp[temp.length - 1].split('_')
-                let id = temp[temp.length - 1]
-                let filename = `${id}_spr`
-                spineUrl = getResourcesUrl('characterSpine', filename)
+            let CharacterName = utils.getCharacterName(scriptUnits[1])
+            let signal = false
+            let characterInfo = playerStore.CharacterNameExcelTable.get(CharacterName)
+            if (characterInfo) {
+              //添加全息人物特效
+              if (characterInfo.Shape === 'Signal') {
+                signal = true
               }
-
-              //有立绘人物对话
+              //添加人物spineUrl
+              let spineUrl = getResourcesUrl('characterSpine', characterInfo.SpinePrefabName)
+              let avatarUrl = getResourcesUrl('avatar', characterInfo?.SmallPortrait)
+              let speaker = utils.getSpeaker(characterInfo)
+              //人物有对话
               if (scriptUnits.length === 4) {
                 unit.type = 'text'
-                unit.textAbout.showText.text = utils.generateText(rawStoryUnit)
-                unit.textAbout.showText.speaker = utils.getSpeaker(scriptUnits[1])
+                unit.textAbout.showText = {
+                  text: utils.generateText(rawStoryUnit),
+                  speaker,
+                  avatarUrl
+                }
               }
               unit.characters.push({
                 CharacterName,
@@ -230,6 +229,9 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
                 spineUrl,
                 effects: []
               })
+            }
+            else {
+              throw new Error(`${CharacterName}在CharacterNameExcelTable中不存在`)
             }
           }
           else if (utils.isCharacterEffect(scriptType)) {

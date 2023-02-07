@@ -7,7 +7,7 @@ export type Events = {
    * 清除当前内容
    */
   hide: undefined
- 
+
   //特效层
 
   /**
@@ -38,7 +38,7 @@ export type Events = {
   /**
    * l2d 动画播放状态, 当前动画是否播放完成
    */
-  l2dAnimationDone: {done: boolean, animation: string}
+  l2dAnimationDone: { done: boolean, animation: string }
   //背景层
 
   /**
@@ -168,6 +168,10 @@ export interface ShowText {
    * 说话的人, 包括名字和所属
    */
   speaker?: Speaker
+  /**
+   * 人物头像, 填logText时使用
+   */
+  avatarUrl?: string
 }
 
 /**

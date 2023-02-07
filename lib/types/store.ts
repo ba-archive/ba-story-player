@@ -55,10 +55,6 @@ export interface PrivateStates {
 
   //资源管理
   /**
-   * 角色韩文名对应唯一数字标识CharacterName
-   */
-  characterNameTable: Map<string, number>
-  /**
    * 根据BGName获取资源信息, 包括l2d和背景图片
    */
   BGNameExcelTable: Map<number, BGNameExcelTableItem>,
@@ -99,9 +95,6 @@ export interface PublicStates {
 
 export interface BasicGetters {
   app: Application
-
-
-  CharacterName: (name: string) => number | undefined
 
   /**
    * 获取角色spineData

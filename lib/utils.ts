@@ -52,13 +52,21 @@ export function getResourcesUrl(type: ResourcesTypes, arg: string): string {
     case 'voiceJp':
       return `${dataUrl}/Audio/VoiceJp/${arg}.wav`
     case 'characterSpine':
-      return `${dataUrl}/spine/${arg}/${arg}.skel`
+      //arg UIs/03_Scenario/02_Character/CharacterSpine_hasumi
+      let temp = String(arg).split('/')
+      temp = temp[temp.length - 1].split('_')
+      let id = temp[temp.length - 1]
+      let filename = `${id}_spr` //hasumi_spr
+      return `${dataUrl}/spine/${filename}/${filename}.skel`
     case 'bg':
       return `${dataUrl}/${arg}.jpg`
     case 'otherSound':
       return Reflect.get(otherSoundMap, arg) || ''
     case 'bgEffectImgs':
       return `${dataUrl}/effectTexture/${arg}`
+    case 'avatar':
+      //arg: UIs/01_Common/01_Character/Student_Portrait_Hasumi
+      return `${dataUrl}/${arg}.png`
     default:
       return ''
   }
@@ -68,5 +76,5 @@ export function getResourcesUrl(type: ResourcesTypes, arg: string): string {
 * wait in promise
 */
 export function wait(milliseconds: number) {
- return new Promise(resolve => setTimeout(resolve, milliseconds));
+  return new Promise(resolve => setTimeout(resolve, milliseconds));
 }

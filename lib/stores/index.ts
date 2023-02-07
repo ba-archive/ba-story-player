@@ -2,16 +2,16 @@ import { BGEffectImgTable } from '@/types/effectLayer'
 import { Actions, GetterFunctions, Getters, PrivateStates, PublicStates } from '@/types/store'
 import { getResourcesUrl } from '@/utils'
 
-let characterNameTable = {
-  '유우카 체육복ND': 4179367264,
-  '???': 0,
-  '린': 2690570743,
-  '유우카': 4283125014,
-  '하스미': 3571276574,
-  '치나츠': 1867911819,
-  '스즈미': 1034441153,
-  '통신모모카': 3025942184
-}
+// let characterNameTable = {
+//   '유우카 체육복ND': 3715128518,
+//   '???': 0,
+//   '린': 2690570743,
+//   '유우카': 4283125014,
+//   '하스미': 3571276574,
+//   '치나츠': 1867911819,
+//   '스즈미': 1034441153,
+//   '통신모모카': 3025942184
+// }
 
 let emotionResourcesTable = {
   'Heart': ['Emoticon_Balloon_N.png', 'Emoticon_Heart.png'],
@@ -100,7 +100,6 @@ let privateState: PrivateStates = {
   bgInstance: null,
 
   //资源管理
-  characterNameTable: new Map(Object.entries(characterNameTable)),
   BGNameExcelTable: new Map(),
   CharacterNameExcelTable: new Map(),
   BGMExcelTable: new Map(),
@@ -117,10 +116,6 @@ let getterFunctions: GetterFunctions = {
       throw new Error('app实例不存在')
     }
     return privateState.app!
-  },
-
-  CharacterName: () => (name: string) => {
-    return privateState.characterNameTable.get(name)!
   },
 
   characterSpineData: () => (CharacterName: number) => {
