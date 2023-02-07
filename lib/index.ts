@@ -331,10 +331,10 @@ let eventEmitter = {
   hide() {
     if (storyHandler.currentStoryUnit.hide) {
       if (storyHandler.currentStoryUnit.hide === 'all') {
-        eventBus.emit('hidemenu')
+        eventBus.emit('hide')
       }
       else {
-        eventBus.emit('hide')
+        eventBus.emit('hidemenu')
       }
     }
   },
