@@ -270,7 +270,7 @@ let eventEmitter = {
           clearInterval(interval)
           resolve()
         }
-        else if (Date.now() - startTime >= 5000) {
+        else if (Date.now() - startTime >= 50000) {
           reject('特效长时间未完成')
         }
       })
