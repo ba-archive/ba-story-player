@@ -385,6 +385,7 @@ onMounted(() => {
   eventBus.on('st', handleShowStEvent);
   eventBus.on('clearSt', handleClearSt);
   eventBus.on("option", handleOption);
+  eventBus.on("hide",()=>showDialog.value=false)
 });
 onUnmounted(() => {
   eventBus.off("showTitle", handleShowTitle);

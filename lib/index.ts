@@ -140,10 +140,8 @@ export let storyHandler = {
   async storyPlay() {
     if (!this.unitPlaying) {
       this.unitPlaying = true
-      while (!['text', 'option'].includes(storyHandler.currentStoryUnit.type) && !storyHandler.currentStoryUnit.l2d) {
-        console.log('playPre')
+      while (!['text', 'option'].includes(storyHandler.currentStoryUnit.type)) {
         await eventEmitter.emitEvents()
-        console.log('playDone')
         storyHandler.storyIndexIncrement()
       }
       await eventEmitter.emitEvents()
@@ -176,7 +174,7 @@ export let storyHandler = {
 /**
  * 事件发送控制对象
  */
-let eventEmitter = {
+export let eventEmitter = {
   /** 当前是否处于l2d播放中, 并不特指l2d某个动画 */
   l2dPlaying: false,
   voiceIndex: 1,
@@ -213,7 +211,7 @@ let eventEmitter = {
     eventBus.on('characterDone', () => eventEmitter.characterDone = true)
     eventBus.on('titleDone', () => this.titleDone = true)
     eventBus.on('stDone', () => this.stDone = true)
-    eventBus.on('l2dAnimationDone', (e) => eventEmitter.l2dAnimationDone = e.done)
+    eventBus.on('l2dAnimationDone', (e) => { if (e.done) { eventEmitter.l2dAnimationDone = e.done } })
     eventBus.on('auto', () => console.log('auto!'))
 
     storyHandler.storyPlay()
@@ -228,10 +226,10 @@ let eventEmitter = {
     await this.transitionIn()
     this.hide()
     this.showBg()
+    this.playL2d()
+    this.playAudio()
     await this.transitionOut()
     this.showCharacter()
-    this.playAudio()
-    this.playL2d()
     this.show()
     this.playEffect()
 
@@ -287,6 +285,10 @@ let eventEmitter = {
       case 'effectOnly':
         if (currentStoryUnit.textAbout.st?.clearSt) {
           eventBus.emit('clearSt')
+          if (this.l2dPlaying) {
+            this.playL2dVoice = true
+            this.voiceIndex++
+          }
         }
         break
       //to do
