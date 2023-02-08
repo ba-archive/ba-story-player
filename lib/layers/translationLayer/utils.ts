@@ -1,14 +1,16 @@
-import { StoryRawUnit, StoryUnit, Text, TextEffect } from "@/types/common"
+import { Speaker, StoryRawUnit, StoryUnit, Text, TextEffect } from "@/types/common"
 import { usePlayerStore } from '@/stores/index'
 import { Language } from "@/types/store"
 import { PlayAudio } from "@/types/events"
 import { getResourcesUrl } from '@/utils'
+import xxhash from 'xxhashjs'
+import { CharacterNameExcelTableItem } from "@/types/excels"
 
 let playerStore = usePlayerStore()
 
 /**
  * 判断是否是角色
- * @param s 
+ * @param s
  */
 export function isCharacter(s: string) {
   //类似#3
@@ -16,7 +18,7 @@ export function isCharacter(s: string) {
 }
 
 /**
- * 判断是否角色特效 
+ * 判断是否角色特效
  * @param s
  */
 export function isCharacterEffect(s: string) {
@@ -24,7 +26,7 @@ export function isCharacterEffect(s: string) {
 }
 
 /**
- * 判断当前字符串是否是选项 
+ * 判断当前字符串是否是选项
  * @param s 判断的字符串
  */
 export function isOption(s: string) {
@@ -36,9 +38,9 @@ export function isOption(s: string) {
 
 /**
  * 从原始文字生成Text[], 即带特效参数字符串
- * @param rawStoryUnit 
+ * @param rawStoryUnit
  * @param stm 是否为stm类型文字
- * @returns 
+ * @returns
  */
 export function generateText(rawStoryUnit: StoryRawUnit, stm?: boolean) {
   let rawText = getText(rawStoryUnit, playerStore.language)
@@ -61,21 +63,20 @@ export function generateText(rawStoryUnit: StoryRawUnit, stm?: boolean) {
     rawText = rawText.replace('[/ruby]', '')
     let textUnits = rawText.split('[-]')
     for (let [index, textUnit] of textUnits.entries()) {
-      if (textUnit.startsWith('[FF')) {
-        let temp = textUnit.split(']')
+      let temp = textUnit.split(']')
+      if (/^[\[A-F0-9]{6}/.test(textUnit)) {
         result.push({
           content: temp[1],
           effects: [
-            { name: 'color', value: [temp[0].slice(1)] }
+            { name: 'color', value: ['#' + temp[0].slice(1)] }
           ]
         })
       }
       else if (textUnit.startsWith('[ruby')) {
-        let temp = textUnit.split(']')
         result.push({
           content: temp[2],
           effects: [
-            { name: 'color', value: [temp[1].slice(1)] },
+            { name: 'color', value: ['#' + temp[1].slice(1)] },
             { name: 'ruby', value: [temp[0].slice(6)] }
           ]
         })
@@ -137,7 +138,7 @@ export function getVoiceJPUrl(VoiceJp: string) {
 
 /**
  * 检查当前单元是否有背景覆盖变换, 有则删除该变换并返回变换的参数
- * @param unit 
+ * @param unit
  */
 export function checkBgOverlap(unit: StoryUnit) {
   if (unit.transition) {
@@ -149,34 +150,55 @@ export function checkBgOverlap(unit: StoryUnit) {
   }
 }
 
-export function getL2DUrl(BGFileName: string) {
+export function getL2DUrlAndName(BGFileName: string) {
   let filename = String(BGFileName).split('/').pop()?.replace('SpineBG_Lobby', '')
   filename = `${filename}_home`
-  return getResourcesUrl('l2dSpine', filename)
+  return { url: getResourcesUrl('l2dSpine', filename), name: filename }
 }
 
 /**
- * 根据韩文名获取name和nickname
- * @param name 
- * @returns Speaker
+ * 根据韩文名获取名字和头像
+ * @param krName
+ * @returns 包含speaker,avatar的对象
  */
-export function getSpeaker(name: string) {
-  let CharacterName = playerStore.characterNameTable.get(name)
-  if (CharacterName) {
-    let nameInfo = playerStore.CharacterNameExcelTable.get(CharacterName)
-    if (nameInfo) {
-      let language = playerStore.language.toUpperCase() as 'CN' | 'JP'
-      if (nameInfo[`Name${language}`]) {
-        return {
-          name: nameInfo[`Name${language}`]!,
-          nickName: nameInfo[`Nickname${language}`]!
-        }
-      }
-      else {
-        return { name: nameInfo.NameJP, nickName: nameInfo.NicknameJP }
-      }
+export function getCharacterInfo(krName: string) {
+  let CharacterName = getCharacterName(krName)
+  let characterInfo = playerStore.CharacterNameExcelTable.get(CharacterName)
+  if (characterInfo) {
+    let avatarUrl = getResourcesUrl('avatar', characterInfo.SmallPortrait)
+    let speaker = getSpeaker(characterInfo)
+    return {
+      speaker,
+      avatarUrl
     }
   }
+}
+
+/**
+ * 在CharacterNameExcelTableItem中获取到speaker信息
+ */
+export function getSpeaker(characterInfo: CharacterNameExcelTableItem): Speaker {
+  let language = playerStore.language.toUpperCase() as 'CN' | 'JP'
+  if (characterInfo[`Name${language}`]) {
+    return {
+      name: characterInfo[`Name${language}`]!,
+      nickName: characterInfo[`Nickname${language}`]!
+    }
+  }
+  else {
+    return {
+      name: characterInfo.NameJP,
+      nickName: characterInfo.NicknameJP
+    }
+  }
+}
+
+/**
+ * 根据角色韩文名获取CharacterName
+ * @param krName 
+ */
+export function getCharacterName(krName: string) {
+  return xxhash.h32(krName, 0).toNumber()
 }
 
 /**

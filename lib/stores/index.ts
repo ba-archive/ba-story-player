@@ -1,16 +1,17 @@
+import { BGEffectImgTable } from '@/types/effectLayer'
 import { Actions, GetterFunctions, Getters, PrivateStates, PublicStates } from '@/types/store'
 import { getResourcesUrl } from '@/utils'
 
-let characterNameTable = {
-  '유우카 체육복ND': 4179367264,
-  '???': 0,
-  '린': 2690570743,
-  '유우카': 4283125014,
-  '하스미': 3571276574,
-  '치나츠': 1867911819,
-  '스즈미': 1034441153,
-  '통신모모카': 3025942184
-}
+// let characterNameTable = {
+//   '유우카 체육복ND': 3715128518,
+//   '???': 0,
+//   '린': 2690570743,
+//   '유우카': 4283125014,
+//   '하스미': 3571276574,
+//   '치나츠': 1867911819,
+//   '스즈미': 1034441153,
+//   '통신모모카': 3025942184
+// }
 
 let emotionResourcesTable = {
   'Heart': ['Emoticon_Balloon_N.png', 'Emoticon_Heart.png'],
@@ -33,12 +34,54 @@ let fxImageTable = {
   "shot": ['shot.png']
 }
 
+/**
+ * 请在此处填入需要的图片资源的名称
+ */
+let bgEffectImgTable: BGEffectImgTable = {
+  '': [],
+  'BG_ScrollT_0.5': [],
+  BG_Filter_Red: [],
+  BG_Wave_F: [],
+  BG_Flash: [],
+  BG_UnderFire_R: [],
+  BG_Love_L: [],
+  'BG_ScrollB_0.5': [],
+  BG_Rain_L: ['HardRain.png'],
+  BG_UnderFire: ['FX_TEX_Smoke_17.png', 'fire1.svg', 'fire2.svg', 'fire3.svg', 'HardRain.png'],
+  BG_WaveShort_F: [],
+  BG_SandStorm_L: [],
+  'BG_ScrollT_1.5': [],
+  BG_Shining_L: [],
+  'BG_ScrollB_1.0': [],
+  BG_Love_L_BGOff: [],
+  BG_Dust_L: ['FX_TEX_Smoke_Scroll_23.png', 'dust_spark.png'],
+  'BG_ScrollL_0.5': [],
+  'BG_ScrollL_1.0': [],
+  BG_Ash_Black: [],
+  BG_Mist_L: [],
+  BG_Flash_Sound: [],
+  'BG_ScrollL_1.5': [],
+  BG_FocusLine: [],
+  'BG_ScrollR_1.5': [],
+  BG_Shining_L_BGOff: [],
+  'BG_ScrollT_1.0': [],
+  'BG_ScrollB_1.5': [],
+  BG_Filter_Red_BG: [],
+  BG_Ash_Red: [],
+  BG_Fireworks_L_BGOff_02: [],
+  'BG_ScrollR_0.5': [],
+  BG_Snow_L: [],
+  BG_Fireworks_L_BGOff_01: [],
+  'BG_ScrollR_1.0': []
+}
+
 let privateState: PrivateStates = {
   language: 'Cn',
   userName: '',
   dataUrl: '',
   app: null,
   l2dSpineUrl: '',
+  curL2dConfig: null,
   storySummary: {
     chapterName: '',
     summary: ''
@@ -57,14 +100,14 @@ let privateState: PrivateStates = {
   bgInstance: null,
 
   //资源管理
-  characterNameTable: new Map(Object.entries(characterNameTable)),
   BGNameExcelTable: new Map(),
   CharacterNameExcelTable: new Map(),
   BGMExcelTable: new Map(),
   BGEffectExcelTable: new Map(),
   TransitionExcelTable: new Map(),
   emotionResourcesTable: new Map(Object.entries(emotionResourcesTable)),
-  fxImageTable: new Map(Object.entries(fxImageTable))
+  fxImageTable: new Map(Object.entries(fxImageTable)),
+  bgEffectImgMap: new Map(Object.entries(bgEffectImgTable))
 }
 
 let getterFunctions: GetterFunctions = {
@@ -73,10 +116,6 @@ let getterFunctions: GetterFunctions = {
       throw new Error('app实例不存在')
     }
     return privateState.app!
-  },
-
-  CharacterName: () => (name: string) => {
-    return privateState.characterNameTable.get(name)!
   },
 
   characterSpineData: () => (CharacterName: number) => {
@@ -118,12 +157,39 @@ let actions: Actions = {
   setBgInstance(instance) {
     privateState.bgInstance = instance
   },
-  setLogText(logText) {
-    //to do
+  updateLogText(newLog) {
+    if ('SelectionGroup' in newLog) {
+      privateState.logText.push({
+        type: 'user',
+        text: newLog.text
+      })
+    }
+    else {
+      let text = ''
+      for (let textPart of newLog.text) {
+        text += textPart.content
+      }
+      if (newLog.speaker) {
+        privateState.logText.push({
+          type: 'character',
+          text,
+          avatarUrl: newLog.avatarUrl
+        })
+      }
+      else {
+        privateState.logText.push({
+          type: 'none',
+          text
+        })
+      }
+    }
   },
   setL2DSpineUrl(url) {
     privateState.l2dSpineUrl = url
   },
+  setL2DConfig(val) {
+    privateState.curL2dConfig = val
+  }
 }
 
 let store = {
@@ -156,4 +222,6 @@ export let usePlayerStore = () => {
 /**
  * 返回可修改的privateState, 仅本体在初始化时可调用
  */
-export let initPrivateState = () => privateState
+export let initPrivateState = () => privateState;
+
+window.baStore = store // 存一个随时可以查看值

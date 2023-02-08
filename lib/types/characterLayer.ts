@@ -53,6 +53,10 @@ export interface CharacterLayer {
    */
   showOneCharacter(data: CharacterEffectInstance): Promise<void>;
   /**
+   * 隐藏当前所有角色
+   */
+  hideCharacter(): void;
+  /**
    * 所有人物特效已处理完成时调用, 向总线发送characterDone事件
    */
   characterDone(): void;

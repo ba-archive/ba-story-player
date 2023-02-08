@@ -1,7 +1,8 @@
 import { Application, Sprite } from "pixi.js"
 import { CharacterInstance, StoryUnit } from "./common"
-import { ShowText } from './events'
+import { ShowOption, ShowText } from './events'
 import { BGEffectExcelTableItem, BGMExcelTableItem, BGNameExcelTableItem, CharacterNameExcelTableItem, TransitionTableItem } from "./excels"
+import { IL2dConfig } from "./l2d"
 import { OtherSounds } from "./resources"
 
 export type Language = 'Cn' | 'Jp'
@@ -31,6 +32,8 @@ export interface PrivateStates {
    * 用于查找l2d spinedata
    */
   l2dSpineUrl: string
+  /** 当前剧情下的 l2d 特殊播放配置 */
+  curL2dConfig: null | IL2dConfig[keyof IL2dConfig]
 
   //背景层
   /**
@@ -51,10 +54,6 @@ export interface PrivateStates {
 
 
   //资源管理
-  /**
-   * 角色韩文名对应唯一数字标识CharacterName
-   */
-  characterNameTable: Map<string, number>
   /**
    * 根据BGName获取资源信息, 包括l2d和背景图片
    */
@@ -81,6 +80,7 @@ export interface PrivateStates {
    */
   emotionResourcesTable: Map<string, string[]>,
   fxImageTable: Map<string, string[]>,
+  bgEffectImgMap: Map<string, string[]>
 }
 
 /**
@@ -96,9 +96,6 @@ export interface PublicStates {
 export interface BasicGetters {
   app: Application
 
-
-  CharacterName: (name: string) => number | undefined
-
   /**
    * 获取角色spineData
    */
@@ -111,7 +108,7 @@ export interface BasicGetters {
   emotionResources: (emotionName: string) => string[] | undefined
   /**
    * 获取fx特效图像资源
-   * @param fxName 
+   * @param fxName
    * @returns 图像资源url数组
    */
   fxImages: (fxName: string) => string[] | undefined
@@ -120,7 +117,7 @@ export interface BasicGetters {
   /**
    * 获取其他特效音url
    * @param type 特效音类型, 如select
-   * @returns 
+   * @returns
    */
   otherSoundUrl: (type: OtherSounds) => string
   /**
@@ -137,17 +134,23 @@ export type Getters = Readonly<BasicGetters>
 export interface Actions {
   setBgInstance: (sprite: Sprite) => void
   /**
-   * 设置logText的值, 即已经显示过的文字
-   * @param logText 
-   * @returns 
+   * 更新logText的值, 即已经显示过的文字和选项
+   * @param newLog 新加入log的值, 可为对话或选项
+   * @returns
    */
-  setLogText: (logText: ShowText[]) => void
+  updateLogText: (newLog: ShowText | ShowOption) => void
   /**
    * 设置l2d的spine数据地址便于l2d层获取spinedata
-   * @param url 
-   * @returns 
+   * @param url
+   * @returns
    */
   setL2DSpineUrl: (url: string) => void
+  /**
+   *  设置当前l2d特殊配置
+   * @param val l2dConfig
+   * @returns
+   */
+  setL2DConfig: (val: IL2dConfig[keyof IL2dConfig]) => void
 }
 
 export interface LogText {

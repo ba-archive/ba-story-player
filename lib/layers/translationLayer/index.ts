@@ -1,14 +1,16 @@
 import { usePlayerStore } from '@/stores';
 import { EmotionWord } from "@/types/characterLayer";
-import { StoryRawUnit, StoryUnit } from "@/types/common";
+import { StoryRawUnit, StoryUnit, ZmcArgs } from "@/types/common";
 import { StArgs } from '@/types/events';
 import { getResourcesUrl } from '@/utils';
+import { l2dConfig } from '../l2dLayer/l2dConfig';
 import * as utils from "./utils";
 
 let emotionWordTable: { [index: string]: EmotionWord } = {
   '[하트]': 'Heart',
   'h': 'Heart',
   '[반응]': 'Respond',
+  '[재잘]': 'Respond',
   '[음표]': 'Music',
   'm': 'Music',
   '[반짝]': 'Twinkle',
@@ -78,8 +80,11 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
           }
         }
         else if (BGItem.BGType === 'Spine') {
+          // 取第一次出现的 l2d 作为配置
+          const l2dInfo = utils.getL2DUrlAndName(BGItem.BGFileName)
+          playerStore.setL2DConfig(playerStore.curL2dConfig || l2dConfig[l2dInfo.name])
           unit.l2d = {
-            spineUrl: utils.getL2DUrl(BGItem.BGFileName),
+            spineUrl: l2dInfo.url,
             animationName: BGItem.AnimationName
           }
         }
@@ -118,13 +123,15 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
           //无立绘时的对话框对话, 可能有名字
           unit.type = 'text'
           unit.textAbout.showText.text = utils.generateText(rawStoryUnit)
+          let characterInfo = utils.getCharacterInfo(scriptUnits[1])
           if (scriptUnits.length === 3) {
-            unit.textAbout.showText.speaker = utils.getSpeaker(scriptUnits[1])
+            unit.textAbout.showText.speaker = characterInfo?.speaker
+            unit.textAbout.showText.avatarUrl = characterInfo?.avatarUrl
           }
           break
         case '#st':
           unit.type = 'st'
-          unit.textAbout.st = {}
+          unit.textAbout.st = { middle: false }
           unit.textAbout.st.stArgs = [JSON.parse(scriptUnits[1]) as number[], scriptUnits[2] as StArgs[1], Number(scriptUnits[3])]
           if (scriptUnits.length === 3) {
             break
@@ -137,6 +144,8 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
         case '#stm':
           //有特效的st
           unit.type = 'st'
+          unit.textAbout.st = { middle: true }
+          unit.textAbout.st.stArgs = [JSON.parse(scriptUnits[1]) as number[], scriptUnits[2] as StArgs[1], Number(scriptUnits[3])]
           unit.textAbout.showText.text = utils.generateText(rawStoryUnit, true)
           break
         case '#clearst':
@@ -144,7 +153,7 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
           unit.textAbout.st.clearSt = true
           break
         case '#wait':
-          unit.effect.otherEffect.push({ type: 'wait', args: [scriptUnits[1]] })
+          unit.effect.otherEffect.push({ type: 'wait', args: Number(scriptUnits[1]) })
           break
         case '#fontsize':
           for (let i = 0; i < unit.textAbout.showText.text.length; ++i) {
@@ -163,10 +172,26 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
           unit.show = 'menu'
           break
         case '#zmc':
-          unit.effect.otherEffect.push({ type: 'zmc', args: scriptUnits.slice(1) })
+          let args: ZmcArgs
+          if (scriptUnits.length === 4) {
+            args = {
+              type: scriptUnits[1] as 'move',
+              position: scriptUnits[2].split(',').map(Number) as [number, number],
+              size: Number(scriptUnits[3]),
+              duration: Number(scriptUnits[4])
+            }
+          }
+          else {
+            args = {
+              type: scriptUnits[1] as 'instant',
+              position: scriptUnits[2].split(',').map(Number) as [number, number],
+              size: Number(scriptUnits[3]),
+            }
+          }
+          unit.effect.otherEffect.push({ type: 'zmc', args })
           break
         case '#bgshake':
-          unit.effect.otherEffect.push({ type: 'bgshake', args: [] })
+          unit.effect.otherEffect.push({ type: 'bgshake' })
           break
         case '#video':
           //处理情况为 #video;Scenario/Main/22000_MV_Video;Scenario/Main/22000_MV_Sound
@@ -177,29 +202,26 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
           break
         default:
           if (utils.isCharacter(scriptType)) {
-            let CharacterName = playerStore.characterNameTable.get(scriptUnits[1])
-            if (CharacterName) {
-              let signal = false
-              let characterInfo = playerStore.CharacterNameExcelTable.get(CharacterName)
-              let spineUrl = ''
-              if (characterInfo) {
-                //添加全息人物特效
-                if (characterInfo.Shape === 'Signal') {
-                  signal = true
-                }
-                //添加人物spineUrl
-                let temp = String(characterInfo.SpinePrefabName).split('/')
-                temp = temp[temp.length - 1].split('_')
-                let id = temp[temp.length - 1]
-                let filename = `${id}_spr`
-                spineUrl = getResourcesUrl('characterSpine', filename)
+            let CharacterName = utils.getCharacterName(scriptUnits[1])
+            let signal = false
+            let characterInfo = playerStore.CharacterNameExcelTable.get(CharacterName)
+            if (characterInfo) {
+              //添加全息人物特效
+              if (characterInfo.Shape === 'Signal') {
+                signal = true
               }
-
-              //有立绘人物对话
+              //添加人物spineUrl
+              let spineUrl = getResourcesUrl('characterSpine', characterInfo.SpinePrefabName)
+              let avatarUrl = getResourcesUrl('avatar', characterInfo?.SmallPortrait)
+              let speaker = utils.getSpeaker(characterInfo)
+              //人物有对话
               if (scriptUnits.length === 4) {
                 unit.type = 'text'
-                unit.textAbout.showText.text = utils.generateText(rawStoryUnit)
-                unit.textAbout.showText.speaker = utils.getSpeaker(scriptUnits[1])
+                unit.textAbout.showText = {
+                  text: utils.generateText(rawStoryUnit),
+                  speaker,
+                  avatarUrl
+                }
               }
               unit.characters.push({
                 CharacterName,
@@ -210,6 +232,9 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
                 spineUrl,
                 effects: []
               })
+            }
+            else {
+              throw new Error(`${CharacterName}在CharacterNameExcelTable中不存在`)
             }
           }
           else if (utils.isCharacterEffect(scriptType)) {

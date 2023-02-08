@@ -5,13 +5,13 @@ import { effectInit } from '@/layers/effectLayer';
 import { soundInit } from "@/layers/soundLayer";
 import { translate } from '@/layers/translationLayer';
 import { initPrivateState, usePlayerStore } from "@/stores";
-import { StoryRawUnit, StoryUnit } from "@/types/common";
-import { Language, StorySummary } from "@/types/store";
+import { PlayerProps, StoryUnit } from "@/types/common";
+import * as utils from '@/utils';
+import { getOtherSoundUrls, wait } from "@/utils";
 import axios from 'axios';
 import { SpineParser } from 'pixi-spine';
 import { Application, Loader, settings, Text } from "pixi.js";
-import * as utils from '@/utils'
-import { getOtherSoundUrls } from "@/utils";
+import { L2DInit } from "./layers/l2dLayer/L2D";
 
 let playerStore: ReturnType<typeof usePlayerStore>
 let privateState: ReturnType<typeof initPrivateState>
@@ -22,28 +22,25 @@ let l2dVoiceExcelTable = {
 /**
  * 调用各层的初始化函数
  */
-export async function init(elementID: string, height: number, width: number, story: StoryRawUnit[], dataUrl: string, language: Language, userName: string, storySummary: StorySummary) {
+export async function init(elementID: string, props: PlayerProps, endCallback: () => void) {
   //缓解图片缩放失真
   settings.MIPMAP_TEXTURES = 2
 
+  storyHandler.endCallback = endCallback
   playerStore = usePlayerStore()
   privateState = initPrivateState()
-  console.log(privateState);
-  utils.setDataUrl(dataUrl)
-  privateState.dataUrl = dataUrl
-  privateState.language = language
-  privateState.userName = userName
-  privateState.storySummary = storySummary
+  utils.setDataUrl(props.dataUrl)
+  privateState.dataUrl = props.dataUrl
+  privateState.language = props.language
+  privateState.userName = props.userName
+  privateState.storySummary = props.storySummary
   //加入判断防止vite热更新重新创建app导致加载资源错误
   if (!privateState.app) {
-    privateState.app = new Application({ height, width })
+    privateState.app = new Application({ height: props.height, width: props.width })
   }
 
   let app = playerStore.app
   document.querySelector(`#${elementID}`)?.appendChild(app.view)
-
-  //打印事件到控制台便于测试, 正式版请移除
-  eventBus.on('*', (type, e) => console.log(type, e))
 
   Loader.registerPlugin(SpineParser);
 
@@ -53,12 +50,13 @@ export async function init(elementID: string, height: number, width: number, sto
   loadingText.x = app.screen.width - 150
   app.stage.addChild(loadingText)
   await resourcesLoader.init(app.loader)
-  privateState.allStoryUnit = translate(story)
+  privateState.allStoryUnit = translate(props.story)
 
   bgInit()
   characterInit()
   soundInit()
   effectInit()
+  L2DInit()
 
   //加载剩余资源
   resourcesLoader.addLoadResources()
@@ -75,8 +73,9 @@ export async function init(elementID: string, height: number, width: number, sto
 /**
  * 处理故事进度对象
  */
-let storyHandler = {
+export let storyHandler = {
   currentStoryIndex: 0,
+  endCallback: () => { },
 
   get currentStoryUnit(): StoryUnit {
     if (playerStore && playerStore.allStoryUnit.length > this.currentStoryIndex) {
@@ -104,16 +103,16 @@ let storyHandler = {
    * 通过下标递增更新当前故事节点
    */
   storyIndexIncrement() {
+    if (this.checkEnd()) {
+      return
+    }
     let currentSelectionGroup = this.currentStoryUnit.SelectionGroup
     this.currentStoryIndex++
-    while (![0, currentSelectionGroup].includes(this.currentStoryUnit.SelectionGroup)
-      && this.currentStoryIndex < playerStore.allStoryUnit.length
-    ) {
+    while (!this.checkEnd() &&
+      ![0, currentSelectionGroup].includes(this.currentStoryUnit.SelectionGroup)) {
       this.currentStoryIndex++
     }
-    if (this.currentStoryIndex >= playerStore.allStoryUnit.length) {
-      return false
-    }
+
     return true
   },
 
@@ -134,12 +133,35 @@ let storyHandler = {
     this.currentStoryIndex = index
     return true
   },
+  /**
+    * 播放故事直到对话框或选项出现
+    */
+  async storyPlay() {
+    while (!['text', 'option'].includes(storyHandler.currentStoryUnit.type) && !storyHandler.currentStoryUnit.l2d) {
+      await eventEmitter.emitEvents()
+      storyHandler.storyIndexIncrement()
+    }
+    await eventEmitter.emitEvents()
+  },
+
+  /**
+   * 检查故事是否已经结束, 结束则调用结束函数结束播放
+   */
+  checkEnd() {
+    if (playerStore.allStoryUnit.length <= this.currentStoryIndex) {
+      this.end()
+      return true
+    }
+
+    return false
+  },
 
   /**
    * 结束播放
    */
   end() {
     console.log('播放结束')
+    this.endCallback()
   },
 }
 
@@ -148,6 +170,7 @@ let storyHandler = {
  * 事件发送控制对象
  */
 let eventEmitter = {
+  /** 当前是否处于l2d播放中, 并不特指l2d某个动画 */
   l2dPlaying: false,
   voiceIndex: 1,
   playL2dVoice: true,
@@ -155,9 +178,11 @@ let eventEmitter = {
   effectDone: true,
   titleDone: true,
   stDone: true,
+  /** 当前l2d动画是否播放完成 */
+  l2dAnimationDone: true,
 
   get unitDone() {
-    return this.characterDone && this.effectDone && this.titleDone && this.stDone
+    return this.characterDone && this.effectDone && this.titleDone && this.stDone && this.l2dAnimationDone
   },
 
   /**
@@ -167,38 +192,29 @@ let eventEmitter = {
     eventBus.on('next', () => {
       if (this.unitDone) {
         storyHandler.storyIndexIncrement()
-        this.storyPlay()
+        storyHandler.storyPlay()
       }
     })
     eventBus.on('select', e => {
       storyHandler.select(e)
-      this.storyPlay()
+      storyHandler.storyPlay()
     })
     eventBus.on('effectDone', () => eventEmitter.effectDone = true)
     eventBus.on('characterDone', () => eventEmitter.characterDone = true)
     eventBus.on('titleDone', () => this.titleDone = true)
     eventBus.on('stDone', () => this.stDone = true)
+    eventBus.on('l2dAnimationDone', (e) => eventEmitter.l2dAnimationDone = e.done)
     eventBus.on('auto', () => console.log('auto!'))
 
-    this.storyPlay()
-  },
-
-  /**
-   * 播放故事直到对话框或选项出现
-   */
-  async storyPlay() {
-    while (!['text', 'option'].includes(storyHandler.currentStoryUnit.type)) {
-      console.log(storyHandler.currentStoryUnit.type)
-      await this.emitEvents()
-      storyHandler.storyIndexIncrement()
-    }
-    await this.emitEvents()
+    storyHandler.storyPlay()
   },
 
   /**
    * 根据当前剧情发送事件
    */
   async emitEvents() {
+    // TODO: 上线注释, 也可以不注释
+    console.log('剧情进度: ' + storyHandler.currentStoryIndex, storyHandler.currentStoryUnit)
     await this.transitionIn()
     this.hide()
     this.showBg()
@@ -234,9 +250,11 @@ let eventEmitter = {
         this.stDone = false
         if (currentStoryUnit.textAbout.st) {
           if (currentStoryUnit.textAbout.st.stArgs) {
+            let middle = currentStoryUnit.textAbout.st.middle ? true : false
             eventBus.emit('st', {
               text: currentStoryUnit.textAbout.showText.text,
-              stArgs: currentStoryUnit.textAbout.st.stArgs
+              stArgs: currentStoryUnit.textAbout.st.stArgs,
+              middle
             })
           }
           else if (currentStoryUnit.textAbout.st.clearSt) {
@@ -294,6 +312,7 @@ let eventEmitter = {
         this.l2dPlaying = false
       }
     }
+    // eventBus.emit('showBg', 'https://yuuka.cdn.diyigemt.com/image/ba-all-data/UIs/03_Scenario/01_Background/BG_CS_PR_16.jpg')
   },
 
   /**
@@ -320,8 +339,8 @@ let eventEmitter = {
   playL2d() {
     if (storyHandler.currentStoryUnit.l2d) {
       if (storyHandler.currentStoryUnit.l2d.animationName === 'Idle_01') {
-        eventBus.emit('playL2D')
         playerStore.setL2DSpineUrl(storyHandler.currentStoryUnit.l2d.spineUrl)
+        eventBus.emit('playL2D')
         this.l2dPlaying = true
       }
       else {
@@ -336,10 +355,10 @@ let eventEmitter = {
   hide() {
     if (storyHandler.currentStoryUnit.hide) {
       if (storyHandler.currentStoryUnit.hide === 'all') {
-        eventBus.emit('hidemenu')
+        eventBus.emit('hide')
       }
       else {
-        eventBus.emit('hide')
+        eventBus.emit('hidemenu')
       }
     }
   },
@@ -359,6 +378,9 @@ let eventEmitter = {
     if (storyHandler.currentStoryUnit.effect.BGEffect || storyHandler.currentStoryUnit.effect.otherEffect.length != 0) {
       this.effectDone = false
       eventBus.emit('playEffect', storyHandler.currentStoryUnit.effect)
+    }
+    else {
+      eventBus.emit('removeEffect')
     }
   },
 
@@ -383,7 +405,7 @@ let eventEmitter = {
 /**
  * 资源加载处理对象
  */
-let resourcesLoader = {
+export let resourcesLoader = {
   loader: new Loader(),
   /**
    * 初始化, 预先加载表资源供翻译层使用
@@ -396,9 +418,13 @@ let resourcesLoader = {
    * 添加所有资源
    */
   addLoadResources() {
+    // this.loader.add('https://yuuka.cdn.diyigemt.com/image/ba-all-data/UIs/03_Scenario/01_Background/BG_CS_PR_16.jpg',
+    //   'https://yuuka.cdn.diyigemt.com/image/ba-all-data/UIs/03_Scenario/01_Background/BG_CS_PR_16.jpg'
+    // )
     this.addEmotionResources()
     this.addFXResources()
     this.addOtherSounds()
+    this.addBGEffectImgs()
     for (let unit of playerStore.allStoryUnit) {
       //添加人物spine
       if (unit.characters.length != 0) {
@@ -421,6 +447,9 @@ let resourcesLoader = {
 
       //添加l2d spine资源
       this.checkAndAdd(unit.l2d, 'spineUrl')
+      if (unit.l2d) {
+        playerStore.curL2dConfig?.otherSpine.forEach(i => this.checkAndAdd(utils.getResourcesUrl('otherL2dSpine', i)))
+      }
     }
   },
 
@@ -517,6 +546,19 @@ let resourcesLoader = {
   },
 
   /**
+   * 添加bgEffect相关图像资源
+   */
+  addBGEffectImgs() {
+    for (let imgs of playerStore.bgEffectImgMap.values()) {
+      for (let img of imgs) {
+        if (!this.loader.resources[img]) {
+          this.loader.add(img, utils.getResourcesUrl('bgEffectImgs', img))
+        }
+      }
+    }
+  },
+
+  /**
    * 加载原始数据资源
    */
   async loadExcels() {
@@ -546,12 +588,4 @@ let resourcesLoader = {
       }
     })
   }
-}
-
-
-/**
- * wait in promise
- */
-function wait(milliseconds: number) {
-  return new Promise(resolve => setTimeout(resolve, milliseconds));
 }

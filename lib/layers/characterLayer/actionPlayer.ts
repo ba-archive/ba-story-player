@@ -6,6 +6,7 @@ import gsap from "gsap";
 import { Spine } from "pixi-spine";
 import actionOptions, { moveSpeed } from "./options/actionOptions";
 import { ColorOverlayFilter } from '@pixi/filter-color-overlay'
+import { CharacterLayerInstance } from './index'
 
 const AnimationIdleTrack = 0; // 光环动画track index
 const AnimationFaceTrack = 1; // 差分切换
@@ -71,12 +72,16 @@ const CharacterEffectPlayerInstance: CharacterEffectPlayer = {
     return timeLinePromise(tl)
 
   }, closeup(instance: CharacterEffectInstance, options): Promise<void> {
-    let scale = instance.instance.scale.x * options.scale
-    instance.instance.scale.set(scale)
+    if (Math.abs(CharacterLayerInstance.characterScale! - instance.instance.scale.x) <= 0.05) {
+      const OriginHalfWidth = 0.55 * instance.instance.width
+      let scale = instance.instance.scale.x * options.scale
+      instance.instance.scale.set(scale)
+      instance.instance.position.x -= 0.55 * instance.instance.width - OriginHalfWidth
+    }
 
     return Promise.resolve()
   }, d(instance: CharacterEffectInstance, options): Promise<void> {
-    let colorFilter = instance.instance.filters![instance.instance.filters!.length-1] as ColorOverlayFilter
+    let colorFilter = instance.instance.filters![instance.instance.filters!.length - 1] as ColorOverlayFilter
     let tl = gsap.timeline()
 
     tl.to(colorFilter, { alpha: 1, duration: options.duration })
@@ -204,6 +209,20 @@ const POS_INDEX_MAP = {
  */
 function calcSpineStagePosition(character: Spine, position: number): PositionOffset {
   const { screenWidth, screenHeight } = getStageSize();
+  //当角色pivot x变为人物中心附近时改变计算算法
+  if (Math.abs(CharacterLayerInstance.characterScale! - character.scale.x) > 0.05) {
+    let closeupScale = character.scale.x
+    character.scale.set(CharacterLayerInstance.characterScale)
+    const OriginHalfWidth = 0.55 * character.width
+    let pos = {
+      x: screenWidth / 5 * (position - 1) - (character.width * character.scale.x / 2),
+      y: screenHeight * 0.3
+    }
+    character.scale.set(closeupScale)
+    pos.x -= 0.55 * character.width - OriginHalfWidth
+    return pos
+  }
+
   return {
     x: screenWidth / 5 * (position - 1) - (character.width * character.scale.x / 2),
     y: screenHeight * 0.3

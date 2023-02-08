@@ -1,11 +1,12 @@
 <script lang="ts" setup>
-import { onMounted } from 'vue';
+import eventBus from "@/eventBus";
 import { init } from '@/index';
 import { StoryRawUnit } from '@/types/common';
-import eventBus from "@/eventBus";
+import { onMounted } from 'vue';
 //@ts-ignore
 import BaDialog from "@/layers/textLayer/BaDialog.vue";
 import { Language, StorySummary } from '@/types/store';
+
 
 let props = defineProps<{
   story: StoryRawUnit[]
@@ -13,11 +14,13 @@ let props = defineProps<{
   height: number
   width: number
   language: Language
-  username: string
+  userName: string
   storySummary: StorySummary
 }>()
 
-onMounted(() => { init('player__main', props.height, props.width, props.story, props.dataUrl, props.language, props.username, props.storySummary) })
+let emitter = defineEmits(['end'])
+
+onMounted(() => { init('player__main', props, () => emitter('end')) })
 
 /**
  * 测试文本框
