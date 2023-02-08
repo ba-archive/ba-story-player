@@ -76,6 +76,7 @@ export async function init(elementID: string, props: PlayerProps, endCallback: (
 export let storyHandler = {
   currentStoryIndex: 0,
   endCallback: () => { },
+  unitPlaying: false,
 
   get currentStoryUnit(): StoryUnit {
     if (playerStore && playerStore.allStoryUnit.length > this.currentStoryIndex) {
@@ -137,11 +138,17 @@ export let storyHandler = {
     * 播放故事直到对话框或选项出现
     */
   async storyPlay() {
-    while (!['text', 'option'].includes(storyHandler.currentStoryUnit.type) && !storyHandler.currentStoryUnit.l2d) {
+    if (!this.unitPlaying) {
+      this.unitPlaying = true
+      while (!['text', 'option'].includes(storyHandler.currentStoryUnit.type) && !storyHandler.currentStoryUnit.l2d) {
+        console.log('playPre')
+        await eventEmitter.emitEvents()
+        console.log('playDone')
+        storyHandler.storyIndexIncrement()
+      }
       await eventEmitter.emitEvents()
-      storyHandler.storyIndexIncrement()
+      this.unitPlaying = false
     }
-    await eventEmitter.emitEvents()
   },
 
   /**
@@ -190,14 +197,17 @@ let eventEmitter = {
    */
   init() {
     eventBus.on('next', () => {
-      if (this.unitDone) {
+      if (this.unitDone && !storyHandler.unitPlaying) {
         storyHandler.storyIndexIncrement()
         storyHandler.storyPlay()
       }
     })
     eventBus.on('select', e => {
-      storyHandler.select(e)
-      storyHandler.storyPlay()
+      if (this.unitDone) {
+        storyHandler.select(e)
+        console.log('select')
+        storyHandler.storyPlay()
+      }
     })
     eventBus.on('effectDone', () => eventEmitter.effectDone = true)
     eventBus.on('characterDone', () => eventEmitter.characterDone = true)
@@ -344,6 +354,7 @@ let eventEmitter = {
         this.l2dPlaying = true
       }
       else {
+        this.l2dAnimationDone = false
         eventBus.emit('changeAnimation', storyHandler.currentStoryUnit.l2d.animationName)
       }
     }
