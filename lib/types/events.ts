@@ -112,6 +112,11 @@ export type Events = {
    */
   stDone: undefined
   /**
+   * 对话框内容播放完成
+   * **实际上st动画播放完成也会触发**
+   */
+  textDone: undefined;
+  /**
    * 显示选项
    */
   option: ShowOption[]
