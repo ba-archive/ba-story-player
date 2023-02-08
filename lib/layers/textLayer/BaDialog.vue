@@ -105,8 +105,7 @@ function moveToNext() {
  */
 function handleSelectMousedown(index: number) {
   selectionSelect.value = index;
-  //TODO 声音层在天上飞
-  // eventBus.emit("playSelectSound");
+  eventBus.emit("playSelectSound");
 }
 /**
  * 选择支按钮被按下
@@ -372,6 +371,9 @@ function setTypingComplete(complete: boolean, instance?: TypedExtend) {
   typingComplete.value = complete;
   if (instance) {
     instance.typingComplete = complete;
+  }
+  if (typingInstance && !typingInstance.isSt) {
+    eventBus.emit("textDone");
   }
 }
 // 文本框总高度
