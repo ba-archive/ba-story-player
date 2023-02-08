@@ -2,26 +2,51 @@
   <div class="container" @click="moveToNext" :style="{ height: `${playerHeight}px` }" @mouseup="selectionSelect = -1">
     <div class="container-inner">
       <div class="st-container" ref="stOutput" :style="{fontSize: `${standardFontSize}rem`}" />
-      <div class="title-container" :class="{ 'fade-in-out': titleContent }" v-if="titleContent"><div>{{ titleContent
-        }}</div></div>
-      <div class="place-container" :class="{ 'fade-in-out': placeContent }" v-if="placeContent"><div>{{ placeContent }}</div></div>
-      <div class="select-container" v-if="selection.length !== 0">
+      <div class="title-container"
+           :class="{ 'fade-in-out': titleContent }"
+           v-if="titleContent"
+      >
+        <div class="title-border" :style="{ '--side-padding': `${titleBorderPadding}px`}">
+          <div
+            class="title-contain"
+            :style="{ '--font-size': `${fontSize(4)}rem`}"
+          >{{ titleContent }}
+          </div>
+        </div>
+      </div>
+      <div class="place-container"
+           :style="{ '--font-size': `${fontSize(2)}rem`}"
+           :class="{ 'fade-in-out': placeContent }"
+           v-if="placeContent">
+        <div class="round-place">
+          <span class="place-content">{{ placeContent }}</span>
+        </div>
+      </div>
+      <div
+        class="select-container"
+        v-if="selection.length !== 0"
+        :style="{ 'top': `${selectContainerTop}px` }"
+      >
         <div v-for="(e, index) in selection"
              class="select-item"
              @mousedown="handleSelectMousedown(e.SelectionGroup)"
              :class="{ 'select-item-active': e.SelectionGroup === selectionSelect }"
              :key="index"
              @click="handleSelect(e.SelectionGroup)"
+             role="button"
              >{{ e.text }}</div>
       </div>
-      <div v-if="showDialog" :style="{padding: `${fontSize(3)}rem ${fontSize(8)}rem`, height: `${playerHeight / 2}px`}"
+      <div v-if="showDialog" :style="{padding: `${fontSize(3)}rem ${fontSize(8)}rem`, height: `${dialogHeight}px`}"
            class="dialog" >
-        <div class="title">
-          <div :style="{fontSize: `${fontSize(3.5)}rem`}" class="name">{{ name }}&emsp;</div>
-          <div :style="{fontSize: `${fontSize(2)}rem`}" class="department">{{nickName}}</div>
+        <div class="inner-dialog" :style="{'--height-padding': `${fontSize(3)}rem`}">
+          <div class="title">
+            <div :style="{fontSize: `${fontSize(3.5)}rem`}" class="name">{{ name }}&emsp;</div>
+            <div :style="{fontSize: `${fontSize(2)}rem`}" class="department">{{nickName}}</div>
+          </div>
+          <hr>
+          <div ref="typewriterOutput" :style="{fontSize: `${standardFontSize}rem`}" class="content" />
+          <div class="next-image-btn" v-if="typingComplete">&zwj;</div>
         </div>
-        <hr>
-        <div ref="typewriterOutput" :style="{fontSize: `${standardFontSize}rem`}" class="content" />
       </div>
     </div>
   </div>
@@ -52,7 +77,9 @@ const name = ref<string>();
 // 所属(昵称右边)
 const nickName = ref<string>();
 // 在执行st特效时置为false以隐藏对话框
-const showDialog = ref<boolean>(true);
+const showDialog = ref<boolean>(false);
+// 打印完成
+const typingComplete = ref<boolean>(false);
 let typingInstance: TypedExtend; // 全局打字机实例 因为不能有两个实例同时持有一个el
 /**
  * 单击屏幕后触发效果 next或者立即显示当前对话
@@ -61,12 +88,12 @@ function moveToNext() {
   if (selection.value.length !== 0) return; // 选项列表不为零, 不能跳过选择支
   if (!showDialog) return; // 显示st期间不允许跳过
   // 没打过任何一行字(初始化)或者对话已经显示完成, 点击屏幕代表继续
-  if (!typingInstance || typingInstance.typingComplete) {
+  if (!typingInstance || typingComplete.value) {
     eventBus.emit("next");
   } else { // 否则立即显示所有对话
     typingInstance.stop();
     typingInstance.destroy();
-    typingInstance.typingComplete = true;
+    setTypingComplete(true, typingInstance);
     typewriterOutput.value.innerHTML = typingInstance.strings.pop()
   }
 }
@@ -234,9 +261,11 @@ function parseTextEffect(text: Text, extendStyle = "", tag = "span"): Text {
 function showTextDialog(text: Text[], output: HTMLElement, onParseContent?: (source: string) => string) {
   return new Promise<void>((resolve) => {
     if (text.length === 0) {
+      setTypingComplete(true);
       resolve();
       return;
     }
+    setTypingComplete(false);
     function parseContent(content: string) {
       if (onParseContent) {
         return onParseContent(content);
@@ -254,6 +283,7 @@ function showTextDialog(text: Text[], output: HTMLElement, onParseContent?: (sou
     function onComplete(self: TypedExtend) {
       if (index >= text.length) {
         setTimeout(() => {
+          setTypingComplete(true);
           resolve();
         }, 100)
         return;
@@ -271,7 +301,7 @@ function showTextDialog(text: Text[], output: HTMLElement, onParseContent?: (sou
       }
       last = next;
       self.timeout = setTimeout(() => {
-        self.typingComplete = false;
+        setTypingComplete(false, self);
         self.start();
       }, text[index].waitTime || 0);
       index++;
@@ -279,7 +309,7 @@ function showTextDialog(text: Text[], output: HTMLElement, onParseContent?: (sou
     // st的续约, 因为不能两个Typed同时持有一个对象, 所以采用将之前的内容作为已打印内容拼接的形式
     if (typingInstance && typingInstance.isSt) {
       lastStOutput = stOutput.value.innerHTML;
-      typingInstance.typingComplete = false;
+      setTypingComplete(false, typingInstance);
       typingInstance.pause.status = true;
       typingInstance.pause.typewrite = true;
       typingInstance.pause.curString = lastStOutput + firstContent;
@@ -326,6 +356,28 @@ function unityFontSizeToHTMLSize(size: number) {
     return fontSize(3);
   }
 }
+
+/**
+ * typingInstance不能被代理且自身的typingComplete也有意义
+ * @param complete 是否完成
+ * @param instance 如果有,同时设
+ */
+function setTypingComplete(complete: boolean, instance?: TypedExtend) {
+  typingComplete.value = complete;
+  if (instance) {
+    instance.typingComplete = complete;
+  }
+}
+// 文本框总高度
+const dialogHeight = computed(() => props.playerHeight / 2);
+// 选择框位置
+const standardDialogHeight = 550;
+const standardDialogTopOffset = 100;
+const selectContainerTop = computed(() => ((props.playerHeight - dialogHeight.value) / 2) + (props.playerHeight / standardDialogHeight) * standardDialogTopOffset);
+// 计算title的padding以让其符合边框第二边线
+const titleBorderWidth = 2280;
+const standardBorderWidth = 26;
+const titleBorderPadding = computed(() => props.playerWidth / titleBorderWidth * standardBorderWidth)
 onMounted(() => {
   eventBus.on("showTitle", handleShowTitle);
   eventBus.on("showPlace", handleShowPlace);
@@ -369,10 +421,10 @@ type TextLayerProps = {
 <style scoped lang="scss">
 $border-radius: 3px;
 $dialog-z-index: 3;
-$place-z-index: 4;
-$title-z-index: 5;
-$select-z-index: 5;
-$st-z-index: 5;
+$place-z-index: 8;
+$title-z-index: 10;
+$select-z-index: 10;
+$st-z-index: 10;
 .name{
   font-family: 'TJL',serif;
   font-size: 3.5rem;
@@ -401,6 +453,28 @@ $st-z-index: 5;
   position: absolute;
   bottom: 0;
   z-index: $text-layer-z-index + $dialog-z-index;
+  .inner-dialog {
+    --height-padding: 0rem;
+    width: 100%;
+    height: calc(100% - var(--height-padding));
+    position: relative;
+  }
+  .next-image-btn {
+    $size: 10px;
+    position: absolute;
+    right: 0;
+    bottom: 1rem;
+    width: 10px;
+    height: 10px;
+    background: url("./assets/text-next.png");
+    background-size: $size $size;
+    animation: next-btn .6s linear alternate infinite;
+  }
+  @keyframes next-btn {
+    0%   {transform: translateY(0)}
+    40%  {transform: translateY(10%)}
+    100% {transform: translateY(50%)}
+  }
 }
 
 .content{
@@ -412,6 +486,7 @@ $st-z-index: 5;
 .container {
   position: absolute;
   user-select: none;
+  overflow: hidden;
   .container-inner {
     width: 100%;
     height: 100%;
@@ -420,7 +495,7 @@ $st-z-index: 5;
   .select-container {
     width: 100%;
     position: absolute;
-    top: 35%;
+    top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     display: flex;
@@ -431,13 +506,29 @@ $st-z-index: 5;
     .select-item {
       flex: 1;
       text-align: center;
-      background-color: rgba(255, 255, 255, .3);
       line-height: 2;
       font-size: 1.5rem;
       border-radius: $border-radius;
       color: black;
       cursor: pointer;
       transition: width 0.3s, height 0.3s;
+      position: relative;
+      &:before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        transform: skewX(-15deg);
+        background: linear-gradient(
+            58deg,
+            rgba(240, 240, 240, 0.1) 0%,
+            rgba(240, 240, 240, 1) 38%,
+            rgba(240, 240, 240, 0.1) 100%
+        ), url("./assets/poli-light.png") rgb(164 216 237) no-repeat 0 30%;
+        z-index: -1;
+      }
     }
     .select-item-active {
       transform: scale(0.8);
@@ -447,29 +538,81 @@ $st-z-index: 5;
     width: 100%;
     height: 100%;
     text-align: center;
-    line-height: 1;
     position: absolute;
     top: 0;
     left: 0;
-    font-size: 2rem;
-    background-color: black;
     opacity: 0;
     color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     z-index: $text-layer-z-index + $title-z-index;
+    $padding: 10px;
+    padding: $padding;
+    .title-border {
+      --side-padding: 0px;
+      width: calc(100% - 2 * #{$padding} - 2 * var(--side-padding));
+      height: calc(100% - 2 * #{$padding});
+      background: url("./assets/title-border.png") no-repeat;
+      background-size: 100% 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      padding: 0 var(--side-padding);
+      .title-contain {
+        --font-size: 2rem;
+        line-height: 1;
+        font-size: var(--font-size);
+        color: black;
+        font-weight: 700;
+        padding: var(--font-size) 0;
+        width: 100%;
+        background: linear-gradient(
+            58deg,
+            rgba(240, 240, 240, 0.1) 0%,
+            rgba(240, 240, 240, 1) 38%,
+            rgba(240, 240, 240, 0.1) 100%
+        ), url("./assets/poli-light.png") rgb(164 216 237) no-repeat 0 30%;
+      }
+    }
   }
   .place-container {
+    --font-size: 1rem;
     position: absolute;
     left: 0;
     top: 10%;
-    border-top-right-radius: $border-radius;
-    border-bottom-right-radius: $border-radius;
-    background-color: black;
     color: white;
-    padding: 16px;
     z-index: $text-layer-z-index + $place-z-index;
+    .round-place {
+      position: relative;
+      line-height: var(--font-size);
+      padding: calc(var(--font-size) / 2) 3rem calc(var(--font-size) / 2) 1rem;
+      &:after {
+        content: '';
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: -20px;
+        background-color: rgba(44,65,92,0.7);
+        transform: skewX(-20deg);
+        border-radius: 0 10px 10px 0;
+        position: absolute;
+        z-index: -1;
+      }
+      .place-content {
+        padding-left: 10px;
+        color: white;
+        font-style: var(--font-size);
+        &:after {
+          content: '';
+          width: 3px;
+          display: block;
+          height: var(--font-size);
+          background-color: rgba(255,255,255,0.3);
+          position: absolute;
+          top: 0;
+          transform: translateY(50%);
+        }
+      }
+    }
   }
   .st-container {
     width: 100%;
