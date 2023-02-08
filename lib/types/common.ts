@@ -186,6 +186,7 @@ export interface StoryUnit {
     st?: {
       stArgs?: StArgs
       clearSt?: boolean,
+      middle?: boolean
     }
   }
   fight?: number,

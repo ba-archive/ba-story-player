@@ -188,6 +188,7 @@ export interface StText {
    * st的参数, 目前只需要注意第二个参数, serial打字机效果, instant立即全部显示.
    */
   stArgs: StArgs
+  middle: boolean
 }
 
 export interface ShowOption {

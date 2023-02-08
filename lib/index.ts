@@ -245,9 +245,11 @@ let eventEmitter = {
       case 'st':
         if (currentStoryUnit.textAbout.st) {
           if (currentStoryUnit.textAbout.st.stArgs) {
+            let middle = currentStoryUnit.textAbout.st.middle ? true : false
             eventBus.emit('st', {
               text: currentStoryUnit.textAbout.showText.text,
-              stArgs: currentStoryUnit.textAbout.st.stArgs
+              stArgs: currentStoryUnit.textAbout.st.stArgs,
+              middle
             })
           }
           else if (currentStoryUnit.textAbout.st.clearSt) {

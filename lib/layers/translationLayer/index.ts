@@ -131,7 +131,7 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
           break
         case '#st':
           unit.type = 'st'
-          unit.textAbout.st = {}
+          unit.textAbout.st = { middle: false }
           unit.textAbout.st.stArgs = [JSON.parse(scriptUnits[1]) as number[], scriptUnits[2] as StArgs[1], Number(scriptUnits[3])]
           if (scriptUnits.length === 3) {
             break
@@ -144,6 +144,8 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
         case '#stm':
           //有特效的st
           unit.type = 'st'
+          unit.textAbout.st = { middle: true }
+          unit.textAbout.st.stArgs = [JSON.parse(scriptUnits[1]) as number[], scriptUnits[2] as StArgs[1], Number(scriptUnits[3])]
           unit.textAbout.showText.text = utils.generateText(rawStoryUnit, true)
           break
         case '#clearst':
