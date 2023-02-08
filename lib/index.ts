@@ -6,13 +6,12 @@ import { soundInit } from "@/layers/soundLayer";
 import { textInit } from "@/layers/textLayer";
 import { translate } from '@/layers/translationLayer';
 import { initPrivateState, usePlayerStore } from "@/stores";
-import { StoryRawUnit, StoryUnit } from "@/types/common";
-import { Language, StorySummary } from "@/types/store";
+import { PlayerProps, StoryUnit } from "@/types/common";
+import * as utils from '@/utils';
+import { getOtherSoundUrls, wait } from "@/utils";
 import axios from 'axios';
 import { SpineParser } from 'pixi-spine';
 import { Application, Loader, settings, Text } from "pixi.js";
-import * as utils from '@/utils'
-import { getOtherSoundUrls, wait } from "@/utils";
 import { L2DInit } from "./layers/l2dLayer/L2D";
 
 let playerStore: ReturnType<typeof usePlayerStore>
@@ -24,20 +23,21 @@ let l2dVoiceExcelTable = {
 /**
  * 调用各层的初始化函数
  */
-export async function init(elementID: string, height: number, width: number, story: StoryRawUnit[], dataUrl: string, language: Language, userName: string, storySummary: StorySummary) {
+export async function init(elementID: string, props: PlayerProps, endCallback: () => void) {
   //缓解图片缩放失真
   settings.MIPMAP_TEXTURES = 2
 
+  storyHandler.endCallback = endCallback
   playerStore = usePlayerStore()
   privateState = initPrivateState()
-  utils.setDataUrl(dataUrl)
-  privateState.dataUrl = dataUrl
-  privateState.language = language
-  privateState.userName = userName
-  privateState.storySummary = storySummary
+  utils.setDataUrl(props.dataUrl)
+  privateState.dataUrl = props.dataUrl
+  privateState.language = props.language
+  privateState.userName = props.userName
+  privateState.storySummary = props.storySummary
   //加入判断防止vite热更新重新创建app导致加载资源错误
   if (!privateState.app) {
-    privateState.app = new Application({ height, width })
+    privateState.app = new Application({ height: props.height, width: props.width })
   }
 
   let app = playerStore.app
@@ -51,7 +51,7 @@ export async function init(elementID: string, height: number, width: number, sto
   loadingText.x = app.screen.width - 150
   app.stage.addChild(loadingText)
   await resourcesLoader.init(app.loader)
-  privateState.allStoryUnit = translate(story)
+  privateState.allStoryUnit = translate(props.story)
 
   textInit()
   bgInit()
@@ -77,6 +77,7 @@ export async function init(elementID: string, height: number, width: number, sto
  */
 export let storyHandler = {
   currentStoryIndex: 0,
+  endCallback: () => { },
 
   get currentStoryUnit(): StoryUnit {
     if (playerStore && playerStore.allStoryUnit.length > this.currentStoryIndex) {
@@ -104,16 +105,16 @@ export let storyHandler = {
    * 通过下标递增更新当前故事节点
    */
   storyIndexIncrement() {
+    if (this.checkEnd()) {
+      return
+    }
     let currentSelectionGroup = this.currentStoryUnit.SelectionGroup
     this.currentStoryIndex++
-    while (![0, currentSelectionGroup].includes(this.currentStoryUnit.SelectionGroup)
-      && this.currentStoryIndex < playerStore.allStoryUnit.length
-    ) {
+    while (!this.checkEnd() &&
+      ![0, currentSelectionGroup].includes(this.currentStoryUnit.SelectionGroup)) {
       this.currentStoryIndex++
     }
-    if (this.currentStoryIndex >= playerStore.allStoryUnit.length) {
-      return false
-    }
+
     return true
   },
 
@@ -131,12 +132,35 @@ export let storyHandler = {
 
     return true
   },
+  /**
+    * 播放故事直到对话框或选项出现
+    */
+  async storyPlay() {
+    while (!['text', 'option'].includes(storyHandler.currentStoryUnit.type) && !storyHandler.currentStoryUnit.l2d) {
+      await eventEmitter.emitEvents()
+      storyHandler.storyIndexIncrement()
+    }
+    await eventEmitter.emitEvents()
+  },
+
+  /**
+   * 检查故事是否已经结束, 结束则调用结束函数结束播放
+   */
+  checkEnd() {
+    if (playerStore.allStoryUnit.length <= this.currentStoryIndex) {
+      this.end()
+      return true
+    }
+
+    return false
+  },
 
   /**
    * 结束播放
    */
   end() {
     console.log('播放结束')
+    this.endCallback()
   },
 }
 
@@ -167,30 +191,19 @@ let eventEmitter = {
     eventBus.on('next', () => {
       if (this.unitDone) {
         storyHandler.storyIndexIncrement()
-        this.storyPlay()
+        storyHandler.storyPlay()
       }
     })
     eventBus.on('select', e => {
       storyHandler.select(e)
-      this.storyPlay()
+      storyHandler.storyPlay()
     })
     eventBus.on('effectDone', () => eventEmitter.effectDone = true)
     eventBus.on('characterDone', () => eventEmitter.characterDone = true)
     eventBus.on('l2dAnimationDone', (e) => eventEmitter.l2dAnimationDone = e.done)
     eventBus.on('auto', () => console.log('auto!'))
 
-    this.storyPlay()
-  },
-
-  /**
-   * 播放故事直到对话框或选项出现
-   */
-  async storyPlay() {
-    while (!['text', 'option'].includes(storyHandler.currentStoryUnit.type) && !storyHandler.currentStoryUnit.l2d) {
-      await this.emitEvents()
-      storyHandler.storyIndexIncrement()
-    }
-    await this.emitEvents()
+    storyHandler.storyPlay()
   },
 
   /**
@@ -232,9 +245,11 @@ let eventEmitter = {
       case 'st':
         if (currentStoryUnit.textAbout.st) {
           if (currentStoryUnit.textAbout.st.stArgs) {
+            let middle = currentStoryUnit.textAbout.st.middle ? true : false
             eventBus.emit('st', {
               text: currentStoryUnit.textAbout.showText.text,
-              stArgs: currentStoryUnit.textAbout.st.stArgs
+              stArgs: currentStoryUnit.textAbout.st.stArgs,
+              middle
             })
           }
           else if (currentStoryUnit.textAbout.st.clearSt) {
@@ -270,7 +285,7 @@ let eventEmitter = {
           clearInterval(interval)
           resolve()
         }
-        else if (Date.now() - startTime >= 5000) {
+        else if (Date.now() - startTime >= 50000) {
           reject('特效长时间未完成')
         }
       })
@@ -332,10 +347,10 @@ let eventEmitter = {
   hide() {
     if (storyHandler.currentStoryUnit.hide) {
       if (storyHandler.currentStoryUnit.hide === 'all') {
-        eventBus.emit('hidemenu')
+        eventBus.emit('hide')
       }
       else {
-        eventBus.emit('hide')
+        eventBus.emit('hidemenu')
       }
     }
   },

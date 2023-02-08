@@ -58,12 +58,12 @@ function showCharacter() {
   eventBus.emit('showCharacter', {
     characters: [
       {
-        CharacterName: 4179367264,
+        CharacterName: 3715128518,
         face: '05',
         position: 3,
         highlight: true,
         signal: false,
-        spineUrl: '',
+        spineUrl: "https://yuuka.diyigemt.com/image/ba-all-data/spine/CH0184ND_spr/CH0184ND_spr.skel",
         effects: [
           {
             type: 'action',
@@ -84,7 +84,7 @@ function playEffect() {
         /**
          * 注意如果不是体香1剧情需要更改
          */
-        CharacterName: 4179367264,
+        CharacterName: 3715128518,
         face: '05',
         position: 3,
         highlight: highlight.value,

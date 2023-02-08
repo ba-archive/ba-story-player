@@ -1,8 +1,10 @@
-import { StoryRawUnit, StoryUnit, Text, TextEffect } from "@/types/common"
+import { Speaker, StoryRawUnit, StoryUnit, Text, TextEffect } from "@/types/common"
 import { usePlayerStore } from '@/stores/index'
 import { Language } from "@/types/store"
 import { PlayAudio } from "@/types/events"
 import { getResourcesUrl } from '@/utils'
+import xxhash from 'xxhashjs'
+import { CharacterNameExcelTableItem } from "@/types/excels"
 
 let playerStore = usePlayerStore()
 
@@ -61,21 +63,20 @@ export function generateText(rawStoryUnit: StoryRawUnit, stm?: boolean) {
     rawText = rawText.replace('[/ruby]', '')
     let textUnits = rawText.split('[-]')
     for (let [index, textUnit] of textUnits.entries()) {
-      if (textUnit.startsWith('[FF')) {
-        let temp = textUnit.split(']')
+      let temp = textUnit.split(']')
+      if (/^[\[A-F0-9]{6}/.test(textUnit)) {
         result.push({
           content: temp[1],
           effects: [
-            { name: 'color', value: [temp[0].slice(1)] }
+            { name: 'color', value: ['#' + temp[0].slice(1)] }
           ]
         })
       }
       else if (textUnit.startsWith('[ruby')) {
-        let temp = textUnit.split(']')
         result.push({
           content: temp[2],
           effects: [
-            { name: 'color', value: [temp[1].slice(1)] },
+            { name: 'color', value: ['#' + temp[1].slice(1)] },
             { name: 'ruby', value: [temp[0].slice(6)] }
           ]
         })
@@ -152,31 +153,52 @@ export function checkBgOverlap(unit: StoryUnit) {
 export function getL2DUrlAndName(BGFileName: string) {
   let filename = String(BGFileName).split('/').pop()?.replace('SpineBG_Lobby', '')
   filename = `${filename}_home`
-  return {url: getResourcesUrl('l2dSpine', filename), name: filename}
+  return { url: getResourcesUrl('l2dSpine', filename), name: filename }
 }
 
 /**
- * 根据韩文名获取name和nickname
- * @param name
- * @returns Speaker
+ * 根据韩文名获取名字和头像
+ * @param krName
+ * @returns 包含speaker,avatar的对象
  */
-export function getSpeaker(name: string) {
-  let CharacterName = playerStore.characterNameTable.get(name)
-  if (CharacterName) {
-    let nameInfo = playerStore.CharacterNameExcelTable.get(CharacterName)
-    if (nameInfo) {
-      let language = playerStore.language.toUpperCase() as 'CN' | 'JP'
-      if (nameInfo[`Name${language}`]) {
-        return {
-          name: nameInfo[`Name${language}`]!,
-          nickName: nameInfo[`Nickname${language}`]!
-        }
-      }
-      else {
-        return { name: nameInfo.NameJP, nickName: nameInfo.NicknameJP }
-      }
+export function getCharacterInfo(krName: string) {
+  let CharacterName = getCharacterName(krName)
+  let characterInfo = playerStore.CharacterNameExcelTable.get(CharacterName)
+  if (characterInfo) {
+    let avatarUrl = getResourcesUrl('avatar', characterInfo.SmallPortrait)
+    let speaker = getSpeaker(characterInfo)
+    return {
+      speaker,
+      avatarUrl
     }
   }
+}
+
+/**
+ * 在CharacterNameExcelTableItem中获取到speaker信息
+ */
+export function getSpeaker(characterInfo: CharacterNameExcelTableItem): Speaker {
+  let language = playerStore.language.toUpperCase() as 'CN' | 'JP'
+  if (characterInfo[`Name${language}`]) {
+    return {
+      name: characterInfo[`Name${language}`]!,
+      nickName: characterInfo[`Nickname${language}`]!
+    }
+  }
+  else {
+    return {
+      name: characterInfo.NameJP,
+      nickName: characterInfo.NicknameJP
+    }
+  }
+}
+
+/**
+ * 根据角色韩文名获取CharacterName
+ * @param krName 
+ */
+export function getCharacterName(krName: string) {
+  return xxhash.h32(krName, 0).toNumber()
 }
 
 /**

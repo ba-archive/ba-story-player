@@ -38,7 +38,7 @@ function showCharacter(data: ShowCharacter) {
   CharacterLayerInstance.showCharacter(data);
 }
 
-const CharacterLayerInstance: CharacterLayer = {
+export const CharacterLayerInstance: CharacterLayer = {
   init() {
     const { app } = usePlayerStore();
     // 将stage的sort设置为true,此时sprite将按照zIndex属性进行显示的排序,而是不按照children array的顺序

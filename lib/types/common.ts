@@ -1,11 +1,22 @@
 import type { Spine } from 'pixi-spine';
 import { PlayAudio, PlayEffect, ShowOption, ShowText, StArgs } from './events';
 import { TransitionTableItem } from './excels';
+import { Language, StorySummary } from './store';
 export type StoryType = "title" | "place" | "text" | "option" | "st" | "effectOnly" | 'continue'
 
 export type Dict<T> = {
   [key: string]: T;
 };
+
+export type PlayerProps = {
+  story: StoryRawUnit[]
+  dataUrl: string
+  height: number
+  width: number
+  language: Language
+  userName: string
+  storySummary: StorySummary
+}
 
 
 export interface Text {
@@ -175,6 +186,7 @@ export interface StoryUnit {
     st?: {
       stArgs?: StArgs
       clearSt?: boolean,
+      middle?: boolean
     }
   }
   fight?: number,
