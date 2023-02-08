@@ -91,10 +91,12 @@ function moveToNext() {
   if (!typingInstance || typingComplete.value) {
     eventBus.emit("next");
   } else { // 否则立即显示所有对话
-    typingInstance.stop();
-    typingInstance.destroy();
-    setTypingComplete(true, typingInstance);
-    typewriterOutput.value.innerHTML = typingInstance.strings.pop()
+    if (typewriterOutput.value) { // 过滤live2d播放
+      typingInstance.stop();
+      typingInstance.destroy();
+      setTypingComplete(true, typingInstance);
+      typewriterOutput.value.innerHTML = typingInstance.strings.pop()
+    }
   }
 }
 /**
@@ -195,7 +197,10 @@ function handleShowStEvent(e: StText) {
       }).map(text => parseTextEffect(text))
         , stOutput.value, (content) => {
         return `<div style="${extendPos}">${content}</div>`
-      }).then(() => {
+      }, {
+          typeSpeed: 10
+        }
+      ).then(() => {
         eventBus.emit("stDone");
       });
       typingInstance.isSt = true;
@@ -258,7 +263,7 @@ function parseTextEffect(text: Text, extendStyle = "", tag = "span"): Text {
  * @param output 输出到的dom
  * @param onParseContent 二次处理内容, 目前用于将st用div整体包裹实现定位
  */
-function showTextDialog(text: Text[], output: HTMLElement, onParseContent?: (source: string) => string) {
+function showTextDialog(text: Text[], output: HTMLElement, onParseContent?: (source: string) => string, override?: TypedOptions) {
   return new Promise<void>((resolve) => {
     if (text.length === 0) {
       setTypingComplete(true);
@@ -325,6 +330,7 @@ function showTextDialog(text: Text[], output: HTMLElement, onParseContent?: (sou
       output.innerHTML = "";
       typingInstance = new Typed(output, {
         ...DefaultTypedOptions,
+        ...override,
         startDelay: text[0].waitTime || 0,
         strings: [lastStOutput + firstContent],
         onComplete: onComplete
@@ -623,6 +629,7 @@ $st-z-index: 10;
     left: 0;
     z-index: $text-layer-z-index + $st-z-index;
     color: white;
+    text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
   }
   .fade-in-out {
     animation: fade-in-out 3s;
