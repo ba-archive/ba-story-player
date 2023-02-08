@@ -96,7 +96,6 @@ const BgLayerInstance: BgLayer = {
 
     await tl
       .fromTo(instance, { alpha: 0 }, { alpha: 1, duration: overlap / 1000 })
-      .fromTo(oldInstance, { alpha: 1 }, { alpha: 0, duration: overlap / 1000 }, '<')
 
     oldInstance && app.stage.removeChild(oldInstance);
   },
