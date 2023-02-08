@@ -64,12 +64,11 @@ export function generateText(rawStoryUnit: StoryRawUnit, stm?: boolean) {
     let textUnits = rawText.split('[-]')
     for (let [index, textUnit] of textUnits.entries()) {
       let temp = textUnit.split(']')
-      let color = '#' + temp[0].slice(1)
-      if (/^[A-F0-9]{6}/.test(textUnit)) {
+      if (/^[\[A-F0-9]{6}/.test(textUnit)) {
         result.push({
           content: temp[1],
           effects: [
-            { name: 'color', value: [color] }
+            { name: 'color', value: ['#' + temp[0].slice(1)] }
           ]
         })
       }
@@ -77,7 +76,7 @@ export function generateText(rawStoryUnit: StoryRawUnit, stm?: boolean) {
         result.push({
           content: temp[2],
           effects: [
-            { name: 'color', value: [color] },
+            { name: 'color', value: ['#' + temp[1].slice(1)] },
             { name: 'ruby', value: [temp[0].slice(6)] }
           ]
         })
