@@ -63,21 +63,21 @@ export function generateText(rawStoryUnit: StoryRawUnit, stm?: boolean) {
     rawText = rawText.replace('[/ruby]', '')
     let textUnits = rawText.split('[-]')
     for (let [index, textUnit] of textUnits.entries()) {
-      if (textUnit.startsWith('[FF')) {
-        let temp = textUnit.split(']')
+      let temp = textUnit.split(']')
+      let color = '#' + temp[0].slice(1)
+      if (/^[A-F0-9]{6}/.test(textUnit)) {
         result.push({
           content: temp[1],
           effects: [
-            { name: 'color', value: [temp[0].slice(1)] }
+            { name: 'color', value: [color] }
           ]
         })
       }
       else if (textUnit.startsWith('[ruby')) {
-        let temp = textUnit.split(']')
         result.push({
           content: temp[2],
           effects: [
-            { name: 'color', value: [temp[1].slice(1)] },
+            { name: 'color', value: [color] },
             { name: 'ruby', value: [temp[0].slice(6)] }
           ]
         })
