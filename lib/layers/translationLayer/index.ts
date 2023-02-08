@@ -10,6 +10,7 @@ let emotionWordTable: { [index: string]: EmotionWord } = {
   '[하트]': 'Heart',
   'h': 'Heart',
   '[반응]': 'Respond',
+  '[재잘]': 'Respond',
   '[음표]': 'Music',
   'm': 'Music',
   '[반짝]': 'Twinkle',
