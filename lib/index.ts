@@ -228,6 +228,7 @@ export let eventEmitter = {
     this.showBg()
     this.playL2d()
     this.playAudio()
+    this.clearSt()
     await this.transitionOut()
     this.showCharacter()
     this.show()
@@ -265,13 +266,6 @@ export let eventEmitter = {
               middle
             })
           }
-          else if (currentStoryUnit.textAbout.st.clearSt) {
-            eventBus.emit('clearSt')
-            if (this.l2dPlaying) {
-              this.voiceIndex++
-              this.playL2dVoice = true
-            }
-          }
         }
         if (this.l2dPlaying && this.playL2dVoice) {
           //to do 后续加入声音对应表
@@ -283,13 +277,6 @@ export let eventEmitter = {
         }
         break
       case 'effectOnly':
-        if (currentStoryUnit.textAbout.st?.clearSt) {
-          eventBus.emit('clearSt')
-          if (this.l2dPlaying) {
-            this.playL2dVoice = true
-            this.voiceIndex++
-          }
-        }
         break
       //to do
       // case 'continue':
@@ -311,6 +298,18 @@ export let eventEmitter = {
       })
     })
     await checkEffectDone
+  },
+
+  clearSt() {
+    if (storyHandler.currentStoryUnit.textAbout.st) {
+      if (storyHandler.currentStoryUnit.textAbout.st.clearSt) {
+        eventBus.emit('clearSt')
+        if (this.l2dPlaying) {
+          this.voiceIndex++
+          this.playL2dVoice = true
+        }
+      }
+    }
   },
 
   /**
@@ -356,7 +355,6 @@ export let eventEmitter = {
         this.l2dPlaying = true
       }
       else {
-        this.l2dAnimationDone = false
         eventBus.emit('changeAnimation', storyHandler.currentStoryUnit.l2d.animationName)
       }
     }
