@@ -115,8 +115,10 @@ function handleSelectMousedown(index: number) {
  * @param select 选项
  */
 function handleSelect(select: number) {
-  selection.value = [];
   eventBus.emit("select", select);
+  setTimeout(() => {
+    selection.value = [];
+  }, 100)
 }
 /**
  * mousedown事件, 用来显示按钮特效
