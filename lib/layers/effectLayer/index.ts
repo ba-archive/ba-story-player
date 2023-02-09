@@ -115,10 +115,14 @@ async function playBgShake(bgInstance: Sprite): Promise<void> {
     .then()
 }
 
+/**
+ * 可能对同个背景图片设置多次zmc, 用默认scale判断是否已经设置图片原始尺寸
+ */
 const Default_Scale = 100
 let zmcPlayer = {
   bgInstanceOriginScale: Default_Scale,
   bgInstanceOriginPosition: { x: 0, y: 0 },
+  onZmc: false,
   /**
    * 根据参数执行zmc效果
    * @param bgInstance 背景图片实例
@@ -126,6 +130,13 @@ let zmcPlayer = {
    * @param app pixi Application实例
    */
   async playZmc(bgInstance: Sprite, args: ZmcArgs, app: Application): Promise<void> {
+    //背景图片切换时取消zmc状态
+    this.onZmc = true
+    let removeOnZmc = () => {
+      this.onZmc = false
+      eventBus.off('showBg', removeOnZmc)
+    }
+    eventBus.on('showBg', removeOnZmc)
     if (this.bgInstanceOriginScale === Default_Scale) {
       this.bgInstanceOriginScale = bgInstance.scale.x
       this.bgInstanceOriginPosition = bgInstance.position.clone()
@@ -162,11 +173,20 @@ let zmcPlayer = {
    * 移除zmc特效
    */
   async removeZmc(bgInstance: Sprite | null) {
+    if (!this.onZmc) {
+      this.bgInstanceOriginScale = Default_Scale
+      return
+    }
     if (bgInstance) {
-      if (this.bgInstanceOriginScale !== Default_Scale) {
+      //存有图片原始比例且当前比例不是原始比例, 判断处于zmc状态
+      if (this.onZmc
+        && this.bgInstanceOriginScale !== Default_Scale
+        && bgInstance.scale.x !== this.bgInstanceOriginScale) {
         bgInstance.scale.set(this.bgInstanceOriginScale)
         bgInstance.pivot.set(0, 0)
         bgInstance.position = this.bgInstanceOriginPosition
+        this.bgInstanceOriginScale = Default_Scale
+        this.onZmc = false
       }
     }
   }
