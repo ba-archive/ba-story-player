@@ -3,7 +3,6 @@ import { bgInit } from "@/layers/bgLayer";
 import { characterInit } from "@/layers/characterLayer";
 import { effectInit } from '@/layers/effectLayer';
 import { soundInit } from "@/layers/soundLayer";
-import { textInit } from "@/layers/textLayer";
 import { translate } from '@/layers/translationLayer';
 import { initPrivateState, usePlayerStore } from "@/stores";
 import { PlayerProps, StoryUnit } from "@/types/common";
@@ -53,7 +52,6 @@ export async function init(elementID: string, props: PlayerProps, endCallback: (
   await resourcesLoader.init(app.loader)
   privateState.allStoryUnit = translate(props.story)
 
-  textInit()
   bgInit()
   characterInit()
   soundInit()
@@ -78,6 +76,7 @@ export async function init(elementID: string, props: PlayerProps, endCallback: (
 export let storyHandler = {
   currentStoryIndex: 0,
   endCallback: () => { },
+  unitPlaying: false,
 
   get currentStoryUnit(): StoryUnit {
     if (playerStore && playerStore.allStoryUnit.length > this.currentStoryIndex) {
@@ -124,23 +123,30 @@ export let storyHandler = {
    * @returns
    */
   select(option: number) {
-    while (this.currentStoryUnit.SelectionGroup != option) {
-      if (!this.storyIndexIncrement()) {
-        return false
-      }
+    if (option === 0) {
+      this.storyIndexIncrement()
+      return
     }
-
+    let index = playerStore.allStoryUnit.findIndex(value => value.SelectionGroup === option)
+    if (index === -1) {
+      return false
+    }
+    this.currentStoryIndex = index
     return true
   },
   /**
     * 播放故事直到对话框或选项出现
     */
   async storyPlay() {
-    while (!['text', 'option'].includes(storyHandler.currentStoryUnit.type) && !storyHandler.currentStoryUnit.l2d) {
+    if (!this.unitPlaying) {
+      this.unitPlaying = true
+      while (!['text', 'option'].includes(storyHandler.currentStoryUnit.type)) {
+        await eventEmitter.emitEvents()
+        storyHandler.storyIndexIncrement()
+      }
       await eventEmitter.emitEvents()
-      storyHandler.storyIndexIncrement()
+      this.unitPlaying = false
     }
-    await eventEmitter.emitEvents()
   },
 
   /**
@@ -168,7 +174,7 @@ export let storyHandler = {
 /**
  * 事件发送控制对象
  */
-let eventEmitter = {
+export let eventEmitter = {
   /** 当前是否处于l2d播放中, 并不特指l2d某个动画 */
   l2dPlaying: false,
   voiceIndex: 1,
@@ -189,18 +195,23 @@ let eventEmitter = {
    */
   init() {
     eventBus.on('next', () => {
-      if (this.unitDone) {
+      if (this.unitDone && !storyHandler.unitPlaying) {
         storyHandler.storyIndexIncrement()
         storyHandler.storyPlay()
       }
     })
     eventBus.on('select', e => {
-      storyHandler.select(e)
-      storyHandler.storyPlay()
+      if (this.unitDone) {
+        storyHandler.select(e)
+        console.log('select')
+        storyHandler.storyPlay()
+      }
     })
     eventBus.on('effectDone', () => eventEmitter.effectDone = true)
     eventBus.on('characterDone', () => eventEmitter.characterDone = true)
-    eventBus.on('l2dAnimationDone', (e) => eventEmitter.l2dAnimationDone = e.done)
+    eventBus.on('titleDone', () => this.titleDone = true)
+    eventBus.on('stDone', () => this.stDone = true)
+    eventBus.on('l2dAnimationDone', (e) => { if (e.done) { eventEmitter.l2dAnimationDone = e.done } })
     eventBus.on('auto', () => console.log('auto!'))
 
     storyHandler.storyPlay()
@@ -215,16 +226,18 @@ let eventEmitter = {
     await this.transitionIn()
     this.hide()
     this.showBg()
+    this.playL2d()
+    this.playAudio()
+    this.clearSt()
     await this.transitionOut()
     this.showCharacter()
-    this.playAudio()
-    this.playL2d()
     this.show()
     this.playEffect()
 
     let currentStoryUnit = storyHandler.currentStoryUnit
     switch (currentStoryUnit.type) {
       case 'title':
+        this.titleDone = false
         if (currentStoryUnit.textAbout.word) {
           eventBus.emit('showTitle', currentStoryUnit.textAbout.word)
         }
@@ -243,6 +256,7 @@ let eventEmitter = {
         }
         break
       case 'st':
+        this.stDone = false
         if (currentStoryUnit.textAbout.st) {
           if (currentStoryUnit.textAbout.st.stArgs) {
             let middle = currentStoryUnit.textAbout.st.middle ? true : false
@@ -251,13 +265,6 @@ let eventEmitter = {
               stArgs: currentStoryUnit.textAbout.st.stArgs,
               middle
             })
-          }
-          else if (currentStoryUnit.textAbout.st.clearSt) {
-            eventBus.emit('clearSt')
-            if (this.l2dPlaying) {
-              this.voiceIndex++
-              this.playL2dVoice = true
-            }
           }
         }
         if (this.l2dPlaying && this.playL2dVoice) {
@@ -291,6 +298,18 @@ let eventEmitter = {
       })
     })
     await checkEffectDone
+  },
+
+  clearSt() {
+    if (storyHandler.currentStoryUnit.textAbout.st) {
+      if (storyHandler.currentStoryUnit.textAbout.st.clearSt) {
+        eventBus.emit('clearSt')
+        if (this.l2dPlaying) {
+          this.voiceIndex++
+          this.playL2dVoice = true
+        }
+      }
+    }
   },
 
   /**

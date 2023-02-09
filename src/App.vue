@@ -3,7 +3,7 @@ import BaStoryPlayer from '../lib/BaStoryPlayer.vue'
 import yuuka from './data/yuuka.json'
 import prologue from './data/prologue1.1.json'
 import eventBus from '../lib/eventBus'
-import { storyHandler, resourcesLoader } from '../lib/index'
+import { storyHandler, resourcesLoader, eventEmitter } from '../lib/index'
 import ModifyEmotionOption from './components/ModifyEmotionOption.vue';
 import TestEffect from './components/TestEffect.vue';
 import { ref, watch } from 'vue'
@@ -33,6 +33,7 @@ watch(toolType, () => {
 })
 
 Reflect.set(window, 'eventBus', eventBus)
+Reflect.set(window, 'baEvent', eventEmitter)
 Reflect.set(window, 'next', () => {
   eventBus.emit('characterDone')
   eventBus.emit('effectDone')
@@ -42,7 +43,7 @@ Reflect.set(window, 'next', () => {
 
 <template>
   <div style="display:flex;justify-content: center;">
-    <BaStoryPlayer :story="prologue" data-url="https://yuuka.diyigemt.com/image/ba-all-data" :width="1000" :height="550"
+    <BaStoryPlayer :story="prologue" data-url="https://yuuka.cdn.diyigemt.com/image/ba-all-data" :width="1000" :height="550"
       language="Cn" userName="testUser" :story-summary="storySummary" />
     <div style="position: absolute;left: 0;display: flex;flex-direction: column;">
       <label>辅助工具选择</label>

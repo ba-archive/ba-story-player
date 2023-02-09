@@ -73,6 +73,13 @@ export function getResourcesUrl(type: ResourcesTypes, arg: string): string {
 }
 
 /**
+ * 字面意思, 深拷贝json
+ */
+export function deepCopyObject<T>(object: T): T {
+  return JSON.parse(JSON.stringify(object));
+}
+
+/*
 * wait in promise
 */
 export function wait(milliseconds: number) {
