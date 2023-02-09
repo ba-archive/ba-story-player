@@ -173,7 +173,7 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
           break
         case '#zmc':
           let args: ZmcArgs
-          if (scriptUnits.length === 4) {
+          if (scriptUnits.length === 5) {
             args = {
               type: scriptUnits[1] as 'move',
               position: scriptUnits[2].split(',').map(Number) as [number, number],

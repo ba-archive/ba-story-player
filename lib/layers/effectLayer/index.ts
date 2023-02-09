@@ -12,25 +12,29 @@ import { emitterContainer, playBGEffect, removeBGEffect } from './bgEffectHandle
 export function effectInit() {
   let playerStore = usePlayerStore()
   playerStore.app.stage.addChild(emitterContainer)
-  eventBus.on('transitionIn', transition => {
+  eventBus.on('transitionIn', async transition => {
+    let duration = transition.TransitionInDuration !== 1 ? transition.TransitionInDuration : transition.TransitionOutDuration
     switch (transition.TransitionIn) {
       case 'fade':
-        playTransition('black', transition.TransitionInDuration, 'in')
+        await playTransition('black', duration, 'in')
         break
       case 'fade_white':
-        playTransition('white', transition.TransitionInDuration, 'in')
+        await playTransition('white', duration, 'in')
         break
     }
+    eventBus.emit('transitionInDone')
   })
-  eventBus.on('transitionOut', transition => {
+  eventBus.on('transitionOut', async transition => {
+    let duration = transition.TransitionOutDuration !== 1 ? transition.TransitionOutDuration : transition.TransitionInDuration
     switch (transition.TransitionOut) {
       case 'fade':
-        playTransition('black', transition.TransitionOutDuration, 'out')
+        await playTransition('black', duration, 'out')
         break
       case 'fade_white':
-        playTransition('white', transition.TransitionOutDuration, 'out')
+        await playTransition('white', duration, 'out')
         break
     }
+    eventBus.emit('transitionOutDone')
   })
   eventBus.on('playEffect', async effects => {
     let promiseArray: Array<Promise<any>> = []
@@ -75,16 +79,16 @@ export async function removeEffect() {
  * @param durationMs 渐变时间, 单位为ms
  * @param mode 渐变方式 in为淡入, out为淡出
  */
-function playTransition(color: 'black' | 'white', durationMs: number, mode: 'in' | 'out'): void {
+async function playTransition(color: 'black' | 'white', durationMs: number, mode: 'in' | 'out'): Promise<void> {
   let player = document.querySelector('#player') as HTMLDivElement
   player.style.backgroundColor = color
   let playerMain = document.querySelector('#player__main')
   switch (mode) {
     case 'in':
-      gsap.fromTo(playerMain, { alpha: 1 }, { alpha: 0, duration: durationMs / 1000 })
+      await gsap.fromTo(playerMain, { alpha: 1 }, { alpha: 0, duration: durationMs / 1000 })
       break
     case 'out':
-      gsap.fromTo(playerMain, { alpha: 0 }, { alpha: 1, duration: durationMs / 1000 })
+      await gsap.fromTo(playerMain, { alpha: 0 }, { alpha: 1, duration: durationMs / 1000 })
       break
   }
 }
@@ -111,10 +115,14 @@ async function playBgShake(bgInstance: Sprite): Promise<void> {
     .then()
 }
 
+/**
+ * 可能对同个背景图片设置多次zmc, 用默认scale判断是否已经设置图片原始尺寸
+ */
 const Default_Scale = 100
 let zmcPlayer = {
   bgInstanceOriginScale: Default_Scale,
   bgInstanceOriginPosition: { x: 0, y: 0 },
+  onZmc: false,
   /**
    * 根据参数执行zmc效果
    * @param bgInstance 背景图片实例
@@ -122,6 +130,13 @@ let zmcPlayer = {
    * @param app pixi Application实例
    */
   async playZmc(bgInstance: Sprite, args: ZmcArgs, app: Application): Promise<void> {
+    //背景图片切换时取消zmc状态
+    this.onZmc = true
+    let removeOnZmc = () => {
+      this.onZmc = false
+      eventBus.off('showBg', removeOnZmc)
+    }
+    eventBus.on('showBg', removeOnZmc)
     if (this.bgInstanceOriginScale === Default_Scale) {
       this.bgInstanceOriginScale = bgInstance.scale.x
       this.bgInstanceOriginPosition = bgInstance.position.clone()
@@ -130,12 +145,15 @@ let zmcPlayer = {
     bgInstance.anchor.set(0.5, 0.5)
     //大小算法尚不明确, 先用一个魔法数代替
     bgInstance.scale.set(args.size / bgInstance.width * (7 / 8) * this.bgInstanceOriginScale)
+
     switch (args.type) {
       case 'instant':
+        bgInstance.pivot = { x: 0, y: 0 }
         bgInstance.pivot.x += args.position[0]
         //y轴方向与pixi默认方向相反
         bgInstance.pivot.y += -args.position[1]
         bgInstance.position.set(app.screen.width / 2, app.screen.height / 2)
+        console.log(bgInstance.scale.x)
         break
       case 'move':
         if (args.duration !== 10) {
@@ -144,12 +162,14 @@ let zmcPlayer = {
           await gsap.to(bgInstance, {
             pixi: { x: `+=${args.position[0] * positionProportion}`, y: `+=${args.position[1] * positionProportion}` },
             duration: args.duration / 1000
-          }).then()
+          })
         }
         else {
+          bgInstance.pivot = { x: 0, y: 0 }
           bgInstance.pivot.x += args.position[0]
           bgInstance.pivot.y += -args.position[1]
           bgInstance.position.set(app.screen.width / 2, app.screen.height / 2)
+          console.log(bgInstance.scale.x)
         }
     }
   },
@@ -158,11 +178,20 @@ let zmcPlayer = {
    * 移除zmc特效
    */
   async removeZmc(bgInstance: Sprite | null) {
+    if (!this.onZmc) {
+      this.bgInstanceOriginScale = Default_Scale
+      return
+    }
     if (bgInstance) {
-      if (this.bgInstanceOriginScale !== Default_Scale) {
+      //存有图片原始比例且当前比例不是原始比例, 判断处于zmc状态
+      if (this.onZmc
+        && this.bgInstanceOriginScale !== Default_Scale
+        && bgInstance.scale.x !== this.bgInstanceOriginScale) {
         bgInstance.scale.set(this.bgInstanceOriginScale)
         bgInstance.pivot.set(0, 0)
         bgInstance.position = this.bgInstanceOriginPosition
+        this.bgInstanceOriginScale = Default_Scale
+        this.onZmc = false
       }
     }
   }

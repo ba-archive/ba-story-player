@@ -226,13 +226,13 @@ export let eventEmitter = {
     await this.transitionIn()
     this.hide()
     this.showBg()
+    this.playEffect()
     this.playL2d()
     this.playAudio()
     this.clearSt()
     await this.transitionOut()
     this.showCharacter()
     this.show()
-    this.playEffect()
 
     let currentStoryUnit = storyHandler.currentStoryUnit
     switch (currentStoryUnit.type) {
@@ -398,7 +398,13 @@ export let eventEmitter = {
   async transitionIn() {
     if (storyHandler.currentStoryUnit.transition) {
       eventBus.emit('transitionIn', storyHandler.currentStoryUnit.transition)
-      await wait(storyHandler.currentStoryUnit.transition.TransitionInDuration)
+      await new Promise<void>(resolve => {
+        let resolveFun = () => {
+          eventBus.off('transitionInDone', resolveFun)
+          resolve()
+        }
+        eventBus.on('transitionInDone', resolveFun)
+      })
     }
   },
 
@@ -406,7 +412,13 @@ export let eventEmitter = {
     if (storyHandler.currentStoryUnit.transition) {
       if (storyHandler.currentStoryUnit.transition) {
         eventBus.emit('transitionOut', storyHandler.currentStoryUnit.transition)
-        await wait(storyHandler.currentStoryUnit.transition.TransitionOutDuration)
+        await new Promise<void>(resolve => {
+          let resolveFun = () => {
+            eventBus.off('transitionOutDone', resolveFun)
+            resolve()
+          }
+          eventBus.on('transitionOutDone', resolveFun)
+        })
       }
     }
   },
