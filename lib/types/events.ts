@@ -1,4 +1,4 @@
-import { Character, Effect, Speaker, Text, TextEffect } from "./common"
+import { Character, Effect, Speaker, Text } from "./common"
 import { BGEffectExcelTableItem, BGMExcelTableItem, TransitionTableItem } from "./excels"
 
 export type Events = {
@@ -20,7 +20,9 @@ export type Events = {
   removeEffect: undefined
   effectDone: undefined
   transitionIn: TransitionTableItem
+  transitionInDone: undefined
   transitionOut: TransitionTableItem
+  transitionOutDone: undefined
   /**
    * 人物完成展示
    */

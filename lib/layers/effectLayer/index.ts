@@ -12,25 +12,29 @@ import { emitterContainer, playBGEffect, removeBGEffect } from './bgEffectHandle
 export function effectInit() {
   let playerStore = usePlayerStore()
   playerStore.app.stage.addChild(emitterContainer)
-  eventBus.on('transitionIn', transition => {
+  eventBus.on('transitionIn', async transition => {
+    let duration = transition.TransitionInDuration !== 1 ? transition.TransitionInDuration : transition.TransitionOutDuration
     switch (transition.TransitionIn) {
       case 'fade':
-        playTransition('black', transition.TransitionInDuration, 'in')
+        await playTransition('black', duration, 'in')
         break
       case 'fade_white':
-        playTransition('white', transition.TransitionInDuration, 'in')
+        await playTransition('white', duration, 'in')
         break
     }
+    eventBus.emit('transitionInDone')
   })
-  eventBus.on('transitionOut', transition => {
+  eventBus.on('transitionOut', async transition => {
+    let duration = transition.TransitionOutDuration !== 1 ? transition.TransitionOutDuration : transition.TransitionInDuration
     switch (transition.TransitionOut) {
       case 'fade':
-        playTransition('black', transition.TransitionOutDuration, 'out')
+        await playTransition('black', duration, 'out')
         break
       case 'fade_white':
-        playTransition('white', transition.TransitionOutDuration, 'out')
+        await playTransition('white', duration, 'out')
         break
     }
+    eventBus.emit('transitionOutDone')
   })
   eventBus.on('playEffect', async effects => {
     let promiseArray: Array<Promise<any>> = []
@@ -75,16 +79,16 @@ export async function removeEffect() {
  * @param durationMs 渐变时间, 单位为ms
  * @param mode 渐变方式 in为淡入, out为淡出
  */
-function playTransition(color: 'black' | 'white', durationMs: number, mode: 'in' | 'out'): void {
+async function playTransition(color: 'black' | 'white', durationMs: number, mode: 'in' | 'out'): Promise<void> {
   let player = document.querySelector('#player') as HTMLDivElement
   player.style.backgroundColor = color
   let playerMain = document.querySelector('#player__main')
   switch (mode) {
     case 'in':
-      gsap.fromTo(playerMain, { alpha: 1 }, { alpha: 0, duration: durationMs / 1000 })
+      await gsap.fromTo(playerMain, { alpha: 1 }, { alpha: 0, duration: durationMs / 1000 })
       break
     case 'out':
-      gsap.fromTo(playerMain, { alpha: 0 }, { alpha: 1, duration: durationMs / 1000 })
+      await gsap.fromTo(playerMain, { alpha: 0 }, { alpha: 1, duration: durationMs / 1000 })
       break
   }
 }
