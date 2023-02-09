@@ -504,7 +504,7 @@ $st-z-index: 10;
   font-family: 'TJL',serif;
   color : white;
   font-size: var(--font-size);
-  line-height: var(--font-size);
+  line-height: 2rem;
 }
 .container {
   position: absolute;
