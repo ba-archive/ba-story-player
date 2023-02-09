@@ -179,23 +179,32 @@ function handleShowStEvent(e: StText) {
     // st坐标系映射视口坐标系
     const x = Math.floor(((stWidth / 2) + stPos[0]) * stPositionBounds.value.width);
     const y = Math.floor(((stHeight / 2) - stPos[1]) * stPositionBounds.value.height);
-    const extendPos = `position: absolute; left: ${x}px; top: ${y}px; width: auto`;
+    // st样式
+    let extendStyle = `;position: absolute; top: ${y}px; width: auto;`;
+    // 居中显示特殊样式
+    if (e.middle) {
+      extendStyle = extendStyle + `;text-align: center; left: 50%; transform: translateX(-50%)`;
+    } else {
+      extendStyle = extendStyle + `;left: ${x}px;`;
+    }
     // const unused = e.stArgs[3]; // 未知
     // 立即显示, 跳过打字机
     if (stType === "instant") {
       stOutput.value.innerHTML = parseTextEffect({
         content: e.text.map(text => parseTextEffect(text).content).join(""),
         effects: []
-      }, extendPos, "div").content;
+      }, extendStyle, "div").content;
       eventBus.emit("stDone");
     } else if (stType === "serial") {
-      showTextDialog(e.text.map(text => {
+      showTextDialog(
+        e.text.map(text => {
         // 为啥要这样, 因为这个库在空字符时会删除当前的内容重新打印, 导致一句话出现两次的bug
         text.content = text.content || "&zwj;";
         return text;
-      }).map(text => parseTextEffect(text))
-        , stOutput.value, (content) => {
-        return `<div style="${extendPos}">${content}</div>`
+      }).map(text => parseTextEffect(text)),
+        stOutput.value,
+        (content) => {
+        return `<div style="${extendStyle}">${content}</div>`
       }, {
           typeSpeed: 10
         }
