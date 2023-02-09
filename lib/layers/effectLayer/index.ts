@@ -145,12 +145,15 @@ let zmcPlayer = {
     bgInstance.anchor.set(0.5, 0.5)
     //大小算法尚不明确, 先用一个魔法数代替
     bgInstance.scale.set(args.size / bgInstance.width * (7 / 8) * this.bgInstanceOriginScale)
+
     switch (args.type) {
       case 'instant':
+        bgInstance.pivot = { x: 0, y: 0 }
         bgInstance.pivot.x += args.position[0]
         //y轴方向与pixi默认方向相反
         bgInstance.pivot.y += -args.position[1]
         bgInstance.position.set(app.screen.width / 2, app.screen.height / 2)
+        console.log(bgInstance.scale.x)
         break
       case 'move':
         if (args.duration !== 10) {
@@ -159,12 +162,14 @@ let zmcPlayer = {
           await gsap.to(bgInstance, {
             pixi: { x: `+=${args.position[0] * positionProportion}`, y: `+=${args.position[1] * positionProportion}` },
             duration: args.duration / 1000
-          }).then()
+          })
         }
         else {
+          bgInstance.pivot = { x: 0, y: 0 }
           bgInstance.pivot.x += args.position[0]
           bgInstance.pivot.y += -args.position[1]
           bgInstance.position.set(app.screen.width / 2, app.screen.height / 2)
+          console.log(bgInstance.scale.x)
         }
     }
   },

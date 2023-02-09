@@ -226,13 +226,13 @@ export let eventEmitter = {
     await this.transitionIn()
     this.hide()
     this.showBg()
+    this.playEffect()
     this.playL2d()
     this.playAudio()
     this.clearSt()
     await this.transitionOut()
     this.showCharacter()
     this.show()
-    this.playEffect()
 
     let currentStoryUnit = storyHandler.currentStoryUnit
     switch (currentStoryUnit.type) {
