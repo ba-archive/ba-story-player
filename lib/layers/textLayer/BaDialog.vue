@@ -44,7 +44,10 @@
             <div :style="{fontSize: `${fontSize(2)}rem`}" class="department">{{nickName}}</div>
           </div>
           <hr>
-          <div ref="typewriterOutput" :style="{fontSize: `${standardFontSize}rem`}" class="content" />
+          <div
+            ref="typewriterOutput"
+            :style="{ '--font-size': `${standardFontSize}rem`}"
+            class="content" />
           <div class="next-image-btn" v-if="typingComplete">&zwj;</div>
         </div>
       </div>
@@ -112,8 +115,8 @@ function handleSelectMousedown(index: number) {
  * @param select 选项
  */
 function handleSelect(select: number) {
-  eventBus.emit("select", select);
   selection.value = [];
+  eventBus.emit("select", select);
 }
 /**
  * mousedown事件, 用来显示按钮特效
@@ -180,12 +183,10 @@ function handleShowStEvent(e: StText) {
     const x = Math.floor(((stWidth / 2) + stPos[0]) * stPositionBounds.value.width);
     const y = Math.floor(((stHeight / 2) - stPos[1]) * stPositionBounds.value.height);
     // st样式
-    let extendStyle = `;position: absolute; top: ${y}px; width: auto;`;
+    let extendStyle = `;position: absolute; top: ${y}px; width: auto;left: ${x}px;`;
     // 居中显示特殊样式
     if (e.middle) {
       extendStyle = extendStyle + `;text-align: center; left: 50%; transform: translateX(-50%)`;
-    } else {
-      extendStyle = extendStyle + `;left: ${x}px;`;
     }
     // const unused = e.stArgs[3]; // 未知
     // 立即显示, 跳过打字机
@@ -231,7 +232,9 @@ function handleShowTextEvent(e: ShowText) {
     typingInstance?.destroy();
     typingInstance && (typingInstance.isSt = false);
     // 显示
-    showTextDialog(e.text.map(text => parseTextEffect(text)), typewriterOutput.value);
+    showTextDialog(e.text.map(text => parseTextEffect(text)), typewriterOutput.value).then(() => {
+      eventBus.emit("textDone");
+    })
     typingInstance.isSt = false;
   })
 }
@@ -381,9 +384,6 @@ function setTypingComplete(complete: boolean, instance?: TypedExtend) {
   if (instance) {
     instance.typingComplete = complete;
   }
-  if (typingInstance && !typingInstance.isSt) {
-    eventBus.emit("textDone");
-  }
 }
 // 文本框总高度
 const dialogHeight = computed(() => props.playerHeight / 2);
@@ -471,6 +471,7 @@ $st-z-index: 10;
   position: absolute;
   bottom: 0;
   z-index: $text-layer-z-index + $dialog-z-index;
+  white-space: pre;
   .inner-dialog {
     --height-padding: 0rem;
     width: 100%;
@@ -496,10 +497,12 @@ $st-z-index: 10;
 }
 
 .content{
+  --font-size: 2rem;
   margin-top: 1.5rem;
   font-family: 'TJL',serif;
   color : white;
-  font-size: 2.5rem;
+  font-size: var(--font-size);
+  line-height: var(--font-size);
 }
 .container {
   position: absolute;
