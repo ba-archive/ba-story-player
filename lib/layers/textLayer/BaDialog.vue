@@ -108,7 +108,7 @@ function moveToNext() {
  */
 function handleSelectMousedown(index: number) {
   selectionSelect.value = index;
-  eventBus.emit("playSelectSound");
+  eventBus.emit("playOtherSounds",'select');
 }
 /**
  * 选择支按钮被按下

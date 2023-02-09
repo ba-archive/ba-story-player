@@ -86,8 +86,8 @@ export function soundInit() {
         })
     })
 
-    eventBus.on('playSelectSound', () => {
+    eventBus.on('playOtherSounds', sound => {
         console.log("Play Select Sound!")
-        playAudio({soundUrl: usePlayerStore().otherSoundUrl('select')})
+        playAudio({soundUrl: usePlayerStore().otherSoundUrl(sound)})
     })
 }

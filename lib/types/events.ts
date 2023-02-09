@@ -1,5 +1,6 @@
 import { Character, Effect, Speaker, Text } from "./common"
 import { BGEffectExcelTableItem, BGMExcelTableItem, TransitionTableItem } from "./excels"
+import { OtherSounds } from "./resources"
 
 export type Events = {
   //通用
@@ -61,7 +62,7 @@ export type Events = {
   /**
    * 播放选项选择特效音
    */
-  playSelectSound: undefined
+  playOtherSounds: OtherSounds
 
   //UI层
 

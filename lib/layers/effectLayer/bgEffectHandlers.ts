@@ -1,3 +1,4 @@
+import eventBus from "@/eventBus";
 import { usePlayerStore } from "@/stores";
 import { BGEffectHandlerOptions, BGEffectHandlers, CurrentBGEffect, EffectRemoveFunction } from "@/types/effectLayer";
 import { BGEffectExcelTableItem } from "@/types/excels";
@@ -114,6 +115,7 @@ export let bgEffectHandlers: BGEffectHandlers = {
     let { height: appHeight, width: appWidth } = playerStore.app.screen
     let ininX = appWidth * 7 / 8
     let ininY = appHeight * 7 / 8
+    eventBus.emit('playOtherSounds', 'bg_underfire')
 
     //烟雾效果, 通过spritesheet实现烟雾散开
     let smokeContainer = new Container()
