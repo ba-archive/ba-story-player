@@ -175,13 +175,11 @@ export function L2DInit() {
       const curStartAnimations = startAnimations[currentIndex]!;
       currentIndex += 1;
       app.stage.addChild(curStartAnimations.spine);
-      setTimeout(() => {
         curStartAnimations.spine.state.setAnimation(
           0,
           curStartAnimations.animation,
           false
         );
-      }, 4);
     } catch {}
   });
 }
