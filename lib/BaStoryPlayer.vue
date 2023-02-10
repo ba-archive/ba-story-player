@@ -26,7 +26,6 @@ playerConfig.height = props.height * playerWidth / props.width
 let scale = computed(() => props.width / playerWidth)
 onMounted(() => { init('player__main__canvas', playerConfig, () => emitter('end')) })
 
-
 </script>
 
 <template>

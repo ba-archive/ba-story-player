@@ -8,11 +8,10 @@ import ModifyEmotionOption from './components/ModifyEmotionOption.vue';
 import TestEffect from './components/TestEffect.vue';
 import { ref, watch } from 'vue'
 import * as PIXI from 'pixi.js'
+import { usePlayerStore } from '../lib/stores'
 
-window.baResource = resourcesLoader // 方便查看资源加载情况
-window.baStory = storyHandler
-console.log('资源加载: ', window.baResource)
-console.log('资源调用: ', window.baStore)
+console.log('资源加载: ', resourcesLoader)
+console.log('资源调用: ', usePlayerStore())
 console.log('剧情进度: ', storyHandler)
 
 eventBus.on('*', (type, e) => {
@@ -34,6 +33,9 @@ watch(toolType, () => {
 })
 
 Reflect.set(window, 'PIXI', PIXI)
+Reflect.set(window, 'baResource', resourcesLoader)
+Reflect.set(window, 'baStory', storyHandler)
+Reflect.set(window, 'baStore', usePlayerStore())
 Reflect.set(window, 'eventBus', eventBus)
 Reflect.set(window, 'baEvent', eventEmitter)
 Reflect.set(window, 'next', () => {

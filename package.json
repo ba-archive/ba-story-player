@@ -13,7 +13,8 @@
     ".": {
       "import": "./dist/ba-story-player.js",
       "require": "./dist/ba-story-player.umd.js"
-    }
+    },
+    "./dist/style.css": "./dist/style.css"
   },
   "scripts": {
     "dev": "vite --host",
