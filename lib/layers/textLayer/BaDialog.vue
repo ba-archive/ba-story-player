@@ -439,6 +439,10 @@ type TextLayerProps = {
 }
 </script>
 <style scoped lang="scss">
+@font-face{
+  font-family: 'TJL';
+  src : url('https://yuuka.cdn.diyigemt.com/image/ba-all-data/assets/ResourceHanRoundedCN-Medium.ttf');
+}
 $border-radius: 3px;
 $dialog-z-index: 3;
 $place-z-index: 8;
@@ -446,14 +450,12 @@ $title-z-index: 10;
 $select-z-index: 10;
 $st-z-index: 10;
 .name{
-  font-family: 'TJL',serif;
   font-size: 3.5rem;
   color : white;
   align-self: flex-end;
 }
 
 .department{
-  font-family: 'TJL',serif;
   margin-left: 2rem;
   font-size: 2.5rem;
   color : rgb(156,218,240);
@@ -501,12 +503,14 @@ $st-z-index: 10;
 .content{
   --font-size: 2rem;
   margin-top: 1.5rem;
-  font-family: 'TJL',serif;
   color : white;
   font-size: var(--font-size);
   line-height: 1.5em;
 }
 .container {
+  font-family: 'TJL','Microsoft YaHei', 'PingFang SC', -apple-system, system-ui,
+    'Segoe UI', Roboto, Ubuntu, Cantarell, 'Noto Sans', BlinkMacSystemFont,
+    'Helvetica Neue', 'Hiragino Sans GB', Arial, sans-serif;
   position: absolute;
   user-select: none;
   overflow: hidden;
