@@ -99,6 +99,7 @@ function moveToNext() {
       typingInstance.destroy();
       setTypingComplete(true, typingInstance);
       typewriterOutput.value.innerHTML = typingInstance.strings.pop()
+      eventBus.emit('textDone')
     }
   }
 }

@@ -7,6 +7,7 @@ import { storyHandler, resourcesLoader, eventEmitter } from '../lib/index'
 import ModifyEmotionOption from './components/ModifyEmotionOption.vue';
 import TestEffect from './components/TestEffect.vue';
 import { ref, watch } from 'vue'
+import * as PIXI from 'pixi.js'
 
 window.baResource = resourcesLoader // 方便查看资源加载情况
 window.baStory = storyHandler
@@ -32,6 +33,7 @@ watch(toolType, () => {
   localStorage.setItem(cacheKey, toolType.value)
 })
 
+Reflect.set(window, 'PIXI', PIXI)
 Reflect.set(window, 'eventBus', eventBus)
 Reflect.set(window, 'baEvent', eventEmitter)
 Reflect.set(window, 'next', () => {
@@ -39,12 +41,15 @@ Reflect.set(window, 'next', () => {
   eventBus.emit('effectDone')
   eventBus.emit('next')
 })
+
+let height = ref(550)
+let width = ref(1000)
 </script>
 
 <template>
   <div style="display:flex;justify-content: center;">
-    <BaStoryPlayer :story="yuuka" data-url="https://yuuka.cdn.diyigemt.com/image/ba-all-data" :width="1000" :height="550"
-      language="Cn" userName="testUser" :story-summary="storySummary" />
+    <BaStoryPlayer :story="yuuka" data-url="https://yuuka.cdn.diyigemt.com/image/ba-all-data" :width="width"
+      :height="height" language="Cn" userName="testUser" :story-summary="storySummary" />
     <div style="position: absolute;left: 0;display: flex;flex-direction: column;">
       <label>辅助工具选择</label>
       <select v-model="toolType">
