@@ -26,13 +26,37 @@ export function L2DInit() {
       mainItem.state.setAnimation(1, e, false);
     }
   });
+  eventBus.on("l2dTransForm", ({ x, y, scale }) => {
+    const hasSetTrans = {} as any
+    // 所有spine的trans一致
+    startAnimations.forEach(curItem=>{
+      // 只用设置一次
+      if(!hasSetTrans[curItem.spine.name]){
+        hasSetTrans[curItem.spine.name] = 1
+      }else{
+        return
+      }
+      if (x) {
+        curItem.spine.x = curItem.spine.x + x;
+      }
+      if (y) {
+        curItem.spine.y = curItem.spine.y + y;
+      }
+      if (scale) {
+        const { width, height } = curItem.spine;
+        curItem.spine.width = width * scale;
+        curItem.spine.height = height * scale;
+      }
+    })
+  });
   // 停止
   eventBus.on("endL2D", () => {
     [mainItem, ...otherItems].forEach((i) => app.stage.removeChild(i));
   });
   // 播放live2D
   eventBus.on("playL2D", () => {
-    const { l2dSpineData, curL2dConfig } = usePlayerStore();
+    const { l2dSpineData, curL2dConfig, bgInstance } = usePlayerStore();
+    app.stage.removeChild(bgInstance!)
     // 动画是否已经播放, true 代表播放完成
     const hasPlayedAnimation = {} as { [key: string]: boolean };
     currentIndex = 0;
@@ -78,7 +102,7 @@ export function L2DInit() {
         },
         complete: function (entry: any) {
           // 如果不是有待机动作的主 spine 就去掉
-          if (item !== mainItem) {
+          if (currentIndex < startAnimations.length - 1) {
             setTimeout(() => {
               app.stage.removeChild(item);
             }, 4);
@@ -175,11 +199,11 @@ export function L2DInit() {
       const curStartAnimations = startAnimations[currentIndex]!;
       currentIndex += 1;
       app.stage.addChild(curStartAnimations.spine);
-        curStartAnimations.spine.state.setAnimation(
-          0,
-          curStartAnimations.animation,
-          false
-        );
+      curStartAnimations.spine.state.setAnimation(
+        0,
+        curStartAnimations.animation,
+        false
+      );
     } catch {}
   });
 }

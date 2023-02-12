@@ -42,6 +42,10 @@ export type Events = {
    * l2d 动画播放状态, 当前动画是否播放完成
    */
   l2dAnimationDone: { done: boolean, animation: string }
+  /**
+   * l2d 动画移动
+   */
+  l2dTransForm: { x?:number; y?:number; scale?: number }
   //背景层
 
   /**
