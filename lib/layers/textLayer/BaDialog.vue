@@ -476,7 +476,7 @@ $st-z-index: 10;
   position: absolute;
   bottom: 0;
   z-index: $text-layer-z-index + $dialog-z-index;
-  white-space: pre;
+  white-space: pre-wrap;
   .inner-dialog {
     --height-padding: 0rem;
     width: 100%;
