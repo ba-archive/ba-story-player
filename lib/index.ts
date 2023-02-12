@@ -226,7 +226,7 @@ export let storyHandler = {
     else {
       //可能storyPlay正要结束但还没结束导致判断错误
       setTimeout(() => {
-        if (!this.unitPlaying) {
+        if (!this.unitPlaying && this.auto) {
           if (this.currentStoryUnit.type !== 'option') {
             this.storyIndexIncrement()
             this.storyPlay()
