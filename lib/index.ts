@@ -194,8 +194,8 @@ export let storyHandler = {
     if (!this.unitPlaying) {
       if (this.currentStoryUnit.type !== 'option') {
         this.storyIndexIncrement()
+        this.storyPlay()
       }
-      this.storyPlay()
     }
   },
 
