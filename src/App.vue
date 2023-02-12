@@ -43,7 +43,7 @@ Reflect.set(window, 'next', () => {
 
 <template>
   <div style="display:flex;justify-content: center;">
-    <BaStoryPlayer :story="prologue" data-url="https://yuuka.cdn.diyigemt.com/image/ba-all-data" :width="1000" :height="550"
+    <BaStoryPlayer :story="yuuka" data-url="https://yuuka.cdn.diyigemt.com/image/ba-all-data" :width="1000" :height="550"
       language="Cn" userName="testUser" :story-summary="storySummary" />
     <div style="position: absolute;left: 0;display: flex;flex-direction: column;">
       <label>辅助工具选择</label>

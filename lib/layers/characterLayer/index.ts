@@ -91,6 +91,7 @@ export const CharacterLayerInstance: CharacterLayer = {
   },
   createSpineFromSpineData(characterNumber: number, spineData: ISkeletonData): Spine {
     const instance = new Spine(spineData);
+    instance.sortableChildren = true;
     const { currentCharacterMap } = usePlayerStore();
     const characterInstance: CharacterInstance = {
       CharacterName: characterNumber,

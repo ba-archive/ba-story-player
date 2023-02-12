@@ -195,23 +195,32 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
         .to(questionImg, { alpha: 0, duration: options.fadeOutDuration })
       , [questionImg])
   }, Respond(instance: CharacterEffectInstance, options: EmotionOptions['Respond'], sprites: Sprite[]): Promise<void> {
+    const { instance: container } = instance;
+    Reflect.set(window, "test", instance)
+    debugger
     let { app } = usePlayerStore()
     let globalOptions = setInitValue(instance, sprites[0], options)
-    let imgContainer = new Container()
+    let imgContainer = new Container();
+    const { x: offsetX, y: offsetY } = instance.instance.pivot;
     for (let i = 0; i < 3; ++i) {
-      let respondImg = Sprite.from(sprites[0].texture)
+      let respondImg = container.newSprite(sprites[0].texture)
       respondImg.angle = options.perImgSetting[i].angle
       respondImg.anchor.set(
         options.perImgSetting[i].anchor.x,
         options.perImgSetting[i].anchor.y,
       )
-      respondImg.scale.set(globalOptions.scale * options.perImgSetting[i].scale)
+      respondImg.scale.set(globalOptions.scale * options.perImgSetting[i].scale / container.scale.x)
       imgContainer.addChild(respondImg)
     }
-    app.stage.addChild(imgContainer)
-    imgContainer.position = sprites[0].position
+    container.addChild(imgContainer)
+    imgContainer.position.set(offsetX, offsetY);
+    // imgContainer.position = sprites[0].position
     imgContainer.zIndex = 10
-
+    imgContainer.alpha = 1
+    imgContainer.visible = true;
+    return new Promise<void>((resolve) => {
+      setTimeout(resolve, 1000)
+    })
     let tl = gsap.timeline()
     return timelinePromise(
       tl.to(imgContainer, { alpha: options.flashAnimation.alpha, duration: options.flashAnimation.duration })

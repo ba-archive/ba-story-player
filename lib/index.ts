@@ -11,6 +11,7 @@ import { getOtherSoundUrls, wait } from "@/utils";
 import axios from 'axios';
 import { SpineParser } from 'pixi-spine';
 import { Application, Loader, settings, Text } from "pixi.js";
+import * as PIXI from 'pixi.js';
 import { L2DInit } from "./layers/l2dLayer/L2D";
 
 let playerStore: ReturnType<typeof usePlayerStore>
@@ -38,6 +39,9 @@ export async function init(elementID: string, props: PlayerProps, endCallback: (
   if (!privateState.app) {
     privateState.app = new Application({ height: props.height, width: props.width })
   }
+  // TODO debug用 线上环境删掉 而且会导致HMR出问题 慎用
+  // https://chrome.google.com/webstore/detail/pixijs-devtools/aamddddknhcagpehecnhphigffljadon/related?hl=en
+  (window as any).__PIXI_INSPECTOR_GLOBAL_HOOK__ &&  (window as any).__PIXI_INSPECTOR_GLOBAL_HOOK__.register({ PIXI: PIXI })
 
   let app = playerStore.app
   document.querySelector(`#${elementID}`)?.appendChild(app.view)
