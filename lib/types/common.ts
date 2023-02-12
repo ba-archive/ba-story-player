@@ -203,6 +203,12 @@ export interface StoryUnit {
 
 export interface CharacterInstance {
   CharacterName: number;
+  /**
+   * 角色当前所在位置 1,2,3,4,5
+   *
+   * 会根据m1m2m3m4m5动态更新
+   */
+  position: number;
   instance: Spine;
   isShow: () => boolean;
   isOnStage: () => boolean;

@@ -62,11 +62,11 @@ export interface CharacterLayer {
   characterDone(): void;
   /**
    * 从打包好的spine数据中创建pixi-spine对象
-   * @param characterNumber 要创建的角色的characterNumber
+   * @param character 要创建的角色的character信息
    * @param spineData 打包好的spine数据
    * @return 创建出的pixi-spine对象
    */
-  createSpineFromSpineData(characterNumber: number, spineData: ISkeletonData): Spine;
+  createSpineFromSpineData(character: Character, spineData: ISkeletonData): Spine;
   /**
    * 执行showCharacter函数时检查所需资源是否已经创建, 若没有创建则调用createSpineFromSpineData进行创建
    * @param characterMap 需要处理的资源
@@ -83,7 +83,7 @@ export interface CharacterLayer {
    * @param characterNumber 要放置的角色的characterNumber
    * @return 放置成功: true
    */
-  putCharacterOnStage(characterNumber: number): boolean;
+  putCharacterOnStage(character: Character): boolean;
   /**
    * document resize事件监听器, 在大小变换时同时修改所有spine/sprite的缩放比列
    */

@@ -6,7 +6,7 @@ import gsap from "gsap";
 import { Spine } from "pixi-spine";
 import actionOptions, { moveSpeed } from "./options/actionOptions";
 import { ColorOverlayFilter } from '@pixi/filter-color-overlay'
-import { CharacterLayerInstance } from './index'
+import {calcCharacterYAndScale, CharacterLayerInstance} from './index'
 
 const AnimationIdleTrack = 0; // 光环动画track index
 const AnimationFaceTrack = 1; // 差分切换
@@ -31,9 +31,8 @@ const CharacterEffectPlayerInstance: CharacterEffectPlayer = {
   },
   a(instance: CharacterEffectInstance): Promise<void> {
     const characterInstance = instance.instance;
-    const { x, y } = calcSpineStagePosition(characterInstance, instance.position);
+    const { x } = calcSpineStagePosition(characterInstance, instance.position);
     characterInstance.x = x;
-    characterInstance.y = y;
     characterInstance.zIndex = Reflect.get(POS_INDEX_MAP, instance.position);
     characterInstance.state.setAnimation(AnimationIdleTrack, 'Idle_01', true);
     characterInstance.alpha = 1
@@ -222,9 +221,8 @@ export function calcSpineStagePosition(character: Spine, position: number): Posi
     pos.x -= 0.55 * character.width - OriginHalfWidth
     return pos
   }
-
   return {
-    x: screenWidth / 5 * (position - 1) - (character.width * character.scale.x / 2),
+    x: screenWidth / 10 * (2 * position - 1) - (character.width / 2),
     y: screenHeight * 0.3
   };
 }
@@ -268,7 +266,8 @@ async function timeLinePromise(tl: gsap.core.Timeline, callBack?: () => any) {
  */
 function initCharacter(instance: CharacterEffectInstance) {
   const characterInstance = instance.instance;
-  const { x, y } = calcSpineStagePosition(characterInstance, instance.position);
+  const { x } = calcSpineStagePosition(characterInstance, instance.position);
+  const { y } = calcCharacterYAndScale(instance.instance);
   characterInstance.x = x;
   characterInstance.y = y;
   characterInstance.zIndex = Reflect.get(POS_INDEX_MAP, instance.position);
@@ -288,7 +287,7 @@ function moveTo(instance: CharacterEffectInstance, position: number) {
   let tl = gsap.timeline()
   let distance = Math.abs(instance.instance.x - movePos.x)
   let duration = distance / (moveSpeed * instance.instance.width)
-
+  instance.position = position;
   return tl.to(instance.instance, { pixi: { x: movePos.x }, duration })
 }
 

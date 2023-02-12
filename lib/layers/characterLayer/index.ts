@@ -84,18 +84,19 @@ export const CharacterLayerInstance: CharacterLayer = {
         if (!spineData) {
           return false;
         }
-        this.createSpineFromSpineData(characterName, spineData);
-        this.putCharacterOnStage(characterName);
+        this.createSpineFromSpineData(item, spineData);
       }
+      this.putCharacterOnStage(item);
     }
     return true;
   },
-  createSpineFromSpineData(characterNumber: number, spineData: ISkeletonData): Spine {
+  createSpineFromSpineData(character: Character, spineData: ISkeletonData): Spine {
     const instance = new Spine(spineData);
     instance.sortableChildren = true;
     const { currentCharacterMap } = usePlayerStore();
     const characterInstance: CharacterInstance = {
-      CharacterName: characterNumber,
+      CharacterName: character.CharacterName,
+      position: character.position,
       instance,
       isOnStage() {
         return Boolean(instance.parent);
@@ -107,27 +108,34 @@ export const CharacterLayerInstance: CharacterLayer = {
         return this.isOnStage() && instance.alpha != 0;
       }
     }
-    currentCharacterMap.set(characterNumber, characterInstance)
-    this.characterSpineCache.set(characterNumber, characterInstance)
+    currentCharacterMap.set(character.CharacterName, characterInstance)
+    this.characterSpineCache.set(character.CharacterName, characterInstance)
     return instance;
   },
-  putCharacterOnStage(characterNumber: number): boolean {
+  putCharacterOnStage(character: Character): boolean {
     const { app } = usePlayerStore()
-    const spine = this.getCharacterSpineInstance(characterNumber);
+    const instance = this.getCharacterInstance(character.CharacterName)!;
+    instance.position = character.position;
+    const spine = instance.instance
     if (!spine) {
       return false;
     }
-    if (!this.characterScale) {
-      const { screenHeight } = getStageSize();
-      this.characterScale = screenHeight / (spine.height - screenHeight);
+    // spine如果是新建的, 初始化数据
+    if (spine.position.y === 0) {
+      // 供特效使用
+      const { scale, y } = calcCharacterYAndScale(spine);
+      // 设置缩放比列
+      this.characterScale = scale;
+
+      // 设置锚点到左上角
+      spine.pivot = {
+        x: Character_Initial_Pivot_Proportion.x * spine.width,
+        y: Character_Initial_Pivot_Proportion.y * spine.height,
+      };
+      spine.scale.set(scale);
+      // 设置spine在播放器的y轴坐标
+      spine.position.set(spine.position.x, y);
     }
-    // 设置锚点到左上角
-    spine.pivot = {
-      x: Character_Initial_Pivot_Proportion.x * spine.width,
-      y: Character_Initial_Pivot_Proportion.y * spine.height,
-    };
-    // 设置缩放比列
-    spine.scale.set(this.characterScale);
     // 不显示
     spine.alpha = 0
     spine.visible = false;
@@ -162,9 +170,25 @@ export const CharacterLayerInstance: CharacterLayer = {
     }
     const mapList = this.buildCharacterEffectInstance(data);
 
-    // 当目前显示的角色没有新的表情动作时隐藏
-    const showName = data.characters.map(it => it.CharacterName);
-    [...this.characterSpineCache.values()].filter(it => !showName.includes(it.CharacterName)).forEach(chara => {
+    // 当目前显示的角色没有新的表情动作且和现有角色的position冲突时隐藏
+    const filterEmotion = data.characters
+      .filter(it => it.effects.some(ef => ef.type === "emotion"));
+    const filterNotEmotion = data.characters
+      .filter(it => !it.effects.some(ef => ef.type === "emotion"))
+      .map(it => it.CharacterName);
+    const showName = filterEmotion.map(it => it.CharacterName);
+    const showPosition = data.characters.map(it => it.position);
+    const filterHide = [...this.characterSpineCache.values()]
+      .filter(it =>
+        {
+          return it.isOnStage() &&
+            it.isShow() &&
+            (
+              !showName.includes(it.CharacterName) && showPosition.includes(it.position)
+            )
+        }
+      )
+    filterHide.forEach(chara => {
       chara.instance.visible = false;
       chara.instance.alpha = 0;
     });
@@ -222,9 +246,8 @@ export const CharacterLayerInstance: CharacterLayer = {
       // 没有淡入效果, 直接显示
       colorFilter.alpha = 0;
       const chara = data.instance;
-      const { x, y } = calcSpineStagePosition(chara, data.position);
+      const { x } = calcSpineStagePosition(chara, data.position);
       chara.x = x;
-      chara.y = y;
       chara.zIndex = Reflect.get(POS_INDEX_MAP, data.position);
       chara.state.setAnimation(AnimationIdleTrack, 'Idle_01', true);
       chara.alpha = 1
@@ -292,4 +315,19 @@ export const CharacterLayerInstance: CharacterLayer = {
 
 function loopCRtAnimation(crtFilter: CRTFilter) {
   gsap.to(crtFilter, { time: "+=10", duration: 1, ease: Power0.easeNone }).then(() => loopCRtAnimation(crtFilter))
+}
+
+// 当播放器高度为PlayerHeight时角色的CharacterScale
+const PlayerHeight = 550;
+const CharacterScale = 0.28;
+// spine在播放器之下的部分;
+const spineHideRate = 0.4;
+export function calcCharacterYAndScale(spine: Spine) {
+  const { screenHeight } = getStageSize();
+  const scale = screenHeight / PlayerHeight * CharacterScale;
+  const spineHeight = spine.height / spine.scale.y * scale;
+  return {
+    scale,
+    y: screenHeight - spineHeight * (1 - spineHideRate)
+  }
 }
