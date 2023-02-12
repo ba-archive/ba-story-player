@@ -37,7 +37,7 @@ const CharacterEffectPlayerInstance: CharacterEffectPlayer = {
     characterInstance.zIndex = Reflect.get(POS_INDEX_MAP, instance.position);
     characterInstance.state.setAnimation(AnimationIdleTrack, 'Idle_01', true);
     characterInstance.alpha = 1
-    let colorFilter = characterInstance.filters![characterInstance.filters!.length - 1] as ColorOverlayFilter
+    const colorFilter = characterInstance.filters![characterInstance.filters!.length - 1] as ColorOverlayFilter
     colorFilter.alpha = 1
 
     return new Promise((resolve) => {
@@ -194,7 +194,7 @@ const CharacterEffectPlayerInstance: CharacterEffectPlayer = {
 /**
  * 角色position对应的覆盖关系
  */
-const POS_INDEX_MAP = {
+export const POS_INDEX_MAP = {
   "1": 2,
   "2": 3,
   "3": 4,
@@ -207,7 +207,7 @@ const POS_INDEX_MAP = {
  * @param character 要显示的角色
  * @param position 角色所在位置
  */
-function calcSpineStagePosition(character: Spine, position: number): PositionOffset {
+export function calcSpineStagePosition(character: Spine, position: number): PositionOffset {
   const { screenWidth, screenHeight } = getStageSize();
   //当角色pivot x变为人物中心附近时改变计算算法
   if (Math.abs(CharacterLayerInstance.characterScale! - character.scale.x) > 0.05) {

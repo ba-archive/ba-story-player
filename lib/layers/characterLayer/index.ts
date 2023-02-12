@@ -11,13 +11,14 @@ import gsap, { Power0 } from "gsap";
 import { PixiPlugin } from 'gsap/PixiPlugin';
 import { ISkeletonData, Spine } from "pixi-spine";
 import * as PIXI from 'pixi.js';
-import CharacterEffectPlayerInstance, { getStageSize } from "./actionPlayer";
+import CharacterEffectPlayerInstance, {calcSpineStagePosition, getStageSize, POS_INDEX_MAP} from "./actionPlayer";
 import CharacterEmotionPlayerInstance from './emotionPlayer';
 import characterFXPlayer from "./fxPlayer";
 import { ColorOverlayFilter } from '@pixi/filter-color-overlay'
 import { CRTFilter } from '@pixi/filter-crt'
 import { AdjustmentFilter } from '@pixi/filter-adjustment'
 import { MotionBlurFilter } from '@pixi/filter-motion-blur'
+import {init} from "@/index";
 
 const AnimationIdleTrack = 0; // 光环动画track index
 const AnimationFaceTrack = 1; // 差分切换
@@ -200,13 +201,29 @@ export const CharacterLayerInstance: CharacterLayer = {
       tl.repeat(-1)
       tl.repeatDelay(3)
     }
+
+    const colorFilter = new ColorOverlayFilter([0, 0, 0], 0)
+    // TODO highlight
     //处理人物高光
     if (!data.highlight) {
-      data.instance.filters.push(new ColorOverlayFilter([0, 0, 0], 0.3))
+      colorFilter.alpha = 0.3
     }
-    else {
-      data.instance.filters.push(new ColorOverlayFilter([0, 0, 0], 0))
+    if (data.effects.some(it => it.type === "action" && it.effect === "a")) {
+      // 有淡入效果, 交给特效控制器
+      colorFilter.alpha = 1
+    } else {
+      // 没有淡入效果, 直接显示
+      colorFilter.alpha = 0;
+      const chara = data.instance;
+      const { x, y } = calcSpineStagePosition(chara, data.position);
+      chara.x = x;
+      chara.y = y;
+      chara.zIndex = Reflect.get(POS_INDEX_MAP, data.position);
+      chara.state.setAnimation(AnimationIdleTrack, 'Idle_01', true);
+      chara.alpha = 1
+      chara.visible = true;
     }
+    data.instance.filters.push(colorFilter);
 
     return new Promise<void>(async (resolve, reject) => {
       let count = 0;

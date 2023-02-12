@@ -9,6 +9,7 @@ export let emotionDescriptions: OptionDescriptions['emotion'] = {
     scale: '图片缩放比例, 多个图片时为基准图片缩放比例',
     fadeOutPreDuration: '淡出动画前的时间, 可选',
     fadeOutDuration: '淡出动画的时间',
+    makeSpineHappyOffset: "让spine对象作为Container时能够happy的东西"
   },
   "Heart": {
     "heartImg": "心相对于对话框的位置",
@@ -75,6 +76,10 @@ export let emotionDescriptions: OptionDescriptions['emotion'] = {
 
 let emotionOptions: EmotionOptions = {
   "Heart": {
+    "makeSpineHappyOffset": {
+      x: 100,
+      y: 0
+    },
     "startPositionOffset": {
       "x": 0.1,
       "y": -0.1
@@ -101,6 +106,10 @@ let emotionOptions: EmotionOptions = {
     "fadeOutDuration": 0.2
   },
   "Respond": {
+    "makeSpineHappyOffset": {
+      x: 350,
+      y: 30
+    },
     "startPositionOffset": {
       "x": 0.4,
       "y": 0.1
@@ -140,6 +149,10 @@ let emotionOptions: EmotionOptions = {
     ]
   },
   "Music": {
+    "makeSpineHappyOffset": {
+      x: 100,
+      y: 0
+    },
     "startPositionOffset": {
       "x": 0.2,
       "y": 0
@@ -156,6 +169,10 @@ let emotionOptions: EmotionOptions = {
     "fadeOutDuration": 0.1
   },
   "Twinkle": {
+    "makeSpineHappyOffset": {
+      x: 100,
+      y: 0
+    },
     "startPositionOffset": {
       "x": 0.2,
       "y": 0
@@ -200,6 +217,10 @@ let emotionOptions: EmotionOptions = {
     "fadeInDuration": 0.2
   },
   "Sad": {
+    "makeSpineHappyOffset": {
+      x: 100,
+      y: 0
+    },
     "startPositionOffset": {
       "x": 50,
       "y": 0
@@ -208,6 +229,10 @@ let emotionOptions: EmotionOptions = {
     "fadeOutDuration": 0.1
   },
   "Sweat": {
+    "makeSpineHappyOffset": {
+      x: 100,
+      y: 0
+    },
     "startPositionOffset": {
       "x": 0.3,
       "y": -0.1
@@ -228,6 +253,10 @@ let emotionOptions: EmotionOptions = {
     "fadeOutDuration": 0.1
   },
   "Dot": {
+    "makeSpineHappyOffset": {
+      x: 100,
+      y: 0
+    },
     "startPositionOffset": {
       "x": 0,
       "y": -0.1
@@ -236,8 +265,8 @@ let emotionOptions: EmotionOptions = {
     "fadeOutPreDuration": 0.1,
     "fadeOutDuration": 0.1,
     "dotContainerPos": {
-      "x": 0.3,
-      "y": 1.1
+      "x": 0.1,
+      "y": 0.35
     },
     "dotPos": [
       0,
@@ -250,6 +279,10 @@ let emotionOptions: EmotionOptions = {
     }
   },
   "Chat": {
+    "makeSpineHappyOffset": {
+      x: 400,
+      y: 350
+    },
     "startPositionOffset": {
       "x": 0.25,
       "y": 0.1
@@ -264,6 +297,10 @@ let emotionOptions: EmotionOptions = {
     "fadeOutDuration": 0.1
   },
   "Exclaim": {
+    "makeSpineHappyOffset": {
+      x: 100,
+      y: 0
+    },
     "startPositionOffset": {
       "x": 0.32,
       "y": -0.1
@@ -279,6 +316,10 @@ let emotionOptions: EmotionOptions = {
     "fadeOutWaitTime": 0.3
   },
   "Angry": {
+    "makeSpineHappyOffset": {
+      x: 250,
+      y: 0
+    },
     "startPositionOffset": {
       "x": 0.4,
       "y": 0.05
@@ -299,6 +340,10 @@ let emotionOptions: EmotionOptions = {
     "fadeOutDuration": 0.1
   },
   "Surprise": {
+    "makeSpineHappyOffset": {
+      x: 100,
+      y: 0
+    },
     "startPositionOffset": {
       "x": 0.3,
       "y": 0.16
@@ -332,6 +377,10 @@ let emotionOptions: EmotionOptions = {
     }
   },
   "Question": {
+    "makeSpineHappyOffset": {
+      x: 100,
+      y: 0
+    },
     "startPositionOffset": {
       "x": 0.27,
       "y": 0.05
@@ -351,6 +400,10 @@ let emotionOptions: EmotionOptions = {
     }
   },
   "Shy": {
+    "makeSpineHappyOffset": {
+      x: 200,
+      y: 50
+    },
     "startPositionOffset": {
       "x": 0.3,
       "y": 0.1
@@ -384,6 +437,10 @@ let emotionOptions: EmotionOptions = {
     }
   },
   "Upset": {
+    "makeSpineHappyOffset": {
+      x: 100,
+      y: 0
+    },
     "startPositionOffset": {
       "x": 0,
       "y": -0.1
@@ -391,8 +448,8 @@ let emotionOptions: EmotionOptions = {
     "scale": 0.3,
     "fadeOutDuration": 0.3,
     "upsetImgPos": {
-      "x": 1.5,
-      "y": 1.4
+      "x": 0.5,
+      "y": 0.5
     },
     "rotateAnimation": {
       "angleFrom": 6,

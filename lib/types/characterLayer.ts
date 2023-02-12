@@ -399,10 +399,23 @@ export interface BasicEmotionOptions extends BaseOptions<EmotionWord> {
  * emotion情绪动画共有的参数
  */
 export interface GlobalEmotionOptions {
-  startPositionOffset: { x: number, y: number }
-  scale: number
-  fadeOutPreDuration?: number
-  fadeOutDuration: number
+  startPositionOffset: { x: number, y: number };
+  scale: number;
+  fadeOutPreDuration?: number;
+  fadeOutDuration: number;
+  /**
+   * 为了解决spine作为Container使用时奇怪的pivot问题而生
+   *
+   * 用作比例, 填写的是当立绘scale前width,height为基准时
+   *
+   * 自身位于spine内的offset
+   *
+   * 目前使用yuuka(运动服)的width956,height2424作为基准
+   */
+  makeSpineHappyOffset: {
+    x: number;
+    y: number;
+  }
 }
 
 export type EmotionOptions = {
