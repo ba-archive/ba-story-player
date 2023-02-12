@@ -77,6 +77,7 @@ export let storyHandler = {
   currentStoryIndex: 0,
   endCallback: () => { },
   unitPlaying: false,
+  auto: false,
 
   get currentStoryUnit(): StoryUnit {
     if (playerStore && playerStore.allStoryUnit.length > this.currentStoryIndex) {
@@ -117,6 +118,13 @@ export let storyHandler = {
     return true
   },
 
+  next() {
+    if (eventEmitter.unitDone && !this.unitPlaying && !this.auto) {
+      storyHandler.storyIndexIncrement()
+      storyHandler.storyPlay()
+    }
+  },
+
   /**
    * 根据选项控制故事节点
    * @param option
@@ -135,12 +143,21 @@ export let storyHandler = {
     return true
   },
   /**
-    * 播放故事直到对话框或选项出现
+    * 播放故事直到对话框或选项出现, auto模式下只在选项时停下
     */
   async storyPlay() {
     if (!this.unitPlaying) {
       this.unitPlaying = true
-      while (!['text', 'option'].includes(storyHandler.currentStoryUnit.type)) {
+      //当auto开启时只在选项停下
+      let playCondition = () => {
+        if (this.auto) {
+          return ['option']
+        }
+        else {
+          return ['text', 'option']
+        }
+      }
+      while (!playCondition().includes(storyHandler.currentStoryUnit.type)) {
         await eventEmitter.emitEvents()
         storyHandler.storyIndexIncrement()
       }
@@ -166,8 +183,40 @@ export let storyHandler = {
    */
   end() {
     console.log('播放结束')
+    this.auto = false
     this.endCallback()
   },
+
+  /**
+   * 开启auto模式
+   */
+  startAuto() {
+    this.auto = true
+    if (!this.unitPlaying) {
+      if (this.currentStoryUnit.type !== 'option') {
+        this.storyIndexIncrement()
+        this.storyPlay()
+      }
+    }
+    else {
+      //可能storyPlay正要结束但还没结束导致判断错误
+      setTimeout(() => {
+        if (!this.unitPlaying) {
+          if (this.currentStoryUnit.type !== 'option') {
+            this.storyIndexIncrement()
+            this.storyPlay()
+          }
+        }
+      }, 2000)
+    }
+  },
+
+  /**
+   * 停止auto模式
+   */
+  stopAuto() {
+    this.auto = false
+  }
 }
 
 
@@ -182,12 +231,19 @@ export let eventEmitter = {
   characterDone: true,
   effectDone: true,
   titleDone: true,
+  textDone: true,
   stDone: true,
   /** 当前l2d动画是否播放完成 */
   l2dAnimationDone: true,
 
-  get unitDone() {
-    return this.characterDone && this.effectDone && this.titleDone && this.stDone && this.l2dAnimationDone
+  get unitDone(): boolean {
+    let result = true
+    for (let key of Object.keys(eventEmitter) as Array<keyof typeof eventEmitter>) {
+      if (key.endsWith('Done') && key !== 'unitDone') {
+        result = result && eventEmitter[key] as boolean
+      }
+    }
+    return result
   },
 
   /**
@@ -195,15 +251,11 @@ export let eventEmitter = {
    */
   init() {
     eventBus.on('next', () => {
-      if (this.unitDone && !storyHandler.unitPlaying) {
-        storyHandler.storyIndexIncrement()
-        storyHandler.storyPlay()
-      }
+      storyHandler.next()
     })
     eventBus.on('select', e => {
       if (this.unitDone) {
         storyHandler.select(e)
-        console.log('select')
         storyHandler.storyPlay()
       }
     })
@@ -212,7 +264,15 @@ export let eventEmitter = {
     eventBus.on('titleDone', () => this.titleDone = true)
     eventBus.on('stDone', () => this.stDone = true)
     eventBus.on('l2dAnimationDone', (e) => { if (e.done) { eventEmitter.l2dAnimationDone = e.done } })
-    eventBus.on('auto', () => console.log('auto!'))
+    eventBus.on('textDone', async () => {
+      //等待一段时间在textDone, 提升auto的体验
+      if (storyHandler.auto) {
+        await wait(1000)
+      }
+      this.textDone = true
+    })
+    eventBus.on('auto', () => storyHandler.startAuto())
+    eventBus.on('stopAuto', () => storyHandler.stopAuto())
 
     storyHandler.storyPlay()
   },
@@ -248,6 +308,7 @@ export let eventEmitter = {
         }
         break
       case 'text':
+        this.textDone = false
         eventBus.emit('showText', currentStoryUnit.textAbout.showText)
         break
       case 'option':
