@@ -118,6 +118,13 @@ export let storyHandler = {
     return true
   },
 
+  next() {
+    if (eventEmitter.unitDone && !this.unitPlaying && !this.auto) {
+      storyHandler.storyIndexIncrement()
+      storyHandler.storyPlay()
+    }
+  },
+
   /**
    * 根据选项控制故事节点
    * @param option
@@ -141,7 +148,16 @@ export let storyHandler = {
   async storyPlay() {
     if (!this.unitPlaying) {
       this.unitPlaying = true
-      while (!['text', 'option'].includes(storyHandler.currentStoryUnit.type)) {
+      //当auto开启时只在选项停下
+      let playCondition = () => {
+        if (this.auto) {
+          return ['option']
+        }
+        else {
+          return ['text', 'option']
+        }
+      }
+      while (!playCondition().includes(storyHandler.currentStoryUnit.type)) {
         await eventEmitter.emitEvents()
         storyHandler.storyIndexIncrement()
       }
@@ -169,6 +185,26 @@ export let storyHandler = {
     console.log('播放结束')
     this.endCallback()
   },
+
+  /**
+   * 开启auto模式
+   */
+  startAuto() {
+    this.auto = true
+    if (!this.unitPlaying) {
+      if (this.currentStoryUnit.type !== 'option') {
+        this.storyIndexIncrement()
+      }
+      this.storyPlay()
+    }
+  },
+
+  /**
+   * 停止auto模式
+   */
+  stopAuto() {
+    this.auto = false
+  }
 }
 
 
@@ -203,15 +239,11 @@ export let eventEmitter = {
    */
   init() {
     eventBus.on('next', () => {
-      if (this.unitDone && !storyHandler.unitPlaying) {
-        storyHandler.storyIndexIncrement()
-        storyHandler.storyPlay()
-      }
+      storyHandler.next()
     })
     eventBus.on('select', e => {
       if (this.unitDone) {
         storyHandler.select(e)
-        console.log('select')
         storyHandler.storyPlay()
       }
     })
@@ -220,8 +252,15 @@ export let eventEmitter = {
     eventBus.on('titleDone', () => this.titleDone = true)
     eventBus.on('stDone', () => this.stDone = true)
     eventBus.on('l2dAnimationDone', (e) => { if (e.done) { eventEmitter.l2dAnimationDone = e.done } })
-    eventBus.on('textDone', () => this.textDone = true)
-    eventBus.on('auto', () => console.log('auto!'))
+    eventBus.on('textDone', async () => {
+      //等待一段时间在textDone, 提升auto的体验
+      if(storyHandler.auto){
+        await wait(1000)
+      }
+      this.textDone = true
+    })
+    eventBus.on('auto', () => storyHandler.startAuto())
+    eventBus.on('stopAuto', () => storyHandler.stopAuto())
 
     storyHandler.storyPlay()
   },
