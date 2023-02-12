@@ -237,7 +237,7 @@ function handleShowTextEvent(e: ShowText) {
     showTextDialog(e.text.map(text => parseTextEffect(text)), typewriterOutput.value).then(() => {
       eventBus.emit("textDone");
     })
-    typingInstance.isSt = false;
+    typingInstance && (typingInstance.isSt = false);
   })
 }
 

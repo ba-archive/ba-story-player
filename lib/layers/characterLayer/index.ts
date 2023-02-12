@@ -161,6 +161,14 @@ export const CharacterLayerInstance: CharacterLayer = {
       return false;
     }
     const mapList = this.buildCharacterEffectInstance(data);
+
+    // 当目前显示的角色没有新的表情动作时隐藏
+    const showName = data.characters.map(it => it.CharacterName);
+    [...this.characterSpineCache.values()].filter(it => !showName.includes(it.CharacterName)).forEach(chara => {
+      chara.instance.visible = false;
+      chara.instance.alpha = 0;
+    });
+    
     // 处理sync情况
     Promise
       .allSettled(
@@ -173,7 +181,6 @@ export const CharacterLayerInstance: CharacterLayer = {
   showOneCharacter(data: CharacterEffectInstance): Promise<void> {
     // 表情
     data.instance.state.setAnimation(AnimationFaceTrack, data.face, true);
-
     data.instance.filters = []
 
     //处理全息状态
