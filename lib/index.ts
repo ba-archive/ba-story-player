@@ -143,7 +143,7 @@ export let storyHandler = {
     return true
   },
   /**
-    * 播放故事直到对话框或选项出现
+    * 播放故事直到对话框或选项出现, auto模式下只在选项时停下
     */
   async storyPlay() {
     if (!this.unitPlaying) {
@@ -183,6 +183,7 @@ export let storyHandler = {
    */
   end() {
     console.log('播放结束')
+    this.auto = false
     this.endCallback()
   },
 
@@ -196,6 +197,17 @@ export let storyHandler = {
         this.storyIndexIncrement()
         this.storyPlay()
       }
+    }
+    else {
+      //可能storyPlay正要结束但还没结束导致判断错误
+      setTimeout(() => {
+        if (!this.unitPlaying) {
+          if (this.currentStoryUnit.type !== 'option') {
+            this.storyIndexIncrement()
+            this.storyPlay()
+          }
+        }
+      }, 2000)
     }
   },
 
@@ -254,7 +266,7 @@ export let eventEmitter = {
     eventBus.on('l2dAnimationDone', (e) => { if (e.done) { eventEmitter.l2dAnimationDone = e.done } })
     eventBus.on('textDone', async () => {
       //等待一段时间在textDone, 提升auto的体验
-      if(storyHandler.auto){
+      if (storyHandler.auto) {
         await wait(1000)
       }
       this.textDone = true
