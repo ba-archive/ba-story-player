@@ -1,10 +1,9 @@
 <script lang="ts" setup>
-import eventBus from "@/eventBus";
 import { init } from '@/index';
-import { StoryRawUnit } from '@/types/common';
-import { onMounted } from 'vue';
 import BaDialog from "@/layers/textLayer/BaDialog.vue";
+import { StoryRawUnit } from '@/types/common';
 import { Language, StorySummary } from '@/types/store';
+import { computed, onMounted } from 'vue';
 
 
 let props = defineProps<{
@@ -19,39 +18,38 @@ let props = defineProps<{
 
 let emitter = defineEmits(['end'])
 
-onMounted(() => { init('player__main', props, () => emitter('end')) })
+let playerWidth = 1500
+let playerConfig = { ...props }
+playerConfig.width = playerWidth
+playerConfig.height = props.height * playerWidth / props.width
+let scale = computed(() => props.width / playerWidth)
+onMounted(() => { init('player__main__canvas', playerConfig, () => emitter('end')) })
 
-/**
- * 测试文本框
- * @constructor
- */
-function testDialog() {
-  eventBus.emit('showText', {
-    text: [{ content: "测试文本1", waitTime: 0, effects: [] }, { content: "测试文本2", waitTime: 2000, effects: [] }],
-    speaker: {
-      name: "未花",
-      nickName: "茶话会"
-    },
-  });
-}
-
-
-function clearSt() {
-  eventBus.emit("clearSt");
-}
 
 </script>
 
 <template>
-  <div id="player" :style="{ height: `${height}px` }">
-    <div id="player__main">
+  <div id="player">
+    <div id="player__main" :style="{ height: `${height}px`, width: `${width}px` }">
+      <div id="player__main__canvas" :style="{ transform: `scale(${scale})` }"></div>
       <BaDialog :player-height="height" :player-width="width" :style="{ width: `${width}px` }"></BaDialog>
     </div>
   </div>
 </template>
 
-<style>
+<style lang="scss" scoped>
 #player {
   background-color: black;
+
+  &__main {
+    position: relative;
+
+    &__canvas {
+      position: absolute;
+      left: 0;
+      top: 0;
+      transform-origin: top left;
+    }
+  }
 }
 </style>
