@@ -8,6 +8,7 @@ import ModifyEmotionOption from './components/ModifyEmotionOption.vue';
 import TestEffect from './components/TestEffect.vue';
 import { ref, watch } from 'vue'
 import * as PIXI from 'pixi.js'
+import UiBox from './components/UiBox.vue'
 
 window.baResource = resourcesLoader // 方便查看资源加载情况
 window.baStory = storyHandler
@@ -55,25 +56,29 @@ let width = ref(1000)
       <select v-model="toolType">
         <option value="emotion">人物特效测试</option>
         <option value="effect">特效层特效</option>
+        <option value="uiBox">UI工具箱测试</option>
         <option value="null">无</option>
       </select>
     </div>
-    <ModifyEmotionOption class="absolute-right-center" v-if="toolType === 'emotion'" />
-    <Suspense>
-      <TestEffect class="absolute-right-center" v-if="toolType === 'effect'" />
-    </Suspense>
+      <ModifyEmotionOption class="absolute-right-center" v-if="toolType === 'emotion'" />
+      <UiBox class="absolute-right-center" v-if="toolType === 'uiBox'" />
+      <Suspense>
+        <TestEffect class="absolute-right-center" v-if="toolType === 'effect'" />
+      </Suspense>
   </div>
 </template>
 
 
 <style scoped>
 .absolute-right-center {
+  width: calc(50% - 500px);
   position: absolute;
   background-color: white;
   text-align: center;
   display: flex;
   flex-direction: column;
   right: 0;
+  z-index: 10000;
   height: 95vh;
   overflow-y: scroll;
 }
