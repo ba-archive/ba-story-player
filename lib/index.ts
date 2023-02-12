@@ -77,6 +77,7 @@ export let storyHandler = {
   currentStoryIndex: 0,
   endCallback: () => { },
   unitPlaying: false,
+  auto: false,
 
   get currentStoryUnit(): StoryUnit {
     if (playerStore && playerStore.allStoryUnit.length > this.currentStoryIndex) {
@@ -182,12 +183,19 @@ export let eventEmitter = {
   characterDone: true,
   effectDone: true,
   titleDone: true,
+  textDone: true,
   stDone: true,
   /** 当前l2d动画是否播放完成 */
   l2dAnimationDone: true,
 
-  get unitDone() {
-    return this.characterDone && this.effectDone && this.titleDone && this.stDone && this.l2dAnimationDone
+  get unitDone(): boolean {
+    let result = true
+    for (let key of Object.keys(eventEmitter) as Array<keyof typeof eventEmitter>) {
+      if (key.endsWith('Done') && key !== 'unitDone') {
+        result = result && eventEmitter[key] as boolean
+      }
+    }
+    return result
   },
 
   /**
@@ -212,6 +220,7 @@ export let eventEmitter = {
     eventBus.on('titleDone', () => this.titleDone = true)
     eventBus.on('stDone', () => this.stDone = true)
     eventBus.on('l2dAnimationDone', (e) => { if (e.done) { eventEmitter.l2dAnimationDone = e.done } })
+    eventBus.on('textDone', () => this.textDone = true)
     eventBus.on('auto', () => console.log('auto!'))
 
     storyHandler.storyPlay()
@@ -248,6 +257,7 @@ export let eventEmitter = {
         }
         break
       case 'text':
+        this.textDone = false
         eventBus.emit('showText', currentStoryUnit.textAbout.showText)
         break
       case 'option':
