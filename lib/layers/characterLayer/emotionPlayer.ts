@@ -213,7 +213,8 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
       imgContainer.addChild(respondImg)
     }
     container.addChild(imgContainer)
-    imgContainer.position.set(offsetX, offsetY);
+    // imgContainer.position.set(offsetX, offsetY);
+    imgContainer.position.set(0, 0);
     // imgContainer.position = sprites[0].position
     imgContainer.zIndex = 10
     imgContainer.alpha = 1
