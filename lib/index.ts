@@ -67,7 +67,6 @@ export async function init(elementID: string, props: PlayerProps, endCallback: (
   resourcesLoader.load(() => {
     app.stage.removeChild(loadingText)
     loadingText.destroy()
-    console.log(playerStore)
     //开始发送事件
     eventEmitter.init()
   })
@@ -583,8 +582,9 @@ export let resourcesLoader = {
       playerStore.app.loader.load((loader, res) => {
         //当chrome webgl inspector打开时可能导致callback被执行两次
         if (!hasLoad) {
-          console.log(res)
+          console.log('已加载资源:', res)
           callback()
+          hasLoad = true
         }
       })
     })
