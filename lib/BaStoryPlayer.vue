@@ -18,7 +18,7 @@ let props = defineProps<{
 
 let emitter = defineEmits(['end'])
 
-let playerWidth = 1500
+let playerWidth = 1800
 let playerConfig = { ...props }
 playerConfig.width = playerWidth
 playerConfig.height = props.height * playerWidth / props.width

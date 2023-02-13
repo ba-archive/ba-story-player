@@ -6,7 +6,7 @@ import gsap from "gsap";
 import { Spine } from "pixi-spine";
 import actionOptions, { moveSpeed } from "./options/actionOptions";
 import { ColorOverlayFilter } from '@pixi/filter-color-overlay'
-import {calcCharacterYAndScale, CharacterLayerInstance} from './index'
+import { calcCharacterYAndScale, CharacterLayerInstance } from './index'
 
 const AnimationIdleTrack = 0; // 光环动画track index
 const AnimationFaceTrack = 1; // 差分切换
@@ -202,27 +202,40 @@ export const POS_INDEX_MAP = {
 };
 
 /**
+ * 角色position x轴值相对于中心的偏移量, 单位是播放器宽度
+ */
+export const POS_X_CNETER_OFFSET = {
+  "1": -1 / 4,
+  "2": -1 / 5,
+  "3": 0,
+  "4": 1 / 5,
+  "5": 1 / 4,
+}
+
+/**
  * 根据position: 0~5 计算出角色的原点位置
  * @param character 要显示的角色
  * @param position 角色所在位置
  */
 export function calcSpineStagePosition(character: Spine, position: number): PositionOffset {
   const { screenWidth, screenHeight } = getStageSize();
+  let center = screenWidth * 1 / 2
   //当角色pivot x变为人物中心附近时改变计算算法
   if (Math.abs(CharacterLayerInstance.characterScale! - character.scale.x) > 0.05) {
     let closeupScale = character.scale.x
     character.scale.set(CharacterLayerInstance.characterScale)
     const OriginHalfWidth = 0.55 * character.width
     let pos = {
-      x: screenWidth / 5 * (position - 1) - (character.width * character.scale.x / 2),
+      x: center + Reflect.get(POS_X_CNETER_OFFSET, position) * screenWidth - character.width / 2,
       y: screenHeight * 0.3
     }
     character.scale.set(closeupScale)
     pos.x -= 0.55 * character.width - OriginHalfWidth
     return pos
   }
+
   return {
-    x: screenWidth / 10 * (2 * position - 1) - (character.width / 2),
+    x: center + Reflect.get(POS_X_CNETER_OFFSET, position) * screenWidth - character.width / 2,
     y: screenHeight * 0.3
   };
 }

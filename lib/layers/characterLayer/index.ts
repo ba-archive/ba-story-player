@@ -319,7 +319,7 @@ function loopCRtAnimation(crtFilter: CRTFilter) {
 
 // 当播放器高度为PlayerHeight时角色的CharacterScale
 const PlayerHeight = 550;
-const CharacterScale = 0.28;
+const CharacterScale = 0.29;
 // spine在播放器之下的部分;
 const spineHideRate = 0.4;
 export function calcCharacterYAndScale(spine: Spine) {
