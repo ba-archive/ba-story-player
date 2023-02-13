@@ -77,19 +77,19 @@ export let emotionDescriptions: OptionDescriptions['emotion'] = {
 let emotionOptions: EmotionOptions = {
   "Heart": {
     "makeSpineHappyOffset": {
-      x: 100,
-      y: 0
+      "x": 50,
+      "y": -100
     },
     "startPositionOffset": {
       "x": 0.1,
       "y": -0.1
     },
-    "scale": 0.25,
+    "scale": 0.45,
     "heartImg": {
-      "scale": 0.35,
+      "scale": 0.4,
       "position": {
-        "x": 0.3,
-        "y": 0.2
+        "x": 0.27,
+        "y": 0.16
       }
     },
     "jumpAnimation": {
@@ -107,16 +107,16 @@ let emotionOptions: EmotionOptions = {
   },
   "Respond": {
     "makeSpineHappyOffset": {
-      x: 350,
-      y: 30
+      "x": 400,
+      "y": 30
     },
     "startPositionOffset": {
       "x": 0.4,
       "y": 0.1
     },
-    "scale": 0.15,
+    "scale": 0.13,
     "fadeOutPreDuration": 0.3,
-    "fadeOutDuration": 0.1,
+    "fadeOutDuration": 0.12,
     "flashAnimation": {
       "duration": 0.3,
       "alpha": 0.2
@@ -170,14 +170,14 @@ let emotionOptions: EmotionOptions = {
   },
   "Twinkle": {
     "makeSpineHappyOffset": {
-      x: 100,
-      y: 0
+      "x": 250,
+      "y": 0
     },
     "startPositionOffset": {
       "x": 0.2,
       "y": 0
     },
-    "scale": 0.1,
+    "scale": 0.08,
     "fadeOutPreDuration": 0.2,
     "fadeOutDuration": 0.2,
     "starImgs": {
@@ -230,8 +230,8 @@ let emotionOptions: EmotionOptions = {
   },
   "Sweat": {
     "makeSpineHappyOffset": {
-      x: 100,
-      y: 0
+      "x": 130,
+      "y": 0
     },
     "startPositionOffset": {
       "x": 0.3,
@@ -254,11 +254,11 @@ let emotionOptions: EmotionOptions = {
   },
   "Dot": {
     "makeSpineHappyOffset": {
-      x: 100,
-      y: 0
+      "x": 40,
+      "y": -70
     },
     "startPositionOffset": {
-      "x": 0,
+      "x": -0.1,
       "y": -0.1
     },
     "scale": 0.3,
@@ -280,32 +280,32 @@ let emotionOptions: EmotionOptions = {
   },
   "Chat": {
     "makeSpineHappyOffset": {
-      x: 400,
-      y: 350
+      "x": 300,
+      "y": 180
     },
     "startPositionOffset": {
       "x": 0.25,
       "y": 0.1
     },
-    "scale": 0.15,
+    "scale": 0.2,
     "rotateAngle": -25,
     "rotateTime": 0.5,
     "rotatePivot": {
-      "x": 1,
-      "y": 1
+      "x": 0.3,
+      "y": 0
     },
     "fadeOutDuration": 0.1
   },
   "Exclaim": {
     "makeSpineHappyOffset": {
-      x: 100,
-      y: 0
+      "x": 250,
+      "y": -100
     },
     "startPositionOffset": {
       "x": 0.32,
       "y": -0.1
     },
-    "scale": 0.08,
+    "scale": 0.13,
     "fadeOutDuration": 0.1,
     "scaleAnimation": {
       "scale": 1.4,
@@ -317,16 +317,16 @@ let emotionOptions: EmotionOptions = {
   },
   "Angry": {
     "makeSpineHappyOffset": {
-      x: 250,
-      y: 0
+      "x": 330,
+      "y": 0
     },
     "startPositionOffset": {
       "x": 0.4,
       "y": 0.05
     },
-    "scale": 0.1,
+    "scale": 0.16,
     "pivotPosition": {
-      "x": 0.6,
+      "x": 0.14,
       "y": 0
     },
     "animationScale": {
@@ -341,14 +341,14 @@ let emotionOptions: EmotionOptions = {
   },
   "Surprise": {
     "makeSpineHappyOffset": {
-      x: 100,
-      y: 0
+      "x": 270,
+      "y": 0
     },
     "startPositionOffset": {
       "x": 0.3,
       "y": 0.16
     },
-    "scale": 0.07,
+    "scale": 0.06,
     "fadeOutPreDuration": 0.4,
     "imgSetting": {
       "angles": [
@@ -378,14 +378,14 @@ let emotionOptions: EmotionOptions = {
   },
   "Question": {
     "makeSpineHappyOffset": {
-      x: 100,
-      y: 0
+      "x": 270,
+      "y": 90
     },
     "startPositionOffset": {
       "x": 0.27,
       "y": 0.05
     },
-    "scale": 0.09,
+    "scale": 0.15,
     "fadeOutDuration": 0.2,
     "fadeOutPreDuration": 0.4,
     "scaleAnimation": {
@@ -401,14 +401,14 @@ let emotionOptions: EmotionOptions = {
   },
   "Shy": {
     "makeSpineHappyOffset": {
-      x: 200,
-      y: 50
+      "x": 110,
+      "y": 50
     },
     "startPositionOffset": {
       "x": 0.3,
       "y": 0.1
     },
-    "scale": 0.3,
+    "scale": 0.27,
     "fadeOutDuration": 0.1,
     "shyImg": {
       "anchor": {
@@ -438,14 +438,14 @@ let emotionOptions: EmotionOptions = {
   },
   "Upset": {
     "makeSpineHappyOffset": {
-      x: 100,
-      y: 0
+      "x": 30,
+      "y": 0
     },
     "startPositionOffset": {
       "x": 0,
       "y": -0.1
     },
-    "scale": 0.3,
+    "scale": 0.27,
     "fadeOutDuration": 0.3,
     "upsetImgPos": {
       "x": 0.5,

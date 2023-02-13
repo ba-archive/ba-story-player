@@ -4,10 +4,15 @@ import {
   CharacterEffectInstance, CharacterEmotionPlayer, EmotionOptions, EmotionWord, PositionOffset, Scale
 } from "@/types/characterLayer";
 import gsap from 'gsap';
+import { Spine } from "pixi-spine";
 import { Container, DisplayObject, Sprite } from "pixi.js";
-import emotionOptions, {emotionDescriptions} from "./options/emotionOptions";
-import {Spine} from "pixi-spine";
+import emotionOptions from "./options/emotionOptions";
 
+/**
+ * 标准宽度基于的播放器宽度的相对值
+ * 标准宽度用于计算图片缩放比例
+ */
+const Standard_Width_Relative = 0.3
 
 const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
   init() {
@@ -24,7 +29,7 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
     let emotionImageSprites: Sprite[] = []
     let emotionImgs = emotionResources(type)
     if (!emotionImgs) {
-      return Promise.reject(`${type}没有对于的图像资源`)
+      return Promise.reject(`${type}没有对应的图像资源`)
     }
     for (let imageResource of emotionImgs) {
       let tempSprite = Sprite.from(imageResource)
@@ -42,7 +47,7 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
   },
   Angry(instance: CharacterEffectInstance, options: EmotionOptions['Angry'], sprites: Sprite[]): Promise<void> {
     let angryImgUnit = sprites[0]
-    const scale = instance.instance.width * options.scale / angryImgUnit.width / instance.instance.scale.x;
+    const scale = getRelativeScale(angryImgUnit, options)
     const container = new Container();
     const { offsetX, offsetY } = emotionContainerOffset(instance.instance, options);
     container.x = offsetX;
@@ -68,9 +73,9 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
 
     const { offsetX, offsetY } = emotionContainerOffset(instance.instance, options);
 
-    chatImage.scale.set(options.scale * instance.instance.width / chatImage.width / instance.instance.scale.x)
-    chatImage.x = offsetX + instance.instance.width * options.startPositionOffset.x
-    chatImage.y = offsetY + instance.instance.width * options.startPositionOffset.y
+    chatImage.scale.set(getRelativeScale(chatImage, options))
+    chatImage.x = offsetX
+    chatImage.y = offsetY
     chatImage.visible = true
     chatImage.pivot.x = chatImage.width * (1 + options.rotatePivot.x)
     chatImage.pivot.y = chatImage.height * (1 + options.rotatePivot.y)
@@ -110,10 +115,10 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
 
     const { offsetX, offsetY } = emotionContainerOffset(instance.instance, options);
     surpriseImg.position.set(
-      offsetX + instance.instance.width * options.startPositionOffset.x,
-      offsetY + instance.instance.width * options.startPositionOffset.y
+      offsetX,
+      offsetY,
     )
-    const scale = options.scale * instance.instance.width / surpriseImg.width / instance.instance.scale.x;
+    const scale = getRelativeScale(surpriseImg, options)
     surpriseImg.visible = true
     instance.instance.addChild(surpriseImg);
 
@@ -130,7 +135,7 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
     const dialogImg = sprites[0];
     const heartImg = sprites[1];
     const container = new Container();
-    const dialogScale = options.scale * instance.instance.width / dialogImg.width / instance.instance.scale.x;
+    const dialogScale = getRelativeScale(dialogImg, options);
     dialogImg.scale.set(dialogScale)
     heartImg.x = dialogImg.width * options.heartImg.position.x
     heartImg.y = dialogImg.width * options.heartImg.position.y
@@ -201,11 +206,11 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
     let questionImg = sprites[0]
     questionImg.visible = true
     questionImg.zIndex = 10;
-    const scale = options.scale * instance.instance.width / questionImg.width / instance.instance.scale.x;
+    const scale = getRelativeScale(questionImg, options);
     const { offsetX, offsetY } = emotionContainerOffset(instance.instance, options);
     questionImg.position.set(
-      offsetX + instance.instance.width * options.startPositionOffset.x,
-      offsetY + instance.instance.width * options.startPositionOffset.y
+      offsetX,
+      offsetY
     );
     questionImg.scale.set(scale);
     questionImg.anchor.set(options.scaleAnimation.anchor.x, options.scaleAnimation.anchor.y)
@@ -309,8 +314,8 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
     const container = new Container()
     const { offsetX, offsetY } = emotionContainerOffset(instance.instance, options);
     container.position.set(
-      offsetX + instance.instance.width * options.startPositionOffset.x,
-      offsetY + instance.instance.width * options.startPositionOffset.y
+      offsetX,
+      offsetY
     );
 
     //container设置为从app.stage的(0,0)开始方便使用工具类函数
@@ -368,7 +373,7 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
     const container = new Container()
     const { offsetX, offsetY } = emotionContainerOffset(instance.instance, options);
     container.position.set(offsetX, offsetY);
-    let scale = getRelativeScale(instance, sprites[0], options) / instance.instance.scale.x;
+    let scale = getRelativeScale(sprites[0], options) / instance.instance.scale.x;
     let starImgs: Sprite[] = []
     let starImgScales: number[] = []
     for (let i = 0; i < 3; ++i) {
@@ -411,8 +416,8 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
     let upsetImg = Sprite.from(sprites[1].texture)
     const { offsetX, offsetY } = emotionContainerOffset(instance.instance, options);
     dialogImg.position.set(
-      offsetX + instance.instance.width * options.startPositionOffset.x,
-      offsetY + instance.instance.width * options.startPositionOffset.y
+      offsetX,
+      offsetY
     );
 
     upsetImg.anchor.set(0.5, 0.5)
@@ -481,18 +486,20 @@ function setRelativePosition(childImg: Sprite, containerImg: Sprite, relativeVal
 
 /**
  * 设置基准图片的初始位置, 缩放, zIndex
+ * 缩放基于播放器宽度
  * @param instance 
  * @param standardImg 
  * @param options 
  * @returns 位置和缩放比例的绝对值
  */
 function setInitValue(instance: CharacterEffectInstance, standardImg: Sprite, options: EmotionOptions[EmotionWord]) {
+  let standardWidth = usePlayerStore().app.screen.width * Standard_Width_Relative
   let globalOptions = {
     startPositionOffset: {
       x: instance.instance.x + instance.instance.width * options.startPositionOffset.x,
       y: instance.instance.y + instance.instance.width * options.startPositionOffset.y
     },
-    scale: options.scale * instance.instance.width / standardImg.width
+    scale: options.scale * standardWidth / standardImg.width
   }
   standardImg.scale.set(globalOptions.scale)
   standardImg.x = globalOptions.startPositionOffset.x
@@ -504,15 +511,13 @@ function setInitValue(instance: CharacterEffectInstance, standardImg: Sprite, op
 
 /**
  * 将spine作为Container使用后的方法
- *
- * 提供可能存在的将0,0引导至spine左上角的offset
+ * 计算方式不能基于spine width, 有width很大的人物特例
+ * 计算图片相对于入物中心的偏移值, 其中x方向减去的值为前面设置遗留的特殊值, 后面会改
  */
-const YuukaWidth = 965;
-const YuukaHeight = 2424;
 function emotionContainerOffset(spine: Spine, options: EmotionOptions[EmotionWord]) {
   return {
-    offsetX: spine.pivot.x + ((spine.width / spine.scale.x / YuukaWidth) * options.makeSpineHappyOffset.x),
-    offsetY: spine.pivot.y + ((spine.height / spine.scale.y / YuukaHeight) * options.makeSpineHappyOffset.y),
+    offsetX: options.makeSpineHappyOffset.x - 500,
+    offsetY: options.makeSpineHappyOffset.y - 6 / 5 * usePlayerStore().app.screen.height,
   }
 }
 
@@ -542,8 +547,10 @@ function setInitPos(instance: CharacterEffectInstance, object: DisplayObject, op
  * @param options 情绪动画设置参数
  * @returns 缩放比例绝对值
  */
-function getRelativeScale(instance: CharacterEffectInstance, img: Sprite, options: EmotionOptions[EmotionWord]) {
-  return options.scale * instance.instance.width / img.width
+function getRelativeScale(img: Sprite, options: EmotionOptions[EmotionWord]) {
+  //用播放器宽度的1/5作为图片缩放的基准
+  let standardWidth = usePlayerStore().app.screen.width * Standard_Width_Relative
+  return options.scale * standardWidth / img.width
 }
 
 /**

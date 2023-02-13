@@ -11,7 +11,7 @@ import gsap, { Power0 } from "gsap";
 import { PixiPlugin } from 'gsap/PixiPlugin';
 import { ISkeletonData, Spine } from "pixi-spine";
 import * as PIXI from 'pixi.js';
-import CharacterEffectPlayerInstance, {calcSpineStagePosition, getStageSize, POS_INDEX_MAP} from "./actionPlayer";
+import CharacterEffectPlayerInstance, { calcSpineStagePosition, getStageSize, POS_INDEX_MAP } from "./actionPlayer";
 import CharacterEmotionPlayerInstance from './emotionPlayer';
 import characterFXPlayer from "./fxPlayer";
 import { ColorOverlayFilter } from '@pixi/filter-color-overlay'
