@@ -33,11 +33,18 @@ export function soundInit() {
                 url: playAudioInfo.bgm.url,
                 preload: true,
                 loaded: function (err, sound) {
-                    sound?.play({   // start和end的功能还没有测试
-                        loop: true,
-                        start: playAudioInfo.bgm?.bgmArgs.LoopStartTime,
-                        end: playAudioInfo.bgm?.bgmArgs.LoopEndTime
-                    })
+                    sound?.play({   // 第一次是非loop播放, 播放到LoopStartTime为止
+                        loop: false,
+                        start: 0,
+                        end: playAudioInfo.bgm?.bgmArgs.LoopStartTime,
+                        complete: function (sound) {    // 第一次播放结束后进入loop
+                            sound?.play({
+                                loop: true,
+                                start: playAudioInfo.bgm?.bgmArgs.LoopStartTime,
+                                end: playAudioInfo.bgm?.bgmArgs.LoopEndTime
+                            })
+                        }
+                    })  // 这样写真的好吗...
                 }
             })
         }
@@ -53,7 +60,7 @@ export function soundInit() {
                     console.log("Finish Playing Sound!")
                 }
             })
-        } 
+        }
         if (playAudioInfo.voiceJPUrl) {
             let voice = Sound.from({
                 volume: soundSettings.Voicevolume,
@@ -88,6 +95,6 @@ export function soundInit() {
 
     eventBus.on('playOtherSounds', sound => {
         console.log("Play Select Sound!")
-        playAudio({soundUrl: usePlayerStore().otherSoundUrl(sound)})
+        playAudio({ soundUrl: usePlayerStore().otherSoundUrl(sound) })
     })
 }
