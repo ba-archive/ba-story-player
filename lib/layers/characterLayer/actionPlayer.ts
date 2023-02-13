@@ -37,13 +37,14 @@ const CharacterEffectPlayerInstance: CharacterEffectPlayer = {
     characterInstance.state.setAnimation(AnimationIdleTrack, 'Idle_01', true);
     characterInstance.alpha = 1
     const colorFilter = characterInstance.filters![characterInstance.filters!.length - 1] as ColorOverlayFilter
+    let finalAlpha = colorFilter.alpha
     colorFilter.alpha = 1
 
     return new Promise((resolve) => {
       characterInstance.visible = true;
       const timeLine = gsap.timeline();
       timeLine.to(colorFilter, {
-        alpha: 0,
+        alpha: finalAlpha,
         duration: 1,
         onComplete: resolve
       });
@@ -84,14 +85,15 @@ const CharacterEffectPlayerInstance: CharacterEffectPlayer = {
     let tl = gsap.timeline()
 
     tl.to(colorFilter, { alpha: 1, duration: options.duration })
-    return timeLinePromise(tl, () => { instance.instance.alpha = 0 })
+    return timeLinePromise(tl, () => { instance.instance.alpha = 0; instance.instance.visible = false })
   }, dl(instance: CharacterEffectInstance, options): Promise<void> {
     let tl = gsap.timeline()
     let distance = instance.instance.x + instance.instance.width
+    instance.instance.visible = false
     let duration = distance / (instance.instance.width * options.speed)
     tl.to(instance.instance,
       { pixi: { x: -instance.instance.width }, duration })
-    return timeLinePromise(tl)
+    return timeLinePromise(tl, () => instance.instance.visible = false)
 
   }, dr(instance: CharacterEffectInstance, options): Promise<void> {
     let { app } = usePlayerStore()
@@ -102,7 +104,7 @@ const CharacterEffectPlayerInstance: CharacterEffectPlayer = {
     let duration = distance / (instance.instance.width * options.speed)
     tl.to(instance.instance, { pixi: { x: finalX }, duration },
     )
-    return timeLinePromise(tl)
+    return timeLinePromise(tl, () => instance.instance.visible = false)
   }, falldownR(instance: CharacterEffectInstance, options): Promise<void> {
     let tl = gsap.timeline()
     let pivotOffset = {
@@ -128,6 +130,7 @@ const CharacterEffectPlayerInstance: CharacterEffectPlayer = {
 
     return timeLinePromise(tl)
   }, hide(instance: CharacterEffectInstance): Promise<void> {
+    instance.instance.visible = false
     return Promise.resolve(undefined);
   }, hophop(instance: CharacterEffectInstance, options): Promise<void> {
     let tl = gsap.timeline()

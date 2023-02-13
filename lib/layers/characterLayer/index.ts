@@ -18,7 +18,6 @@ import { ColorOverlayFilter } from '@pixi/filter-color-overlay'
 import { CRTFilter } from '@pixi/filter-crt'
 import { AdjustmentFilter } from '@pixi/filter-adjustment'
 import { MotionBlurFilter } from '@pixi/filter-motion-blur'
-import {init} from "@/index";
 
 const AnimationIdleTrack = 0; // 光环动画track index
 const AnimationFaceTrack = 1; // 差分切换
@@ -138,7 +137,8 @@ export const CharacterLayerInstance: CharacterLayer = {
     }
     // 不显示
     spine.alpha = 0
-    spine.visible = false;
+    //这样会导致基于visible的判断失效
+    // spine.visible = false;
     app.stage.addChild(spine);
     return true;
   },
@@ -169,6 +169,14 @@ export const CharacterLayerInstance: CharacterLayer = {
       return false;
     }
     const mapList = this.buildCharacterEffectInstance(data);
+    //将data没有但显示着的角色取消highlight
+    this.characterSpineCache.forEach(character => {
+      if (character.instance.visible === true
+        && !data.characters.some(value => value.CharacterName === character.CharacterName)) {
+        let colorFilter = character.instance.filters![character.instance.filters!.length - 1] as ColorOverlayFilter
+        colorFilter.alpha = 0.3
+      }
+    })
 
     // 当目前显示的角色没有新的表情动作且和现有角色的position冲突时隐藏
     const filterEmotion = data.characters
@@ -241,14 +249,16 @@ export const CharacterLayerInstance: CharacterLayer = {
     }
     if (data.effects.some(it => it.type === "action" && it.effect === "a")) {
       // 有淡入效果, 交给特效控制器
-      colorFilter.alpha = 1
+      //不要改变color filter的alpha, 会导致a最后的alpha出错
     } else {
       // 没有淡入效果, 直接显示
-      colorFilter.alpha = 0;
       const chara = data.instance;
-      const { x } = calcSpineStagePosition(chara, data.position);
-      chara.x = x;
-      chara.zIndex = Reflect.get(POS_INDEX_MAP, data.position);
+      //当人物被移出画面时重设为初始位置
+      if (chara.visible === false) {
+        const { x } = calcSpineStagePosition(chara, data.position);
+        chara.x = x;
+        chara.zIndex = Reflect.get(POS_INDEX_MAP, data.position);
+      }
       chara.state.setAnimation(AnimationIdleTrack, 'Idle_01', true);
       chara.alpha = 1
       chara.visible = true;
