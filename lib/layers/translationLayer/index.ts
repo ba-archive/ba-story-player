@@ -294,6 +294,10 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
           break
       }
     }
+    //没人highlight则默认所有人highlight
+    if (!unit.characters.some(character => character.highlight === true)) {
+      unit.characters = unit.characters.map(character => { character.highlight = true; return character; })
+    }
     result.push(unit)
   }
 
