@@ -63,7 +63,10 @@ export type Events = {
    * 播放选项选择特效音
    */
   playOtherSounds: OtherSounds
-
+  /**
+   * 播放voiceJP结束提示
+   */
+  playVoiceJPDone: string
   //UI层
 
   /**

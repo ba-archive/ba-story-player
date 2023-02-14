@@ -59,10 +59,11 @@ export function soundInit() {
                 url: playAudioInfo.soundUrl,
                 preload: true,
                 loaded: (err, sound) => {
-                    sound?.play()
-                },
-                complete: () => {
-                    console.log("Finish Playing Sound!")
+                    sound?.play({
+                        complete: () => {
+                            console.log("Finish Playing Sound!")
+                        }
+                    })
                 }
             })
         }
@@ -75,10 +76,11 @@ export function soundInit() {
                 url: playAudioInfo.voiceJPUrl,
                 preload: true,
                 loaded: (err, sound) => {
-                    sound?.play()
-                },
-                complete: () => {
-                    console.log("Finish Playing VoiceJP!")
+                    sound?.play({
+                        complete: () => {
+                            eventBus.emit('playVoiceJPDone', playAudioInfo.voiceJPUrl || "")
+                        }
+                    })
                 }
             })
         }
