@@ -326,8 +326,8 @@ let emotionOptions: EmotionOptions = {
     },
     "scale": 0.16,
     "pivotPosition": {
-      "x": 0.14,
-      "y": 0
+      "x": 0.26,
+      "y": -0.05
     },
     "animationScale": {
       "scale": 0.9,

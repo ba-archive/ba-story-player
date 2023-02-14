@@ -53,21 +53,25 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
     container.x = offsetX;
     container.y = offsetY;
     instance.instance.addChild(container);
+    //最后用于确定动画结束的timeline
+    let waitTimeLine = gsap.timeline()
+    let destroyImg: Sprite[] = []
     for (let i = 0; i < 3; ++i) {
       let uImgUnit = Sprite.from(angryImgUnit.texture)
+      destroyImg.push(uImgUnit)
       uImgUnit.scale.set(scale)
-      uImgUnit.pivot.set(uImgUnit.width * options.pivotPosition.x, uImgUnit.width * options.pivotPosition.y)
+      uImgUnit.anchor.set(0.35, -0.05)
       uImgUnit.angle += i * 120
       uImgUnit.zIndex = 10
       container.addChild(uImgUnit)
       let tl = gsap.timeline()
+      waitTimeLine = tl
       tl.to(uImgUnit.scale, { x: scale * options.animationScale.scale, duration: options.animationScale.duration })
         .to(uImgUnit.scale, { x: scale, duration: options.animationScale.duration })
         .to(uImgUnit.scale, { x: scale * options.endScale.scale, y: scale * options.endScale.scale, duration: options.endScale.duration })
-        .then(() => { uImgUnit.destroy() })
     }
 
-    return Promise.resolve(undefined);
+    return timelinePromise(waitTimeLine, destroyImg);
   }, Chat(instance: CharacterEffectInstance, options: EmotionOptions['Chat'], sprites: Sprite[]): Promise<void> {
     let chatImage = sprites[0]
 
