@@ -78,7 +78,7 @@ export async function init(elementID: string, props: PlayerProps, endCallback: (
  * 处理故事进度对象
  */
 export let storyHandler = {
-  currentStoryIndex: 120,
+  currentStoryIndex: 0,
   endCallback: () => { },
   unitPlaying: false,
   auto: false,
@@ -454,10 +454,10 @@ export let eventEmitter = {
     if (storyHandler.currentStoryUnit.hide) {
       //当下一节点仍是text时只隐藏character
       if (storyHandler.currentStoryUnit.hide === 'all') {
-        if(storyHandler.nextStoryUnit.type==='text'){
+        if (storyHandler.nextStoryUnit.type === 'text' && !storyHandler.currentStoryUnit.transition) {
           eventBus.emit('hideCharacter')
         }
-        else{
+        else {
           eventBus.emit('hide')
         }
       }

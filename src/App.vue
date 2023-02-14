@@ -48,7 +48,7 @@ let width = ref(1000)
 
 <template>
   <div style="display:flex;justify-content: center;">
-    <BaStoryPlayer :story="prologue" data-url="https://yuuka.cdn.diyigemt.com/image/ba-all-data" :width="width"
+    <BaStoryPlayer :story="yuuka" data-url="https://yuuka.cdn.diyigemt.com/image/ba-all-data" :width="width"
       :height="height" language="Cn" userName="testUser" :story-summary="storySummary" />
     <div style="position: absolute;left: 0;display: flex;flex-direction: column;">
       <label>辅助工具选择</label>
