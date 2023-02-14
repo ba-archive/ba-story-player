@@ -247,7 +247,7 @@ export const CharacterLayerInstance: CharacterLayer = {
     if (!data.highlight) {
       colorFilter.alpha = 0.3
     }
-    if (data.effects.some(it => it.type === "action" && it.effect === "a")) {
+    if (data.effects.some(it => it.type === "action" && ['a', 'al', 'ar'].includes(it.effect))) {
       // 有淡入效果, 交给特效控制器
       //不要改变color filter的alpha, 会导致a最后的alpha出错
     } else {
