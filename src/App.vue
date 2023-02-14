@@ -61,7 +61,7 @@ let width = ref(1000)
       </select>
     </div>
       <ModifyEmotionOption class="absolute-right-center" v-if="toolType === 'emotion'" />
-      <UiBox class="absolute-right-center" v-if="toolType === 'uiBox'" />
+      <UiBox class="absolute-right-center" v-show="toolType === 'uiBox'" />
       <Suspense>
         <TestEffect class="absolute-right-center" v-if="toolType === 'effect'" />
       </Suspense>
@@ -71,7 +71,8 @@ let width = ref(1000)
 
 <style scoped>
 .absolute-right-center {
-  width: calc(50% - 500px);
+  /* 播放器宽度一半 */
+  max-width: calc(50% - 508px);
   position: absolute;
   background-color: white;
   text-align: center;
@@ -80,6 +81,6 @@ let width = ref(1000)
   right: 0;
   z-index: 10000;
   height: 95vh;
-  overflow-y: scroll;
+  overflow-y: auto;
 }
 </style>
