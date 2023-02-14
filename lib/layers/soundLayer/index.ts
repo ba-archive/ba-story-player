@@ -9,6 +9,8 @@ import { usePlayerStore } from "@/stores";
  */
 export function soundInit() {
     let bgm: Sound | undefined = undefined;
+    let sfx: Sound | undefined = undefined;
+    let voice: Sound | undefined = undefined;
 
     /**
      * 声音层的全局设置, 包括BGM音量, 效果音量和语音音量
@@ -49,7 +51,10 @@ export function soundInit() {
             })
         }
         if (playAudioInfo.soundUrl) {
-            let sfx = Sound.from({
+            if (sfx) {
+                sfx.stop();
+            }
+            sfx = Sound.from({
                 volume: soundSettings.SFXvolume,
                 url: playAudioInfo.soundUrl,
                 preload: true,
@@ -62,7 +67,10 @@ export function soundInit() {
             })
         }
         if (playAudioInfo.voiceJPUrl) {
-            let voice = Sound.from({
+            if (voice) {
+                voice.stop();
+            }
+            voice = Sound.from({
                 volume: soundSettings.Voicevolume,
                 url: playAudioInfo.voiceJPUrl,
                 preload: true,
@@ -77,7 +85,7 @@ export function soundInit() {
     }
 
     // 当想要播放VoiceJP的时候, 可以直接
-    // eventBus.on('playAudio', {voiceJPUrl: url})
+    // eventBus.emit('playAudio', {voiceJPUrl: url})
     // 这样就可以了x
 
     eventBus.on('playAudio', (playAudioInfo: PlayAudio) => {
