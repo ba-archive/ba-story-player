@@ -41,7 +41,7 @@ export async function init(elementID: string, props: PlayerProps, endCallback: (
   }
   // TODO debug用 线上环境删掉 而且会导致HMR出问题 慎用
   // https://chrome.google.com/webstore/detail/pixijs-devtools/aamddddknhcagpehecnhphigffljadon/related?hl=en
-  (window as any).__PIXI_INSPECTOR_GLOBAL_HOOK__ &&  (window as any).__PIXI_INSPECTOR_GLOBAL_HOOK__.register({ PIXI: PIXI })
+  (window as any).__PIXI_INSPECTOR_GLOBAL_HOOK__ && (window as any).__PIXI_INSPECTOR_GLOBAL_HOOK__.register({ PIXI: PIXI })
 
   let app = playerStore.app
   document.querySelector(`#${elementID}`)?.appendChild(app.view)
@@ -78,7 +78,7 @@ export async function init(elementID: string, props: PlayerProps, endCallback: (
  * 处理故事进度对象
  */
 export let storyHandler = {
-  currentStoryIndex: 85,
+  currentStoryIndex: 120,
   endCallback: () => { },
   unitPlaying: false,
   auto: false,
@@ -86,6 +86,28 @@ export let storyHandler = {
   get currentStoryUnit(): StoryUnit {
     if (playerStore && playerStore.allStoryUnit.length > this.currentStoryIndex) {
       return playerStore.allStoryUnit[this.currentStoryIndex]
+    }
+
+    //默认值
+    return {
+      type: 'text',
+      GroupId: 0,
+      SelectionGroup: 0,
+      PopupFileName: '',
+      audio: {},
+      effect: { otherEffect: [] },
+      characters: [],
+      textAbout: {
+        showText: {
+          text: []
+        }
+      }
+    }
+  },
+
+  get nextStoryUnit(): StoryUnit {
+    if (playerStore && playerStore.allStoryUnit.length > this.currentStoryIndex + 1) {
+      return playerStore.allStoryUnit[this.currentStoryIndex + 1]
     }
 
     //默认值
@@ -430,8 +452,14 @@ export let eventEmitter = {
    */
   hide() {
     if (storyHandler.currentStoryUnit.hide) {
+      //当下一节点仍是text时只隐藏character
       if (storyHandler.currentStoryUnit.hide === 'all') {
-        eventBus.emit('hide')
+        if(storyHandler.nextStoryUnit.type==='text'){
+          eventBus.emit('hideCharacter')
+        }
+        else{
+          eventBus.emit('hide')
+        }
       }
       else {
         eventBus.emit('hidemenu')

@@ -46,6 +46,7 @@ export const CharacterLayerInstance: CharacterLayer = {
     document.addEventListener("resize", this.onWindowResize);
     eventBus.on("showCharacter", showCharacter);
     eventBus.on("hide", () => Reflect.apply(this.hideCharacter, this, []))
+    eventBus.on("hideCharacter", () => Reflect.apply(this.hideCharacter, this, []))
     this.effectPlayerMap.set("emotion", CharacterEmotionPlayerInstance);
     this.effectPlayerMap.set("action", CharacterEffectPlayerInstance);
     this.effectPlayerMap.set("fx", characterFXPlayer);
