@@ -208,9 +208,9 @@ export const POS_INDEX_MAP = {
  */
 export const POS_X_CNETER_OFFSET = {
   "1": -1 / 4,
-  "2": -1 / 5,
+  "2": -1 / 8,
   "3": 0,
-  "4": 1 / 5,
+  "4": 1 / 8,
   "5": 1 / 4,
 }
 
