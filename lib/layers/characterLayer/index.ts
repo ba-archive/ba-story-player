@@ -187,20 +187,19 @@ export const CharacterLayerInstance: CharacterLayer = {
     const showName = filterEmotion.map(it => it.CharacterName);
     const showPosition = data.characters.map(it => it.position);
     const filterHide = [...this.characterSpineCache.values()]
-      .filter(it =>
-        {
-          return it.isOnStage() &&
-            it.isShow() &&
-            (
-              !showName.includes(it.CharacterName) && showPosition.includes(it.position)
-            )
-        }
+      .filter(it => {
+        return it.isOnStage() &&
+          it.isShow() &&
+          (
+            !showName.includes(it.CharacterName) && showPosition.includes(it.position)
+          )
+      }
       )
     filterHide.forEach(chara => {
       chara.instance.visible = false;
       chara.instance.alpha = 0;
     });
-    
+
     // 处理sync情况
     Promise
       .allSettled(
@@ -258,8 +257,8 @@ export const CharacterLayerInstance: CharacterLayer = {
         const { x } = calcSpineStagePosition(chara, data.position);
         chara.x = x;
         chara.zIndex = Reflect.get(POS_INDEX_MAP, data.position);
+        chara.state.setAnimation(AnimationIdleTrack, 'Idle_01', true);
       }
-      chara.state.setAnimation(AnimationIdleTrack, 'Idle_01', true);
       chara.alpha = 1
       chara.visible = true;
     }
