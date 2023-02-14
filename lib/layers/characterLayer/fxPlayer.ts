@@ -3,6 +3,8 @@ import { CharacterEffectInstance, CharacterFXPlayer, PositionOffset } from "@/ty
 import { Sprite } from "pixi.js";
 import fxOptions from './options/fxOptions'
 import gsap from "gsap";
+import { getStandardWidth } from ".";
+import { AdjustmentFilter } from '@pixi/filter-adjustment'
 
 const characterFXPlayer: CharacterFXPlayer = {
   init() {
@@ -27,23 +29,41 @@ const characterFXPlayer: CharacterFXPlayer = {
     for (let imageResource of currentFxImgs!) {
       let tempSprite = Sprite.from(imageResource)
       tempSprite.visible = false
-      app.stage.addChild(tempSprite)
+      instance.instance.addChild(tempSprite)
       fxImageSprites.push(tempSprite)
     }
     return fn(instance, fxOptions[type], fxImageSprites) as Promise<void>;
   },
   shot(instance, options, sprites) {
-    let scale = options.scale * instance.instance.width / sprites[0].width
-    sprites[0].scale.set(scale)
-    sprites[0].x = instance.instance.x
-    sprites[0].y = instance.instance.y
+    let scale = options.scale * getStandardWidth() / sprites[0].width
 
-    setPos(instance, sprites[0], options.shotPos[0])
-    sprites[0].zIndex = 10
-    sprites[0].visible = true
     let tl = gsap.timeline()
-    for (let pos of options.shotPos) {
-      tl.fromTo(sprites[0], { pixi: { alpha: 1 } }, { pixi: { alpha: 0 }, duration: options.shotDuration, delay: options.shotDelay, onStart: () => { setPos(instance, sprites[0], pos) } })
+    for (let [index, sequence] of options.shotSequence.entries()) {
+      let img = Sprite.from(sprites[sequence.startImg].texture)
+      img.scale.set(scale * sequence.scale)
+      img.angle = sequence.angle
+      img.zIndex = 10
+      let adjustmentFilter = new AdjustmentFilter({ brightness: 3, alpha: 0.5 })
+      img.filters = [adjustmentFilter]
+      img.visible = false
+      instance.instance.addChild(img)
+      setPos(instance, img, sequence.pos)
+      tl.to(img, {
+        duration: options.shotDuration,
+        onComplete() {
+          if (sequence.endRed) {
+            adjustmentFilter.green = 0.3
+            adjustmentFilter.blue = 0
+          }
+          else {
+            img.texture = sprites[sequence.endImg!].texture
+          }
+          setTimeout(() => img.visible = false, 10)
+        },
+        onStart() {
+          img.visible = true
+        }
+      }, index * 0.07)
     }
 
     return timelinePromise(tl, sprites)
@@ -58,9 +78,10 @@ const characterFXPlayer: CharacterFXPlayer = {
  * @returns 
  */
 function setPos(instance: CharacterEffectInstance, img: Sprite, pos: PositionOffset) {
+  let standardWidth = getStandardWidth()
   let finalPos = {
-    x: instance.instance.x + instance.instance.width * pos.x,
-    y: instance.instance.y + instance.instance.width * pos.y
+    x: standardWidth * pos.x,
+    y: standardWidth * pos.y
   }
   img.position = finalPos
 

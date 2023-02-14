@@ -26,6 +26,19 @@ const AnimationEyeCloseTrack = 2; // TODO 眨眼动画
  * 角色初始的pivot相对与长宽的比例, 当前值代表左上角
  */
 export const Character_Initial_Pivot_Proportion = { x: -1 / 2, y: -1 / 2 }
+/**
+ * 标准宽度基于的播放器宽度的相对值
+ * 标准宽度用于计算图片缩放比例
+ */
+const Standard_Width_Relative = 0.3
+
+/**
+ * 获取用于计算图片缩放比例的标准宽度
+ */
+export function getStandardWidth() {
+  return usePlayerStore().app.screen.width * Standard_Width_Relative
+}
+
 
 PixiPlugin.registerPIXI(PIXI)
 gsap.registerPlugin(PixiPlugin)

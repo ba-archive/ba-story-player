@@ -491,8 +491,14 @@ export interface FXOptions extends BaseOptions<FXEffectWord> {
   shot: {
     scale: number
     shotDuration: number
-    shotDelay: number
-    shotPos: PositionOffset[]
+    shotSequence: {
+      startImg: number
+      endImg?: number
+      endRed: boolean
+      pos: PositionOffset
+      scale: number
+      angle: number
+    }[]
   }
 }
 

@@ -6,13 +6,9 @@ import {
 import gsap from 'gsap';
 import { Spine } from "pixi-spine";
 import { Container, DisplayObject, Sprite } from "pixi.js";
+import { getStandardWidth } from ".";
 import emotionOptions from "./options/emotionOptions";
 
-/**
- * 标准宽度基于的播放器宽度的相对值
- * 标准宽度用于计算图片缩放比例
- */
-const Standard_Width_Relative = 0.3
 
 const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
   init() {
@@ -497,7 +493,7 @@ function setRelativePosition(childImg: Sprite, containerImg: Sprite, relativeVal
  * @returns 位置和缩放比例的绝对值
  */
 function setInitValue(instance: CharacterEffectInstance, standardImg: Sprite, options: EmotionOptions[EmotionWord]) {
-  let standardWidth = usePlayerStore().app.screen.width * Standard_Width_Relative
+  let standardWidth = getStandardWidth()
   let globalOptions = {
     startPositionOffset: {
       x: instance.instance.x + instance.instance.width * options.startPositionOffset.x,
@@ -553,7 +549,7 @@ function setInitPos(instance: CharacterEffectInstance, object: DisplayObject, op
  */
 function getRelativeScale(img: Sprite, options: EmotionOptions[EmotionWord]) {
   //用播放器宽度的1/5作为图片缩放的基准
-  let standardWidth = usePlayerStore().app.screen.width * Standard_Width_Relative
+  let standardWidth = getStandardWidth()
   return options.scale * standardWidth / img.width
 }
 

@@ -31,7 +31,7 @@ let emotionResourcesTable = {
 }
 
 let fxImageTable = {
-  "shot": ['shot.png']
+  "shot": ['fire1.svg', 'fire2.svg', 'fire3.svg']
 }
 
 /**
