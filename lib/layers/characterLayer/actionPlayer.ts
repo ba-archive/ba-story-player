@@ -89,7 +89,6 @@ const CharacterEffectPlayerInstance: CharacterEffectPlayer = {
   }, dl(instance: CharacterEffectInstance, options): Promise<void> {
     let tl = gsap.timeline()
     let distance = instance.instance.x + instance.instance.width
-    instance.instance.visible = false
     let duration = distance / (instance.instance.width * options.speed)
     tl.to(instance.instance,
       { pixi: { x: -instance.instance.width }, duration })
