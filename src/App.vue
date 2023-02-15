@@ -44,14 +44,16 @@ Reflect.set(window, 'next', () => {
   eventBus.emit('next')
 })
 
-let height = ref(550)
 let width = ref(1000)
+let showPlayer = ref(true)
 </script>
 
 <template>
   <div style="display:flex;justify-content: center;">
-    <BaStoryPlayer :story="prologue" data-url="https://yuuka.cdn.diyigemt.com/image/ba-all-data" :width="width"
-      :height="height" language="Cn" userName="testUser" :story-summary="storySummary" />
+    <div v-if="showPlayer">
+      <BaStoryPlayer :story="yuuka" data-url="https://yuuka.cdn.diyigemt.com/image/ba-all-data" :width="width"
+        language="Cn" userName="testUser" :story-summary="storySummary" :start-full-screen="false" />
+    </div>
     <div style="position: absolute;left: 0;display: flex;flex-direction: column;">
       <label>辅助工具选择</label>
       <select v-model="toolType">
@@ -59,6 +61,7 @@ let width = ref(1000)
         <option value="effect">特效层特效</option>
         <option value="null">无</option>
       </select>
+      <button @click="showPlayer = true">显示</button>
     </div>
     <ModifyEmotionOption class="absolute-right-center" v-if="toolType === 'emotion'" />
     <Suspense>
