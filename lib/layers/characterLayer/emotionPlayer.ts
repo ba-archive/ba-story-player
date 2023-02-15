@@ -107,8 +107,9 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
     dialogImg.addChild(dotContainer)
     dotContainer.position = { x: options.dotContainerPos.x * dialogImg.width, y: options.dotContainerPos.y * dialogImg.height }
     instance.instance.addChild(dialogImg);
+    showTl.to(dialogImg, { alpha: 0, duration: options.fadeOutDuration, delay: options.fadeOutPreDuration })
     return timelinePromise(
-      showTl.to(dialogImg, { alpha: 0, duration: options.fadeOutDuration, delay: options.fadeOutPreDuration })
+      showTl
       , [...sprites, ...dotContainer.children as Sprite[]])
   }, Exclaim(instance: CharacterEffectInstance, options, sprites: Sprite[]): Promise<void> {
     let surpriseImg = sprites[0]

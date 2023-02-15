@@ -300,22 +300,13 @@ export const CharacterLayerInstance: CharacterLayer = {
     data.instance.filters.push(colorFilter);
 
     return new Promise<void>(async (resolve, reject) => {
-      let count = 0;
       const effectListLength = data.effects.length;
       if (effectListLength === 0) {
         resolve()
       }
-      const reason: any[] = [];
-      const resolveHandler = () => {
-        if (count !== effectListLength) {
-          return;
-        }
-        if (reason.length !== 0) {
-          reject(reason);
-        } else {
-          resolve();
-        }
-      }
+
+      const reasons: any[] = [];
+      let effectPromise: Array<Promise<void>> = []
       for (const index in data.effects) {
         const effect = data.effects[index];
         const effectPlayer = this.effectPlayerMap.get(effect.type);
@@ -324,24 +315,33 @@ export const CharacterLayerInstance: CharacterLayer = {
           reject(`获取特效类型{${effect.type}}对应的播放器时失败`);
           return;
         }
-        count++;
         if (effect.async) {
           await effectPlayer.processEffect(effect.effect as EffectsWord, data)
-            .then(resolveHandler)
-            .catch((err) => {
-              reason.push(err);
-              resolveHandler();
-            })
+          // .then(resolveHandler)
+          // .catch((err) => {
+          //   reason.push(err);
+          //   resolveHandler();
+          // })
         } else {
-          setTimeout(() => {
-            effectPlayer.processEffect(effect.effect as EffectsWord, data)
-              .then(resolveHandler)
-              .catch((err) => {
-                reason.push(err);
-                resolveHandler();
-              })
-          })
+          effectPromise.push(effectPlayer.processEffect(effect.effect as EffectsWord, data))
+          // .then(resolveHandler)
+          // .catch((err) => {
+          //   reason.push(err);
+          //   resolveHandler();
+          // })
         }
+      }
+      let results = await Promise.allSettled(effectPromise)
+      for (let result of results) {
+        if (result.status === 'rejected') {
+          reasons.push(result.reason)
+        }
+      }
+      if (reasons.length !== 0) {
+        reject(reasons)
+      }
+      else{
+        resolve()
       }
     })
   },
