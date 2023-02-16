@@ -84,6 +84,7 @@ export let storyHandler = {
   endCallback: () => { },
   unitPlaying: false,
   auto: false,
+  isEnd: false,
 
   get currentStoryUnit(): StoryUnit {
     if (playerStore && playerStore.allStoryUnit.length > this.currentStoryIndex) {
@@ -185,11 +186,13 @@ export let storyHandler = {
           return ['text', 'option']
         }
       }
-      while (!playCondition().includes(storyHandler.currentStoryUnit.type)) {
+      while (!playCondition().includes(storyHandler.currentStoryUnit.type) && !this.isEnd) {
         await eventEmitter.emitEvents()
         storyHandler.storyIndexIncrement()
       }
-      await eventEmitter.emitEvents()
+      if(!this.isEnd){
+        await eventEmitter.emitEvents()
+      }
       this.unitPlaying = false
     }
   },
@@ -212,6 +215,7 @@ export let storyHandler = {
   end() {
     console.log('播放结束')
     this.auto = false
+    this.isEnd = true
     this.endCallback()
   },
 
