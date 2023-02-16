@@ -51,8 +51,8 @@ let showPlayer = ref(true)
 <template>
   <div style="display:flex;justify-content: center;">
     <div v-if="showPlayer">
-      <BaStoryPlayer :story="yuuka" data-url="https://yuuka.cdn.diyigemt.com/image/ba-all-data" :width="width"
-        language="Cn" userName="testUser" :story-summary="storySummary" :start-full-screen="false" />
+      <BaStoryPlayer :story="prologue" data-url="https://yuuka.cdn.diyigemt.com/image/ba-all-data" :width="width"
+        language="Cn" userName="testUser" :story-summary="storySummary" />
     </div>
     <div style="position: absolute;left: 0;display: flex;flex-direction: column;">
       <label>辅助工具选择</label>
@@ -67,7 +67,7 @@ let showPlayer = ref(true)
     <Suspense>
       <TestEffect class="absolute-right-center" v-if="toolType === 'effect'" />
     </Suspense>
-  </div>
+</div>
 </template>
 
 

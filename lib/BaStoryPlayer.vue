@@ -6,15 +6,22 @@ import { StoryRawUnit } from '@/types/common';
 import { Language, StorySummary } from '@/types/store';
 import { computed, onMounted, ref, watch } from 'vue';
 
-let props = defineProps<{
+export type PlayerProps = {
   story: StoryRawUnit[]
   dataUrl: string
   width: number
   language: Language
   userName: string
   storySummary: StorySummary
-  startFullScreen: boolean
-}>()
+  startFullScreen?: boolean
+  useMp3?: boolean
+  useSuperSampling?: boolean
+}
+const props = withDefaults(defineProps<PlayerProps>(), {
+  startFullScreen: false,
+  useMp3: false,
+  useSuperSampling: false
+})
 
 let emitter = defineEmits(['end'])
 
@@ -42,7 +49,7 @@ else {
 /**
  * 指定canvas一个固定的width保证画面表现
  */
-let playerWidth = 1500
+let playerWidth = 1800
 let playerConfig = { ...props, height: 0 }
 playerConfig.width = playerWidth
 playerConfig.height = playerWidth * aspectRatio
@@ -98,7 +105,7 @@ onMounted(() => {
       <BaDialog :player-height="height" :player-width="width" :style="{ width: `${width}px` }"></BaDialog>
       <BaUI :story-summary="storySummary" />
     </div>
-  </div>
+</div>
 </template>
 
 <style lang="scss">

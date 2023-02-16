@@ -5,13 +5,12 @@ import { effectInit } from '@/layers/effectLayer';
 import { soundInit } from "@/layers/soundLayer";
 import { translate } from '@/layers/translationLayer';
 import { initPrivateState, usePlayerStore } from "@/stores";
-import { PlayerProps, StoryUnit } from "@/types/common";
+import { PlayerConfigs, StoryUnit } from "@/types/common";
 import * as utils from '@/utils';
 import { getOtherSoundUrls, wait } from "@/utils";
 import axios from 'axios';
 import { SpineParser } from 'pixi-spine';
 import { Application, Loader, settings, Text } from "pixi.js";
-import * as PIXI from 'pixi.js';
 import { L2DInit } from "./layers/l2dLayer/L2D";
 
 let playerStore: ReturnType<typeof usePlayerStore>
@@ -23,10 +22,14 @@ let l2dVoiceExcelTable = {
 /**
  * 调用各层的初始化函数
  */
-export async function init(elementID: string, props: PlayerProps, endCallback: () => void) {
+export async function init(elementID: string, props: PlayerConfigs, endCallback: () => void) {
   //缓解图片缩放失真
   settings.MIPMAP_TEXTURES = 2
+  
 
+  if(props.useMp3){
+    utils.setOggAudioType('mp3')
+  }
   storyHandler.endCallback = endCallback
   playerStore = usePlayerStore()
   privateState = initPrivateState()
@@ -41,7 +44,7 @@ export async function init(elementID: string, props: PlayerProps, endCallback: (
   }
   // TODO debug用 线上环境删掉 而且会导致HMR出问题 慎用
   // https://chrome.google.com/webstore/detail/pixijs-devtools/aamddddknhcagpehecnhphigffljadon/related?hl=en
-  (window as any).__PIXI_INSPECTOR_GLOBAL_HOOK__ && (window as any).__PIXI_INSPECTOR_GLOBAL_HOOK__.register({ PIXI: PIXI })
+  // (window as any).__PIXI_INSPECTOR_GLOBAL_HOOK__ && (window as any).__PIXI_INSPECTOR_GLOBAL_HOOK__.register({ PIXI: PIXI })
 
   let app = playerStore.app
   document.querySelector(`#${elementID}`)?.appendChild(app.view)
