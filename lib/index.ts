@@ -263,6 +263,14 @@ export let eventEmitter = {
   stDone: true,
   /** 当前l2d动画是否播放完成 */
   l2dAnimationDone: true,
+  voiceJpPlaying: true,
+  get VoiceJpDone():boolean{
+    if(!storyHandler.auto){
+      return  true
+    }
+    return !this.voiceJpPlaying
+  },
+
 
   get unitDone(): boolean {
     let result = true
@@ -301,6 +309,12 @@ export let eventEmitter = {
     })
     eventBus.on('auto', () => storyHandler.startAuto())
     eventBus.on('stopAuto', () => storyHandler.stopAuto())
+    eventBus.on('playVoiceJPDone',async ()=>{
+      if(storyHandler.auto){
+        await wait(400)
+      }
+      this.voiceJpPlaying=false
+    })
 
     storyHandler.storyPlay()
   },
@@ -436,6 +450,9 @@ export let eventEmitter = {
   playAudio() {
     if (storyHandler.currentStoryUnit.audio) {
       eventBus.emit('playAudio', storyHandler.currentStoryUnit.audio)
+      if(storyHandler.currentStoryUnit.audio.voiceJPUrl){
+        this.voiceJpPlaying=true
+      }
     }
   },
 
