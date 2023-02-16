@@ -197,7 +197,7 @@ export const CharacterLayerInstance: CharacterLayer = {
     let mapList = this.buildCharacterEffectInstance(data);
     //将data没有但显示着的角色取消highlight
     this.characterSpineCache.forEach(character => {
-      if (character.instance.visible === true
+      if (character.instance.visible
         && !data.characters.some(value => value.CharacterName === character.CharacterName)) {
         let colorFilter = character.instance.filters![character.instance.filters!.length - 1] as ColorOverlayFilter
         colorFilter.alpha = 0.3
@@ -207,9 +207,6 @@ export const CharacterLayerInstance: CharacterLayer = {
     // 当目前显示的角色没有新的表情动作且和现有角色的position冲突时隐藏
     const filterEmotion = data.characters
       .filter(it => it.effects.some(ef => ef.type === "emotion"));
-    const filterNotEmotion = data.characters
-      .filter(it => !it.effects.some(ef => ef.type === "emotion"))
-      .map(it => it.CharacterName);
     const showName = filterEmotion.map(it => it.CharacterName);
     const showPosition = data.characters.map(it => it.position);
     const filterHide = [...this.characterSpineCache.values()]
@@ -300,7 +297,7 @@ export const CharacterLayerInstance: CharacterLayer = {
       // 没有淡入效果, 直接显示
       const chara = data.instance;
       //当人物被移出画面时重设为初始位置
-      if (chara.visible === false) {
+      if (!chara.visible) {
         const { x } = calcSpineStagePosition(chara, data.position);
         chara.x = x;
         chara.zIndex = Reflect.get(POS_INDEX_MAP, data.position);
