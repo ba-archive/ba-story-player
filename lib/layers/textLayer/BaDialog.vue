@@ -40,7 +40,7 @@
            class="dialog" >
         <div class="inner-dialog" :style="{'--height-padding': `${fontSize(3)}rem`}">
           <div class="title">
-            <div :style="{fontSize: `${fontSize(3.5)}rem`}" class="name">{{ name }}&emsp;</div>
+            <div :style="{fontSize: `${fontSize(3.5)}rem`}" class="name">{{ name ? name : '&emsp;' }}</div>
             <div :style="{fontSize: `${fontSize(2)}rem`}" class="department">{{nickName}}</div>
           </div>
           <hr>
@@ -238,7 +238,7 @@ function handleShowTextEvent(e: ShowText) {
     showTextDialog(e.text.map(text => parseTextEffect(text)), typewriterOutput.value).then(() => {
       eventBus.emit("textDone");
     })
-    typingInstance.isSt = false;
+    typingInstance && (typingInstance.isSt = false);
   })
 }
 
@@ -476,7 +476,7 @@ $st-z-index: 10;
   position: absolute;
   bottom: 0;
   z-index: $text-layer-z-index + $dialog-z-index;
-  white-space: pre-wrap;
+  white-space: pre-line;
   .inner-dialog {
     --height-padding: 0rem;
     width: 100%;

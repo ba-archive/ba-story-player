@@ -37,7 +37,7 @@ export function getResourcesUrl(type: ResourcesTypes, arg: string): string {
     case 'emotionSound':
       return `${dataUrl}/Audio/Sound/${arg}.wav`
     case 'fx':
-      return `${dataUrl}/fx/${arg}`
+      return `${dataUrl}/effectTexture/${arg}`
     case 'l2dVoice':
       return `${dataUrl}/Audio/VoiceJp/${arg}.wav`
     case 'l2dSpine':

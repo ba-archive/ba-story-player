@@ -261,7 +261,7 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
               let characterIndex = utils.getCharacterIndex(unit, Number(scriptType[1]), result, rawIndex)
               unit.characters[characterIndex].effects.push({
                 type: 'fx',
-                effect: scriptUnits[2],
+                effect: scriptUnits[2].replace('{', '').replace('}', ''),
                 async: false
               })
             }
@@ -293,6 +293,10 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
           }
           break
       }
+    }
+    //没人highlight则默认所有人highlight
+    if (!unit.characters.some(character => character.highlight === true)) {
+      unit.characters = unit.characters.map(character => { character.highlight = true; return character; })
     }
     result.push(unit)
   }

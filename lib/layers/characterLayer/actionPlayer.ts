@@ -6,7 +6,7 @@ import gsap from "gsap";
 import { Spine } from "pixi-spine";
 import actionOptions, { moveSpeed } from "./options/actionOptions";
 import { ColorOverlayFilter } from '@pixi/filter-color-overlay'
-import { CharacterLayerInstance } from './index'
+import { calcCharacterYAndScale, CharacterLayerInstance } from './index'
 
 const AnimationIdleTrack = 0; // 光环动画track index
 const AnimationFaceTrack = 1; // 差分切换
@@ -31,20 +31,20 @@ const CharacterEffectPlayerInstance: CharacterEffectPlayer = {
   },
   a(instance: CharacterEffectInstance): Promise<void> {
     const characterInstance = instance.instance;
-    const { x, y } = calcSpineStagePosition(characterInstance, instance.position);
+    const { x } = calcSpineStagePosition(characterInstance, instance.position);
     characterInstance.x = x;
-    characterInstance.y = y;
     characterInstance.zIndex = Reflect.get(POS_INDEX_MAP, instance.position);
     characterInstance.state.setAnimation(AnimationIdleTrack, 'Idle_01', true);
     characterInstance.alpha = 1
-    let colorFilter = characterInstance.filters![characterInstance.filters!.length - 1] as ColorOverlayFilter
+    const colorFilter = characterInstance.filters![characterInstance.filters!.length - 1] as ColorOverlayFilter
+    let finalAlpha = colorFilter.alpha
     colorFilter.alpha = 1
 
     return new Promise((resolve) => {
       characterInstance.visible = true;
       const timeLine = gsap.timeline();
       timeLine.to(colorFilter, {
-        alpha: 0,
+        alpha: finalAlpha,
         duration: 1,
         onComplete: resolve
       });
@@ -85,14 +85,14 @@ const CharacterEffectPlayerInstance: CharacterEffectPlayer = {
     let tl = gsap.timeline()
 
     tl.to(colorFilter, { alpha: 1, duration: options.duration })
-    return timeLinePromise(tl, () => { instance.instance.alpha = 0 })
+    return timeLinePromise(tl, () => { instance.instance.alpha = 0; instance.instance.visible = false })
   }, dl(instance: CharacterEffectInstance, options): Promise<void> {
     let tl = gsap.timeline()
     let distance = instance.instance.x + instance.instance.width
     let duration = distance / (instance.instance.width * options.speed)
     tl.to(instance.instance,
       { pixi: { x: -instance.instance.width }, duration })
-    return timeLinePromise(tl)
+    return timeLinePromise(tl, () => instance.instance.visible = false)
 
   }, dr(instance: CharacterEffectInstance, options): Promise<void> {
     let { app } = usePlayerStore()
@@ -103,7 +103,7 @@ const CharacterEffectPlayerInstance: CharacterEffectPlayer = {
     let duration = distance / (instance.instance.width * options.speed)
     tl.to(instance.instance, { pixi: { x: finalX }, duration },
     )
-    return timeLinePromise(tl)
+    return timeLinePromise(tl, () => instance.instance.visible = false)
   }, falldownR(instance: CharacterEffectInstance, options): Promise<void> {
     let tl = gsap.timeline()
     let pivotOffset = {
@@ -129,6 +129,7 @@ const CharacterEffectPlayerInstance: CharacterEffectPlayer = {
 
     return timeLinePromise(tl)
   }, hide(instance: CharacterEffectInstance): Promise<void> {
+    instance.instance.visible = false
     return Promise.resolve(undefined);
   }, hophop(instance: CharacterEffectInstance, options): Promise<void> {
     let tl = gsap.timeline()
@@ -194,7 +195,7 @@ const CharacterEffectPlayerInstance: CharacterEffectPlayer = {
 /**
  * 角色position对应的覆盖关系
  */
-const POS_INDEX_MAP = {
+export const POS_INDEX_MAP = {
   "1": 2,
   "2": 3,
   "3": 4,
@@ -203,19 +204,31 @@ const POS_INDEX_MAP = {
 };
 
 /**
+ * 角色position x轴值相对于中心的偏移量, 单位是播放器宽度
+ */
+export const POS_X_CNETER_OFFSET = {
+  "1": -1 / 4,
+  "2": -1 / 8,
+  "3": 0,
+  "4": 1 / 8,
+  "5": 1 / 4,
+}
+
+/**
  * 根据position: 0~5 计算出角色的原点位置
  * @param character 要显示的角色
  * @param position 角色所在位置
  */
-function calcSpineStagePosition(character: Spine, position: number): PositionOffset {
+export function calcSpineStagePosition(character: Spine, position: number): PositionOffset {
   const { screenWidth, screenHeight } = getStageSize();
+  let center = screenWidth * 1 / 2
   //当角色pivot x变为人物中心附近时改变计算算法
   if (Math.abs(CharacterLayerInstance.characterScale! - character.scale.x) > 0.05) {
     let closeupScale = character.scale.x
     character.scale.set(CharacterLayerInstance.characterScale)
     const OriginHalfWidth = 0.55 * character.width
     let pos = {
-      x: screenWidth / 5 * (position - 1) - (character.width * character.scale.x / 2),
+      x: center + Reflect.get(POS_X_CNETER_OFFSET, position) * screenWidth - character.width / 2,
       y: screenHeight * 0.3
     }
     character.scale.set(closeupScale)
@@ -224,7 +237,7 @@ function calcSpineStagePosition(character: Spine, position: number): PositionOff
   }
 
   return {
-    x: screenWidth / 5 * (position - 1) - (character.width * character.scale.x / 2),
+    x: center + Reflect.get(POS_X_CNETER_OFFSET, position) * screenWidth - character.width / 2,
     y: screenHeight * 0.3
   };
 }
@@ -268,7 +281,8 @@ async function timeLinePromise(tl: gsap.core.Timeline, callBack?: () => any) {
  */
 function initCharacter(instance: CharacterEffectInstance) {
   const characterInstance = instance.instance;
-  const { x, y } = calcSpineStagePosition(characterInstance, instance.position);
+  const { x } = calcSpineStagePosition(characterInstance, instance.position);
+  const { y } = calcCharacterYAndScale(instance.instance);
   characterInstance.x = x;
   characterInstance.y = y;
   characterInstance.zIndex = Reflect.get(POS_INDEX_MAP, instance.position);
@@ -288,7 +302,7 @@ function moveTo(instance: CharacterEffectInstance, position: number) {
   let tl = gsap.timeline()
   let distance = Math.abs(instance.instance.x - movePos.x)
   let duration = distance / (moveSpeed * instance.instance.width)
-
+  instance.position = position;
   return tl.to(instance.instance, { pixi: { x: movePos.x }, duration })
 }
 

@@ -35,6 +35,10 @@ export type Events = {
    */
   showCharacter: ShowCharacter
   /**
+   * 隐藏角色
+   */
+  hideCharacter: undefined
+  /**
    * 人物已处理完毕
    */
   characterDone: undefined
