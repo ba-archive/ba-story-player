@@ -9,6 +9,8 @@ import { usePlayerStore } from "@/stores";
  */
 export function soundInit() {
     let bgm: Sound | undefined = undefined;
+    let sfx: Sound | undefined = undefined;
+    let voice: Sound | undefined = undefined;
 
     /**
      * 声音层的全局设置, 包括BGM音量, 效果音量和语音音量
@@ -33,44 +35,59 @@ export function soundInit() {
                 url: playAudioInfo.bgm.url,
                 preload: true,
                 loaded: function (err, sound) {
-                    sound?.play({   // start和end的功能还没有测试
-                        loop: true,
-                        start: playAudioInfo.bgm?.bgmArgs.LoopStartTime,
-                        end: playAudioInfo.bgm?.bgmArgs.LoopEndTime
-                    })
+                    sound?.play({   // 第一次是非loop播放, 播放到LoopStartTime为止
+                        loop: false,
+                        start: 0,
+                        end: playAudioInfo.bgm?.bgmArgs.LoopStartTime,
+                        complete: function (sound) {    // 第一次播放结束后进入loop
+                            sound?.play({
+                                loop: true,
+                                start: playAudioInfo.bgm?.bgmArgs.LoopStartTime,
+                                end: playAudioInfo.bgm?.bgmArgs.LoopEndTime
+                            })
+                        }
+                    })  // 这样写真的好吗...
                 }
             })
         }
         if (playAudioInfo.soundUrl) {
-            let sfx = Sound.from({
+            if (sfx) {
+                sfx.stop();
+            }
+            sfx = Sound.from({
                 volume: soundSettings.SFXvolume,
                 url: playAudioInfo.soundUrl,
                 preload: true,
                 loaded: (err, sound) => {
-                    sound?.play()
-                },
-                complete: () => {
-                    console.log("Finish Playing Sound!")
+                    sound?.play({
+                        complete: () => {
+                            console.log("Finish Playing Sound!")
+                        }
+                    })
                 }
             })
-        } 
+        }
         if (playAudioInfo.voiceJPUrl) {
-            let voice = Sound.from({
+            if (voice) {
+                voice.stop();
+            }
+            voice = Sound.from({
                 volume: soundSettings.Voicevolume,
                 url: playAudioInfo.voiceJPUrl,
                 preload: true,
                 loaded: (err, sound) => {
-                    sound?.play()
-                },
-                complete: () => {
-                    console.log("Finish Playing VoiceJP!")
+                    sound?.play({
+                        complete: () => {
+                            eventBus.emit('playVoiceJPDone', playAudioInfo.voiceJPUrl || "")
+                        }
+                    })
                 }
             })
         }
     }
 
     // 当想要播放VoiceJP的时候, 可以直接
-    // eventBus.on('playAudio', {voiceJPUrl: url})
+    // eventBus.emit('playAudio', {voiceJPUrl: url})
     // 这样就可以了x
 
     eventBus.on('playAudio', (playAudioInfo: PlayAudio) => {
@@ -88,6 +105,6 @@ export function soundInit() {
 
     eventBus.on('playOtherSounds', sound => {
         console.log("Play Select Sound!")
-        playAudio({soundUrl: usePlayerStore().otherSoundUrl(sound)})
+        playAudio({ soundUrl: usePlayerStore().otherSoundUrl(sound) })
     })
 }

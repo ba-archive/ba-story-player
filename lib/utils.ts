@@ -51,7 +51,7 @@ export function getResourcesUrl(type: ResourcesTypes, arg: string): string {
     case 'sound':
       return `${dataUrl}/Audio/Sound/${arg}.wav`
     case 'voiceJp':
-      return `${dataUrl}/Audio/VoiceJp/${arg}.wav`
+      return `${dataUrl}/Audio/VoiceJp/${arg}.ogg`
     case 'characterSpine':
       //arg UIs/03_Scenario/02_Character/CharacterSpine_hasumi
       let temp = String(arg).split('/')

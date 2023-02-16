@@ -557,6 +557,7 @@ export let resourcesLoader = {
 
         //添加sound
         this.checkAndAdd(unit.audio.soundUrl)
+        this.checkAndAdd(unit.audio.voiceJPUrl)
       }
       //添加背景图片
       this.checkAndAdd(unit.bg, 'url')

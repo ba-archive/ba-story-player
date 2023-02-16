@@ -13,7 +13,7 @@ export function effectInit() {
   let playerStore = usePlayerStore()
   playerStore.app.stage.addChild(emitterContainer)
   eventBus.on('transitionIn', async transition => {
-    let duration = transition.TransitionInDuration !== 1 ? transition.TransitionInDuration : transition.TransitionOutDuration
+    let duration = transition.TransitionInDuration !== 1 ? transition.TransitionInDuration : 1000
     switch (transition.TransitionIn) {
       case 'fade':
         await playTransition('black', duration, 'in')
@@ -25,7 +25,7 @@ export function effectInit() {
     eventBus.emit('transitionInDone')
   })
   eventBus.on('transitionOut', async transition => {
-    let duration = transition.TransitionOutDuration !== 1 ? transition.TransitionOutDuration : transition.TransitionInDuration
+    let duration = transition.TransitionOutDuration !== 1 ? transition.TransitionOutDuration : 1000
     switch (transition.TransitionOut) {
       case 'fade':
         await playTransition('black', duration, 'out')
