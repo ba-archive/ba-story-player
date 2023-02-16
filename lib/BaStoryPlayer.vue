@@ -69,7 +69,7 @@ window.addEventListener('resize', e => {
   }
 })
 let scale = computed(
-  () => height.value / playerConfig.height
+  () => (height.value + 1) / playerConfig.height
 )
 let playerStyle = computed(() => {
   return { height: `${height.value}px`, width: `${width.value}px` }
