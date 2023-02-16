@@ -3,7 +3,7 @@ import { EmotionOptions, OptionDescriptions } from "@/types/characterLayer"
 /**
  * 每个参数的描述, 用于可视化调试工具
  */
-export let emotionDescriptions: OptionDescriptions['emotion'] = {
+export const emotionDescriptions: OptionDescriptions['emotion'] = {
   "globalOptions": {
     startPositionOffset: '图片开始时相对于角色的位置, 相对值, 值为偏移量与角色宽度比例',
     scale: '图片缩放比例, 多个图片时为基准图片缩放比例',
@@ -74,7 +74,7 @@ export let emotionDescriptions: OptionDescriptions['emotion'] = {
   }
 }
 
-let emotionOptions: EmotionOptions = {
+const emotionOptions: EmotionOptions = {
   "Heart": {
     "makeSpineHappyOffset": {
       "x": 50,

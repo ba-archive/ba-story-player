@@ -1,27 +1,41 @@
 import eventBus from "@/eventBus";
-import { usePlayerStore } from "@/stores";
+import {usePlayerStore} from "@/stores";
 import {
-  CharacterEffectInstance, CharacterEffectPlayerInterface,
-  CharacterEffectWord, CharacterLayer,
-  EmotionWord, FXEffectWord, EffectsWord
+  CharacterEffectInstance,
+  CharacterEffectPlayerInterface,
+  CharacterEffectWord,
+  CharacterLayer,
+  EffectsWord,
+  EmotionWord,
+  FXEffectWord
 } from "@/types/characterLayer";
-import { Character, CharacterEffectType, CharacterInstance } from "@/types/common";
-import { ShowCharacter } from "@/types/events";
-import gsap, { Power0 } from "gsap";
-import { PixiPlugin } from 'gsap/PixiPlugin';
-import { ISkeletonData, Spine } from "pixi-spine";
+import {Character, CharacterEffectType, CharacterInstance} from "@/types/common";
+import {ShowCharacter} from "@/types/events";
+import gsap, {Power0} from "gsap";
+import {PixiPlugin} from 'gsap/PixiPlugin';
+import {ISkeletonData, Spine} from "pixi-spine";
 import * as PIXI from 'pixi.js';
-import CharacterEffectPlayerInstance, { calcSpineStagePosition, getStageSize, POS_INDEX_MAP } from "./actionPlayer";
+import CharacterEffectPlayerInstance, {calcSpineStagePosition, POS_INDEX_MAP} from "./actionPlayer";
 import CharacterEmotionPlayerInstance from './emotionPlayer';
-import characterFXPlayer from "./fxPlayer";
-import { ColorOverlayFilter } from '@pixi/filter-color-overlay'
-import { CRTFilter } from '@pixi/filter-crt'
-import { AdjustmentFilter } from '@pixi/filter-adjustment'
-import { MotionBlurFilter } from '@pixi/filter-motion-blur'
+import CharacterFXPlayerInstance from "./fxPlayer";
+import {ColorOverlayFilter} from '@pixi/filter-color-overlay'
+import {CRTFilter} from '@pixi/filter-crt'
+import {AdjustmentFilter} from '@pixi/filter-adjustment'
+import {MotionBlurFilter} from '@pixi/filter-motion-blur'
 
 const AnimationIdleTrack = 0; // 光环动画track index
 const AnimationFaceTrack = 1; // 差分切换
 const AnimationEyeCloseTrack = 2; // TODO 眨眼动画
+
+type ICharacterEffectPlayerInterface = CharacterEffectPlayerInterface<EmotionWord | CharacterEffectWord | FXEffectWord>;
+type IEffectPlayerMap = {
+  [key in CharacterEffectType]: ICharacterEffectPlayerInterface;
+}
+const EffectPlayerMap: IEffectPlayerMap = {
+  "action": CharacterEffectPlayerInstance,
+  "emotion": CharacterEmotionPlayerInstance,
+  "fx": CharacterFXPlayerInstance,
+}
 /**
  * 角色初始的pivot相对与长宽的比例, 当前值代表左上角
  */
@@ -60,11 +74,9 @@ export const CharacterLayerInstance: CharacterLayer = {
     eventBus.on("showCharacter", showCharacter);
     eventBus.on("hide", () => Reflect.apply(this.hideCharacter, this, []))
     eventBus.on("hideCharacter", () => Reflect.apply(this.hideCharacter, this, []))
-    this.effectPlayerMap.set("emotion", CharacterEmotionPlayerInstance);
-    this.effectPlayerMap.set("action", CharacterEffectPlayerInstance);
-    this.effectPlayerMap.set("fx", characterFXPlayer);
-    this.effectPlayerMap.forEach((value) => {
-      value.init();
+    Object.keys(EffectPlayerMap).forEach((key) => {
+      const player = Reflect.get(EffectPlayerMap, key) as ICharacterEffectPlayerInterface;
+      player && player.init();
     })
     return true;
   },
@@ -309,7 +321,7 @@ export const CharacterLayerInstance: CharacterLayer = {
       let effectPromise: Array<Promise<void>> = []
       for (const index in data.effects) {
         const effect = data.effects[index];
-        const effectPlayer = this.effectPlayerMap.get(effect.type);
+        const effectPlayer = getEffectPlayer(effect.type);
         if (!effectPlayer) {
           // TODO error handle
           reject(`获取特效类型{${effect.type}}对应的播放器时失败`);
@@ -331,7 +343,7 @@ export const CharacterLayerInstance: CharacterLayer = {
           // })
         }
       }
-      let results = await Promise.allSettled(effectPromise)
+      const results = await Promise.allSettled(effectPromise)
       for (let result of results) {
         if (result.status === 'rejected') {
           reasons.push(result.reason)
@@ -349,16 +361,17 @@ export const CharacterLayerInstance: CharacterLayer = {
     eventBus.emit("characterDone");
   },
   //TODO 根据角色是否已经缩放(靠近老师)分类更新
-  onWindowResize() {
-    this.characterScale = undefined;
-  },
+  onWindowResize() {},
   characterScale: undefined,
   characterSpineCache: new Map<number, CharacterInstance>(),
-  effectPlayerMap: new Map<CharacterEffectType, CharacterEffectPlayerInterface<EmotionWord | CharacterEffectWord | FXEffectWord>>(),
 }
 
 function loopCRtAnimation(crtFilter: CRTFilter) {
   gsap.to(crtFilter, { time: "+=10", duration: 1, ease: Power0.easeNone }).then(() => loopCRtAnimation(crtFilter))
+}
+
+function getEffectPlayer(type: CharacterEffectType) {
+  return Reflect.get(EffectPlayerMap, type) as ICharacterEffectPlayerInterface
 }
 
 // 当播放器高度为PlayerHeight时角色的CharacterScale
@@ -366,6 +379,7 @@ const PlayerHeight = 550;
 const CharacterScale = 0.29;
 // spine在播放器之下的部分;
 const spineHideRate = 0.4;
+
 export function calcCharacterYAndScale(spine: Spine) {
   const { screenHeight } = getStageSize();
   const scale = screenHeight / PlayerHeight * CharacterScale;
@@ -374,4 +388,19 @@ export function calcCharacterYAndScale(spine: Spine) {
     scale,
     y: screenHeight - spineHeight * (1 - spineHideRate)
   }
+}
+
+/**
+ * 获取显示区域的大小
+ * @return screenWidth 容器的宽 screenHeight 容器的高
+ */
+export function getStageSize() {
+  const {app} = usePlayerStore();
+  const screen = app.screen;
+  const screenWidth = screen.width;
+  const screenHeight = screen.height;
+  return {
+    screenWidth,
+    screenHeight
+  };
 }
