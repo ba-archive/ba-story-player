@@ -263,7 +263,7 @@ export let eventEmitter = {
   stDone: true,
   /** 当前l2d动画是否播放完成 */
   l2dAnimationDone: true,
-  voiceJpPlaying: true,
+  voiceJpPlaying: false,
   get VoiceJpDone():boolean{
     if(!storyHandler.auto){
       return  true
