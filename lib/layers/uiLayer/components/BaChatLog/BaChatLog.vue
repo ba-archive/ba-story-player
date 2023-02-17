@@ -8,7 +8,7 @@ let chatMesasages = store.logText;
 
 <template>
   <div class="ba-chat-log">
-    <ul class="ba-chat-content">
+    <ul class="ba-chat-content">  
       <li
         class="ba-chat-item"
         v-for="(chatMessage, key) in chatMesasages"

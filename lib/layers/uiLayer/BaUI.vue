@@ -39,7 +39,7 @@ function handleBtnSkipSummary() {
   hiddenSummary.value = false;
 }
 
-// https://gist.github.com/ca0v/73a31f57b397606c9813472f7493a940
+// modi https://gist.github.com/ca0v/73a31f57b397606c9813472f7493a940
 function debounce<T extends Function>(cb: T, wait = 20) {
   let h = 0;
   let callable = (...args: any) => {
@@ -72,11 +72,13 @@ function effectBtnClick(ev: Event) {
   tl.to(ev.currentTarget, { duration: 0.15, scale: 0.94, ease: "power3.out" });
   tl.to(ev.currentTarget, { duration: 0.3, scale: 1 });
 }
+
 onMounted(() => {
   document.querySelectorAll(".ba-menu-option").forEach((elem) => {
     elem.addEventListener("click", effectBtnClick);
   });
 });
+
 </script>
 
 <template>
