@@ -23,6 +23,7 @@ const emit = defineEmits<{
 
 const dialogContainer = ref(null);
 
+// 对话框缓入动画
 watch(
   () => props.show,
   (newValue) => {

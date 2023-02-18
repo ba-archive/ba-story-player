@@ -71,14 +71,17 @@ let handleBtnMenu = debounce(() => {
   }
 }, 200);
 
+// 按钮激活动画
 function effectBtnMouseDown(ev: Event) {
   gsap.to(ev.currentTarget, { duration: 0.15, scale: 0.94, ease: "power3.out" });
 }
 
+// 按钮失活动画
 function effectBtnMouseUp(ev: Event) {
   gsap.to(ev.currentTarget, { duration: 0.3, scale: 1 });
 }
 
+// 给按钮添加动画触发条件
 onMounted(() => {
   document.querySelectorAll(".ba-menu-option").forEach((elem) => {
     elem.addEventListener("mousedown", effectBtnMouseDown);
