@@ -148,7 +148,6 @@ onMounted(() => {
   position: absolute;
   top: 0;
   right: 0;
-  z-index: 100;
   padding: 1.5%;
   user-select: none;
 }
@@ -158,6 +157,7 @@ onMounted(() => {
   width: 100%;
   height: 100%;
   top: 0;
+  z-index: 100;
 
   .baui-button-group {
     display: grid;
