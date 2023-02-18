@@ -21,11 +21,13 @@ const emit = defineEmits<{
   (ev: "close", event: PointerEvent): void;
 }>();
 
+const dialogContainer = ref(null);
+
 watch(
   () => props.show,
   (newValue) => {
     if (newValue === true) {
-      gsap.from(".ba-dialog-container", {
+      gsap.from(dialogContainer.value, {
         opacity: 0,
         y: 100,
         duration: 0.3,
@@ -39,12 +41,13 @@ watch(
 <template>
   <div
     class="ba-dialog"
-    :style="{ visibility: show === false ? 'hidden' : 'initial' }"
+    :style="{ display: show === true ? '' : 'none' }"
     @click.self="$emit('close', $event)"
   >
     <div
       class="ba-dialog-container"
       :style="{ width: props.width, height: props.height }"
+      ref="dialogContainer"
     >
       <div class="ba-dialog-header">
         <h3 class="ba-dialog-title">

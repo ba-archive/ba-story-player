@@ -72,7 +72,6 @@ let handleBtnMenu = debounce(() => {
 }, 200);
 
 function effectBtnMouseDown(ev: Event) {
-  console.log(ev)
   gsap.to(ev.currentTarget, { duration: 0.15, scale: 0.94, ease: "power3.out" });
 }
 
@@ -104,7 +103,7 @@ onMounted(() => {
 
       <div class="baui-menu-options lean-rect" :style="{
         opacity: menuOpacity,
-        visibility: hiddenMenu === true ? 'hidden' : 'inherit',
+        display: hiddenMenu === true ? 'none' : '',
       }">
         <button class="button-nostyle ba-menu-option" @click="handleBtnHiddenUi">
           <img draggable="false" src="./assets/pan-arrow.svg" />
@@ -215,6 +214,8 @@ onMounted(() => {
   }
 
   #ba-story-summery {
+    color: #32363c;
+
     .ba-story-summery-container {
       height: 100%;
       display: flex;
@@ -227,8 +228,6 @@ onMounted(() => {
         80px 45% url(./assets/UITex_BGPoliLight_1.png) rgb(164 216 237);
       background-size: 100%;
     }
-
-    color: #32363c;
 
     .ba-story-summery-title {
       margin: 12px 0;
