@@ -111,6 +111,7 @@ onMounted(() => {
 <style lang="scss">
 #player {
   background-color: black;
+  overflow: hidden;
 
   &__main {
     position: relative;
