@@ -4,6 +4,7 @@ import { onMounted, ref } from "vue";
 import gsap from "gsap";
 import BaDialog from "./components/BaDialog.vue";
 import BaChatLog from "./components/BaChatLog/BaChatLog.vue";
+import BaSelector from "./components/BaSelector.vue";
 import eventBus from "@/eventBus";
 import { usePlayerStore } from "@/stores";
 import { StorySummary } from "@/types/store";
@@ -15,7 +16,6 @@ let autoMode = ref(false);
 let hiddenMenu = ref(true);
 let menuOpacity = ref(0);
 
-let store = usePlayerStore();
 let { storySummary } = defineProps<{ storySummary: StorySummary }>()
 
 eventBus.on("hide", () => {
@@ -119,6 +119,7 @@ onMounted(() => {
         </button>
       </div>
     </div>
+    <BaSelector id="ba-story-selector"/>
     <BaDialog id="ba-story-summery" :title="'概要'" :show="!hiddenSummary" @close="hiddenSummary = true">
       <div class="ba-story-summery-container">
         <h4 class="ba-story-summery-title">{{ storySummary.chapterName }}</h4>

@@ -22,28 +22,6 @@
           <span class="place-content">{{ placeContent }}</span>
         </div>
       </div>
-      <div
-        class="select-container"
-        v-if="selection.length !== 0"
-        :style="{ 'top': `${selectContainerTop}px` }"
-      >
-        <div v-for="(e, index) in selection"
-             @mousedown="handleSelectMousedown(e.SelectionGroup)"
-             :key="index"
-             @click="handleSelect(e.SelectionGroup)"
-             @mouseout="selectionSelect = -1"
-             @mouseup="selectionSelect = -1"
-             role="button"
-             :tabindex="index"
-             >
-          <div
-            class="select-item"
-            :class="{ 'select-item-active': e.SelectionGroup === selectionSelect }"
-          >
-            {{ e.text }}
-          </div>
-        </div>
-      </div>
       <div v-if="showDialog" :style="{padding: `${fontSize(3)}rem ${fontSize(8)}rem`, height: `${dialogHeight}px`}"
            class="dialog" >
         <div class="inner-dialog" :style="{'--height-padding': `${fontSize(3)}rem`}">
@@ -77,8 +55,6 @@ const stOutput = ref(); // st特效字el
 const props = withDefaults(defineProps<TextLayerProps>(), {playerHeight: 0, playerWidth: 0});
 // 选项
 const selection = ref<ShowOption[]>([]);
-// 按钮按下效果
-const selectionSelect = ref<number>(-1);
 // 标题
 const titleContent = ref<string>("");
 // 位置
@@ -110,24 +86,6 @@ function moveToNext() {
       eventBus.emit('textDone')
     }
   }
-}
-/**
- * 按钮按下特效
- * @param index 按钮位置
- */
-function handleSelectMousedown(index: number) {
-  selectionSelect.value = index;
-  eventBus.emit("playOtherSounds",'select');
-}
-/**
- * 选择支按钮被按下
- * @param select 选项
- */
-function handleSelect(select: number) {
-  eventBus.emit("select", select);
-  setTimeout(() => {
-    selection.value = [];
-  }, 100)
 }
 /**
  * mousedown事件, 用来显示按钮特效
@@ -401,7 +359,6 @@ const dialogHeight = computed(() => props.playerHeight / 2);
 // 选择框位置
 const standardDialogHeight = 550;
 const standardDialogTopOffset = 100;
-const selectContainerTop = computed(() => ((props.playerHeight - dialogHeight.value) / 2) + (props.playerHeight / standardDialogHeight) * standardDialogTopOffset);
 // 计算title的padding以让其符合边框第二边线
 const titleBorderWidth = 2280;
 const standardBorderWidth = 26;
@@ -527,49 +484,6 @@ $st-z-index: 10;
     width: 100%;
     height: 100%;
     position: relative;
-  }
-  .select-container {
-    width: 100%;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    display: flex;
-    gap: 16px;
-    flex-direction: column;
-    max-width: 80%;
-    z-index: $text-layer-z-index + $select-z-index;
-    .select-item {
-      flex: 1;
-      text-align: center;
-      line-height: 2;
-      font-size: 1.5rem;
-      color: black;
-      cursor: pointer;
-      transition: width 0.1s, height 0.1s;
-      position: relative;
-      &:before {
-        content: '';
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        border-radius: $border-radius;
-        transform: skewX(-10deg);
-        border: 1px solid white;
-        background: linear-gradient(
-            58deg,
-            rgba(240, 240, 240, 0.1) 0%,
-            rgba(240, 240, 240, 1) 38%,
-            rgba(240, 240, 240, 0.1) 100%
-        ), url("./assets/poli-light.png") rgb(164 216 237) no-repeat 0 30%;
-        z-index: -1;
-      }
-    }
-    .select-item-active {
-      transform: scale(0.95);
-    }
   }
   .title-container {
     width: 100%;
