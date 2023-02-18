@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { getCurrentInstance, onMounted, PropType, Ref, ref } from "vue";
-import gsap from "gsap";
+import { onMounted, PropType, Ref, ref } from "vue";
+import { buttonAnimation } from "../utils";
 
 const props = defineProps({
   bgcolor: String,
@@ -10,23 +10,16 @@ const props = defineProps({
   },
 });
 
-function effectBtnMouseDown(ev: MouseEvent) {
-  gsap.to(ev.currentTarget, { duration: 0.15, scale: 0.94, ease: "power3.out" });
-}
+const button = ref(null) as unknown as Ref<Element>
 
-function effectBtnMouseUp(ev: MouseEvent) {
-  gsap.to(ev.currentTarget, { duration: 0.3, scale: 1 });
-}
-
-const button = ref(null);
 onMounted(()=>{
-
+  buttonAnimation({elem: button.value})
 })
 
 </script>
 
 <template>
-  <button :class="['ba-button', size]" @mousedown="effectBtnMouseDown" @mouseup="effectBtnMouseUp" @mouseleave="effectBtnMouseUp">
+  <button :class="['ba-button', size]" ref="button">
     <slot></slot>
   </button>
 </template>

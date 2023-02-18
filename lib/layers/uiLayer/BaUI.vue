@@ -1,13 +1,12 @@
 <script lang="ts" setup>
 import BaButton from "@/layers/uiLayer/components/BaButton.vue";
 import { onMounted, ref } from "vue";
-import gsap from "gsap";
 import BaDialog from "./components/BaDialog.vue";
 import BaChatLog from "./components/BaChatLog/BaChatLog.vue";
 import BaSelector from "./components/BaSelector.vue";
 import eventBus from "@/eventBus";
-import { usePlayerStore } from "@/stores";
 import { StorySummary } from "@/types/store";
+import { buttonAnimation } from "./utils";
 
 let hiddenAllUI = ref<'visible' | 'hidden'>('visible');
 let hiddenSummary = ref(true);
@@ -71,23 +70,11 @@ let handleBtnMenu = debounce(() => {
   }
 }, 200);
 
-// 按钮激活动画
-function effectBtnMouseDown(ev: Event) {
-  gsap.to(ev.currentTarget, { duration: 0.15, scale: 0.94, ease: "power3.out" });
-}
 
-// 按钮失活动画
-function effectBtnMouseUp(ev: Event) {
-  gsap.to(ev.currentTarget, { duration: 0.3, scale: 1 });
-}
 
 // 给按钮添加动画触发条件
 onMounted(() => {
-  document.querySelectorAll(".ba-menu-option").forEach((elem) => {
-    elem.addEventListener("mousedown", effectBtnMouseDown);
-    elem.addEventListener("mouseup", effectBtnMouseUp);
-    elem.addEventListener("mouseleave", effectBtnMouseUp);
-  });
+  buttonAnimation({cssSelector: '.ba-menu-option'})
 });
 
 </script>

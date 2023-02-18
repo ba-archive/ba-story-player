@@ -1,7 +1,8 @@
 <script lang="ts" setup>
-import { computed, ref } from "vue";
+import { computed, onMounted, Ref, ref } from "vue";
 import { ShowOption } from "@/types/events";
 import eventBus from "@/eventBus";
+import { effectBtnMouseDown, effectBtnMouseUp } from "../utils";
 
 // 选项
 const selection = ref<ShowOption[]>([]);
@@ -12,16 +13,23 @@ const selectionSelect = ref<number>(-1);
  * 按钮按下特效
  * @param index 按钮位置
  */
-function handleSelectMousedown(index: number) {
+function handleSelectMouseDown(ev: Event, index: number) {
   selectionSelect.value = index;
   eventBus.emit("playOtherSounds", "select");
+  effectBtnMouseDown()(ev)
 }
-
+/**
+ * 按钮松开特效
+ */
+function handleSelectMouseUp(ev: Event) {
+    selectionSelect.value = -1
+    effectBtnMouseUp()(ev)
+}
 /**
  * 选择支按钮被按下
  * @param select 选项
  */
-function handleSelect(select: number) {
+function handleSelect(ev: Event, select: number) {
   eventBus.emit("select", select);
   setTimeout(() => {
     selection.value = [];
@@ -39,11 +47,11 @@ eventBus.on("option", (e) => (selection.value = e));
   >
     <div
       v-for="(e, index) in selection"
-      @mousedown="handleSelectMousedown(e.SelectionGroup)"
+      @mousedown="handleSelectMouseDown($event, e.SelectionGroup)"
       :key="index"
-      @click="handleSelect(e.SelectionGroup)"
-      @mouseout="selectionSelect = -1"
-      @mouseup="selectionSelect = -1"
+      @click="handleSelect($event, e.SelectionGroup)"
+      @mouseout="handleSelectMouseUp($event)"
+      @mouseup="handleSelectMouseUp($event)"
       role="button"
       :tabindex="index"
       class="ba-selector-list"
