@@ -356,6 +356,7 @@ export let eventEmitter = {
       case 'text':
         this.textDone = false
         eventBus.emit('showText', currentStoryUnit.textAbout.showText)
+        eventBus.emit('showmenu')
         break
       case 'option':
         if (currentStoryUnit.textAbout.options) {

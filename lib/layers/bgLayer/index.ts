@@ -112,8 +112,8 @@ function calcImageCoverSize(
 ) {
   // 整体 scale 1.02 倍 (bgshake)
   const ratio = Math.min(
-    rawWidth / (viewportWidth * 1.02),
-    rawHeight / (viewportHeight * 1.02)
+    rawWidth / (viewportWidth * 1.15),
+    rawHeight / (viewportHeight * 1.15)
   );
   const width = rawWidth / ratio;
   const height = rawHeight / ratio;

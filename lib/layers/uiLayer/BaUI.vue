@@ -16,8 +16,11 @@ let hiddenMenu = ref(true);
 let menuOpacity = ref(0);
 
 let store = usePlayerStore();
-let {storySummary} = defineProps<{ storySummary: StorySummary }>()
+let { storySummary } = defineProps<{ storySummary: StorySummary }>()
 
+eventBus.on("hide", () => {
+  hiddenAllUI.value = 'hidden'
+})
 eventBus.on("hidemenu", () => {
   hiddenAllUI.value = 'hidden'
 })
@@ -145,6 +148,7 @@ onMounted(() => {
   position: absolute;
   top: 0;
   right: 0;
+  z-index: 100;
   padding: 1.5%;
   user-select: none;
 }
@@ -154,7 +158,6 @@ onMounted(() => {
   width: 100%;
   height: 100%;
   top: 0;
-  z-index: 100;
 
   .baui-button-group {
     display: grid;
