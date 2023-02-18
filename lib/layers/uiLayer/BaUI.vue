@@ -153,6 +153,7 @@ onMounted(() => {
   height: 100%;
   top: 0;
   z-index: 100;
+  overflow: hidden;
 
   .baui-button-group {
     display: grid;
