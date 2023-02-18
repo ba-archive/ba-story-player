@@ -6,8 +6,9 @@ import BaDialog from "./components/BaDialog.vue";
 import BaChatLog from "./components/BaChatLog/BaChatLog.vue";
 import eventBus from "@/eventBus";
 import { usePlayerStore } from "@/stores";
+import { StorySummary } from "@/types/store";
 
-let hiddenAllUI = ref(false);
+let hiddenAllUI = ref<'visible' | 'hidden'>('visible');
 let hiddenSummary = ref(true);
 let hiddenStoryLog = ref(true);
 let autoMode = ref(false);
@@ -15,13 +16,13 @@ let hiddenMenu = ref(true);
 let menuOpacity = ref(0);
 
 let store = usePlayerStore();
-let storySummary = store.storySummary
+let {storySummary} = defineProps<{ storySummary: StorySummary }>()
 
-eventBus.on("hidemenu", ()=>{
-  hiddenAllUI.value = true
+eventBus.on("hidemenu", () => {
+  hiddenAllUI.value = 'hidden'
 })
-eventBus.on("showmenu", ()=>{
-  hiddenAllUI.value = false
+eventBus.on("showmenu", () => {
+  hiddenAllUI.value = 'visible'
 })
 
 function handleBtnHiddenUi() {
@@ -82,56 +83,33 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="baui" style="{visibility: hiddenAllUI;}">
+  <div class="baui" :style="{ visibility: hiddenAllUI }">
     <div class="right-top">
       <div class="baui-button-group">
-        <BaButton
-          @click="handleBtnAutoMode"
-          :class="{ 'ba-button-auto': true, activated: autoMode }"
-        >
+        <BaButton @click="handleBtnAutoMode" :class="{ 'ba-button-auto': true, activated: autoMode }">
           AUTO
         </BaButton>
-        <BaButton
-          @click="handleBtnMenu"
-          :class="{ 'ba-button-menu': true, activated: !hiddenMenu }"
-        >
+        <BaButton @click="handleBtnMenu" :class="{ 'ba-button-menu': true, activated: !hiddenMenu }">
           MENU
         </BaButton>
       </div>
 
-      <div
-        class="baui-menu-options lean-rect"
-        :style="{
-          opacity: menuOpacity,
-          visibility: hiddenMenu === true ? 'hidden' : 'initial',
-        }"
-      >
-        <button
-          class="button-nostyle ba-menu-option"
-          @click="handleBtnHiddenUi"
-        >
+      <div class="baui-menu-options lean-rect" :style="{
+        opacity: menuOpacity,
+        visibility: hiddenMenu === true ? 'hidden' : 'initial',
+      }">
+        <button class="button-nostyle ba-menu-option" @click="handleBtnHiddenUi">
           <img src="./assets/pan-arrow.svg" />
         </button>
-        <button
-          class="button-nostyle ba-menu-option"
-          @click="hiddenStoryLog = false"
-        >
+        <button class="button-nostyle ba-menu-option" @click="hiddenStoryLog = false">
           <img src="./assets/menu.svg" />
         </button>
-        <button
-          class="button-nostyle ba-menu-option"
-          @click="handleBtnSkipSummary"
-        >
+        <button class="button-nostyle ba-menu-option" @click="handleBtnSkipSummary">
           <img src="./assets/fast-forward.svg" />
         </button>
       </div>
     </div>
-    <BaDialog
-      id="ba-story-summery"
-      :title="'概要'"
-      :show="!hiddenSummary"
-      @close="hiddenSummary = true"
-    >
+    <BaDialog id="ba-story-summery" :title="'概要'" :show="!hiddenSummary" @close="hiddenSummary = true">
       <div class="ba-story-summery-container">
         <h4 class="ba-story-summery-title">{{ storySummary.chapterName }}</h4>
         <p class="ba-story-summery-text">
@@ -140,20 +118,12 @@ onMounted(() => {
         <p class="ba-story-summery-tip">※ 是否略过此剧情？</p>
         <div class="ba-story-summery-button-group">
           <BaButton size="large" class="polylight">取消</BaButton>
-          <BaButton size="large" class="polydark" @click="eventBus.emit('skip')"
-            >确认</BaButton
-          >
+          <BaButton size="large" class="polydark" @click="eventBus.emit('skip')">确认</BaButton>
         </div>
       </div>
     </BaDialog>
-    <BaDialog
-      id="ba-story-log"
-      :title="'对话记录'"
-      width="80%"
-      height="90%"
-      :show="!hiddenStoryLog"
-      @close="hiddenStoryLog = !hiddenStoryLog"
-    >
+    <BaDialog id="ba-story-log" :title="'对话记录'" width="80%" height="90%" :show="!hiddenStoryLog"
+      @close="hiddenStoryLog = !hiddenStoryLog">
       <BaChatLog />
     </BaDialog>
   </div>
@@ -184,6 +154,7 @@ onMounted(() => {
   width: 100%;
   height: 100%;
   top: 0;
+  z-index: 100;
 
   .baui-button-group {
     display: grid;
@@ -197,8 +168,7 @@ onMounted(() => {
     }
 
     .ba-button-auto.activated {
-      background: no-repeat right -17% bottom/contain url(./assets/Common_Btn_Normal_Y_S_Pt.png)
-        #efe34b;
+      background: no-repeat right -17% bottom/contain url(./assets/Common_Btn_Normal_Y_S_Pt.png) #efe34b;
     }
 
     .ba-button-menu.activated {
@@ -241,18 +211,17 @@ onMounted(() => {
       height: 100%;
       display: flex;
       flex-flow: nowrap column;
-      background: center/contain
-          linear-gradient(
-            130deg,
-            rgba(240, 240, 240, 1) 0%,
-            rgba(240, 240, 240, 0.9) 65%,
-            rgba(240, 240, 240, 0.6) 70%,
-            rgba(240, 240, 240, 0) 100%
-          ),
+      background: center/contain linear-gradient(130deg,
+          rgba(240, 240, 240, 1) 0%,
+          rgba(240, 240, 240, 0.9) 65%,
+          rgba(240, 240, 240, 0.6) 70%,
+          rgba(240, 240, 240, 0) 100%),
         80px 45% url(./assets/UITex_BGPoliLight_1.png) rgb(164 216 237);
       background-size: 100%;
     }
+
     color: #32363c;
+
     .ba-story-summery-title {
       margin: 12px 0;
       text-align: center;
@@ -260,6 +229,7 @@ onMounted(() => {
       font-size: 18px;
       font-weight: bold;
     }
+
     .ba-story-summery-text {
       flex: 1;
       border: solid #d1d7dc 2px;

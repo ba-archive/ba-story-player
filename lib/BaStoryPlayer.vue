@@ -34,8 +34,8 @@ onMounted(() => { init('player__main__canvas', playerConfig, () => emitter('end'
     <div id="player__main" :style="{ height: `${height}px`, width: `${width}px` }">
       <div id="player__main__canvas" :style="{ transform: `scale(${scale})` }"></div>
       <BaDialog :player-height="height" :player-width="width" :style="{ width: `${width}px` }"></BaDialog>
+      <BaUI :story-summary="storySummary" />
     </div>
-    <BaUI/>
   </div>
 </template>
 
