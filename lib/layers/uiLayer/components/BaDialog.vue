@@ -54,7 +54,13 @@ watch(
           class="ba-dialog-close button-nostyle"
           @click="$emit('close', $event)"
         >
-          <i style="user-select: none">X</i>
+          <i style="user-select: none">
+            <img
+              src="../assets/close.svg"
+              alt="close dialog"
+              style="width: 1em; height: 1em; vertical-align: -0.15em"
+            />
+          </i>
         </button>
       </div>
 
