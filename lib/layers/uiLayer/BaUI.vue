@@ -7,6 +7,7 @@ import BaSelector from "./components/BaSelector.vue";
 import eventBus from "@/eventBus";
 import { StorySummary } from "@/types/store";
 import { buttonAnimation } from "./utils";
+import { ShowOption } from "@/types/events";
 
 let hiddenAllUI = ref<'visible' | 'hidden'>('visible');
 let hiddenSummary = ref(true);
@@ -16,6 +17,7 @@ let hiddenMenu = ref(true);
 let menuOpacity = ref(0);
 
 let { storySummary } = defineProps<{ storySummary: StorySummary }>()
+const selectOptions = ref<ShowOption[]>([]);
 
 eventBus.on("hide", () => {
   // hiddenAllUI.value = 'hidden'
@@ -26,6 +28,7 @@ eventBus.on("hidemenu", () => {
 eventBus.on("showmenu", () => {
   hiddenAllUI.value = 'visible'
 })
+eventBus.on("option", (e) => (selectOptions.value = e));
 
 function handleBtnHiddenUi() {
   eventBus.emit("hideDialog");
@@ -40,6 +43,10 @@ function handleBtnAutoMode() {
 }
 function handleBtnSkipSummary() {
   hiddenSummary.value = false;
+}
+function handleBaSelector(selectionGroup: number){
+  console.log("selected option:", selectionGroup)
+  eventBus.emit('select', selectionGroup)
 }
 
 // modi https://gist.github.com/ca0v/73a31f57b397606c9813472f7493a940
@@ -70,8 +77,6 @@ let handleBtnMenu = debounce(() => {
   }
 }, 200);
 
-
-
 // 给按钮添加动画触发条件
 onMounted(() => {
   buttonAnimation({cssSelector: '.ba-menu-option'})
@@ -80,7 +85,11 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="baui" :style="{ visibility: hiddenAllUI }">
+  <div
+    class="baui"
+    :style="{ visibility: hiddenAllUI }"
+    @click.self="eventBus.emit('click')"
+  >
     <div class="right-top">
       <div class="baui-button-group">
         <BaButton @click="handleBtnAutoMode" :class="{ 'ba-button-auto': true, activated: autoMode }">
@@ -106,7 +115,7 @@ onMounted(() => {
         </button>
       </div>
     </div>
-    <BaSelector id="ba-story-selector"/>
+    <BaSelector id="ba-story-selector" :selection="selectOptions" @select="handleBaSelector"/>
     <BaDialog id="ba-story-summery" :title="'概要'" :show="!hiddenSummary" @close="hiddenSummary = true">
       <div class="ba-story-summery-container">
         <h4 class="ba-story-summery-title">{{ storySummary.chapterName }}</h4>
@@ -145,6 +154,7 @@ onMounted(() => {
   right: 0;
   padding: 1.5%;
   user-select: none;
+  z-index: 110;
 }
 
 .baui {

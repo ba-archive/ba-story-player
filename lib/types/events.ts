@@ -152,6 +152,11 @@ export type Events = {
    * 结束l2d播放
    */
   endL2D: undefined
+
+  /**
+   * 用户点击
+   */
+  click: undefined
 }
 
 export interface BgParams {

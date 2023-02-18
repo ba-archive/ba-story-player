@@ -1,5 +1,5 @@
 <template>
-  <div class="container" @click="moveToNext" :style="{ height: `${playerHeight}px` }">
+  <div class="container" :style="{ height: `${playerHeight}px` }">
     <div class="container-inner">
       <div class="st-container" ref="stOutput" :style="{fontSize: `${standardFontSize}rem`}" />
       <div class="title-container"
@@ -53,8 +53,6 @@ const typewriterOutput = ref(); // 对话框el
 const stOutput = ref(); // st特效字el
 // 外部传入播放器高度,用于动态计算字体等数值
 const props = withDefaults(defineProps<TextLayerProps>(), {playerHeight: 0, playerWidth: 0});
-// 选项
-const selection = ref<ShowOption[]>([]);
 // 标题
 const titleContent = ref<string>("");
 // 位置
@@ -72,7 +70,6 @@ let typingInstance: TypedExtend; // 全局打字机实例 因为不能有两个�
  * 单击屏幕后触发效果 next或者立即显示当前对话
  */
 function moveToNext() {
-  if (selection.value.length !== 0) return; // 选项列表不为零, 不能跳过选择支
   if (!showDialog) return; // 显示st期间不允许跳过
   // 没打过任何一行字(初始化)或者对话已经显示完成, 点击屏幕代表继续
   if (!typingInstance || typingComplete.value) {
@@ -86,12 +83,6 @@ function moveToNext() {
       eventBus.emit('textDone')
     }
   }
-}
-/**
- * mousedown事件, 用来显示按钮特效
- */
-function handleOption(e: ShowOption[]) {
-  selection.value = e;
 }
 /**
  * 展示主标题
@@ -369,8 +360,8 @@ onMounted(() => {
   eventBus.on('showText', handleShowTextEvent);
   eventBus.on('st', handleShowStEvent);
   eventBus.on('clearSt', handleClearSt);
-  eventBus.on("option", handleOption);
   eventBus.on("hide",()=>showDialog.value=false)
+  eventBus.on("click",moveToNext)
 });
 onUnmounted(() => {
   eventBus.off("showTitle", handleShowTitle);
@@ -378,7 +369,6 @@ onUnmounted(() => {
   eventBus.off('showText', handleShowTextEvent);
   eventBus.off('st', handleShowStEvent);
   eventBus.off('clearSt', handleClearSt);
-  eventBus.off("option", handleOption);
 });
 // 暂时用不上了, 比如font-size还需要根据屏幕进行适配
 type StyleEffectTemplateMap = {
