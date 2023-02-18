@@ -19,10 +19,10 @@ let store = usePlayerStore();
 let { storySummary } = defineProps<{ storySummary: StorySummary }>()
 
 eventBus.on("hide", () => {
-  hiddenAllUI.value = 'hidden'
+  // hiddenAllUI.value = 'hidden'
 })
 eventBus.on("hidemenu", () => {
-  hiddenAllUI.value = 'hidden'
+  // hiddenAllUI.value = 'hidden'
 })
 eventBus.on("showmenu", () => {
   hiddenAllUI.value = 'visible'
@@ -71,15 +71,20 @@ let handleBtnMenu = debounce(() => {
   }
 }, 200);
 
-function effectBtnClick(ev: Event) {
-  let tl = gsap.timeline();
-  tl.to(ev.currentTarget, { duration: 0.15, scale: 0.94, ease: "power3.out" });
-  tl.to(ev.currentTarget, { duration: 0.3, scale: 1 });
+function effectBtnMouseDown(ev: Event) {
+  console.log(ev)
+  gsap.to(ev.currentTarget, { duration: 0.15, scale: 0.94, ease: "power3.out" });
+}
+
+function effectBtnMouseUp(ev: Event) {
+  gsap.to(ev.currentTarget, { duration: 0.3, scale: 1 });
 }
 
 onMounted(() => {
   document.querySelectorAll(".ba-menu-option").forEach((elem) => {
-    elem.addEventListener("click", effectBtnClick);
+    elem.addEventListener("mousedown", effectBtnMouseDown);
+    elem.addEventListener("mouseup", effectBtnMouseUp);
+    elem.addEventListener("mouseleave", effectBtnMouseUp);
   });
 });
 
@@ -99,16 +104,16 @@ onMounted(() => {
 
       <div class="baui-menu-options lean-rect" :style="{
         opacity: menuOpacity,
-        visibility: hiddenMenu === true ? 'hidden' : 'initial',
+        visibility: hiddenMenu === true ? 'hidden' : 'inherit',
       }">
         <button class="button-nostyle ba-menu-option" @click="handleBtnHiddenUi">
-          <img src="./assets/pan-arrow.svg" />
+          <img draggable="false" src="./assets/pan-arrow.svg" />
         </button>
         <button class="button-nostyle ba-menu-option" @click="hiddenStoryLog = false">
-          <img src="./assets/menu.svg" />
+          <img draggable="false" src="./assets/menu.svg" />
         </button>
         <button class="button-nostyle ba-menu-option" @click="handleBtnSkipSummary">
-          <img src="./assets/fast-forward.svg" />
+          <img draggable="false" src="./assets/fast-forward.svg" />
         </button>
       </div>
     </div>

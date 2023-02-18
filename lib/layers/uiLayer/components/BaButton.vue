@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { PropType, Ref, ref } from "vue";
+import { getCurrentInstance, onMounted, PropType, Ref, ref } from "vue";
 import gsap from "gsap";
 
 const props = defineProps({
@@ -10,15 +10,23 @@ const props = defineProps({
   },
 });
 
-function effectBtnClick(ev: MouseEvent) {
-  let tl = gsap.timeline();
-  tl.to(ev.target, { duration: 0.15, scale: 0.94, ease: "power3.out" });
-  tl.to(ev.target, { duration: 0.3, scale: 1 });
+function effectBtnMouseDown(ev: MouseEvent) {
+  gsap.to(ev.currentTarget, { duration: 0.15, scale: 0.94, ease: "power3.out" });
 }
+
+function effectBtnMouseUp(ev: MouseEvent) {
+  gsap.to(ev.currentTarget, { duration: 0.3, scale: 1 });
+}
+
+const button = ref(null);
+onMounted(()=>{
+
+})
+
 </script>
 
 <template>
-  <button :class="['ba-button', size]" @click="effectBtnClick">
+  <button :class="['ba-button', size]" @mousedown="effectBtnMouseDown" @mouseup="effectBtnMouseUp" @mouseleave="effectBtnMouseUp">
     <slot></slot>
   </button>
 </template>
