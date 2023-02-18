@@ -25,9 +25,9 @@ let l2dVoiceExcelTable = {
 export async function init(elementID: string, props: PlayerConfigs, endCallback: () => void) {
   //缓解图片缩放失真
   settings.MIPMAP_TEXTURES = 2
-  
 
-  if(props.useMp3){
+
+  if (props.useMp3) {
     utils.setOggAudioType('mp3')
   }
   storyHandler.endCallback = endCallback
@@ -190,7 +190,7 @@ export let storyHandler = {
         await eventEmitter.emitEvents()
         storyHandler.storyIndexIncrement()
       }
-      if(!this.isEnd){
+      if (!this.isEnd) {
         await eventEmitter.emitEvents()
       }
       this.unitPlaying = false
@@ -268,9 +268,9 @@ export let eventEmitter = {
   /** 当前l2d动画是否播放完成 */
   l2dAnimationDone: true,
   voiceJpPlaying: false,
-  get VoiceJpDone():boolean{
-    if(!storyHandler.auto){
-      return  true
+  get VoiceJpDone(): boolean {
+    if (!storyHandler.auto) {
+      return true
     }
     return !this.voiceJpPlaying
   },
@@ -313,11 +313,11 @@ export let eventEmitter = {
     })
     eventBus.on('auto', () => storyHandler.startAuto())
     eventBus.on('stopAuto', () => storyHandler.stopAuto())
-    eventBus.on('playVoiceJPDone',async ()=>{
-      if(storyHandler.auto){
+    eventBus.on('playVoiceJPDone', async () => {
+      if (storyHandler.auto) {
         await wait(400)
       }
-      this.voiceJpPlaying=false
+      this.voiceJpPlaying = false
     })
 
     storyHandler.storyPlay()
@@ -454,8 +454,8 @@ export let eventEmitter = {
   playAudio() {
     if (storyHandler.currentStoryUnit.audio) {
       eventBus.emit('playAudio', storyHandler.currentStoryUnit.audio)
-      if(storyHandler.currentStoryUnit.audio.voiceJPUrl){
-        this.voiceJpPlaying=true
+      if (storyHandler.currentStoryUnit.audio.voiceJPUrl) {
+        this.voiceJpPlaying = true
       }
     }
   },
@@ -706,30 +706,53 @@ export let resourcesLoader = {
    * 加载原始数据资源
    */
   async loadExcels() {
-    await axios.get(utils.getResourcesUrl('excel', 'ScenarioBGNameExcelTable.json')).then(res => {
-      for (let i of res.data['DataList']) {
-        privateState.BGNameExcelTable.set(i['Name'], i)
+    const excelPromiseArray: Array<Promise<void>> = []
+    excelPromiseArray.push(
+      axios.get(utils.getResourcesUrl('excel', 'ScenarioBGNameExcelTable.json')).then(res => {
+        for (let i of res.data['DataList']) {
+          privateState.BGNameExcelTable.set(i['Name'], i)
+        }
+      })
+    )
+    excelPromiseArray.push(
+      axios.get(utils.getResourcesUrl('excel', 'ScenarioCharacterNameExcelTable.json')).then(res => {
+        for (let i of res.data['DataList']) {
+          privateState.CharacterNameExcelTable.set(i['CharacterName'], i)
+        }
+      })
+    )
+    excelPromiseArray.push(
+      axios.get(utils.getResourcesUrl('excel', 'BGMExcelTable.json')).then(res => {
+        for (let i of res.data['DataList']) {
+          privateState.BGMExcelTable.set(i['Id'], i)
+        }
+      })
+    )
+    excelPromiseArray.push(
+      axios.get(utils.getResourcesUrl('excel', 'ScenarioTransitionExcelTable.json')).then(res => {
+        for (let i of res.data['DataList']) {
+          privateState.TransitionExcelTable.set(i['Name'], i)
+        }
+      })
+    )
+    excelPromiseArray.push(
+      axios.get(utils.getResourcesUrl('excel', 'ScenarioBGEffectExcelTable.json')).then(res => {
+        for (let i of res.data['DataList']) {
+          privateState.BGEffectExcelTable.set(i['Name'], i)
+        }
+      })
+    )
+
+    const results = await Promise.allSettled(excelPromiseArray)
+    let reasons = []
+    for (let result of results) {
+      if (result.status === 'rejected') {
+        reasons.push(result.reason)
       }
-    })
-    await axios.get(utils.getResourcesUrl('excel', 'ScenarioCharacterNameExcelTable.json')).then(res => {
-      for (let i of res.data['DataList']) {
-        privateState.CharacterNameExcelTable.set(i['CharacterName'], i)
-      }
-    })
-    await axios.get(utils.getResourcesUrl('excel', 'BGMExcelTable.json')).then(res => {
-      for (let i of res.data['DataList']) {
-        privateState.BGMExcelTable.set(i['Id'], i)
-      }
-    })
-    await axios.get(utils.getResourcesUrl('excel', 'ScenarioTransitionExcelTable.json')).then(res => {
-      for (let i of res.data['DataList']) {
-        privateState.TransitionExcelTable.set(i['Name'], i)
-      }
-    })
-    await axios.get(utils.getResourcesUrl('excel', 'ScenarioBGEffectExcelTable.json')).then(res => {
-      for (let i of res.data['DataList']) {
-        privateState.BGEffectExcelTable.set(i['Name'], i)
-      }
-    })
+    }
+    if (reasons.length != 0) {
+      throw new Error(reasons.toString())
+    }
   }
+
 }
