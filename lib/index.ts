@@ -315,7 +315,7 @@ export let eventEmitter = {
     eventBus.on('stopAuto', () => storyHandler.stopAuto())
     eventBus.on('playVoiceJPDone', async () => {
       if (storyHandler.auto) {
-        await wait(400)
+        await wait(1200)
       }
       this.voiceJpPlaying = false
     })
