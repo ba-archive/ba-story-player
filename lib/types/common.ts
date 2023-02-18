@@ -1,11 +1,22 @@
 import type { Spine } from 'pixi-spine';
 import { PlayAudio, PlayEffect, ShowOption, ShowText, StArgs } from './events';
-import { BGEffectExcelTableItem, TransitionTableItem } from './excels';
+import { TransitionTableItem } from './excels';
+import { Language, StorySummary } from './store';
 export type StoryType = "title" | "place" | "text" | "option" | "st" | "effectOnly" | 'continue'
 
 export type Dict<T> = {
   [key: string]: T;
 };
+
+export type PlayerProps = {
+  story: StoryRawUnit[]
+  dataUrl: string
+  height: number
+  width: number
+  language: Language
+  userName: string
+  storySummary: StorySummary
+}
 
 
 export interface Text {
@@ -73,23 +84,48 @@ export interface Option {
   }
 }
 
+/**
+ * 文字特效类型,
+ * `color`颜色
+ * `fontsize` 字体大小
+ * `ruby` 日文注音
+ */
+export type TextEffectName = 'color' | 'fontsize' | 'ruby';
+
 export interface TextEffect {
-  /**
-   * 特效类型,
-   * `color`颜色
-   * `fontsize` 字体大小
-   * `ruby` 日文注音
-   */
-  name: 'color' | 'fontsize' | 'ruby',
+
+  name: TextEffectName,
   /**
    * 特效参数
    */
   value: string[],
 }
 
-export interface Effect {
-  type: 'wait' | 'zmc' | 'bgshake'
-  args: Array<string>
+/**
+ * zmc参数, 当duration为10时代表是move起始
+ */
+export type ZmcArgs = {
+  type: 'move',
+  position: [number, number],
+  size: number,
+  duration: number
+} | {
+  type: 'instant'
+  position: [number, number],
+  size: number,
+}
+
+export type Effect = {
+  type: 'wait'
+  /**
+   * 单位为ms
+   */
+  args: number
+} | {
+  type: 'zmc'
+  args: ZmcArgs
+} | {
+  type: 'bgshake'
 }
 
 export interface StoryRawUnit {
@@ -153,6 +189,7 @@ export interface StoryUnit {
     st?: {
       stArgs?: StArgs
       clearSt?: boolean,
+      middle?: boolean
     }
   }
   fight?: number,
@@ -166,6 +203,12 @@ export interface StoryUnit {
 
 export interface CharacterInstance {
   CharacterName: number;
+  /**
+   * 角色当前所在位置 1,2,3,4,5
+   *
+   * 会根据m1m2m3m4m5动态更新
+   */
+  position: number;
   instance: Spine;
   isShow: () => boolean;
   isOnStage: () => boolean;

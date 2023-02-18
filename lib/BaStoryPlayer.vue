@@ -1,12 +1,11 @@
 <script lang="ts" setup>
-import { onMounted } from 'vue';
 import { init } from '@/index';
-import { StoryRawUnit } from '@/types/common';
-import eventBus from "@/eventBus";
-//@ts-ignore
 import BaDialog from "@/layers/textLayer/BaDialog.vue";
 import BaUI from "@/layers/uiLayer/BaUI.vue"
+import { StoryRawUnit } from '@/types/common';
 import { Language, StorySummary } from '@/types/store';
+import { computed, onMounted } from 'vue';
+
 
 let props = defineProps<{
   story: StoryRawUnit[]
@@ -14,46 +13,45 @@ let props = defineProps<{
   height: number
   width: number
   language: Language
-  username: string
+  userName: string
   storySummary: StorySummary
 }>()
 
-onMounted(() => { init('player__main', props.height, props.width, props.story, props.dataUrl, props.language, props.username, props.storySummary) })
+let emitter = defineEmits(['end'])
 
-/**
- * 测试文本框
- * @constructor
- */
-function TestDialog() {
-  eventBus.emit('showText', {
-    text: [{ content: "测试文本asjdklajsdlkjlaskd", waitTime: 1000, effects: [] }],
-    speaker: {
-      name: "未花",
-      nickName: "茶话会"
-    },
-  });
-}
+let playerWidth = 1800
+let playerConfig = { ...props }
+playerConfig.width = playerWidth
+playerConfig.height = props.height * playerWidth / props.width
+let scale = computed(() => props.width / playerWidth)
+onMounted(() => { init('player__main__canvas', playerConfig, () => emitter('end')) })
+
 
 </script>
 
 <template>
-  <div id="player" :style="{ height: `${height}px`, position: 'relative' }">
-    <div id="player__main">
-      <BaDialog class="dialog" :dialog-height="height"
-        :style="{ marginTop: `${height / 2}px`, width: `${width}px`, height: `${height / 2}px` }"></BaDialog>
+  <div id="player" :style="{ height: `${height}px`, width: `${width}px` }">
+    <div id="player__main" :style="{ height: `${height}px`, width: `${width}px` }">
+      <div id="player__main__canvas" :style="{ transform: `scale(${scale})` }"></div>
+      <BaDialog :player-height="height" :player-width="width" :style="{ width: `${width}px` }"></BaDialog>
     </div>
     <BaUI/>
-    <button @click="TestDialog">文本框测试</button>
-    <button style="margin-left:1%" @click="() => { eventBus.emit('next') }">next</button>
   </div>
 </template>
 
-<style>
+<style lang="scss" scoped>
 #player {
   background-color: black;
-}
 
-.dialog {
-  position: absolute;
+  &__main {
+    position: relative;
+
+    &__canvas {
+      position: absolute;
+      left: 0;
+      top: 0;
+      transform-origin: top left;
+    }
+  }
 }
 </style>

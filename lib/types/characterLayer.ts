@@ -53,16 +53,20 @@ export interface CharacterLayer {
    */
   showOneCharacter(data: CharacterEffectInstance): Promise<void>;
   /**
+   * 隐藏当前所有角色
+   */
+  hideCharacter(): void;
+  /**
    * 所有人物特效已处理完成时调用, 向总线发送characterDone事件
    */
   characterDone(): void;
   /**
    * 从打包好的spine数据中创建pixi-spine对象
-   * @param characterNumber 要创建的角色的characterNumber
+   * @param character 要创建的角色的character信息
    * @param spineData 打包好的spine数据
    * @return 创建出的pixi-spine对象
    */
-  createSpineFromSpineData(characterNumber: number, spineData: ISkeletonData): Spine;
+  createSpineFromSpineData(character: Character, spineData: ISkeletonData): Spine;
   /**
    * 执行showCharacter函数时检查所需资源是否已经创建, 若没有创建则调用createSpineFromSpineData进行创建
    * @param characterMap 需要处理的资源
@@ -79,7 +83,7 @@ export interface CharacterLayer {
    * @param characterNumber 要放置的角色的characterNumber
    * @return 放置成功: true
    */
-  putCharacterOnStage(characterNumber: number): boolean;
+  putCharacterOnStage(character: Character): boolean;
   /**
    * document resize事件监听器, 在大小变换时同时修改所有spine/sprite的缩放比列
    */
@@ -395,10 +399,23 @@ export interface BasicEmotionOptions extends BaseOptions<EmotionWord> {
  * emotion情绪动画共有的参数
  */
 export interface GlobalEmotionOptions {
-  startPositionOffset: { x: number, y: number }
-  scale: number
-  fadeOutPreDuration?: number
-  fadeOutDuration: number
+  startPositionOffset: { x: number, y: number };
+  scale: number;
+  fadeOutPreDuration?: number;
+  fadeOutDuration: number;
+  /**
+   * 为了解决spine作为Container使用时奇怪的pivot问题而生
+   *
+   * 用作比例, 填写的是当立绘scale前width,height为基准时
+   *
+   * 自身位于spine内的offset
+   *
+   * 目前使用yuuka(运动服)的width956,height2424作为基准
+   */
+  makeSpineHappyOffset: {
+    x: number;
+    y: number;
+  }
 }
 
 export type EmotionOptions = {
@@ -474,8 +491,14 @@ export interface FXOptions extends BaseOptions<FXEffectWord> {
   shot: {
     scale: number
     shotDuration: number
-    shotDelay: number
-    shotPos: PositionOffset[]
+    shotSequence: {
+      startImg: number
+      endImg?: number
+      endRed: boolean
+      pos: PositionOffset
+      scale: number
+      angle: number
+    }[]
   }
 }
 

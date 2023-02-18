@@ -1,26 +1,29 @@
-import { Character, Effect, Speaker, Text, TextEffect } from "./common"
+import { Character, Effect, Speaker, Text } from "./common"
 import { BGEffectExcelTableItem, BGMExcelTableItem, TransitionTableItem } from "./excels"
+import { OtherSounds } from "./resources"
 
 export type Events = {
   //通用
-
   /**
    * 清除当前内容
    */
   hide: undefined
-  /**
-   * 特效播放完毕
-   */
 
   //特效层
 
   /**
-   * 播饭特效
+   * 播放特效
    */
   playEffect: PlayEffect
+  /**
+   * 移除当前特效
+   */
+  removeEffect: undefined
   effectDone: undefined
   transitionIn: TransitionTableItem
+  transitionInDone: undefined
   transitionOut: TransitionTableItem
+  transitionOutDone: undefined
   /**
    * 人物完成展示
    */
@@ -32,10 +35,17 @@ export type Events = {
    */
   showCharacter: ShowCharacter
   /**
+   * 隐藏角色
+   */
+  hideCharacter: undefined
+  /**
    * 人物已处理完毕
    */
   characterDone: undefined
-
+  /**
+   * l2d 动画播放状态, 当前动画是否播放完成
+   */
+  l2dAnimationDone: { done: boolean, animation: string }
   //背景层
 
   /**
@@ -56,8 +66,11 @@ export type Events = {
   /**
    * 播放选项选择特效音
    */
-  playSelectSound: undefined
-
+  playOtherSounds: OtherSounds
+  /**
+   * 播放voiceJP结束提示
+   */
+  playVoiceJPDone: string
   //UI层
 
   /**
@@ -108,6 +121,11 @@ export type Events = {
    * st动画播放完成
    */
   stDone: undefined
+  /**
+   * 对话框内容播放完成
+   * **实际上st动画播放完成也会触发**
+   */
+  textDone: undefined;
   /**
    * 显示选项
    */
@@ -165,6 +183,10 @@ export interface ShowText {
    * 说话的人, 包括名字和所属
    */
   speaker?: Speaker
+  /**
+   * 人物头像, 填logText时使用
+   */
+  avatarUrl?: string
 }
 
 /**
@@ -181,6 +203,7 @@ export interface StText {
    * st的参数, 目前只需要注意第二个参数, serial打字机效果, instant立即全部显示.
    */
   stArgs: StArgs
+  middle: boolean
 }
 
 export interface ShowOption {

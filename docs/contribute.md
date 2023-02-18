@@ -52,3 +52,5 @@ UI层负责UI的相关功能
 对于内容庞大, 持续更新的层, 请根据该层实现者的文档进行代码贡献.
 
 [人物层](./layers/characterLayer.md)
+
+[特效层](./layers/effectLayer.md)

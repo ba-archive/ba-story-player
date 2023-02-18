@@ -4,6 +4,8 @@ import eventBus from '../../lib/eventBus'
 import emotionOptions, { emotionDescriptions } from '../../lib/layers/characterLayer/options/emotionOptions'
 import actionOptions, { actionDescriptions } from '../../lib/layers/characterLayer/options/actionOptions'
 import fxOptions, { fxOptionsDescriptions } from '../../lib/layers/characterLayer/options/fxOptions'
+import { EffectsWord } from '@/types/characterLayer'
+import { resizeTextareas } from '../utils'
 
 let effectType = ref<'action' | 'emotion' | 'fx'>('emotion')
 let current = ref('Music')
@@ -56,10 +58,12 @@ function showCharacter() {
   eventBus.emit('showCharacter', {
     characters: [
       {
-        CharacterName: 4179367264,
+        CharacterName: 3715128518,
         face: '05',
         position: 3,
         highlight: true,
+        signal: false,
+        spineUrl: "https://yuuka.diyigemt.com/image/ba-all-data/spine/CH0184ND_spr/CH0184ND_spr.skel",
         effects: [
           {
             type: 'action',
@@ -80,15 +84,16 @@ function playEffect() {
         /**
          * 注意如果不是体香1剧情需要更改
          */
-        CharacterName: 4179367264,
+        CharacterName: 3715128518,
         face: '05',
         position: 3,
         highlight: highlight.value,
         signal: signal.value,
+        spineUrl: '',
         effects: [
           {
             type: effectType.value,
-            effect: current.value,
+            effect: current.value as EffectsWord,
             async: false
           }
         ]
@@ -105,12 +110,7 @@ function outputOptions() {
   navigator.clipboard.writeText(JSON.stringify(currentOptions.value, null, 2))
 }
 
-function resizeTextareas() {
-  let textAreas = document.querySelectorAll('textarea')
-  for (let textarea of textAreas) {
-    textarea.style.height = textarea.scrollHeight + "px";
-  }
-}
+
 
 function updateType() {
   nextTick(() => { resizeTextareas() })
@@ -127,7 +127,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="absolute-right-center">
+  <div>
     <div>
       <label>signal:</label>
       <input type="checkbox" v-model="signal" />
@@ -164,16 +164,3 @@ onMounted(() => {
     <button @click="outputOptions">复制参数(可填入参数文件)</button>
   </div>
 </template>
-
-<style scoped>
-.absolute-right-center {
-  position: absolute;
-  background-color: white;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  right: 0;
-  height: 95vh;
-  overflow-y: scroll;
-}
-</style>
