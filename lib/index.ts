@@ -404,7 +404,10 @@ export let eventEmitter = {
    */
   showBg() {
     if (storyHandler.currentStoryUnit.bg) {
-      eventBus.emit('showBg', storyHandler.currentStoryUnit.bg?.url)
+      eventBus.emit("showBg", {
+        url: storyHandler.currentStoryUnit.bg?.url,
+        overlap: storyHandler.currentStoryUnit.bg?.overlap,
+      });
       if (this.l2dPlaying) {
         eventBus.emit('endL2D')
         this.l2dPlaying = false

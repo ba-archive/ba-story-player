@@ -51,7 +51,7 @@ export type Events = {
   /**
    * 展示背景图片
    */
-  showBg: string
+  showBg: BgParams
 
   //声音层
 
@@ -152,6 +152,17 @@ export type Events = {
    * 结束l2d播放
    */
   endL2D: undefined
+}
+
+export interface BgParams {
+  /**
+   * 背景图片 url
+   */
+  url: string
+  /**
+   * 以覆盖原来背景的方式显示新背景, 值为渐变时间
+   */
+  overlap?: number
 }
 
 export interface ShowCharacter {

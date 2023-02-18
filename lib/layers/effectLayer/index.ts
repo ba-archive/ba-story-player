@@ -99,8 +99,8 @@ async function playTransition(color: 'black' | 'white', durationMs: number, mode
  */
 async function playBgShake(bgInstance: Sprite): Promise<void> {
   let tl = gsap.timeline()
-  let fromX = bgInstance.x - bgInstance.width * 0.01
-  let toX = bgInstance.x + bgInstance.width * 0.01
+  let fromX = -bgInstance.width * 0.01
+  let toX = bgInstance.width * 0.01
   await tl.to(bgInstance, {
     pixi: { x: `+=${fromX}` }, repeat: 1,
     yoyo: true, duration: 0.1
