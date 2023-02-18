@@ -8,7 +8,7 @@ import eventBus from "@/eventBus";
 import { usePlayerStore } from "@/stores";
 import { StorySummary } from "@/types/store";
 
-let hiddenAllUI = ref<'visible' | 'hidden'>('visible');
+let hiddenAllUI = ref<'visible' | 'hidden'>('hidden');
 let hiddenSummary = ref(true);
 let hiddenStoryLog = ref(true);
 let autoMode = ref(false);
@@ -150,6 +150,7 @@ onMounted(() => {
   right: 0;
   padding: 1.5%;
   user-select: none;
+  z-index: 100;
 }
 
 .baui {
@@ -157,7 +158,6 @@ onMounted(() => {
   width: 100%;
   height: 100%;
   top: 0;
-  z-index: 100;
 
   .baui-button-group {
     display: grid;
@@ -209,7 +209,12 @@ onMounted(() => {
     }
   }
 
+  #ba-story-log{
+    z-index: 110;
+  }
+
   #ba-story-summery {
+    z-index: 110;
     .ba-story-summery-container {
       height: 100%;
       display: flex;
