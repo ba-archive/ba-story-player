@@ -16,6 +16,9 @@ let autoMode = ref(false);
 let hiddenMenu = ref(true);
 let menuOpacity = ref(0);
 
+// 计时器：当这个计时器到时间时 -- 回调函数会把 hiddenMenu 设置成 true 来影藏菜单
+let btnMenuTimmer: any
+
 let { storySummary } = defineProps<{ storySummary: StorySummary }>()
 const selectOptions = ref<ShowOption[]>([]);
 
@@ -30,9 +33,6 @@ eventBus.on("showmenu", () => {
 })
 eventBus.on("option", (e) => (selectOptions.value = e));
 
-function handleBtnHiddenUi() {
-  eventBus.emit("hideDialog");
-}
 function handleBtnAutoMode() {
   autoMode.value = !autoMode.value;
   if (autoMode.value) {
@@ -41,9 +41,21 @@ function handleBtnAutoMode() {
     eventBus.emit("stopAuto");
   }
 }
+
+function handleBtnHiddenUi() {
+  refreshBtnMenuTimmer()
+  eventBus.emit("hideDialog");
+}
+function handleBtnChatLog() {
+  refreshBtnMenuTimmer()
+  hiddenStoryLog.value = false
+}
 function handleBtnSkipSummary() {
+  refreshBtnMenuTimmer()
   hiddenSummary.value = false;
 }
+
+// 处理选项
 function handleBaSelector(selectionGroup: number){
   console.log("selected option:", selectionGroup)
   eventBus.emit('select', selectionGroup)
@@ -62,20 +74,31 @@ function debounce<T extends Function>(cb: T, wait = 20) {
   return <T>(<any>callable);
 }
 
-let handleBtnMenu = debounce(() => {
+function handleBtnMenu() {
   menuOpacity.value = menuOpacity.value === 0 ? 1 : 0;
   if (hiddenMenu.value) {
     hiddenMenu.value = false;
-    // todo 一段时间后自动影藏
-    // setTimeout(() => {
-    //   if (!hiddenMenu.value) handleBtnMenu();
-    // }, 6666);
+    // 一段时间后自动影藏
+    btnMenuTimmer = setTimeout(() => {
+      if (!hiddenMenu.value) handleBtnMenu();
+    }, 5555);
   } else {
     setTimeout(() => {
       hiddenMenu.value = true;
     }, 200);
   }
-}, 200);
+}
+
+function refreshBtnMenuTimmer() {
+  if (!hiddenMenu.value) {
+    clearTimeout(btnMenuTimmer)
+    btnMenuTimmer = setTimeout(() => {
+      if (!hiddenMenu.value) handleBtnMenu();
+    }, 5555);
+  }
+}
+
+const handleBtnMenuDebounced = debounce(handleBtnMenu, 200);
 
 // 给按钮添加动画触发条件
 onMounted(() => {
@@ -95,7 +118,7 @@ onMounted(() => {
         <BaButton @click="handleBtnAutoMode" :class="{ 'ba-button-auto': true, activated: autoMode }">
           AUTO
         </BaButton>
-        <BaButton @click="handleBtnMenu" :class="{ 'ba-button-menu': true, activated: !hiddenMenu }">
+        <BaButton @click="handleBtnMenuDebounced" :class="{ 'ba-button-menu': true, activated: !hiddenMenu }">
           MENU
         </BaButton>
       </div>
@@ -107,7 +130,7 @@ onMounted(() => {
         <button class="button-nostyle ba-menu-option" @click="handleBtnHiddenUi">
           <img draggable="false" src="./assets/pan-arrow.svg" />
         </button>
-        <button class="button-nostyle ba-menu-option" @click="hiddenStoryLog = false">
+        <button class="button-nostyle ba-menu-option" @click="handleBtnChatLog">
           <img draggable="false" src="./assets/menu.svg" />
         </button>
         <button class="button-nostyle ba-menu-option" @click="handleBtnSkipSummary">

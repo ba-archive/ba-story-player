@@ -73,6 +73,7 @@ function moveToNext() {
   if (!showDialog) return; // 显示st期间不允许跳过
   // 没打过任何一行字(初始化)或者对话已经显示完成, 点击屏幕代表继续
   if (!typingInstance || typingComplete.value) {
+    console.log('hello: ', typingComplete.value)
     eventBus.emit("next");
   } else { // 否则立即显示所有对话
     if (typewriterOutput.value) { // 过滤live2d播放
