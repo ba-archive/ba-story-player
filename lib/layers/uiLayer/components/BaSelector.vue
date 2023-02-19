@@ -27,7 +27,6 @@ const selectionSelect = ref<number>(-1);
 function handleSelectMouseDown(ev: Event, index: number) {
   console.log("handleSelectMouseDown", ev)
   selectionSelect.value = index;
-  eventBus.emit("playOtherSounds", "select");
   gsap.to(ev.currentTarget, { duration: "0.15", scale: "0.9" });
 }
 /**

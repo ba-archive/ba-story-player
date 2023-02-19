@@ -2,6 +2,7 @@
 import { watch } from "vue";
 import { onMounted, ref } from "vue";
 import gsap from "gsap";
+import eventBus from "@/eventBus";
 
 const props = defineProps({
   width: {
@@ -20,6 +21,11 @@ const props = defineProps({
 const emit = defineEmits<{
   (ev: "close", event: PointerEvent): void;
 }>();
+
+function handleClose(ev: Event) {
+  emit('close', ev as PointerEvent)
+  eventBus.emit("playOtherSounds", "back")
+}
 
 const dialogContainer = ref(null);
 
@@ -43,7 +49,7 @@ watch(
   <div
     class="ba-dialog"
     :style="{ display: show === true ? '' : 'none' }"
-    @click.self="$emit('close', $event)"
+    @click.self="handleClose"
   >
     <div
       class="ba-dialog-container"
@@ -56,7 +62,7 @@ watch(
         </h3>
         <button
           class="ba-dialog-close button-nostyle"
-          @click="$emit('close', $event)"
+          @click="handleClose"
         >
           <i style="user-select: none">
             <img

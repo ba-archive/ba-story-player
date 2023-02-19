@@ -32,31 +32,25 @@ eventBus.on("showmenu", () => {
 })
 eventBus.on("option", (e) => (selectOptions.value = e));
 
-function handleBtnAutoMode() {
-  autoMode.value = !autoMode.value;
-  if (autoMode.value) {
-    eventBus.emit("auto");
-  } else {
-    eventBus.emit("stopAuto");
-  }
-}
-
 function handleBtnHiddenUi() {
+  eventBus.emit("playOtherSounds", "select")
   refreshBtnMenuTimmer()
   eventBus.emit("hideDialog");
 }
 function handleBtnChatLog() {
+  eventBus.emit("playOtherSounds", "select")
   refreshBtnMenuTimmer()
   hiddenStoryLog.value = false
 }
 function handleBtnSkipSummary() {
+  eventBus.emit("playOtherSounds", "select")
   refreshBtnMenuTimmer()
   hiddenSummary.value = false;
 }
 
 // 处理选项
 function handleBaSelector(selectionGroup: number){
-  console.log("selected option:", selectionGroup)
+  eventBus.emit("playOtherSounds", "select")
   eventBus.emit('select', selectionGroup)
 }
 
@@ -71,6 +65,15 @@ function debounce<T extends Function>(cb: T, wait = 20) {
     }
   };
   return <T>(<any>callable);
+}
+
+function handleBtnAutoMode() {
+  autoMode.value = !autoMode.value;
+  if (autoMode.value) {
+    eventBus.emit("auto");
+  } else {
+    eventBus.emit("stopAuto");
+  }
 }
 
 function handleBtnMenu() {
@@ -161,8 +164,8 @@ const handleBtnMenuDebounced = debounce(handleBtnMenu, 200);
         </p>
         <p class="ba-story-summery-tip">※ 是否略过此剧情？</p>
         <div class="ba-story-summery-button-group">
-          <BaButton size="large" class="polylight">取消</BaButton>
-          <BaButton size="large" class="polydark" @click="eventBus.emit('skip')">确认</BaButton>
+          <BaButton size="large" class="polylight" @click="hiddenSummary=true">取消</BaButton>
+          <BaButton size="large" class="polydark" @click="eventBus.emit('skip'); hiddenSummary=true">确认</BaButton>
         </div>
       </div>
     </BaDialog>

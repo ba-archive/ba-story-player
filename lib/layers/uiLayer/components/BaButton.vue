@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import eventBus from "@/eventBus";
 import { onMounted, PropType, Ref, ref } from "vue";
 import { buttonAnimation } from "../utils";
 
@@ -9,17 +10,28 @@ const props = defineProps({
     default: "small",
   },
 });
+const emit = defineEmits<{
+  (ev: "click", event: Event): void;
+}>()
 
 const button = ref(null) as unknown as Ref<Element>
+
+function handleClick(ev: Event) {
+  emit("click", ev)
+  eventBus.emit("playOtherSounds", "select")
+}
 
 onMounted(()=>{
   buttonAnimation({elem: button.value})
 })
 
+
+
+
 </script>
 
 <template>
-  <button :class="['ba-button', size]" ref="button">
+  <button :class="['ba-button', size]" ref="button" @click="handleClick">
     <slot></slot>
   </button>
 </template>

@@ -15,7 +15,8 @@ export function setDataUrl(url: string): void {
   dataUrl = url
   otherSoundMap = {
     select: `${dataUrl}/Audio/Sound/UI_Button_Touch.wav`,
-    bg_underfire: `${dataUrl}/Audio/Sound/UI_FX_BG_UnderFire.wav`
+    bg_underfire: `${dataUrl}/Audio/Sound/UI_FX_BG_UnderFire.wav`,
+    back: `${dataUrl}/Audio/Sound/UI_Button_Back.wav`
   }
 }
 
