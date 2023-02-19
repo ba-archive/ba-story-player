@@ -98,6 +98,7 @@ function refreshBtnMenuTimmer() {
   }
 }
 
+// 子菜单按钮动画
 let handleBtnMouseDown = effectBtnMouseDown()
 let handleBtnMouseUp = effectBtnMouseUp()
 
