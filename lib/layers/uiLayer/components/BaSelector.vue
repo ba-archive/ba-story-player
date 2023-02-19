@@ -27,6 +27,7 @@ const selectionSelect = ref<number>(-1);
  * @param index 按钮位置
  */
 function handleSelectMouseDown(ev: Event, index: number) {
+  console.log("handleSelectMouseDown", ev)
   selectionSelect.value = index;
   eventBus.emit("playOtherSounds", "select");
   gsap.to(ev.currentTarget, { duration: "0.15", scale: "0.9" });
@@ -35,7 +36,17 @@ function handleSelectMouseDown(ev: Event, index: number) {
  * 按钮松开特效
  */
 function handleSelectMouseUp(ev: Event) {
+  console.log("handleSelectMouseUp", ev)
   selectionSelect.value = -1;
+  gsap.to(ev.currentTarget, { duration: "0.3", scale: "1" });
+}
+/**
+ * 选择支按钮被按下
+ * @param select 选项
+ */
+function handleSelect(ev: Event, select: number) {
+  emit("select", select);
+
   gsap.to(ev.currentTarget, {
     duration: 0.4,
     scale: 1.1,
@@ -52,13 +63,7 @@ function handleSelectMouseUp(ev: Event) {
     ),
     opacity: 0,
   });
-}
-/**
- * 选择支按钮被按下
- * @param select 选项
- */
-function handleSelect(ev: Event, select: number) {
-  emit("select", select);
+
   setTimeout(() => {
     // 清空数组
     props.selection.length = 0;
@@ -74,7 +79,7 @@ function handleSelect(ev: Event, select: number) {
         @mousedown="handleSelectMouseDown($event, e.SelectionGroup)"
         :key="index"
         @click="handleSelect($event, e.SelectionGroup)"
-        @mouseout="handleSelectMouseUp($event)"
+        @mouseleave="handleSelectMouseUp($event)"
         @mouseup="handleSelectMouseUp($event)"
         role="button"
         :tabindex="index"
