@@ -8,6 +8,7 @@ function effectBtnMouseDown(duration: number = 0.15, scale: number = 0.94) {
       duration: duration,
       scale: scale,
       ease: "power3.out",
+      force3D: true
     });
   };
 }
@@ -16,9 +17,10 @@ function effectBtnMouseDown(duration: number = 0.15, scale: number = 0.94) {
 function effectBtnMouseUp(duration: number = 0.3, scale: number = 1) {
   return (ev: Event) => {
     console.log("effectBtnMouseUp")
-    gsap.to(ev.currentTarget, { duration: duration, scale: scale });
+    gsap.to(ev.currentTarget, {duration: duration, scale: scale, force3D: true});
   };
 }
+
 /**
  * 按钮动画
  * @args 控制动画参数
@@ -38,25 +40,25 @@ function buttonAnimation(
     durationDown: number;
     scaleUp: number;
     durationUp: number;
-  } = { durationDown: 0.15, scaleDown: 0.95, durationUp: 0.3, scaleUp: 1 }
+  } = {durationDown: 0.15, scaleDown: 0.95, durationUp: 0.3, scaleUp: 1}
 ) {
-    let elems
-    if (elem.cssSelector) {
-      elems = document.querySelectorAll(elem.cssSelector);
-    } else if (elem.elem) {
-      elems = [elem.elem]
-    } else if (elem.elems) {
-      elems = elem.elems
-    } else {
-        return
-    }
-    console.log("buttonAnimation: ", elem, elems)
-    elems.forEach((elem) => {
-      elem.addEventListener("mousedown", effectBtnMouseDown(args.durationUp, args.scaleDown));
-      elem.addEventListener("mouseup", effectBtnMouseUp(args.durationUp, args.scaleUp));
-      elem.addEventListener("mouseleave", effectBtnMouseUp(args.durationUp, args.scaleUp));
-    });
-  
+  let elems
+  if (elem.cssSelector) {
+    elems = document.querySelectorAll(elem.cssSelector);
+  } else if (elem.elem) {
+    elems = [elem.elem]
+  } else if (elem.elems) {
+    elems = elem.elems
+  } else {
+    return
+  }
+  console.log("buttonAnimation: ", elem, elems)
+  elems.forEach((elem) => {
+    elem.addEventListener("mousedown", effectBtnMouseDown(args.durationUp, args.scaleDown));
+    elem.addEventListener("mouseup", effectBtnMouseUp(args.durationUp, args.scaleUp));
+    elem.addEventListener("mouseleave", effectBtnMouseUp(args.durationUp, args.scaleUp));
+  });
+
 }
 
-export { buttonAnimation,effectBtnMouseDown, effectBtnMouseUp };
+export {buttonAnimation, effectBtnMouseDown, effectBtnMouseUp};
