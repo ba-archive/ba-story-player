@@ -1,8 +1,11 @@
 <script lang="ts" setup>
-import { computed, onMounted, PropType, Ref, ref } from "vue";
+import { PropType, ref } from "vue";
 import { ShowOption } from "@/types/events";
 import eventBus from "@/eventBus";
 import { effectBtnMouseDown, effectBtnMouseUp } from "../utils";
+import gsap from "gsap";
+import CustomEase from "gsap/CustomEase";
+import { wait } from "@/utils";
 
 // 选项
 // const selection = ref<ShowOption[]>([]);
@@ -26,14 +29,29 @@ const selectionSelect = ref<number>(-1);
 function handleSelectMouseDown(ev: Event, index: number) {
   selectionSelect.value = index;
   eventBus.emit("playOtherSounds", "select");
-  effectBtnMouseDown()(ev);
+  gsap.to(ev.currentTarget, { duration: "0.15", scale: "0.84" });
 }
 /**
  * 按钮松开特效
  */
 function handleSelectMouseUp(ev: Event) {
   selectionSelect.value = -1;
-  effectBtnMouseUp()(ev);
+  gsap.to(ev.currentTarget, {
+    duration: 0.4,
+    scale: 1,
+    ease: CustomEase.create(
+      "custom",
+      "M0,0,C0.14,0,0.18,0.438,0.21,0.561,0.251,0.728,0.338,1.286,0.362,1.304,0.386,1.324,0.439,0.877,0.484,0.818,0.508,0.786,0.544,1.202,0.56,1.202,0.594,1.202,0.616,0.898,0.652,0.898,0.682,0.898,0.73,1.134,0.746,1.144,0.808,1.06,0.831,0.936,0.85,0.95,0.869,0.964,0.88,1.039,0.894,1.052,0.905,1.048,0.939,0.984,0.954,0.984,0.969,0.984,1,1,1,1"
+    ),
+  });
+  gsap.to(ev.currentTarget, {
+    duration: 0.4,
+    ease: CustomEase.create(
+      "custom",
+      "M0,0,C0.14,0,0.324,0.092,0.348,0.11,0.392,0.142,0.469,0.403,0.514,0.344,0.538,0.312,0.554,0.028,0.57,0.028,0.604,0.028,0.624,0.47,0.66,0.47,0.69,0.47,0.722,0.062,0.738,0.072,0.77,0.027,0.79,0.428,0.808,0.564,0.823,0.686,0.842,0.122,0.842,0.122,0.856,0.122,0.871,0.595,0.892,0.634,0.901,0.652,0.937,0.109,0.942,0.114,0.953,0.11,0.974,0.556,0.974,0.556,0.974,0.556,1,0.9,1,0.9"
+    ),
+    opacity: 0,
+  });
 }
 /**
  * 选择支按钮被按下
@@ -44,7 +62,7 @@ function handleSelect(ev: Event, select: number) {
   setTimeout(() => {
     // 清空数组
     props.selection.length = 0;
-  }, 100);
+  }, 388);
 }
 </script>
 

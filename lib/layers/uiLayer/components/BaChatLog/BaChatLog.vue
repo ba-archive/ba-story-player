@@ -55,8 +55,6 @@ let chatMesasages = store.logText;
     &::-webkit-scrollbar {
       display: none; /* Chrome Safari */
     }
-    .ba-chat-item {
-    }
   }
 }
 </style>
