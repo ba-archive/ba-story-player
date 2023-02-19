@@ -6,7 +6,7 @@ import BaChatLog from "./components/BaChatLog/BaChatLog.vue";
 import BaSelector from "./components/BaSelector.vue";
 import eventBus from "@/eventBus";
 import { StorySummary } from "@/types/store";
-import { buttonAnimation } from "./utils";
+import { effectBtnMouseDown, effectBtnMouseUp } from "./utils";
 import { ShowOption } from "@/types/events";
 
 let hiddenAllUI = ref<'visible' | 'hidden'>('visible');
@@ -95,12 +95,10 @@ function refreshBtnMenuTimmer() {
   }
 }
 
-const handleBtnMenuDebounced = debounce(handleBtnMenu, 200);
+let handleBtnMouseDown = effectBtnMouseDown()
+let handleBtnMouseUp = effectBtnMouseUp()
 
-// 给按钮添加动画触发条件
-onMounted(() => {
-  buttonAnimation({cssSelector: '.ba-menu-option'})
-});
+const handleBtnMenuDebounced = debounce(handleBtnMenu, 200);
 
 </script>
 
@@ -122,16 +120,34 @@ onMounted(() => {
 
       <Transition>
         <div class="baui-menu-options lean-rect" v-if="!hiddenMenu">
-        <button class="button-nostyle ba-menu-option" @click="handleBtnHiddenUi">
-          <img draggable="false" src="./assets/pan-arrow.svg" />
-        </button>
-        <button class="button-nostyle ba-menu-option" @click="handleBtnChatLog">
-          <img draggable="false" src="./assets/menu.svg" />
-        </button>
-        <button class="button-nostyle ba-menu-option" @click="handleBtnSkipSummary">
-          <img draggable="false" src="./assets/fast-forward.svg" />
-        </button>
-      </div>
+          <button 
+            class="button-nostyle ba-menu-option" 
+            @click="handleBtnHiddenUi" 
+            @mousedown="handleBtnMouseDown" 
+            @mouseup="handleBtnMouseUp" 
+            @mouseleave="handleBtnMouseUp"
+          >
+            <img draggable="false" src="./assets/pan-arrow.svg" />
+          </button>
+          <button 
+            class="button-nostyle ba-menu-option" 
+            @click="handleBtnChatLog" 
+            @mousedown="handleBtnMouseDown" 
+            @mouseup="handleBtnMouseUp" 
+            @mouseleave="handleBtnMouseUp"
+          >
+            <img draggable="false" src="./assets/menu.svg" />
+          </button>
+          <button 
+            class="button-nostyle ba-menu-option" 
+            @click="handleBtnSkipSummary" 
+            @mousedown="handleBtnMouseDown" 
+            @mouseup="handleBtnMouseUp" 
+            @mouseleave="handleBtnMouseUp"
+          >
+            <img draggable="false" src="./assets/fast-forward.svg" />
+          </button>
+        </div>
       </Transition>
     </div>
 

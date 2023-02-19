@@ -50,6 +50,7 @@ function buttonAnimation(
     } else {
         return
     }
+    console.log("buttonAnimation: ", elem, elems)
     elems.forEach((elem) => {
       elem.addEventListener("mousedown", effectBtnMouseDown(args.durationUp, args.scaleDown));
       elem.addEventListener("mouseup", effectBtnMouseUp(args.durationUp, args.scaleUp));

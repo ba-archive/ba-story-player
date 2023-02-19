@@ -2,10 +2,8 @@
 import { PropType, ref } from "vue";
 import { ShowOption } from "@/types/events";
 import eventBus from "@/eventBus";
-import { effectBtnMouseDown, effectBtnMouseUp } from "../utils";
 import gsap from "gsap";
 import CustomEase from "gsap/CustomEase";
-import { wait } from "@/utils";
 
 // 选项
 // const selection = ref<ShowOption[]>([]);
