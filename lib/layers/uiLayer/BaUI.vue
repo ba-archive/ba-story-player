@@ -9,7 +9,7 @@ import { StorySummary } from "@/types/store";
 import { effectBtnMouseDown, effectBtnMouseUp } from "./utils";
 import { ShowOption } from "@/types/events";
 
-let hiddenAllUI = ref<'visible' | 'hidden'>('visible');
+let hiddenAllUI = ref<'visible' | 'hidden'>('hidden');
 let hiddenSummary = ref(true);
 let hiddenStoryLog = ref(true);
 let autoMode = ref(false);
@@ -260,6 +260,10 @@ const handleBtnMenuDebounced = debounce(handleBtnMenu, 200);
         display: block;
       }
     }
+  }
+
+  #ba-story-log{
+    z-index: 110;
   }
 
   #ba-story-summery {

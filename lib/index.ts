@@ -80,7 +80,7 @@ export async function init(elementID: string, props: PlayerConfigs, endCallback:
  * 处理故事进度对象
  */
 export let storyHandler = {
-  currentStoryIndex: 0,
+  currentStoryIndex: 88,
   endCallback: () => { },
   unitPlaying: false,
   auto: false,
@@ -315,7 +315,7 @@ export let eventEmitter = {
     eventBus.on('stopAuto', () => storyHandler.stopAuto())
     eventBus.on('playVoiceJPDone', async () => {
       if (storyHandler.auto) {
-        await wait(400)
+        await wait(1200)
       }
       this.voiceJpPlaying = false
     })
