@@ -14,7 +14,6 @@ let hiddenSummary = ref(true);
 let hiddenStoryLog = ref(true);
 let autoMode = ref(false);
 let hiddenMenu = ref(true);
-let menuOpacity = ref(0);
 
 // 计时器：当这个计时器到时间时 -- 回调函数会把 hiddenMenu 设置成 true 来影藏菜单
 let btnMenuTimmer: any
@@ -75,17 +74,15 @@ function debounce<T extends Function>(cb: T, wait = 20) {
 }
 
 function handleBtnMenu() {
-  menuOpacity.value = menuOpacity.value === 0 ? 1 : 0;
   if (hiddenMenu.value) {
     hiddenMenu.value = false;
     // 一段时间后自动影藏
+    clearInterval(btnMenuTimmer)
     btnMenuTimmer = setTimeout(() => {
-      if (!hiddenMenu.value) handleBtnMenu();
+      hiddenMenu.value = true;
     }, 5555);
   } else {
-    setTimeout(() => {
-      hiddenMenu.value = true;
-    }, 200);
+    hiddenMenu.value = true;
   }
 }
 
@@ -93,7 +90,7 @@ function refreshBtnMenuTimmer() {
   if (!hiddenMenu.value) {
     clearTimeout(btnMenuTimmer)
     btnMenuTimmer = setTimeout(() => {
-      if (!hiddenMenu.value) handleBtnMenu();
+      hiddenMenu.value = true;
     }, 5555);
   }
 }
@@ -123,10 +120,8 @@ onMounted(() => {
         </BaButton>
       </div>
 
-      <div class="baui-menu-options lean-rect" :style="{
-        opacity: menuOpacity,
-        display: hiddenMenu === true ? 'none' : '',
-      }">
+      <Transition>
+        <div class="baui-menu-options lean-rect" v-if="!hiddenMenu">
         <button class="button-nostyle ba-menu-option" @click="handleBtnHiddenUi">
           <img draggable="false" src="./assets/pan-arrow.svg" />
         </button>
@@ -137,8 +132,11 @@ onMounted(() => {
           <img draggable="false" src="./assets/fast-forward.svg" />
         </button>
       </div>
+      </Transition>
     </div>
+
     <BaSelector id="ba-story-selector" :selection="selectOptions" @select="handleBaSelector"/>
+
     <BaDialog id="ba-story-summery" :title="'概要'" :show="!hiddenSummary" @close="hiddenSummary = true">
       <div class="ba-story-summery-container">
         <h4 class="ba-story-summery-title">{{ storySummary.chapterName }}</h4>
@@ -152,6 +150,7 @@ onMounted(() => {
         </div>
       </div>
     </BaDialog>
+    
     <BaDialog id="ba-story-log" :title="'对话记录'" width="80%" height="90%" :show="!hiddenStoryLog"
       @close="hiddenStoryLog = !hiddenStoryLog">
       <BaChatLog />
@@ -188,6 +187,13 @@ onMounted(() => {
   z-index: 100;
   overflow: hidden;
 
+  .v-enter-active, .v-leave-active {
+    transition: opacity .2s;
+  }
+  .v-enter-from, .v-leave-to {
+    opacity: 0;
+  }
+
   .baui-button-group {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -218,7 +224,6 @@ onMounted(() => {
     border-radius: 6px;
     background-color: rgba(244, 244, 244, 0.6);
     overflow: hidden;
-    transition: opacity 0.2s;
 
     .ba-menu-option {
       display: block;
