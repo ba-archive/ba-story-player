@@ -445,7 +445,6 @@ const PlayerHeight = 550;
 const CharacterScale = 0.29;
 // spine在播放器之下的部分;
 const spineHideRate = 0.4;
-
 export function calcCharacterYAndScale(spine: Spine) {
   const { screenHeight } = getStageSize();
   const scale = screenHeight / PlayerHeight * CharacterScale;

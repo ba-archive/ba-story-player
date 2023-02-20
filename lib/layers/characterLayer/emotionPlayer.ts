@@ -1,11 +1,11 @@
 import eventBus from "@/eventBus";
 import { usePlayerStore } from "@/stores";
 import {
-  CharacterEffectInstance, CharacterEmotionPlayer, EmotionOptions, EmotionWord, PositionOffset, Scale
+CharacterEffectInstance, CharacterEmotionPlayer, EmotionOptions, EmotionWord, PositionOffset, Scale
 } from "@/types/characterLayer";
 import gsap from 'gsap';
 import { Spine } from "pixi-spine";
-import { Container, DisplayObject, Sprite } from "pixi.js";
+import { Container, Sprite } from "pixi.js";
 import { getStandardWidth } from ".";
 import emotionOptions from "./options/emotionOptions";
 
@@ -147,7 +147,7 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
     return Promise.resolve(undefined);
   }, Music(instance: CharacterEffectInstance, options: EmotionOptions['Music'], sprites: Sprite[]) {
     const note = sprites[0];
-    const scale = calcImageBaseScale(instance.instance, options, note);
+    const scale = getRelativeScale(note, options)
     const { container } = prepareEmotionContainer(instance.instance, options);
 
     note.scale.set(scale * 0.7);
@@ -227,7 +227,7 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
     const dialogImg = sprites[0]
     const shyImg = sprites[1]
     const { container, offsetX, offsetY } = prepareEmotionContainer(instance.instance, options);
-    const scale = calcImageBaseScale(instance.instance, options, dialogImg);
+    const scale = getRelativeScale(dialogImg, options)
     container.position.set(
       offsetX + instance.instance.width * options.startPositionOffset.x,
       offsetY + instance.instance.width * options.startPositionOffset.y
@@ -260,7 +260,7 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
   }, Surprise(instance: CharacterEffectInstance, options: EmotionOptions['Surprise'], sprites: Sprite[]): Promise<void> {
     const exclaimImg = Sprite.from(sprites[0].texture)
     const surpriseImg = Sprite.from(sprites[1].texture)
-    const scale = calcImageBaseScale(instance.instance, options, exclaimImg);
+    const scale = getRelativeScale(exclaimImg, options)
     const startScale = scale * options.scaleAnimation.startScale
 
     exclaimImg.scale.set(startScale)
@@ -290,7 +290,7 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
     const dropImg = sprites[0];
     const smallDropImg = sprites[1];
     const { container } = prepareEmotionContainer(instance.instance, options);
-    const scale = calcImageBaseScale(instance.instance, options, dropImg);
+    const scale = getRelativeScale(dropImg, options)
     dropImg.scale.set(scale);
     smallDropImg.scale.set(scale);
     dropImg.x = instance.instance.width * options.startPositionOffset.x;
@@ -381,17 +381,6 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
   }
 }
 
-
-function calcGlobalEmotionOptions(instance: CharacterEffectInstance, standardImg: Sprite, options: EmotionOptions[EmotionWord]) {
-  return {
-    startPositionOffset: {
-      x: instance.instance.x + instance.instance.width * options.startPositionOffset.x,
-      y: instance.instance.y + instance.instance.width * options.startPositionOffset.y
-    },
-    scale: options.scale * instance.instance.width / standardImg.width
-  }
-}
-
 /**
  * 根据相对位置计算相对位置
  * @param standard 相对位置基于的图片
@@ -475,36 +464,7 @@ function prepareEmotionContainer(spine: Spine, options: EmotionOptions[EmotionWo
 }
 
 /**
- * 根据spine width和options计算图片的缩放
- * @param spine 角色spine
- * @param options
- * @param image 要计算scale的图片
- */
-function calcImageBaseScale(spine: Spine, options: EmotionOptions[EmotionWord], image: Sprite) {
-  return options.scale * spine.width / image.width / spine.scale.x
-}
-
-/**
- * 设置初始位置, 并同时会将z-index设为10放置角色覆盖图片
- * @param instance 角色实例
- * @param object 设置位置的pixi对象
- * @param options 当前情绪动画的参数
- * @returns 位置绝对值
- */
-function setInitPos(instance: CharacterEffectInstance, object: DisplayObject, options: EmotionOptions[EmotionWord]) {
-  let pos = {
-    x: instance.instance.x + instance.instance.width * options.startPositionOffset.x,
-    y: instance.instance.y + instance.instance.width * options.startPositionOffset.y
-  }
-  object.x = pos.x
-  object.y = pos.y
-  object.zIndex = 10
-
-  return pos
-}
-
-/**
- * 计算图片基于角色大小的缩放比例
+ * 计算图片基于标准角色宽度的缩放比例
  * @param img 缩放的图片
  * @param options 情绪动画设置参数
  * @returns 缩放比例绝对值

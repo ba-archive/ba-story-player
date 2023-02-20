@@ -157,7 +157,7 @@ const emotionOptions: EmotionOptions = {
       "x": 0.2,
       "y": 0
     },
-    "scale": 0.13,
+    "scale": 0.2,
     "rotateAngle": -8,
     "animation": {
       "offset": {
@@ -237,7 +237,7 @@ const emotionOptions: EmotionOptions = {
       "x": 0.3,
       "y": -0.1
     },
-    "scale": 0.08,
+    "scale": 0.12,
     "smallImg": {
       "scale": 1,
       "offset": {
@@ -348,7 +348,7 @@ const emotionOptions: EmotionOptions = {
       "x": 0.3,
       "y": 0.16
     },
-    "scale": 0.06,
+    "scale": 0.12,
     "fadeOutPreDuration": 0.4,
     "imgSetting": {
       "angles": [
@@ -408,7 +408,7 @@ const emotionOptions: EmotionOptions = {
       "x": 0.3,
       "y": 0.1
     },
-    "scale": 0.27,
+    "scale": 0.46,
     "fadeOutDuration": 0.1,
     "shyImg": {
       "anchor": {
