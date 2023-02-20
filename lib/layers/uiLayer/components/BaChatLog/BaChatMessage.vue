@@ -89,9 +89,8 @@ switch (props.chatMessage?.type) {
   // 旁白样式
   &.narration {
     filter: drop-shadow(#2c3f4a 0 1px 2px);
-    .ba-chat-message-avatar {
+    .ba-chat-message-avatar-border{
       height: 0;
-      width: 88px;
     }
     .ba-chat-message-bubble {
       margin: 8px 28px 4px 0;
