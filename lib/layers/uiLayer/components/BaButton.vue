@@ -31,7 +31,7 @@ onMounted(()=>{
 </script>
 
 <template>
-  <button :class="['ba-button', size]" ref="button" @click="handleClick">
+  <button :class="['ba-button', size]" ref="button" @click="handleClick" tabindex="-1">
     <slot></slot>
   </button>
 </template>
@@ -41,7 +41,6 @@ onMounted(()=>{
   position: relative;
   padding: 6px 16px;
   border-radius: 5px;
-  //   border:  solid 1px rgb(133, 133, 133);
   border: none;
   font-size: 18px;
   font-weight: bold;

@@ -79,7 +79,7 @@ function handleSelect(ev: Event, select: number) {
         @mouseleave="handleSelectMouseUp($event)"
         @mouseup="handleSelectMouseUp($event)"
         role="button"
-        :tabindex="index"
+        tabindex="-1"
         class="ba-selector-list"
       >
         <div
