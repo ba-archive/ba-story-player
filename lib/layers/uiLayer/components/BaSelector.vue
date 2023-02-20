@@ -42,6 +42,8 @@ function handleSelectMouseUp(ev: Event) {
  * @param select 选项
  */
 function handleSelect(ev: Event, select: number) {
+  emit("select", select);
+
   gsap.to(ev.currentTarget, {
     duration: 0.4,
     scale: 1.1,
@@ -73,7 +75,7 @@ function handleSelect(ev: Event, select: number) {
         v-for="(e, index) in selection"
         @mousedown="handleSelectMouseDown($event, e.SelectionGroup)"
         :key="index"
-        @click="handleSelect($event, e.SelectionGroup)"
+        @click="handleSelect($event, index)"
         @mouseleave="handleSelectMouseUp($event)"
         @mouseup="handleSelectMouseUp($event)"
         role="button"

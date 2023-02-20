@@ -51,7 +51,7 @@ function handleBtnSkipSummary() {
 
 // 处理选项
 function handleBaSelector(selectionGroup: number){
-  eventBus.emit("playOtherSounds", "select")
+  console.log("select: ", selectionGroup)
   eventBus.emit('select', selectionGroup)
   usePlayerStore().updateLogText(selectOptions.value[selectionGroup])
 }
