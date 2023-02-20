@@ -1,22 +1,14 @@
 import type { Spine } from 'pixi-spine';
 import { PlayAudio, PlayEffect, ShowOption, ShowText, StArgs } from './events';
 import { TransitionTableItem } from './excels';
-import { Language, StorySummary } from './store';
+import {PlayerProps} from '@/BaStoryPlayer.vue'
 export type StoryType = "title" | "place" | "text" | "option" | "st" | "effectOnly" | 'continue'
 
 export type Dict<T> = {
   [key: string]: T;
 };
 
-export type PlayerProps = {
-  story: StoryRawUnit[]
-  dataUrl: string
-  height: number
-  width: number
-  language: Language
-  userName: string
-  storySummary: StorySummary
-}
+export type PlayerConfigs = PlayerProps &{height:number}
 
 
 export interface Text {
@@ -209,6 +201,16 @@ export interface CharacterInstance {
    * 会根据m1m2m3m4m5动态更新
    */
   position: number;
+  /**
+   * 当前人物表情
+   *
+   * 用来判断是否触发眨眼动画
+   */
+  currentFace: string;
+  /**
+   * 眨眼定时器的handler
+   */
+  winkHandler?: number;
   instance: Spine;
   isShow: () => boolean;
   isOnStage: () => boolean;

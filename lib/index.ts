@@ -5,13 +5,12 @@ import { effectInit } from '@/layers/effectLayer';
 import { soundInit } from "@/layers/soundLayer";
 import { translate } from '@/layers/translationLayer';
 import { initPrivateState, usePlayerStore } from "@/stores";
-import { PlayerProps, StoryUnit } from "@/types/common";
+import { PlayerConfigs, StoryUnit } from "@/types/common";
 import * as utils from '@/utils';
 import { getOtherSoundUrls, wait } from "@/utils";
 import axios from 'axios';
 import { SpineParser } from 'pixi-spine';
 import { Application, Loader, settings, Text } from "pixi.js";
-import * as PIXI from 'pixi.js';
 import { L2DInit } from "./layers/l2dLayer/L2D";
 
 let playerStore: ReturnType<typeof usePlayerStore>
@@ -23,10 +22,14 @@ let l2dVoiceExcelTable = {
 /**
  * 调用各层的初始化函数
  */
-export async function init(elementID: string, props: PlayerProps, endCallback: () => void) {
+export async function init(elementID: string, props: PlayerConfigs, endCallback: () => void) {
   //缓解图片缩放失真
   settings.MIPMAP_TEXTURES = 2
 
+
+  if (props.useMp3) {
+    utils.setOggAudioType('mp3')
+  }
   storyHandler.endCallback = endCallback
   playerStore = usePlayerStore()
   privateState = initPrivateState()
@@ -41,7 +44,7 @@ export async function init(elementID: string, props: PlayerProps, endCallback: (
   }
   // TODO debug用 线上环境删掉 而且会导致HMR出问题 慎用
   // https://chrome.google.com/webstore/detail/pixijs-devtools/aamddddknhcagpehecnhphigffljadon/related?hl=en
-  (window as any).__PIXI_INSPECTOR_GLOBAL_HOOK__ && (window as any).__PIXI_INSPECTOR_GLOBAL_HOOK__.register({ PIXI: PIXI })
+  // (window as any).__PIXI_INSPECTOR_GLOBAL_HOOK__ && (window as any).__PIXI_INSPECTOR_GLOBAL_HOOK__.register({ PIXI: PIXI })
 
   let app = playerStore.app
   document.querySelector(`#${elementID}`)?.appendChild(app.view)
@@ -67,7 +70,6 @@ export async function init(elementID: string, props: PlayerProps, endCallback: (
   resourcesLoader.load(() => {
     app.stage.removeChild(loadingText)
     loadingText.destroy()
-    console.log(playerStore)
     //开始发送事件
     eventEmitter.init()
   })
@@ -82,6 +84,7 @@ export let storyHandler = {
   endCallback: () => { },
   unitPlaying: false,
   auto: false,
+  isEnd: false,
 
   get currentStoryUnit(): StoryUnit {
     if (playerStore && playerStore.allStoryUnit.length > this.currentStoryIndex) {
@@ -183,11 +186,13 @@ export let storyHandler = {
           return ['text', 'option']
         }
       }
-      while (!playCondition().includes(storyHandler.currentStoryUnit.type)) {
+      while (!playCondition().includes(storyHandler.currentStoryUnit.type) && !this.isEnd) {
         await eventEmitter.emitEvents()
         storyHandler.storyIndexIncrement()
       }
-      await eventEmitter.emitEvents()
+      if (!this.isEnd) {
+        await eventEmitter.emitEvents()
+      }
       this.unitPlaying = false
     }
   },
@@ -210,6 +215,7 @@ export let storyHandler = {
   end() {
     console.log('播放结束')
     this.auto = false
+    this.isEnd = true
     this.endCallback()
   },
 
@@ -227,7 +233,7 @@ export let storyHandler = {
     else {
       //可能storyPlay正要结束但还没结束导致判断错误
       setTimeout(() => {
-        if (!this.unitPlaying) {
+        if (!this.unitPlaying && this.auto) {
           if (this.currentStoryUnit.type !== 'option') {
             this.storyIndexIncrement()
             this.storyPlay()
@@ -261,6 +267,14 @@ export let eventEmitter = {
   stDone: true,
   /** 当前l2d动画是否播放完成 */
   l2dAnimationDone: true,
+  voiceJpPlaying: false,
+  get VoiceJpDone(): boolean {
+    if (!storyHandler.auto) {
+      return true
+    }
+    return !this.voiceJpPlaying
+  },
+
 
   get unitDone(): boolean {
     let result = true
@@ -299,6 +313,12 @@ export let eventEmitter = {
     })
     eventBus.on('auto', () => storyHandler.startAuto())
     eventBus.on('stopAuto', () => storyHandler.stopAuto())
+    eventBus.on('playVoiceJPDone', async () => {
+      if (storyHandler.auto) {
+        await wait(1200)
+      }
+      this.voiceJpPlaying = false
+    })
 
     storyHandler.storyPlay()
   },
@@ -336,6 +356,7 @@ export let eventEmitter = {
       case 'text':
         this.textDone = false
         eventBus.emit('showText', currentStoryUnit.textAbout.showText)
+        eventBus.emit('showmenu')
         break
       case 'option':
         if (currentStoryUnit.textAbout.options) {
@@ -404,7 +425,10 @@ export let eventEmitter = {
    */
   showBg() {
     if (storyHandler.currentStoryUnit.bg) {
-      eventBus.emit('showBg', storyHandler.currentStoryUnit.bg?.url)
+      eventBus.emit("showBg", {
+        url: storyHandler.currentStoryUnit.bg?.url,
+        overlap: storyHandler.currentStoryUnit.bg?.overlap,
+      });
       if (this.l2dPlaying) {
         eventBus.emit('endL2D')
         this.l2dPlaying = false
@@ -431,6 +455,9 @@ export let eventEmitter = {
   playAudio() {
     if (storyHandler.currentStoryUnit.audio) {
       eventBus.emit('playAudio', storyHandler.currentStoryUnit.audio)
+      if (storyHandler.currentStoryUnit.audio.voiceJPUrl) {
+        this.voiceJpPlaying = true
+      }
     }
   },
 
@@ -557,6 +584,7 @@ export let resourcesLoader = {
 
         //添加sound
         this.checkAndAdd(unit.audio.soundUrl)
+        this.checkAndAdd(unit.audio.voiceJPUrl)
       }
       //添加背景图片
       this.checkAndAdd(unit.bg, 'url')
@@ -579,8 +607,9 @@ export let resourcesLoader = {
       playerStore.app.loader.load((loader, res) => {
         //当chrome webgl inspector打开时可能导致callback被执行两次
         if (!hasLoad) {
-          console.log(res)
+          console.log('已加载资源:', res)
           callback()
+          hasLoad = true
         }
       })
     })
@@ -678,30 +707,53 @@ export let resourcesLoader = {
    * 加载原始数据资源
    */
   async loadExcels() {
-    await axios.get(utils.getResourcesUrl('excel', 'ScenarioBGNameExcelTable.json')).then(res => {
-      for (let i of res.data['DataList']) {
-        privateState.BGNameExcelTable.set(i['Name'], i)
+    const excelPromiseArray: Array<Promise<void>> = []
+    excelPromiseArray.push(
+      axios.get(utils.getResourcesUrl('excel', 'ScenarioBGNameExcelTable.json')).then(res => {
+        for (let i of res.data['DataList']) {
+          privateState.BGNameExcelTable.set(i['Name'], i)
+        }
+      })
+    )
+    excelPromiseArray.push(
+      axios.get(utils.getResourcesUrl('excel', 'ScenarioCharacterNameExcelTable.json')).then(res => {
+        for (let i of res.data['DataList']) {
+          privateState.CharacterNameExcelTable.set(i['CharacterName'], i)
+        }
+      })
+    )
+    excelPromiseArray.push(
+      axios.get(utils.getResourcesUrl('excel', 'BGMExcelTable.json')).then(res => {
+        for (let i of res.data['DataList']) {
+          privateState.BGMExcelTable.set(i['Id'], i)
+        }
+      })
+    )
+    excelPromiseArray.push(
+      axios.get(utils.getResourcesUrl('excel', 'ScenarioTransitionExcelTable.json')).then(res => {
+        for (let i of res.data['DataList']) {
+          privateState.TransitionExcelTable.set(i['Name'], i)
+        }
+      })
+    )
+    excelPromiseArray.push(
+      axios.get(utils.getResourcesUrl('excel', 'ScenarioBGEffectExcelTable.json')).then(res => {
+        for (let i of res.data['DataList']) {
+          privateState.BGEffectExcelTable.set(i['Name'], i)
+        }
+      })
+    )
+
+    const results = await Promise.allSettled(excelPromiseArray)
+    let reasons = []
+    for (let result of results) {
+      if (result.status === 'rejected') {
+        reasons.push(result.reason)
       }
-    })
-    await axios.get(utils.getResourcesUrl('excel', 'ScenarioCharacterNameExcelTable.json')).then(res => {
-      for (let i of res.data['DataList']) {
-        privateState.CharacterNameExcelTable.set(i['CharacterName'], i)
-      }
-    })
-    await axios.get(utils.getResourcesUrl('excel', 'BGMExcelTable.json')).then(res => {
-      for (let i of res.data['DataList']) {
-        privateState.BGMExcelTable.set(i['Id'], i)
-      }
-    })
-    await axios.get(utils.getResourcesUrl('excel', 'ScenarioTransitionExcelTable.json')).then(res => {
-      for (let i of res.data['DataList']) {
-        privateState.TransitionExcelTable.set(i['Name'], i)
-      }
-    })
-    await axios.get(utils.getResourcesUrl('excel', 'ScenarioBGEffectExcelTable.json')).then(res => {
-      for (let i of res.data['DataList']) {
-        privateState.BGEffectExcelTable.set(i['Name'], i)
-      }
-    })
+    }
+    if (reasons.length != 0) {
+      throw new Error(reasons.toString())
+    }
   }
+
 }

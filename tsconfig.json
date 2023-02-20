@@ -28,9 +28,7 @@
     "lib/**/*.d.ts",
     "lib/**/*.tsx",
     "lib/**/*.vue",
-    "src/vite-env.d.ts",
-    "src/*",
-    "src/**/*"
+    "src/vite-env.d.ts"
   ],
   "references": [
     {

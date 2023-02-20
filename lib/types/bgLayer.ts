@@ -1,6 +1,7 @@
 import { LoaderResource, Sprite } from "pixi.js";
 
 import { Dict } from "@/types/common";
+import { BgParams } from "@/types/events";
 
 export interface BgLayer {
   /**
@@ -21,9 +22,9 @@ export interface BgLayer {
   disposeEvent(): void;
   /**
    * showBg 事件处理函数
-   * @param name 背景图片名
+   * @param params 背景图片参数
    */
-  handleShowBg(name: string): void;
+  handleShowBg(params: BgParams): void;
   /**
    * 从 Loader Resource 获取背景 Sprite
    * @param resources loader resources
@@ -33,4 +34,12 @@ export interface BgLayer {
     resources: Dict<LoaderResource>,
     name: string
   ): Sprite | undefined;
+  /**
+   * 直接加载背景
+   */
+  loadBg(instance: Sprite): void;
+  /**
+   * 基于 bgoverlap 特效加载背景
+   */
+  loadBgOverlap(instance: Sprite, overlap: number): void;
 }

@@ -1,5 +1,5 @@
 <template>
-  <div class="container" @click="moveToNext" :style="{ height: `${playerHeight}px` }" @mouseup="selectionSelect = -1">
+  <div class="container" @click="moveToNext" :style="{ height: `${playerHeight}px` }">
     <div class="container-inner">
       <div class="st-container" ref="stOutput" :style="{fontSize: `${standardFontSize}rem`}" />
       <div class="title-container"
@@ -28,13 +28,21 @@
         :style="{ 'top': `${selectContainerTop}px` }"
       >
         <div v-for="(e, index) in selection"
-             class="select-item"
              @mousedown="handleSelectMousedown(e.SelectionGroup)"
-             :class="{ 'select-item-active': e.SelectionGroup === selectionSelect }"
              :key="index"
              @click="handleSelect(e.SelectionGroup)"
+             @mouseout="selectionSelect = -1"
+             @mouseup="selectionSelect = -1"
              role="button"
-             >{{ e.text }}</div>
+             :tabindex="index"
+             >
+          <div
+            class="select-item"
+            :class="{ 'select-item-active': e.SelectionGroup === selectionSelect }"
+          >
+            {{ e.text }}
+          </div>
+        </div>
       </div>
       <div v-if="showDialog" :style="{padding: `${fontSize(3)}rem ${fontSize(8)}rem`, height: `${dialogHeight}px`}"
            class="dialog" >
@@ -444,7 +452,7 @@ type TextLayerProps = {
   font-family: 'TJL';
   src : url('https://yuuka.cdn.diyigemt.com/image/ba-all-data/assets/ResourceHanRoundedCN-Medium.ttf');
 }
-$border-radius: 3px;
+$border-radius: 5px;
 $dialog-z-index: 3;
 $place-z-index: 8;
 $title-z-index: 10;
@@ -536,10 +544,9 @@ $st-z-index: 10;
       text-align: center;
       line-height: 2;
       font-size: 1.5rem;
-      border-radius: $border-radius;
       color: black;
       cursor: pointer;
-      transition: width 0.3s, height 0.3s;
+      transition: width 0.1s, height 0.1s;
       position: relative;
       &:before {
         content: '';
@@ -548,7 +555,9 @@ $st-z-index: 10;
         top: 0;
         width: 100%;
         height: 100%;
-        transform: skewX(-15deg);
+        border-radius: $border-radius;
+        transform: skewX(-10deg);
+        border: 1px solid white;
         background: linear-gradient(
             58deg,
             rgba(240, 240, 240, 0.1) 0%,
@@ -559,7 +568,7 @@ $st-z-index: 10;
       }
     }
     .select-item-active {
-      transform: scale(0.8);
+      transform: scale(0.95);
     }
   }
   .title-container {

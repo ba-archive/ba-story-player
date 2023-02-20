@@ -1,7 +1,7 @@
 {
   "name": "ba-story-player",
-  "private": true,
-  "version": "0.0.1",
+  "version": "0.1.1",
+  "license": "MIT",
   "type": "module",
   "files": [
     "dist"
@@ -9,11 +9,15 @@
   "main": "./dist/ba-story-player.umd.cjs",
   "module": "./dist/ba-story-player.js",
   "types": "./dist/main.d.ts",
+  "repository": {
+    "url": "https://github.com/ba-archive/ba-story-player"
+  },
   "exports": {
     ".": {
       "import": "./dist/ba-story-player.js",
       "require": "./dist/ba-story-player.umd.js"
-    }
+    },
+    "./dist/style.css": "./dist/style.css"
   },
   "scripts": {
     "dev": "vite --host",
@@ -22,21 +26,22 @@
   },
   "dependencies": {
     "@pixi-spine/base": "^3.1.0",
-    "@pixi/filter-adjustment": "^5.1.1",
+    "@pixi/filter-adjustment": "^4.0.0",
     "@pixi/filter-color-overlay": "^4.0.0",
-    "@pixi/filter-crt": "^5.0.0",
+    "@pixi/filter-crt": "^4.0.0",
     "@pixi/filter-motion-blur": "^4.2.0",
     "@pixi/particle-emitter": "^5.0.8",
     "@pixi/sound": "<5.0.0",
-    "axios": "^1.1.3",
-    "filter-adjustment^5.0.0": "link:@pixi/filter-adjustment^5.0.0",
     "gsap": "^3.11.3",
     "mitt": "^3.0.0",
     "pixi-spine": "^3.1.0",
     "pixi.js": "^6.0.0",
     "typed.js": "^2.0.12",
-    "vue": "^3.2.41",
     "xxhashjs": "^0.2.2"
+  },
+  "peerDependencies": {
+    "axios": "^1.1.3",
+    "vue": "^3.2.41"
   },
   "devDependencies": {
     "@types/node": "^18.11.9",

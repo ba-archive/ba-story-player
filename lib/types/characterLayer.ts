@@ -2,6 +2,7 @@ import type { ISkeletonData, Spine } from 'pixi-spine'
 import { ShowCharacter } from "@/types/events";
 import { Character, CharacterEffectType, CharacterInstance } from "@/types/common";
 import { Sprite } from 'pixi.js';
+import {IAnimationStateListener} from "@pixi-spine/base";
 
 /**
  * 角色层定义
@@ -499,6 +500,10 @@ export interface FXOptions extends BaseOptions<FXEffectWord> {
       angle: number
     }[]
   }
+}
+
+export interface ILoopAnimationStateListener extends IAnimationStateListener {
+  key: string;
 }
 
 export interface SignalOptions extends BaseOptions<SignalEffectWord> {

@@ -199,7 +199,7 @@ function calcL2DSize(
   return { width, height, ratio };
 }
 function fadeEffect() {
-  let player = document.querySelector("#player") as HTMLDivElement;
+  let player = document.querySelector("#player__main") as HTMLDivElement;
   player.style.backgroundColor = "white";
   let playerCanvas = document.querySelector("#player canvas");
   gsap.to(playerCanvas, { alpha: 0, duration: 1 });

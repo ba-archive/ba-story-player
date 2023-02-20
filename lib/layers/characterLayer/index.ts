@@ -7,13 +7,14 @@ import {
   CharacterLayer,
   EffectsWord,
   EmotionWord,
-  FXEffectWord
+  FXEffectWord,
+ILoopAnimationStateListener
 } from "@/types/characterLayer";
 import {Character, CharacterEffectType, CharacterInstance} from "@/types/common";
 import {ShowCharacter} from "@/types/events";
 import gsap, {Power0} from "gsap";
 import {PixiPlugin} from 'gsap/PixiPlugin';
-import {ISkeletonData, Spine} from "pixi-spine";
+import {IAnimationState, ISkeletonData, ITrackEntry, Spine} from "pixi-spine";
 import * as PIXI from 'pixi.js';
 import CharacterEffectPlayerInstance, {calcSpineStagePosition, POS_INDEX_MAP} from "./actionPlayer";
 import CharacterEmotionPlayerInstance from './emotionPlayer';
@@ -22,10 +23,11 @@ import {ColorOverlayFilter} from '@pixi/filter-color-overlay'
 import {CRTFilter} from '@pixi/filter-crt'
 import {AdjustmentFilter} from '@pixi/filter-adjustment'
 import {MotionBlurFilter} from '@pixi/filter-motion-blur'
+import {IAnimationStateListener} from "@pixi-spine/base";
 
 const AnimationIdleTrack = 0; // 光环动画track index
 const AnimationFaceTrack = 1; // 差分切换
-const AnimationEyeCloseTrack = 2; // TODO 眨眼动画
+const AnimationWinkTrack = 2; // TODO 眨眼动画
 
 type ICharacterEffectPlayerInterface = CharacterEffectPlayerInterface<EmotionWord | CharacterEffectWord | FXEffectWord>;
 type IEffectPlayerMap = {
@@ -36,6 +38,7 @@ const EffectPlayerMap: IEffectPlayerMap = {
   "emotion": CharacterEmotionPlayerInstance,
   "fx": CharacterFXPlayerInstance,
 }
+
 /**
  * 角色初始的pivot相对与长宽的比例, 当前值代表左上角
  */
@@ -83,6 +86,10 @@ export const CharacterLayerInstance: CharacterLayer = {
   dispose(): boolean {
     document.removeEventListener("resize", this.onWindowResize);
     eventBus.off("showCharacter", showCharacter);
+    // 删除眨眼的handler
+    this.characterSpineCache.forEach((it) => {
+      it.winkHandler && window.clearTimeout(it.winkHandler);
+    });
     //TODO 销毁各种sprite,spine实体
     return true;
   },
@@ -122,6 +129,7 @@ export const CharacterLayerInstance: CharacterLayer = {
     const characterInstance: CharacterInstance = {
       CharacterName: character.CharacterName,
       position: character.position,
+      currentFace: character.face,
       instance,
       isOnStage() {
         return Boolean(instance.parent);
@@ -141,6 +149,8 @@ export const CharacterLayerInstance: CharacterLayer = {
     const { app } = usePlayerStore()
     const instance = this.getCharacterInstance(character.CharacterName)!;
     instance.position = character.position;
+    instance.currentFace = character.face;
+    wink(instance);
     const spine = instance.instance
     if (!spine) {
       return false;
@@ -369,6 +379,65 @@ function loopCRtAnimation(crtFilter: CRTFilter) {
 
 function getEffectPlayer(type: CharacterEffectType) {
   return Reflect.get(EffectPlayerMap, type) as ICharacterEffectPlayerInterface
+}
+/**
+ * 眨眼
+ *
+ * 至少游戏里只会眨一次或者两次
+ *
+ * 固定只有01表情时才会眨眼
+ * @param instance 要眨眼的角色结构体
+ * @param first 是否为改变表情时的初始化
+ */
+function wink(instance: CharacterInstance, first = true) {
+  const face = instance.currentFace;
+  if (face !== "01") {
+    return;
+  }
+  instance.winkHandler && window.clearTimeout(instance.winkHandler);
+  const winkTimeout = Math.floor(Math.random() * 1000) + 3500
+  instance.winkHandler = window.setTimeout(wink, winkTimeout, instance, false);
+  if (first) {
+    return;
+  }
+  const spine = instance.instance;
+  const controller = spine.state.listeners.filter(it => Reflect.get(it, "complete") && Reflect.get(it, "eye"))
+  if (controller.length !== 0) {
+    spine.state.removeListener(controller[0]);
+  }
+  const loopTime = Math.floor(Math.random() * 2) + 1
+  loopAnimationTime(spine.state, AnimationWinkTrack, "Eye_Close_01", "eye", loopTime)
+}
+
+/**
+ * 指定循环次数的播放循环动画
+ *
+ * 通过AnimationStateListener在每次播放结束后判断播放次数,
+ *
+ * 如果没有达到次数就继续播放
+ * @param state spine的state对象
+ * @param trackIndex 动画的trackIndex
+ * @param animationName 动画的animationName
+ * @param id 用于标识loop handler的key
+ * @param loop 循环次数
+ */
+function loopAnimationTime<AnimationState extends IAnimationState>(state: AnimationState, trackIndex: number, animationName: string, id: string, loop: number) {
+  const controller = state.listeners.filter(it => Reflect.get(it, "complete") && Reflect.get(it, "key") === id)
+  if (controller.length !== 0) {
+    state.removeListener(controller[0]);
+  }
+  let loopCount = 1;
+  const listener: ILoopAnimationStateListener = {
+    complete() {
+      if (loopCount < loop) {
+        loopCount++;
+        state.setAnimation(trackIndex, animationName, false);
+      }
+    },
+    key: id
+  };
+  state.addListener(listener);
+  state.setAnimation(trackIndex, animationName, false);
 }
 
 // 当播放器高度为PlayerHeight时角色的CharacterScale

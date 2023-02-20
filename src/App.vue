@@ -8,11 +8,10 @@ import ModifyEmotionOption from './components/ModifyEmotionOption.vue';
 import TestEffect from './components/TestEffect.vue';
 import { ref, watch } from 'vue'
 import * as PIXI from 'pixi.js'
+import { usePlayerStore } from '../lib/stores'
 
-window.baResource = resourcesLoader // 方便查看资源加载情况
-window.baStory = storyHandler
-console.log('资源加载: ', window.baResource)
-console.log('资源调用: ', window.baStore)
+console.log('资源加载: ', resourcesLoader)
+console.log('资源调用: ', usePlayerStore())
 console.log('剧情进度: ', storyHandler)
 
 eventBus.on('*', (type, e) => {
@@ -34,6 +33,9 @@ watch(toolType, () => {
 })
 
 Reflect.set(window, 'PIXI', PIXI)
+Reflect.set(window, 'baResource', resourcesLoader)
+Reflect.set(window, 'baStory', storyHandler)
+Reflect.set(window, 'baStore', usePlayerStore())
 Reflect.set(window, 'eventBus', eventBus)
 Reflect.set(window, 'baEvent', eventEmitter)
 Reflect.set(window, 'next', () => {
@@ -42,14 +44,16 @@ Reflect.set(window, 'next', () => {
   eventBus.emit('next')
 })
 
-let height = ref(550)
 let width = ref(1000)
+let showPlayer = ref(true)
 </script>
 
 <template>
   <div style="display:flex;justify-content: center;">
-    <BaStoryPlayer :story="prologue" data-url="https://yuuka.cdn.diyigemt.com/image/ba-all-data" :width="width"
-      :height="height" language="Cn" userName="testUser" :story-summary="storySummary" />
+    <div v-if="showPlayer">
+      <BaStoryPlayer :story="yuuka" data-url="https://yuuka.cdn.diyigemt.com/image/ba-all-data" :width="width"
+        language="Cn" userName="testUser" :story-summary="storySummary" />
+    </div>
     <div style="position: absolute;left: 0;display: flex;flex-direction: column;">
       <label>辅助工具选择</label>
       <select v-model="toolType">
@@ -57,12 +61,13 @@ let width = ref(1000)
         <option value="effect">特效层特效</option>
         <option value="null">无</option>
       </select>
+      <button @click="showPlayer = true">显示</button>
     </div>
     <ModifyEmotionOption class="absolute-right-center" v-if="toolType === 'emotion'" />
     <Suspense>
       <TestEffect class="absolute-right-center" v-if="toolType === 'effect'" />
     </Suspense>
-  </div>
+</div>
 </template>
 
 

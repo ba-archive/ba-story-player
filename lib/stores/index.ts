@@ -92,7 +92,7 @@ let privateState: PrivateStates = {
   //文字层
   logText: [
     { type: 'user', text: '用户对话', name: '用户名' },
-    { type: 'character', text: '人物对话', name: '用户名', avatarUrl: '/avatar.webp' },
+    { type: 'character', text: '人物对话', name: '用户名', avatarUrl: 'https://yuuka.cdn.diyigemt.com/image/ba-all-data/UIs/01_Common/01_Character/Student_Portrait_Yuuka_Small.png' },
     { type: 'none', text: '无特定人物剧情语句' }
   ],
 
@@ -223,5 +223,3 @@ export let usePlayerStore = () => {
  * 返回可修改的privateState, 仅本体在初始化时可调用
  */
 export let initPrivateState = () => privateState;
-
-window.baStore = store // 存一个随时可以查看值

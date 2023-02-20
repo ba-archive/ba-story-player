@@ -2,6 +2,10 @@ import { OtherSoundsUrls, ResourcesTypes } from "@/types/resources"
 
 let dataUrl = ''
 let otherSoundMap: OtherSoundsUrls
+/**
+ * ogg类型的音频是否用其他音频类型代替
+ */
+let oggAudioType='ogg'
 
 /**
  * 设置数据站点
@@ -13,6 +17,13 @@ export function setDataUrl(url: string): void {
     select: `${dataUrl}/Audio/Sound/UI_Button_Touch.wav`,
     bg_underfire: `${dataUrl}/Audio/Sound/UI_FX_BG_UnderFire.wav`
   }
+}
+
+/**
+ * 设置ogg类型音频的替代音频类型
+ */
+export function setOggAudioType(audioType:'mp3'){
+  oggAudioType=audioType
 }
 
 /**
@@ -47,11 +58,11 @@ export function getResourcesUrl(type: ResourcesTypes, arg: string): string {
     case 'excel':
       return `${dataUrl}/data/${arg}`
     case 'bgm':
-      return `${dataUrl}/${arg}.ogg`
+      return `${dataUrl}/${arg}.${oggAudioType}`
     case 'sound':
       return `${dataUrl}/Audio/Sound/${arg}.wav`
     case 'voiceJp':
-      return `${dataUrl}/Audio/VoiceJp/${arg}.wav`
+      return `${dataUrl}/Audio/VoiceJp/${arg}.${oggAudioType}`
     case 'characterSpine':
       //arg UIs/03_Scenario/02_Character/CharacterSpine_hasumi
       let temp = String(arg).split('/')
