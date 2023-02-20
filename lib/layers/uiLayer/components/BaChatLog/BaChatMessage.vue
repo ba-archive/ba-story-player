@@ -1,10 +1,12 @@
 <script lang="ts" setup>
 import { LogText } from "@/types/store";
 import { PropType, ref } from "vue";
+import avatarBG from "../../assets/Deco_GachaItemBg.png"
 
 const props = defineProps({
   chatMessage: Object as PropType<LogText>,
 });
+const avatarBGRef = ref<string>(avatarBG)
 
 const bubbleType = ref<"student" | "teacher" | "narration">("student");
 switch (props.chatMessage?.type) {
@@ -25,7 +27,14 @@ switch (props.chatMessage?.type) {
 
 <template>
   <div :class="['ba-chat-message', bubbleType]">
-    <img class="ba-chat-message-avatar" :src="props.chatMessage?.avatarUrl" draggable="false"/>
+    <!-- 设置透明度为0如果没有图片需要显示 -->
+    <div class="ba-chat-message-avatar-border" :style="{ opacity: props.chatMessage?.avatarUrl ? 1 : 0 }">
+      <div
+        class="ba-chat-message-avatar"
+        role="image"
+        :style="{ 'background-image': 'url(' + props.chatMessage?.avatarUrl + ')' + ', url(' + avatarBGRef + ')' }"
+      />
+    </div>
     <div class="ba-chat-message-bubble">
       <div class="ba-chat-message-bubble-name-bg">
         <div class="ba-chat-message-bubble-text-bg"></div>
@@ -44,7 +53,7 @@ switch (props.chatMessage?.type) {
   display: flex;
 
   // 学生样式
-  &.student > .ba-chat-message-bubble{
+  &.student > .ba-chat-message-bubble {
     color: #373737;
     filter: drop-shadow(#afb7ba 0 1px 2px);
     .ba-chat-message-bubble-name-bg {
@@ -105,30 +114,37 @@ switch (props.chatMessage?.type) {
       .ba-chat-message-text {
         color: #fefefe;
         font-weight: bold;
-        
+
         min-height: 1em;
         text-align: center;
       }
     }
   }
-
-  .ba-chat-message-avatar {
-    height: 70px;
-    width: 88px;
+  .ba-chat-message-avatar-border {
+    position: relative;
+    height: 75px;
+    width: 80px;
     margin: 16px 8px;
-    object-fit: cover;
+    border: solid #fff 1.3px;
     border-radius: 16px;
-    user-select: none;
+    overflow: hidden;
+    transform: skewX(-10deg);
+    transform-origin: center;
+    box-shadow: 0 3px 1px #777, -0.5px 0 1px #888, 0.5px 0 1px #888;
 
-    // 如果没有src则透明度设置为0
-    &[src=""],
-    &:not([src]) {
-      opacity: 0;
+    .ba-chat-message-avatar {
+      position: absolute;
+      // width: 100%;
+      height: 100%;
+      // top: 0;
+      left: -10%;
+      right: -10%;
+      transform: skewX(10deg);
+      background-repeat: no-repeat; 
+      background-position: center; 
+      transform-origin: center;
+      background-size: cover, cover;
     }
-
-    // 素材已经是斜着的图片了。这样实现会到时有两个角不是圆角
-    -webkit-clip-path: polygon(14% 0, 100% 0%, 86% 100%, 0% 100%);
-    clip-path: polygon(14% 0, 100% 0%, 86% 100%, 0% 100%);
   }
   .ba-chat-message-bubble {
     position: relative;
