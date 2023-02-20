@@ -179,6 +179,11 @@ const handleBtnMenuDebounced = debounce(handleBtnMenu, 200);
 </template>
 
 <style lang="scss" scoped>
+@font-face{
+  font-family: 'TJL';
+  src : url('https://yuuka.cdn.diyigemt.com/image/ba-all-data/assets/ResourceHanRoundedCN-Medium.ttf');
+}
+
 .lean-rect {
   transform: skew(-10deg);
 }
@@ -206,6 +211,9 @@ const handleBtnMenuDebounced = debounce(handleBtnMenu, 200);
   top: 0;
   z-index: 100;
   overflow: hidden;
+  font-family: 'TJL','Microsoft YaHei', 'PingFang SC', -apple-system, system-ui,
+    'Segoe UI', Roboto, Ubuntu, Cantarell, 'Noto Sans', BlinkMacSystemFont,
+    'Helvetica Neue', 'Hiragino Sans GB', Arial, sans-serif;
 
   .v-enter-active, .v-leave-active {
     transition: opacity .2s;

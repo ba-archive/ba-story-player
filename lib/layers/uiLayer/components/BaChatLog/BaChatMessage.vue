@@ -81,13 +81,12 @@ switch (props.chatMessage?.type) {
   &.narration {
     filter: drop-shadow(#2c3f4a 0 1px 2px);
     .ba-chat-message-avatar {
-      display: none;
+      height: 0;
+      width: 88px;
     }
     .ba-chat-message-bubble {
-      color: #fefefe;
-      margin: 8px 28px 4px 28px;
+      margin: 8px 28px 4px 0;
       .ba-chat-message-bubble-name-bg {
-        transform: none;
         background-color: #426487;
         visibility: hidden;
         height: inherit;
@@ -104,16 +103,20 @@ switch (props.chatMessage?.type) {
         display: none;
       }
       .ba-chat-message-text {
+        color: #fefefe;
+        font-weight: bold;
+        
         min-height: 1em;
+        text-align: center;
       }
     }
   }
 
   .ba-chat-message-avatar {
     height: 70px;
+    width: 88px;
     margin: 16px 8px;
     object-fit: cover;
-    aspect-ratio: 91 / 72;
     border-radius: 16px;
     user-select: none;
 
