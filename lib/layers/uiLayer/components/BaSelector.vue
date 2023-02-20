@@ -9,7 +9,7 @@ import CustomEase from "gsap/CustomEase";
 // const selection = ref<ShowOption[]>([]);
 const props = defineProps({
   selection: {
-    type: Object as PropType<ShowOption[]>,
+    type: Array as PropType<ShowOption[]>,
     default: [],
   },
 });
@@ -42,8 +42,6 @@ function handleSelectMouseUp(ev: Event) {
  * @param select 选项
  */
 function handleSelect(ev: Event, select: number) {
-  emit("select", select);
-
   gsap.to(ev.currentTarget, {
     duration: 0.4,
     scale: 1.1,
