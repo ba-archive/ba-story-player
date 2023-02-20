@@ -1,6 +1,7 @@
 import { BGEffectImgTable } from '@/types/effectLayer'
 import { Actions, GetterFunctions, Getters, PrivateStates, PublicStates } from '@/types/store'
 import { getResourcesUrl } from '@/utils'
+import { ref } from 'vue'
 
 // let characterNameTable = {
 //   '유우카 체육복ND': 3715128518,
@@ -90,11 +91,8 @@ let privateState: PrivateStates = {
   allStoryUnit: [],
 
   //文字层
-  logText: [
-    { type: 'user', text: '用户对话', name: '用户名' },
-    { type: 'character', text: '人物对话', name: '用户名', avatarUrl: 'https://yuuka.cdn.diyigemt.com/image/ba-all-data/UIs/01_Common/01_Character/Student_Portrait_Yuuka_Small.png' },
-    { type: 'none', text: '无特定人物剧情语句' }
-  ],
+  logText: ref([
+  ]),
 
   //背景层
   bgInstance: null,
@@ -159,9 +157,10 @@ let actions: Actions = {
   },
   updateLogText(newLog) {
     if ('SelectionGroup' in newLog) {
-      privateState.logText.push({
+      privateState.logText.value.push({
         type: 'user',
-        text: newLog.text
+        text: newLog.text,
+        name: privateState.userName
       })
     }
     else {
@@ -170,14 +169,15 @@ let actions: Actions = {
         text += textPart.content
       }
       if (newLog.speaker) {
-        privateState.logText.push({
+        privateState.logText.value.push({
           type: 'character',
           text,
-          avatarUrl: newLog.avatarUrl
+          avatarUrl: newLog.avatarUrl,
+          name: newLog.speaker.name
         })
       }
       else {
-        privateState.logText.push({
+        privateState.logText.value.push({
           type: 'none',
           text
         })

@@ -48,6 +48,7 @@ import Typed, {TypedExtend, TypedOptions} from "typed.js";
 import {ShowOption, ShowText, StText} from "@/types/events";
 import {Text, TextEffectName} from "@/types/common";
 import {deepCopyObject} from "@/utils";
+import { usePlayerStore } from '@/stores';
 
 const typewriterOutput = ref(); // 对话框el
 const stOutput = ref(); // st特效字el
@@ -181,6 +182,7 @@ function handleShowStEvent(e: StText) {
  * 处理dialog对话事件
  */
 function handleShowTextEvent(e: ShowText) {
+  usePlayerStore().updateLogText(e)
   showDialog.value = true;
   e = deepCopyObject(e);
   nextTick(() => {

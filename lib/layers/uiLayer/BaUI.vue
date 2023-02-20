@@ -8,6 +8,7 @@ import eventBus from "@/eventBus";
 import { StorySummary } from "@/types/store";
 import { effectBtnMouseDown, effectBtnMouseUp } from "./utils";
 import { ShowOption } from "@/types/events";
+import { usePlayerStore } from "@/stores";
 
 let hiddenAllUI = ref<'visible' | 'hidden'>('hidden');
 let hiddenSummary = ref(true);
@@ -52,6 +53,7 @@ function handleBtnSkipSummary() {
 function handleBaSelector(selectionGroup: number){
   eventBus.emit("playOtherSounds", "select")
   eventBus.emit('select', selectionGroup)
+  usePlayerStore().updateLogText(selectOptions.value[selectionGroup])
 }
 
 // modi https://gist.github.com/ca0v/73a31f57b397606c9813472f7493a940
