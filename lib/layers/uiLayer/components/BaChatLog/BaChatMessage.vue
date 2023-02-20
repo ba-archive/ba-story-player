@@ -134,9 +134,7 @@ switch (props.chatMessage?.type) {
 
     .ba-chat-message-avatar {
       position: absolute;
-      // width: 100%;
       height: 100%;
-      // top: 0;
       left: -10%;
       right: -10%;
       transform: skewX(10deg);

@@ -175,7 +175,7 @@ const handleBtnMenuDebounced = debounce(handleBtnMenu, 200);
     
     <BaDialog id="ba-story-log" :title="'对话记录'" width="80%" height="90%" :show="!hiddenStoryLog"
       @close="hiddenStoryLog = !hiddenStoryLog">
-      <BaChatLog />
+      <BaChatLog :show="!hiddenStoryLog"/>
     </BaDialog>
   </div>
 </template>
