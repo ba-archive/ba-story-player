@@ -1,7 +1,7 @@
 import eventBus from "@/eventBus";
 import { usePlayerStore } from "@/stores";
 import {
-CharacterEffectInstance, CharacterEmotionPlayer, EmotionOptions, EmotionWord, PositionOffset, Scale
+  CharacterEffectInstance, CharacterEmotionPlayer, EmotionOptions, EmotionWord, PositionOffset, Scale
 } from "@/types/characterLayer";
 import gsap from 'gsap';
 import { Spine } from "pixi-spine";
@@ -37,7 +37,13 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
       emotionImageSprites.push(tempSprite)
     }
     eventBus.emit('playEmotionAudio', type)
-    return fn(instance, emotionOptions[type], emotionImageSprites) as Promise<void>;
+    return fn(instance, emotionOptions[type], emotionImageSprites)?.then(
+      () => {
+        for (let sprite of emotionImageSprites) {
+          sprite.destroy()
+        }
+      }
+    ) as Promise<void>;
   },
   Angry(instance: CharacterEffectInstance, options: EmotionOptions['Angry'], sprites: Sprite[]): Promise<void> {
     const angryImgUnit = sprites[0]
@@ -72,13 +78,11 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
     chatImage.pivot.y = chatImage.height * (1 + options.rotatePivot.y)
     chatImage.zIndex = 10
     let tl = gsap.timeline()
-    return new Promise((resolve, reject) => {
-      tl.to(chatImage, { angle: options.rotateAngle, duration: options.rotateTime / 2 })
-        .to(chatImage, { angle: 0, duration: options.rotateTime / 2 })
-        .to(chatImage, { alpha: 0, duration: options.fadeOutDuration })
-        .then(() => { chatImage.destroy(); resolve() })
-        .catch(reason => reject(reason))
-    })
+    tl.to(chatImage, { angle: options.rotateAngle, duration: options.rotateTime / 2 })
+      .to(chatImage, { angle: 0, duration: options.rotateTime / 2 })
+      .to(chatImage, { alpha: 0, duration: options.fadeOutDuration })
+
+    return timelinePromise(tl, [])
   }, Dot(instance: CharacterEffectInstance, options: EmotionOptions['Dot'], sprites: Sprite[]): Promise<void> {
     const dialogImg = Sprite.from(sprites[0].texture);
     prepareEmotionContainer(instance.instance, options, dialogImg);
@@ -96,7 +100,7 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
     showTl.to(dialogImg, { alpha: 0, duration: options.fadeOutDuration, delay: options.fadeOutPreDuration })
     return timelinePromise(
       showTl
-      , [...sprites, ...dotContainer.children as Sprite[]])
+      , [dialogImg, ...dotContainer.children as Sprite[]])
   }, Exclaim(instance: CharacterEffectInstance, options, sprites: Sprite[]): Promise<void> {
     const surpriseImg = sprites[0]
     prepareEmotionContainer(instance.instance, options, surpriseImg);
@@ -110,7 +114,7 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
         .to(surpriseImg.scale, { x: recoverScale, y: recoverScale, duration: options.scaleAnimation.recoverDuration })
         .to(surpriseImg, { duration: options.fadeOutWaitTime })
         .to(surpriseImg, { alpha: 0, duration: options.fadeOutDuration })
-      , [surpriseImg])
+      , [])
   }, Heart(instance: CharacterEffectInstance, options: EmotionOptions['Heart'], sprites: Sprite[]): Promise<void> {
     const dialogImg = sprites[0];
     const heartImg = sprites[1];
@@ -143,8 +147,7 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
       .to(heartImg, { alpha: 0, duration: options.fadeOutDuration })
       .add('fadeOut', "<")
       .to(dialogImg, { alpha: 0, duration: options.fadeOutDuration }, 'fadeOut')
-      .then(() => { dialogImg.destroy(); heartImg.destroy() })
-    return Promise.resolve(undefined);
+    return timelinePromise(tl, [])
   }, Music(instance: CharacterEffectInstance, options: EmotionOptions['Music'], sprites: Sprite[]) {
     const note = sprites[0];
     const scale = getRelativeScale(note, options)
@@ -157,24 +160,17 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
     note.position.set(x, y);
     container.addChild(note);
     const tl = gsap.timeline();
+    tl.to(note.scale, { x: scale, y: scale, duration: 0.1 })
+      .to(note, { x: x + note.width * options.animation.offset.x, duration: options.animation.duration })
+      .add('start', '<')
+      .to(note, { y: y + note.width * options.animation.offset.y, angle: options.rotateAngle, duration: options.animation.duration * 0.3 }, 'start')
+      .to(note, { y: y, angle: 0, duration: options.animation.duration * 0.3 }, '>')
+      .to(note, { y: y + note.width * options.animation.offset.y, angle: options.rotateAngle, duration: options.animation.duration * 0.4 }, '>')
+      .to(note, { y: y, angle: 0, duration: options.animation.duration * 0.4 }, '>')
+      .to(note, { alpha: 0, duration: options.fadeOutDuration }, '>')
 
-    return new Promise((resolve, reject) => {
-      tl.to(note.scale, { x: scale, y: scale, duration: 0.1 })
-        .to(note, { x: x + note.width * options.animation.offset.x, duration: options.animation.duration })
-        .add('start', '<')
-        .to(note, { y: y + note.width * options.animation.offset.y, angle: options.rotateAngle, duration: options.animation.duration * 0.3 }, 'start')
-        .to(note, { y: y, angle: 0, duration: options.animation.duration * 0.3 }, '>')
-        .to(note, { y: y + note.width * options.animation.offset.y, angle: options.rotateAngle, duration: options.animation.duration * 0.4 }, '>')
-        .to(note, { y: y, angle: 0, duration: options.animation.duration * 0.4 }, '>')
-        .to(note, { alpha: 0, duration: options.fadeOutDuration }, '>')
-        .then(() => {
-          note.destroy();
-          resolve()
-        })
-        .catch(reason => {
-          reject(reason)
-        })
-    })
+
+    return timelinePromise(tl, [])
   }, Question(instance: CharacterEffectInstance, options: EmotionOptions['Question'], sprites: Sprite[]): Promise<void> {
     const questionImg = sprites[0]
     questionImg.visible = true
@@ -192,7 +188,7 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
         .to(questionImg.scale, { x: recoverScale, y: recoverScale, duration: options.scaleAnimation.recoverDuration })
         .to(questionImg, { duration: options.fadeOutPreDuration! })
         .to(questionImg, { alpha: 0, duration: options.fadeOutDuration })
-      , [questionImg])
+      , [])
   }, Respond(instance: CharacterEffectInstance, options: EmotionOptions['Respond'], sprites: Sprite[]): Promise<void> {
     const { instance: spine } = instance;
     const globalOptions = setInitValue(instance, sprites[0], options);
@@ -255,7 +251,7 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
         .add(shakeTl.tweenFromTo('start', 'end', { repeat: options.shakeAnimation.times - 1 }))
         .to(shyImg, { alpha: 0, duration: options.fadeOutDuration })
         .to(dialogImg, { alpha: 0, duration: options.fadeOutDuration }, '<')
-      , [shyImg, dialogImg]
+      , []
     )
   }, Surprise(instance: CharacterEffectInstance, options: EmotionOptions['Surprise'], sprites: Sprite[]): Promise<void> {
     const exclaimImg = Sprite.from(sprites[0].texture)
@@ -284,7 +280,7 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
         .to(surpriseImg.scale, { x: scale, y: scale, duration: options.scaleAnimation.duration }, 0)
         .to(container, { duration: options.fadeOutPreDuration }, 'jumpEnd')
         .to(container, { alpha: 0, duration: options.fadeOutDuration }, '>')
-      , [...sprites, surpriseImg, exclaimImg]
+      , [surpriseImg, exclaimImg]
     )
   }, Sweat(instance: CharacterEffectInstance, options: EmotionOptions['Sweat'], sprites: Sprite[]): Promise<void> {
     const dropImg = sprites[0];
@@ -303,15 +299,13 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
     smallDropImg.visible = dropImg.visible = true;
     container.addChild(dropImg, smallDropImg);
     const tl = gsap.timeline();
-    return new Promise((resolve, reject) => {
-      tl.to(dropImg, { y: dropImg.y - dropImg.width * options.dropAnimation.yOffset, duration: options.dropAnimation.duration })
-        .to(smallDropImg, {
-          y: smallDropImg.y - options.smallImg.dropAnimationOffset * smallDropImg.width,
-          duration: options.dropAnimation.duration
-        }, '<')
-        .then(() => { dropImg.destroy(); smallDropImg.destroy(); resolve() })
-        .catch(reason => reject(reason))
-    });
+    tl.to(dropImg, { y: dropImg.y - dropImg.width * options.dropAnimation.yOffset, duration: options.dropAnimation.duration })
+      .to(smallDropImg, {
+        y: smallDropImg.y - options.smallImg.dropAnimationOffset * smallDropImg.width,
+        duration: options.dropAnimation.duration
+      }, '<')
+
+    return timelinePromise(tl, [])
   }, Twinkle(instance: CharacterEffectInstance, options: EmotionOptions['Twinkle'], sprites: Sprite[]): Promise<void> {
     const { container } = prepareEmotionContainer(instance.instance, options);
 
@@ -350,7 +344,7 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
       tl.to(container, { alpha: 1, duration: options.fadeInDuration })
         .add(flashTlMaster.tweenFromTo(0, options.flashAnimation.totalDuration))
         .to(container, { alpha: 0, duration: options.fadeOutDuration }, `>-=${options.fadeOutPreDuration}`)
-      , [...starImgs, ...sprites]
+      , [...starImgs]
     )
   }, Upset(instance: CharacterEffectInstance, options: EmotionOptions['Upset'], sprites: Sprite[]): Promise<void> {
     const dialogImg = sprites[0]
@@ -376,7 +370,7 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
     return timelinePromise(
       tl.add(animationTl.tweenFromTo(0, options.animationTotalDuration))
         .to(dialogImg, { pixi: { alpha: 0 }, duration: options.fadeOutDuration })
-      , [...sprites, upsetImg]
+      , [upsetImg]
     )
   }
 }
