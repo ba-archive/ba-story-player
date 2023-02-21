@@ -1,29 +1,28 @@
 import eventBus from "@/eventBus";
-import {usePlayerStore} from "@/stores";
+import { usePlayerStore } from "@/stores";
 import {
-  CharacterEffectInstance,
-  CharacterEffectPlayerInterface,
-  CharacterEffectWord,
-  CharacterLayer,
-  EffectsWord,
-  EmotionWord,
-  FXEffectWord,
+CharacterEffectInstance,
+CharacterEffectPlayerInterface,
+CharacterEffectWord,
+CharacterLayer,
+EffectsWord,
+EmotionWord,
+FXEffectWord,
 ILoopAnimationStateListener
 } from "@/types/characterLayer";
-import {Character, CharacterEffectType, CharacterInstance} from "@/types/common";
-import {ShowCharacter} from "@/types/events";
-import gsap, {Power0} from "gsap";
-import {PixiPlugin} from 'gsap/PixiPlugin';
-import {IAnimationState, ISkeletonData, ITrackEntry, Spine} from "pixi-spine";
+import { Character, CharacterEffectType, CharacterInstance } from "@/types/common";
+import { ShowCharacter } from "@/types/events";
+import { AdjustmentFilter } from '@pixi/filter-adjustment';
+import { ColorOverlayFilter } from '@pixi/filter-color-overlay';
+import { CRTFilter } from '@pixi/filter-crt';
+import { MotionBlurFilter } from '@pixi/filter-motion-blur';
+import gsap, { Power0 } from "gsap";
+import { PixiPlugin } from 'gsap/PixiPlugin';
+import { IAnimationState, ISkeletonData, Spine } from "pixi-spine";
 import * as PIXI from 'pixi.js';
-import CharacterEffectPlayerInstance, {calcSpineStagePosition, POS_INDEX_MAP} from "./actionPlayer";
+import CharacterEffectPlayerInstance, { calcSpineStagePosition, POS_INDEX_MAP } from "./actionPlayer";
 import CharacterEmotionPlayerInstance from './emotionPlayer';
 import CharacterFXPlayerInstance from "./fxPlayer";
-import {ColorOverlayFilter} from '@pixi/filter-color-overlay'
-import {CRTFilter} from '@pixi/filter-crt'
-import {AdjustmentFilter} from '@pixi/filter-adjustment'
-import {MotionBlurFilter} from '@pixi/filter-motion-blur'
-import {IAnimationStateListener} from "@pixi-spine/base";
 
 const AnimationIdleTrack = 0; // 光环动画track index
 const AnimationFaceTrack = 1; // 差分切换
@@ -359,7 +358,7 @@ export const CharacterLayerInstance: CharacterLayer = {
       if (reasons.length !== 0) {
         reject(reasons)
       }
-      else{
+      else {
         resolve()
       }
     })
@@ -368,7 +367,7 @@ export const CharacterLayerInstance: CharacterLayer = {
     eventBus.emit("characterDone");
   },
   //TODO 根据角色是否已经缩放(靠近老师)分类更新
-  onWindowResize() {},
+  onWindowResize() { },
   characterScale: undefined,
   characterSpineCache: new Map<number, CharacterInstance>(),
 }
@@ -460,7 +459,7 @@ export function calcCharacterYAndScale(spine: Spine) {
  * @return screenWidth 容器的宽 screenHeight 容器的高
  */
 export function getStageSize() {
-  const {app} = usePlayerStore();
+  const { app } = usePlayerStore();
   const screen = app.screen;
   const screenWidth = screen.width;
   const screenHeight = screen.height;
