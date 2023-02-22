@@ -31,7 +31,7 @@ switch (props.chatMessage?.type) {
     <div class="ba-chat-message-avatar-border" :style="{ opacity: props.chatMessage?.avatarUrl ? 1 : 0 }">
       <div
         class="ba-chat-message-avatar"
-        role="image"
+        role="img"
         :style="{ 'background-image': 'url(' + props.chatMessage?.avatarUrl + ')' + ', url(' + avatarBGRef + ')' }"
       />
     </div>
@@ -55,7 +55,7 @@ switch (props.chatMessage?.type) {
   // 学生样式
   &.student > .ba-chat-message-bubble {
     color: #373737;
-    filter: drop-shadow(#afb7ba 0 1px 2px);
+    filter: drop-shadow(0 1px 2px #afb7ba);
     .ba-chat-message-bubble-name-bg {
       background-color: white;
       .ba-chat-message-bubble-text-bg {
@@ -71,7 +71,7 @@ switch (props.chatMessage?.type) {
   // 老师样式
   &.teacher > .ba-chat-message-bubble {
     color: #fefefe;
-    filter: drop-shadow(#2c3f4a 0 1px 2px);
+    filter: drop-shadow(0 1px 2px #2c3f4a);
     .ba-chat-message-bubble-name-bg {
       background-color: #426487;
       .ba-chat-message-bubble-text-bg {
@@ -88,7 +88,7 @@ switch (props.chatMessage?.type) {
   }
   // 旁白样式
   &.narration {
-    filter: drop-shadow(#2c3f4a 0 1px 2px);
+    filter: drop-shadow(0 1px 2px #2c3f4a);
     .ba-chat-message-avatar-border{
       height: 0;
     }
@@ -137,8 +137,8 @@ switch (props.chatMessage?.type) {
       left: -10%;
       right: -10%;
       transform: skewX(10deg);
-      background-repeat: no-repeat; 
-      background-position: center; 
+      background-repeat: no-repeat;
+      background-position: center;
       transform-origin: center;
       background-size: cover, cover;
     }
