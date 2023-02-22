@@ -49,7 +49,7 @@ else {
 /**
  * 指定canvas一个固定的width保证画面表现
  */
-let playerWidth = 1400
+let playerWidth = 1800
 let playerConfig = { ...props, height: 0 }
 playerConfig.width = playerWidth
 playerConfig.height = playerWidth * aspectRatio
