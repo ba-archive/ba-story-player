@@ -390,7 +390,9 @@ function getEffectPlayer(type: CharacterEffectType) {
  */
 function wink(instance: CharacterInstance, first = true) {
   const face = instance.currentFace;
+  const spine = instance.instance;
   if (face !== "01") {
+    spine.state.clearTrack(AnimationWinkTrack);
     return;
   }
   instance.winkHandler && window.clearTimeout(instance.winkHandler);
@@ -398,11 +400,6 @@ function wink(instance: CharacterInstance, first = true) {
   instance.winkHandler = window.setTimeout(wink, winkTimeout, instance, false);
   if (first) {
     return;
-  }
-  const spine = instance.instance;
-  const controller = spine.state.listeners.filter(it => Reflect.get(it, "complete") && Reflect.get(it, "eye"))
-  if (controller.length !== 0) {
-    spine.state.removeListener(controller[0]);
   }
   const loopTime = Math.floor(Math.random() * 2) + 1
   loopAnimationTime(spine.state, AnimationWinkTrack, "Eye_Close_01", "eye", loopTime)
