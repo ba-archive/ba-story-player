@@ -211,10 +211,9 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
     return timelinePromise(
       tl.to(container, { alpha: options.flashAnimation.alpha, duration: options.flashAnimation.duration })
         .to(container, { alpha: 1, duration: options.fadeOutDuration })
-        .to(container, { duration: options.fadeOutPreDuration }),
-      // .to(container, { alpha: 0, duration: options.fadeOutDuration }),
-      // [...container.children as Sprite[], ...sprites]
-      []
+        .to(container, { duration: options.fadeOutPreDuration })
+        .to(container, { alpha: 0, duration: options.fadeOutDuration }),
+      [...container.children as Sprite[], ...sprites]
     );
   }, Sad(instance: CharacterEffectInstance, options: EmotionOptions['Sad'], sprites: Sprite[]): Promise<void> {
     const { container } = prepareEmotionContainer(instance.instance, options);
