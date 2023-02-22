@@ -49,7 +49,7 @@ else {
 /**
  * 指定canvas一个固定的width保证画面表现
  */
-let playerWidth = 1800
+let playerWidth = 1400
 let playerConfig = { ...props, height: 0 }
 playerConfig.width = playerWidth
 playerConfig.height = playerWidth * aspectRatio
@@ -105,7 +105,7 @@ onMounted(() => {
       <BaDialog :player-height="height" :player-width="width" :style="{ width: `${width}px` }"></BaDialog>
       <BaUI :story-summary="storySummary" />
     </div>
-</div>
+  </div>
 </template>
 
 <style lang="scss">

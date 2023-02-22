@@ -102,7 +102,6 @@ const emotionOptions: EmotionOptions = {
     "fadeOutDuration": 0.2
   },
   "Respond": {
-
     "startPositionOffset": {
       "x": 0.6,
       "y": 0

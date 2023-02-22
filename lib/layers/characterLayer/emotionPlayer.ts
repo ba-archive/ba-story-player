@@ -211,9 +211,10 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
     return timelinePromise(
       tl.to(container, { alpha: options.flashAnimation.alpha, duration: options.flashAnimation.duration })
         .to(container, { alpha: 1, duration: options.fadeOutDuration })
-        .to(container, { duration: options.fadeOutPreDuration })
-        .to(container, { alpha: 0, duration: options.fadeOutDuration }),
-      [...container.children as Sprite[], ...sprites]
+        .to(container, { duration: options.fadeOutPreDuration }),
+      // .to(container, { alpha: 0, duration: options.fadeOutDuration }),
+      // [...container.children as Sprite[], ...sprites]
+      []
     );
   }, Sad(instance: CharacterEffectInstance, options: EmotionOptions['Sad'], sprites: Sprite[]): Promise<void> {
     const { container } = prepareEmotionContainer(instance.instance, options);
@@ -444,8 +445,8 @@ function prepareEmotionContainer(spine: Spine, options: EmotionOptions[EmotionWo
     container = new Container();
   }
   //使用standardWIdth和播放器高度计算便宜, 默认值使图片定位于左上脚
-  const offsetX = (options.startPositionOffset.x - 0.8) * getStandardWidth();
-  const offsetY = (options.startPositionOffset.y - 1.2) * usePlayerStore().app.screen.height;
+  const offsetX = (options.startPositionOffset.x - 0.8) * 540;
+  const offsetY = (options.startPositionOffset.y - 1.2) * 1012;
   container.position.set(
     offsetX,
     offsetY
