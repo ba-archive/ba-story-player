@@ -1,14 +1,14 @@
 import eventBus from "@/eventBus";
 import { usePlayerStore } from "@/stores";
 import {
-CharacterEffectInstance,
-CharacterEffectPlayerInterface,
-CharacterEffectWord,
-CharacterLayer,
-EffectsWord,
-EmotionWord,
-FXEffectWord,
-ILoopAnimationStateListener
+  CharacterEffectInstance,
+  CharacterEffectPlayerInterface,
+  CharacterEffectWord,
+  CharacterLayer,
+  EffectsWord,
+  EmotionWord,
+  FXEffectWord,
+  ILoopAnimationStateListener
 } from "@/types/characterLayer";
 import { Character, CharacterEffectType, CharacterInstance } from "@/types/common";
 import { ShowCharacter } from "@/types/events";

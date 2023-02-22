@@ -443,8 +443,9 @@ function prepareEmotionContainer(spine: Spine, options: EmotionOptions[EmotionWo
   if (!container) {
     container = new Container();
   }
-  const offsetX = options.makeSpineHappyOffset.x - 500;
-  const offsetY = options.makeSpineHappyOffset.y - 6 / 5 * usePlayerStore().app.screen.height;
+  //使用standardWIdth和播放器高度计算便宜, 默认值使图片定位于左上脚
+  const offsetX = (options.startPositionOffset.x - 0.8) * getStandardWidth();
+  const offsetY = (options.startPositionOffset.y - 1.2) * usePlayerStore().app.screen.height;
   container.position.set(
     offsetX,
     offsetY
