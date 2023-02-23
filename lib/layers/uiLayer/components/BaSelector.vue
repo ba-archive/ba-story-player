@@ -68,8 +68,6 @@ function handleSelect(select: number) {
 
   setTimeout(() => {
     selectedOption.value = -1;
-    // 清空数组
-    props.selection.length = 0;
   }, 375);
 
   setTimeout(() => {

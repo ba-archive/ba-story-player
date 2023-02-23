@@ -51,9 +51,16 @@ function handleBtnSkipSummary() {
 
 // 处理选项
 function handleBaSelector(selectionGroup: number){
-  console.log("select: ", selectionGroup)
-  eventBus.emit('select', selectionGroup)
+  console.log("selectGroup: ", selectionGroup)
+  console.log("select: ", selectOptions.value[selectionGroup])
+  eventBus.emit('select', selectOptions.value[selectionGroup].SelectionGroup)
   usePlayerStore().updateLogText(selectOptions.value[selectionGroup])
+
+  setTimeout(() => {
+    // 清空数组
+    selectOptions.value.length = 0;
+  }, 375);
+
 }
 
 // modi https://gist.github.com/ca0v/73a31f57b397606c9813472f7493a940
