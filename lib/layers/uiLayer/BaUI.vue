@@ -56,11 +56,7 @@ function handleBaSelector(selectionGroup: number){
   eventBus.emit('select', selectOptions.value[selectionGroup].SelectionGroup)
   usePlayerStore().updateLogText(selectOptions.value[selectionGroup])
 
-  setTimeout(() => {
-    // 清空数组
-    selectOptions.value.length = 0;
-  }, 375);
-
+  selectOptions.value.length = 0;
 }
 
 // modi https://gist.github.com/ca0v/73a31f57b397606c9813472f7493a940
@@ -164,7 +160,7 @@ const handleBtnMenuDebounced = debounce(handleBtnMenu, 200);
       </Transition>
     </div>
 
-    <BaSelector id="ba-story-selector" :selection="selectOptions" @select="handleBaSelector"/>
+    <BaSelector id="ba-story-selector" :selection="selectOptions" @select="handleBaSelector" v-if="selectOptions.length !== 0"/>
 
     <BaDialog id="ba-story-summery" :title="'概要'" :show="!hiddenSummary" @close="hiddenSummary = true">
       <div class="ba-story-summery-container">

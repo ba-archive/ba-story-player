@@ -78,7 +78,7 @@ function handleSelect(select: number) {
 </script>
 
 <template>
-  <div class="ba-selector-container" ref="selectorContainerElement" v-if="selection.length !== 0" @mouseup="handleMouseUp">
+  <div class="ba-selector-container" ref="selectorContainerElement" @mouseup="handleMouseUp">
     <div class="ba-selector" ref="selectorElement" :style="{marginTop: selectorMarginTop}">
       <!-- 没有发生 DOM 顺序的移动，让 vue 使用就地复用策略提高效率，不需要 key -->
       <!-- eslint-disable vue/require-v-for-key -->
