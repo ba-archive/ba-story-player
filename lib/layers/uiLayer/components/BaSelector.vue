@@ -34,14 +34,11 @@ const selectorMarginTop = computed(() =>
  * @param index 按钮位置
  */
 function handleSelectMouseDown(index: number) {
-  console.log("handleSelectMouseDown", index)
-
   isMouseDown.value = true;
   selectionCandidate.value = index;
 }
 
 function handleMouseUp() {
-  console.log("handleMouseUp")
   isMouseDown.value = false;
 }
 
@@ -58,7 +55,6 @@ function handleSelectMouseLeave() {
   if (-1 === selectionCandidate.value) {
     return;
   }
-  console.log("handleSelectMouseLeave")
   selectionCandidate.value = -1;
 }
 
@@ -67,8 +63,6 @@ function handleSelectMouseLeave() {
  * @param select 选项
  */
 function handleSelect(select: number) {
-  console.log("handleSelect", select)
-
   selectionCandidate.value = -1;
   selectedOption.value = select;
 

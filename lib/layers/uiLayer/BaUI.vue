@@ -23,10 +23,10 @@ let { storySummary } = defineProps<{ storySummary: StorySummary }>()
 const selectOptions = ref<ShowOption[]>([]);
 
 eventBus.on("hide", () => {
-  // hiddenAllUI.value = 'hidden'
+  hiddenAllUI.value = 'hidden'
 })
 eventBus.on("hidemenu", () => {
-  // hiddenAllUI.value = 'hidden'
+  hiddenAllUI.value = 'hidden'
 })
 eventBus.on("showmenu", () => {
   hiddenAllUI.value = 'visible'
