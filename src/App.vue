@@ -9,6 +9,7 @@ import TestEffect from './components/TestEffect.vue';
 import { ref, watch } from 'vue'
 import * as PIXI from 'pixi.js'
 import { usePlayerStore } from '../lib/stores'
+import axios from 'axios'
 
 console.log('资源加载: ', resourcesLoader)
 console.log('资源调用: ', usePlayerStore())
@@ -45,7 +46,6 @@ Reflect.set(window, 'next', () => {
 })
 
 let width = ref(1000)
-let showPlayer = ref(true)
 
 const currentStoryIndex = ref(0)
 const indexCacheKey = 'storyIndex'
@@ -67,12 +67,38 @@ function changeStoryIndex() {
   storyHandler.currentStoryIndex = currentStoryIndex.value
   eventBus.emit('next')
 }
+
+const story = ref(yuuka)
+const showPlayer = ref(false)
+const storyJsonName = ref('0')
+const storyCacheKey = 'storyJson'
+const jsonName = localStorage.getItem(storyCacheKey)
+if (jsonName) {
+  axios.get(`https://yuuka.cdn.diyigemt.com/image/story/vol3/${jsonName}.json`).then(response => {
+    if (response.status === 200) {
+      story.value = response.data.content
+      storyJsonName.value = jsonName
+    }
+    showPlayer.value = true
+  }).catch(error => {
+    console.log(error)
+    console.log('fallback to yuuka')
+    showPlayer.value = true
+  })
+}
+else {
+  showPlayer.value = true
+}
+function changeJSON() {
+  localStorage.setItem(storyCacheKey, storyJsonName.value)
+  location.reload()
+}
 </script>
 
 <template>
   <div style="display:flex;justify-content: center;">
     <div v-if="showPlayer">
-      <BaStoryPlayer :story="prologue" data-url="https://yuuka.cdn.diyigemt.com/image/ba-all-data" :width="width"
+      <BaStoryPlayer :story="story" data-url="https://yuuka.cdn.diyigemt.com/image/ba-all-data" :width="width"
         language="Cn" userName="testUser" :story-summary="storySummary" />
     </div>
     <div style="position: absolute;left: 0;display: flex;flex-direction: column;width: 20vh;">
@@ -86,6 +112,9 @@ function changeStoryIndex() {
       <input v-model="currentStoryIndex" />
       <button @click="setStartIndex">设为故事初始index</button>
       <button @click="changeStoryIndex">更换故事index</button>
+      <label>故事json</label>
+      <input v-model="storyJsonName" />
+      <button @click="changeJSON">更换故事json</button>
     </div>
     <ModifyEmotionOption class="absolute-right-center" v-if="toolType === 'emotion'" />
     <Suspense>
