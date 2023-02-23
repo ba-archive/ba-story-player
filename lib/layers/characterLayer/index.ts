@@ -264,7 +264,8 @@ export const CharacterLayerInstance: CharacterLayer = {
   },
   showOneCharacter(data: CharacterEffectInstance): Promise<void> {
     // 表情
-    data.instance.state.setAnimation(AnimationFaceTrack, data.face, true);
+    if (data.instance.state.hasAnimation(data.face))
+      data.instance.state.setAnimation(AnimationFaceTrack, data.face, true);
     data.instance.filters = []
 
     //处理全息状态
@@ -389,6 +390,10 @@ function getEffectPlayer(type: CharacterEffectType) {
  * @param first 是否为改变表情时的初始化
  */
 function wink(instance: CharacterInstance, first = true) {
+  //只在有眨眼动画时起作用
+  if (!instance.instance.state.hasAnimation('Eye_Close_01')) {
+    return
+  }
   const face = instance.currentFace;
   const spine = instance.instance;
   if (face !== "01") {

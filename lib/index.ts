@@ -80,7 +80,7 @@ export async function init(elementID: string, props: PlayerConfigs, endCallback:
  * 处理故事进度对象
  */
 export let storyHandler = {
-  currentStoryIndex: 120,
+  currentStoryIndex: 0,
   endCallback: () => { },
   unitPlaying: false,
   auto: false,
