@@ -191,8 +191,8 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
       , [])
   }, Respond(instance: CharacterEffectInstance, options: EmotionOptions['Respond'], sprites: Sprite[]): Promise<void> {
     const { instance: spine } = instance;
-    const globalOptions = setInitValue(instance, sprites[0], options);
     const { container } = prepareEmotionContainer(spine, options);
+    const scale = getRelativeScale(sprites[0], options)
 
     for (let i = 0; i < 3; ++i) {
       let respondImg = spine.newSprite(sprites[0].texture)
@@ -201,7 +201,7 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
         options.perImgSetting[i].anchor.x,
         options.perImgSetting[i].anchor.y,
       )
-      respondImg.scale.set(globalOptions.scale * options.perImgSetting[i].scale / spine.scale.x)
+      respondImg.scale.set(scale * options.perImgSetting[i].scale / spine.scale.x)
       container.addChild(respondImg)
     }
     container.zIndex = 10
@@ -401,31 +401,6 @@ function setRelativePosition(childImg: Sprite, containerImg: Sprite, relativeVal
   }
 }
 
-
-/**
- * 设置基准图片的初始位置, 缩放, zIndex
- * 缩放基于播放器宽度
- * @param instance
- * @param standardImg
- * @param options
- * @returns 位置和缩放比例的绝对值
- */
-function setInitValue(instance: CharacterEffectInstance, standardImg: Sprite, options: EmotionOptions[EmotionWord]) {
-  let standardWidth = getStandardWidth()
-  let globalOptions = {
-    startPositionOffset: {
-      x: instance.instance.x + instance.instance.width * options.startPositionOffset.x,
-      y: instance.instance.y + instance.instance.width * options.startPositionOffset.y
-    },
-    scale: options.scale * standardWidth / standardImg.width
-  }
-  standardImg.scale.set(globalOptions.scale)
-  standardImg.x = globalOptions.startPositionOffset.x
-  standardImg.y = globalOptions.startPositionOffset.y
-  standardImg.zIndex = 10
-
-  return globalOptions
-}
 /**
  * 预处理表情容器, 可以是表情图片自己, 也可以是新的容器
  *
@@ -443,7 +418,7 @@ function prepareEmotionContainer(spine: Spine, options: EmotionOptions[EmotionWo
   if (!container) {
     container = new Container();
   }
-  //使用standardWIdth和播放器高度计算便宜, 默认值使图片定位于左上脚
+  //偏移量为根据startPositionOffset计算得出的固定值, 替换前面使用的makeSpineHappyOffset
   const offsetX = (options.startPositionOffset.x - 0.8) * 540;
   const offsetY = (options.startPositionOffset.y - 1.2) * 1012;
   container.position.set(
@@ -459,15 +434,15 @@ function prepareEmotionContainer(spine: Spine, options: EmotionOptions[EmotionWo
 }
 
 /**
- * 计算图片基于标准角色宽度的缩放比例
+ * 计算图片的缩放比例
+ * 事实上是一个固定值, 该函数的存在意义主要是适应以前的参数设置
  * @param img 缩放的图片
  * @param options 情绪动画设置参数
  * @returns 缩放比例绝对值
  */
 function getRelativeScale(img: Sprite, options: EmotionOptions[EmotionWord]) {
   //用播放器宽度的1/5作为图片缩放的基准
-  const standardWidth = getStandardWidth()
-  return options.scale * standardWidth / img.width
+  return options.scale * 540 / img.width
 }
 
 /**
