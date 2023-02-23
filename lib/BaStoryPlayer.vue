@@ -105,7 +105,7 @@ onMounted(() => {
       <BaDialog :player-height="height" :player-width="width" :style="{ width: `${width}px` }"></BaDialog>
       <BaUI :story-summary="storySummary" />
     </div>
-</div>
+  </div>
 </template>
 
 <style lang="scss">

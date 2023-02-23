@@ -5,7 +5,7 @@ import {
 } from "@/types/characterLayer";
 import gsap from 'gsap';
 import { Spine } from "pixi-spine";
-import { Container, DisplayObject, Sprite } from "pixi.js";
+import { Container, Sprite } from "pixi.js";
 import { getStandardWidth } from ".";
 import emotionOptions from "./options/emotionOptions";
 
@@ -21,6 +21,9 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
   },
   processEffect(type: EmotionWord, instance: CharacterEffectInstance): Promise<void> {
     const fn = this.getHandlerFunction(type);
+    if (!fn) {
+      return Promise.reject(`不支持的特效类型: ${type}`)
+    }
     const { emotionResources, app } = usePlayerStore()
     let emotionImageSprites: Sprite[] = []
     let emotionImgs = emotionResources(type)
@@ -28,39 +31,36 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
       return Promise.reject(`${type}没有对应的图像资源`)
     }
     for (let imageResource of emotionImgs) {
-      let tempSprite = Sprite.from(imageResource)
+      const tempSprite = Sprite.from(imageResource)
       tempSprite.visible = false
       app.stage.addChild(tempSprite)
       emotionImageSprites.push(tempSprite)
     }
-    if (!fn) {
-      return new Promise((resolve, reject) => {
-        reject();
-      });
-    }
     eventBus.emit('playEmotionAudio', type)
-    return fn(instance, emotionOptions[type], emotionImageSprites) as Promise<void>;
+    return fn(instance, emotionOptions[type], emotionImageSprites)?.then(
+      () => {
+        for (let sprite of emotionImageSprites) {
+          sprite.destroy()
+        }
+      }
+    ) as Promise<void>;
   },
   Angry(instance: CharacterEffectInstance, options: EmotionOptions['Angry'], sprites: Sprite[]): Promise<void> {
-    let angryImgUnit = sprites[0]
+    const angryImgUnit = sprites[0]
     const scale = getRelativeScale(angryImgUnit, options)
-    const container = new Container();
-    const { offsetX, offsetY } = emotionContainerOffset(instance.instance, options);
-    container.x = offsetX;
-    container.y = offsetY;
-    instance.instance.addChild(container);
+    const { container } = prepareEmotionContainer(instance.instance, options);
     //最后用于确定动画结束的timeline
     let waitTimeLine = gsap.timeline()
-    let destroyImg: Sprite[] = []
+    const destroyImg: Sprite[] = []
     for (let i = 0; i < 3; ++i) {
-      let uImgUnit = Sprite.from(angryImgUnit.texture)
+      const uImgUnit = Sprite.from(angryImgUnit.texture)
       destroyImg.push(uImgUnit)
       uImgUnit.scale.set(scale)
       uImgUnit.anchor.set(0.35, -0.05)
       uImgUnit.angle += i * 120
       uImgUnit.zIndex = 10
       container.addChild(uImgUnit)
-      let tl = gsap.timeline()
+      const tl = gsap.timeline()
       waitTimeLine = tl
       tl.to(uImgUnit.scale, { x: scale * options.animationScale.scale, duration: options.animationScale.duration })
         .to(uImgUnit.scale, { x: scale, duration: options.animationScale.duration })
@@ -69,36 +69,27 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
 
     return timelinePromise(waitTimeLine, destroyImg);
   }, Chat(instance: CharacterEffectInstance, options: EmotionOptions['Chat'], sprites: Sprite[]): Promise<void> {
-    let chatImage = sprites[0]
-
-    const { offsetX, offsetY } = emotionContainerOffset(instance.instance, options);
+    const chatImage = sprites[0]
+    prepareEmotionContainer(instance.instance, options, chatImage);
 
     chatImage.scale.set(getRelativeScale(chatImage, options))
-    chatImage.x = offsetX
-    chatImage.y = offsetY
     chatImage.visible = true
     chatImage.pivot.x = chatImage.width * (1 + options.rotatePivot.x)
     chatImage.pivot.y = chatImage.height * (1 + options.rotatePivot.y)
     chatImage.zIndex = 10
-    instance.instance.addChild(chatImage);
-
     let tl = gsap.timeline()
-    return new Promise((resolve, reject) => {
-      tl.to(chatImage, { angle: options.rotateAngle, duration: options.rotateTime / 2 })
-        .to(chatImage, { angle: 0, duration: options.rotateTime / 2 })
-        .to(chatImage, { alpha: 0, duration: options.fadeOutDuration })
-        .then(() => { chatImage.destroy(); resolve() })
-        .catch(reason => reject(reason))
-    })
-  }, Dot(instance: CharacterEffectInstance, options: EmotionOptions['Dot'], sprites: Sprite[]): Promise<void> {
-    let dialogImg = Sprite.from(sprites[0].texture);
+    tl.to(chatImage, { angle: options.rotateAngle, duration: options.rotateTime / 2 })
+      .to(chatImage, { angle: 0, duration: options.rotateTime / 2 })
+      .to(chatImage, { alpha: 0, duration: options.fadeOutDuration })
 
-    const { offsetX, offsetY } = emotionContainerOffset(instance.instance, options);
-    dialogImg.position.set(offsetX, offsetY);
-    let dotContainer = new Container()
-    let showTl = gsap.timeline()
+    return timelinePromise(tl, [])
+  }, Dot(instance: CharacterEffectInstance, options: EmotionOptions['Dot'], sprites: Sprite[]): Promise<void> {
+    const dialogImg = Sprite.from(sprites[0].texture);
+    prepareEmotionContainer(instance.instance, options, dialogImg);
+    const dotContainer = new Container()
+    const showTl = gsap.timeline()
     for (let i = 0; i < 3; ++i) {
-      let dotImg = Sprite.from(sprites[1].texture)
+      const dotImg = Sprite.from(sprites[1].texture)
       dotImg.alpha = 0
       dotImg.position = calcRelativePosition(dotImg, { x: options.dotPos[i], y: 0 })
       showTl.to(dotImg, { alpha: 1, duration: options.showAnimation.alpahaDuration, delay: options.showAnimation.showDelay })
@@ -106,37 +97,30 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
     }
     dialogImg.addChild(dotContainer)
     dotContainer.position = { x: options.dotContainerPos.x * dialogImg.width, y: options.dotContainerPos.y * dialogImg.height }
-    instance.instance.addChild(dialogImg);
     showTl.to(dialogImg, { alpha: 0, duration: options.fadeOutDuration, delay: options.fadeOutPreDuration })
     return timelinePromise(
       showTl
-      , [...sprites, ...dotContainer.children as Sprite[]])
+      , [dialogImg, ...dotContainer.children as Sprite[]])
   }, Exclaim(instance: CharacterEffectInstance, options, sprites: Sprite[]): Promise<void> {
-    let surpriseImg = sprites[0]
-
-    const { offsetX, offsetY } = emotionContainerOffset(instance.instance, options);
-    surpriseImg.position.set(
-      offsetX,
-      offsetY,
-    )
+    const surpriseImg = sprites[0]
+    prepareEmotionContainer(instance.instance, options, surpriseImg);
     const scale = getRelativeScale(surpriseImg, options)
     surpriseImg.visible = true
-    instance.instance.addChild(surpriseImg);
-
-    let tl = gsap.timeline()
-    let animationScale = scale * options.scaleAnimation.scale
-    let recoverScale = scale * options.scaleAnimation.recoverScale
+    const tl = gsap.timeline()
+    const animationScale = scale * options.scaleAnimation.scale
+    const recoverScale = scale * options.scaleAnimation.recoverScale
     return timelinePromise(
       tl.to(surpriseImg.scale, { x: animationScale, y: animationScale, duration: options.scaleAnimation.scaleDuration })
         .to(surpriseImg.scale, { x: recoverScale, y: recoverScale, duration: options.scaleAnimation.recoverDuration })
         .to(surpriseImg, { duration: options.fadeOutWaitTime })
         .to(surpriseImg, { alpha: 0, duration: options.fadeOutDuration })
-      , [surpriseImg])
+      , [])
   }, Heart(instance: CharacterEffectInstance, options: EmotionOptions['Heart'], sprites: Sprite[]): Promise<void> {
     const dialogImg = sprites[0];
     const heartImg = sprites[1];
-    const container = new Container();
     const dialogScale = getRelativeScale(dialogImg, options);
+    const { container } = prepareEmotionContainer(instance.instance, options);
+
     dialogImg.scale.set(dialogScale)
     heartImg.x = dialogImg.width * options.heartImg.position.x
     heartImg.y = dialogImg.width * options.heartImg.position.y
@@ -147,16 +131,13 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
     dialogImg.visible = heartImg.visible = true
     container.addChild(dialogImg);
     container.addChild(heartImg);
-    const { offsetX, offsetY } = emotionContainerOffset(instance.instance, options);
-    container.position.set(offsetX, offsetY);
-    instance.instance.addChild(container);
 
-    let tl = gsap.timeline()
-    let firstScale: Scale = {
+    const tl = gsap.timeline()
+    const firstScale: Scale = {
       x: options.jumpAnimation.firstScale.x * heartScale,
       y: options.jumpAnimation.firstScale.y * heartScale
     }
-    let secondScale: Scale = {
+    const secondScale: Scale = {
       x: options.jumpAnimation.secondScale.x * heartScale,
       y: options.jumpAnimation.secondScale.y * heartScale
     }
@@ -166,69 +147,53 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
       .to(heartImg, { alpha: 0, duration: options.fadeOutDuration })
       .add('fadeOut', "<")
       .to(dialogImg, { alpha: 0, duration: options.fadeOutDuration }, 'fadeOut')
-      .then(() => { dialogImg.destroy(); heartImg.destroy() })
-
-    return Promise.resolve(undefined);
+    return timelinePromise(tl, [])
   }, Music(instance: CharacterEffectInstance, options: EmotionOptions['Music'], sprites: Sprite[]) {
-    let note = sprites[0];
-    let scale = options.scale * instance.instance.width / note.width / instance.instance.scale.x;
-    const container = new Container();
-    const { offsetX, offsetY } = emotionContainerOffset(instance.instance, options);
-    container.position.set(offsetX, offsetY);
+    const note = sprites[0];
+    const scale = getRelativeScale(note, options)
+    const { container } = prepareEmotionContainer(instance.instance, options);
+
     note.scale.set(scale * 0.7);
-    note.x = instance.instance.width * options.startPositionOffset.x;
-    note.y = instance.instance.width * options.startPositionOffset.y;
+    const x = instance.instance.width * options.startPositionOffset.x;
+    const y = instance.instance.width * options.startPositionOffset.y;
     note.visible = true;
+    note.position.set(x, y);
     container.addChild(note);
-    let tl = gsap.timeline();
-    let x = note.x;
-    let y = note.y;
-    instance.instance.addChild(container);
+    const tl = gsap.timeline();
+    tl.to(note.scale, { x: scale, y: scale, duration: 0.1 })
+      .to(note, { x: x + note.width * options.animation.offset.x, duration: options.animation.duration })
+      .add('start', '<')
+      .to(note, { y: y + note.width * options.animation.offset.y, angle: options.rotateAngle, duration: options.animation.duration * 0.3 }, 'start')
+      .to(note, { y: y, angle: 0, duration: options.animation.duration * 0.3 }, '>')
+      .to(note, { y: y + note.width * options.animation.offset.y, angle: options.rotateAngle, duration: options.animation.duration * 0.4 }, '>')
+      .to(note, { y: y, angle: 0, duration: options.animation.duration * 0.4 }, '>')
+      .to(note, { alpha: 0, duration: options.fadeOutDuration }, '>')
 
-    return new Promise((resolve, reject) => {
-      tl.to(note.scale, { x: scale, y: scale, duration: 0.1 })
-        .to(note, { x: x + note.width * options.animation.offset.x, duration: options.animation.duration })
-        .add('start', '<')
-        .to(note, { y: y + note.width * options.animation.offset.y, angle: options.rotateAngle, duration: options.animation.duration * 0.3 }, 'start')
-        .to(note, { y: y, angle: 0, duration: options.animation.duration * 0.3 }, '>')
-        .to(note, { y: y + note.width * options.animation.offset.y, angle: options.rotateAngle, duration: options.animation.duration * 0.4 }, '>')
-        .to(note, { y: y, angle: 0, duration: options.animation.duration * 0.4 }, '>')
-        .to(note, { alpha: 0, duration: options.fadeOutDuration }, '>')
-        .then(() => {
-          note.destroy();
-          resolve()
-        })
-        .catch(reason => {
-          reject(reason)
-        })
 
-    })
+    return timelinePromise(tl, [])
   }, Question(instance: CharacterEffectInstance, options: EmotionOptions['Question'], sprites: Sprite[]): Promise<void> {
-    let questionImg = sprites[0]
+    const questionImg = sprites[0]
     questionImg.visible = true
     questionImg.zIndex = 10;
     const scale = getRelativeScale(questionImg, options);
-    const { offsetX, offsetY } = emotionContainerOffset(instance.instance, options);
-    questionImg.position.set(
-      offsetX,
-      offsetY
-    );
+    prepareEmotionContainer(instance.instance, options, questionImg);
+
     questionImg.scale.set(scale);
     questionImg.anchor.set(options.scaleAnimation.anchor.x, options.scaleAnimation.anchor.y)
-    instance.instance.addChild(questionImg);
-    let tl = gsap.timeline()
-    let animationScale = scale * options.scaleAnimation.scale
-    let recoverScale = scale * options.scaleAnimation.recoverScale
+    const tl = gsap.timeline()
+    const animationScale = scale * options.scaleAnimation.scale
+    const recoverScale = scale * options.scaleAnimation.recoverScale
     return timelinePromise(
       tl.to(questionImg.scale, { x: animationScale, y: animationScale, duration: options.scaleAnimation.scaleDuration })
         .to(questionImg.scale, { x: recoverScale, y: recoverScale, duration: options.scaleAnimation.recoverDuration })
         .to(questionImg, { duration: options.fadeOutPreDuration! })
         .to(questionImg, { alpha: 0, duration: options.fadeOutDuration })
-      , [questionImg])
+      , [])
   }, Respond(instance: CharacterEffectInstance, options: EmotionOptions['Respond'], sprites: Sprite[]): Promise<void> {
     const { instance: spine } = instance;
-    const globalOptions = setInitValue(instance, sprites[0], options)
-    const imgContainer = new Container();
+    const { container } = prepareEmotionContainer(spine, options);
+    const scale = getRelativeScale(sprites[0], options)
+
     for (let i = 0; i < 3; ++i) {
       let respondImg = spine.newSprite(sprites[0].texture)
       respondImg.angle = options.perImgSetting[i].angle
@@ -236,97 +201,76 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
         options.perImgSetting[i].anchor.x,
         options.perImgSetting[i].anchor.y,
       )
-      respondImg.scale.set(globalOptions.scale * options.perImgSetting[i].scale / spine.scale.x)
-      imgContainer.addChild(respondImg)
+      respondImg.scale.set(scale * options.perImgSetting[i].scale / spine.scale.x)
+      container.addChild(respondImg)
     }
-    const { offsetX, offsetY } = emotionContainerOffset(spine, options);
-    imgContainer.position.set(offsetX, offsetY);
-    imgContainer.zIndex = 10
-    imgContainer.alpha = 1
-    imgContainer.visible = true;
-    spine.addChild(imgContainer)
+    container.zIndex = 10
+    container.alpha = 1
+    container.visible = true;
     let tl = gsap.timeline()
     return timelinePromise(
-      tl.to(imgContainer, { alpha: options.flashAnimation.alpha, duration: options.flashAnimation.duration })
-        .to(imgContainer, { alpha: 1, duration: options.fadeOutDuration })
-        .to(imgContainer, { duration: options.fadeOutPreDuration })
-        .to(imgContainer, { alpha: 0, duration: options.fadeOutDuration }),
-      [...imgContainer.children as Sprite[], ...sprites]
+      tl.to(container, { alpha: options.flashAnimation.alpha, duration: options.flashAnimation.duration })
+        .to(container, { alpha: 1, duration: options.fadeOutDuration })
+        .to(container, { duration: options.fadeOutPreDuration })
+        .to(container, { alpha: 0, duration: options.fadeOutDuration }),
+      [...container.children as Sprite[], ...sprites]
     );
   }, Sad(instance: CharacterEffectInstance, options: EmotionOptions['Sad'], sprites: Sprite[]): Promise<void> {
-    const container = new Container()
-    const { offsetX, offsetY } = emotionContainerOffset(instance.instance, options);
-    container.position.set(offsetX, offsetY);
+    const { container } = prepareEmotionContainer(instance.instance, options);
     // TODO
     return Promise.resolve(undefined);
   }, Shy(instance: CharacterEffectInstance, options: EmotionOptions['Shy'], sprites: Sprite[]): Promise<void> {
-    let dialogImg = sprites[0]
-    let shyImg = sprites[1]
-
-    const scale = options.scale * instance.instance.width / dialogImg.width / instance.instance.scale.x;
-    const container = new Container()
-    const { offsetX, offsetY } = emotionContainerOffset(instance.instance, options);
+    const dialogImg = sprites[0]
+    const shyImg = sprites[1]
+    const { container, offsetX, offsetY } = prepareEmotionContainer(instance.instance, options);
+    const scale = getRelativeScale(dialogImg, options)
     container.position.set(
       offsetX + instance.instance.width * options.startPositionOffset.x,
       offsetY + instance.instance.width * options.startPositionOffset.y
     );
-
     dialogImg.scale.set(scale * options.scaleAnamation.startScale)
     dialogImg.anchor.set(options.scaleAnamation.anchor.x, options.scaleAnamation.anchor.y)
-    let shyImgPos = calcRelativePosition(dialogImg, options.shyImg.position)
+    const shyImgPos = calcRelativePosition(dialogImg, options.shyImg.position)
     shyImg.scale.set(scale * options.shyImg.scale * options.scaleAnamation.startScale)
     shyImg.position = shyImgPos
     dialogImg.zIndex = 10
     shyImg.zIndex = 11
-    let shyImgAnchor = options.shyImg.anchor
+    const shyImgAnchor = options.shyImg.anchor
     shyImg.anchor.set(shyImgAnchor.x, shyImgAnchor.y)
     shyImg.visible = dialogImg.visible = true
     container.addChild(dialogImg, shyImg);
-    instance.instance.addChild(container);
-    let shakeTl = gsap.timeline({ paused: true })
+    const shakeTl = gsap.timeline({ paused: true })
     shakeTl.add('start')
       .to(shyImg, { angle: options.shakeAnimation.angleFrom, duration: options.shakeAnimation.duration / 2 })
       .to(shyImg, { angle: options.shakeAnimation.angleTo, duration: options.shakeAnimation.duration / 2 })
       .add('end')
-
-
-    let tl = gsap.timeline()
+    const tl = gsap.timeline()
     return timelinePromise(
       tl.to(shyImg.scale, { x: scale, y: scale, duration: options.scaleAnamation.duration })
         .to(dialogImg.scale, { x: scale, y: scale, duration: options.scaleAnamation.duration }, '<')
         .add(shakeTl.tweenFromTo('start', 'end', { repeat: options.shakeAnimation.times - 1 }))
         .to(shyImg, { alpha: 0, duration: options.fadeOutDuration })
         .to(dialogImg, { alpha: 0, duration: options.fadeOutDuration }, '<')
-      , [shyImg, dialogImg]
+      , []
     )
   }, Surprise(instance: CharacterEffectInstance, options: EmotionOptions['Surprise'], sprites: Sprite[]): Promise<void> {
-    let exclaimImg = Sprite.from(sprites[0].texture)
-    let surpriseImg = Sprite.from(sprites[1].texture)
-
-    const scale = options.scale * instance.instance.width / exclaimImg.width / instance.instance.scale.x;
-    let startScale = scale * options.scaleAnimation.startScale
+    const exclaimImg = Sprite.from(sprites[0].texture)
+    const surpriseImg = Sprite.from(sprites[1].texture)
+    const scale = getRelativeScale(exclaimImg, options)
+    const startScale = scale * options.scaleAnimation.startScale
 
     exclaimImg.scale.set(startScale)
     exclaimImg.anchor.set(options.scaleAnimation.anchor.x, options.scaleAnimation.anchor.y)
     surpriseImg.scale.set(startScale, startScale * options.scaleAnimation.questionImgYScale)
     surpriseImg.position = calcRelativePosition(exclaimImg, options.imgSetting.questionImgPos)
     surpriseImg.anchor.set(options.scaleAnimation.anchor.x, options.scaleAnimation.anchor.y)
-
-    const container = new Container()
-    const { offsetX, offsetY } = emotionContainerOffset(instance.instance, options);
-    container.position.set(
-      offsetX,
-      offsetY
-    );
-
-    //container设置为从app.stage的(0,0)开始方便使用工具类函数
+    const { container } = prepareEmotionContainer(instance.instance, options);
     container.addChild(exclaimImg, surpriseImg)
-    instance.instance.addChild(container)
     container.zIndex = 10
 
-    let tl = gsap.timeline()
-    let xOffset = options.jumpAnimation.xOffset * instance.instance.width
-    let jumpYOffset = options.jumpAnimation.jumpYOffset * instance.instance.width
+    const tl = gsap.timeline()
+    const xOffset = options.jumpAnimation.xOffset * instance.instance.width
+    const jumpYOffset = options.jumpAnimation.jumpYOffset * instance.instance.width
     return timelinePromise(
       tl.to(container, { x: `+=${xOffset}`, duration: options.jumpAnimation.duration })
         .to(container, { y: `-=${jumpYOffset}`, duration: options.jumpAnimation.duration / 2 }, 0)
@@ -336,47 +280,38 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
         .to(surpriseImg.scale, { x: scale, y: scale, duration: options.scaleAnimation.duration }, 0)
         .to(container, { duration: options.fadeOutPreDuration }, 'jumpEnd')
         .to(container, { alpha: 0, duration: options.fadeOutDuration }, '>')
-      , [...sprites, surpriseImg, exclaimImg]
+      , [surpriseImg, exclaimImg]
     )
   }, Sweat(instance: CharacterEffectInstance, options: EmotionOptions['Sweat'], sprites: Sprite[]): Promise<void> {
-    let dropImg = sprites[0]
-    let smallDropImg = sprites[1]
-    const container = new Container()
-    const { offsetX, offsetY } = emotionContainerOffset(instance.instance, options);
-    container.position.set(offsetX, offsetY);
-    //设置初始位置和大小
-
-    const scale = options.scale * instance.instance.width / dropImg.width / instance.instance.scale.x;
-    dropImg.scale.set(scale)
-    smallDropImg.scale.set(scale)
-
+    const dropImg = sprites[0];
+    const smallDropImg = sprites[1];
+    const { container } = prepareEmotionContainer(instance.instance, options);
+    const scale = getRelativeScale(dropImg, options)
+    dropImg.scale.set(scale);
+    smallDropImg.scale.set(scale);
     dropImg.x = instance.instance.width * options.startPositionOffset.x;
     dropImg.y = instance.instance.width * options.startPositionOffset.y;
-    let smallPosition = calcRelativePosition(dropImg, options.smallImg.offset)
+    const smallPosition = calcRelativePosition(dropImg, options.smallImg.offset);
     smallDropImg.x = smallPosition.x;
     smallDropImg.y = smallPosition.y;
-    dropImg.zIndex = 10
-    smallDropImg.zIndex = 10
-    smallDropImg.visible = dropImg.visible = true
+    dropImg.zIndex = 10;
+    smallDropImg.zIndex = 10;
+    smallDropImg.visible = dropImg.visible = true;
     container.addChild(dropImg, smallDropImg);
-    instance.instance.addChild(container);
-    let tl = gsap.timeline()
-    return new Promise((resolve, reject) => {
-      tl.to(dropImg, { y: dropImg.y - dropImg.width * options.dropAnimation.yOffset, duration: options.dropAnimation.duration })
-        .to(smallDropImg, {
-          y: smallDropImg.y - options.smallImg.dropAnimationOffset * smallDropImg.width,
-          duration: options.dropAnimation.duration
-        }, '<')
-        .then(() => { dropImg.destroy(); smallDropImg.destroy(); resolve() })
-        .catch(reason => reject(reason))
-    })
+    const tl = gsap.timeline();
+    tl.to(dropImg, { y: dropImg.y - dropImg.width * options.dropAnimation.yOffset, duration: options.dropAnimation.duration })
+      .to(smallDropImg, {
+        y: smallDropImg.y - options.smallImg.dropAnimationOffset * smallDropImg.width,
+        duration: options.dropAnimation.duration
+      }, '<')
+
+    return timelinePromise(tl, [])
   }, Twinkle(instance: CharacterEffectInstance, options: EmotionOptions['Twinkle'], sprites: Sprite[]): Promise<void> {
-    const container = new Container()
-    const { offsetX, offsetY } = emotionContainerOffset(instance.instance, options);
-    container.position.set(offsetX, offsetY);
-    let scale = getRelativeScale(sprites[0], options) / instance.instance.scale.x;
-    let starImgs: Sprite[] = []
-    let starImgScales: number[] = []
+    const { container } = prepareEmotionContainer(instance.instance, options);
+
+    const scale = getRelativeScale(sprites[0], options) / instance.instance.scale.x;
+    const starImgs: Sprite[] = []
+    const starImgScales: number[] = []
     for (let i = 0; i < 3; ++i) {
       starImgScales.push(scale * options.starImgs.scale[i])
     }
@@ -389,11 +324,10 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
       container.addChild(starImg)
     }
     container.alpha = 0
-    instance.instance.addChild(container)
 
-    let flashTlMaster = gsap.timeline({ paused: true })
+    const flashTlMaster = gsap.timeline({ paused: true })
     for (let i = 0; i < 3; ++i) {
-      let flashTl = gsap.timeline()
+      const flashTl = gsap.timeline()
       flashTl.to(starImgs[i],
         {
           pixi: { scale: options.flashAnimation.scales[i] * starImgScales[i] },
@@ -405,29 +339,23 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
       flashTlMaster.add(flashTl, 0)
     }
 
-    let tl = gsap.timeline()
+    const tl = gsap.timeline()
     return timelinePromise(
       tl.to(container, { alpha: 1, duration: options.fadeInDuration })
         .add(flashTlMaster.tweenFromTo(0, options.flashAnimation.totalDuration))
         .to(container, { alpha: 0, duration: options.fadeOutDuration }, `>-=${options.fadeOutPreDuration}`)
-      , [...starImgs, ...sprites]
+      , [...starImgs]
     )
   }, Upset(instance: CharacterEffectInstance, options: EmotionOptions['Upset'], sprites: Sprite[]): Promise<void> {
-    let dialogImg = sprites[0]
-    let upsetImg = Sprite.from(sprites[1].texture)
-    const { offsetX, offsetY } = emotionContainerOffset(instance.instance, options);
-    dialogImg.position.set(
-      offsetX,
-      offsetY
-    );
-
+    const dialogImg = sprites[0]
+    const upsetImg = Sprite.from(sprites[1].texture)
+    prepareEmotionContainer(instance.instance, options, dialogImg);
     upsetImg.anchor.set(0.5, 0.5)
     dialogImg.addChild(upsetImg)
     dialogImg.visible = true;
-    instance.instance.addChild(dialogImg);
     setRelativePosition(upsetImg, dialogImg, options.upsetImgPos)
 
-    let animationTl = gsap.timeline({ paused: true })
+    const animationTl = gsap.timeline({ paused: true })
     animationTl.fromTo(upsetImg,
       { pixi: { angle: options.rotateAnimation.angleFrom } },
       { pixi: { angle: options.rotateAnimation.angleTo }, duration: options.rotateAnimation.duration, repeat: -1, yoyo: true })
@@ -438,23 +366,12 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
         yoyo: true
       })
 
-    let tl = gsap.timeline()
+    const tl = gsap.timeline()
     return timelinePromise(
       tl.add(animationTl.tweenFromTo(0, options.animationTotalDuration))
         .to(dialogImg, { pixi: { alpha: 0 }, duration: options.fadeOutDuration })
-      , [...sprites, upsetImg]
+      , [upsetImg]
     )
-  }
-}
-
-
-function calcGlobalEmotionOptions(instance: CharacterEffectInstance, standardImg: Sprite, options: EmotionOptions[EmotionWord]) {
-  return {
-    startPositionOffset: {
-      x: instance.instance.x + instance.instance.width * options.startPositionOffset.x,
-      y: instance.instance.y + instance.instance.width * options.startPositionOffset.y
-    },
-    scale: options.scale * instance.instance.width / standardImg.width
   }
 }
 
@@ -472,7 +389,7 @@ function calcRelativePosition(standard: Sprite, relativeValue: PositionOffset) {
 }
 
 /**
- * 设置一个图片在另一个图片中的位置(需要该图片是另一图片的child) 
+ * 设置一个图片在另一个图片中的位置(需要该图片是另一图片的child)
  * @param childImg 设置的图片
  * @param containerImg 作为容器的图片
  * @param relativeValue 位置的相对值(相对于容器图片宽度而言)
@@ -484,78 +401,52 @@ function setRelativePosition(childImg: Sprite, containerImg: Sprite, relativeVal
   }
 }
 
-
 /**
- * 设置基准图片的初始位置, 缩放, zIndex
- * 缩放基于播放器宽度
- * @param instance 
- * @param standardImg 
- * @param options 
- * @returns 位置和缩放比例的绝对值
- */
-function setInitValue(instance: CharacterEffectInstance, standardImg: Sprite, options: EmotionOptions[EmotionWord]) {
-  let standardWidth = getStandardWidth()
-  let globalOptions = {
-    startPositionOffset: {
-      x: instance.instance.x + instance.instance.width * options.startPositionOffset.x,
-      y: instance.instance.y + instance.instance.width * options.startPositionOffset.y
-    },
-    scale: options.scale * standardWidth / standardImg.width
-  }
-  standardImg.scale.set(globalOptions.scale)
-  standardImg.x = globalOptions.startPositionOffset.x
-  standardImg.y = globalOptions.startPositionOffset.y
-  standardImg.zIndex = 10
-
-  return globalOptions
-}
-
-/**
+ * 预处理表情容器, 可以是表情图片自己, 也可以是新的容器
+ *
  * 将spine作为Container使用后的方法
+ *
  * 计算方式不能基于spine width, 有width很大的人物特例
+ *
  * 计算图片相对于入物中心的偏移值, 其中x方向减去的值为前面设置遗留的特殊值, 后面会改
+ *
+ * @param spine 角色对象
+ * @param options 表情自己的配置信息
+ * @param container 装表情的容器, 也可以是表情自己
  */
-function emotionContainerOffset(spine: Spine, options: EmotionOptions[EmotionWord]) {
+function prepareEmotionContainer(spine: Spine, options: EmotionOptions[EmotionWord], container?: Container | Sprite) {
+  if (!container) {
+    container = new Container();
+  }
+  //偏移量为根据startPositionOffset计算得出的固定值, 替换前面使用的makeSpineHappyOffset
+  const offsetX = (options.startPositionOffset.x - 0.8) * 540;
+  const offsetY = (options.startPositionOffset.y - 1.2) * 1012;
+  container.position.set(
+    offsetX,
+    offsetY
+  );
+  spine.addChild(container);
   return {
-    offsetX: options.makeSpineHappyOffset.x - 500,
-    offsetY: options.makeSpineHappyOffset.y - 6 / 5 * usePlayerStore().app.screen.height,
+    offsetX,
+    offsetY,
+    container
   }
 }
 
 /**
- * 设置初始位置, 并同时会将z-index设为10放置角色覆盖图片
- * @param instance 角色实例
- * @param object 设置位置的pixi对象
- * @param options 当前情绪动画的参数
- * @returns 位置绝对值
- */
-function setInitPos(instance: CharacterEffectInstance, object: DisplayObject, options: EmotionOptions[EmotionWord]) {
-  let pos = {
-    x: instance.instance.x + instance.instance.width * options.startPositionOffset.x,
-    y: instance.instance.y + instance.instance.width * options.startPositionOffset.y
-  }
-  object.x = pos.x
-  object.y = pos.y
-  object.zIndex = 10
-
-  return pos
-}
-
-/**
- * 计算图片基于角色大小的缩放比例 
- * @param instance 角色实例 
+ * 计算图片的缩放比例
+ * 事实上是一个固定值, 该函数的存在意义主要是适应以前的参数设置
  * @param img 缩放的图片
  * @param options 情绪动画设置参数
  * @returns 缩放比例绝对值
  */
 function getRelativeScale(img: Sprite, options: EmotionOptions[EmotionWord]) {
   //用播放器宽度的1/5作为图片缩放的基准
-  let standardWidth = getStandardWidth()
-  return options.scale * standardWidth / img.width
+  return options.scale * 540 / img.width
 }
 
 /**
- * timeline执行后生成一个promise并自动回收sprite 
+ * timeline执行后生成一个promise并自动回收sprite
  * @param timeLine 执行的timeline
  * @param destroyImgs 要回收的sprite对象数组
  * @returns 生成的promise

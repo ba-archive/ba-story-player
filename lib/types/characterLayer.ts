@@ -1,8 +1,8 @@
-import type { ISkeletonData, Spine } from 'pixi-spine'
+import { Character, CharacterInstance } from "@/types/common";
 import { ShowCharacter } from "@/types/events";
-import { Character, CharacterEffectType, CharacterInstance } from "@/types/common";
+import { IAnimationStateListener } from "@pixi-spine/base";
+import type { ISkeletonData, Spine } from 'pixi-spine';
 import { Sprite } from 'pixi.js';
-import {IAnimationStateListener} from "@pixi-spine/base";
 
 /**
  * 角色层定义
@@ -99,7 +99,6 @@ export interface CharacterLayer {
    * @value CharacterInstance 包含spine对象的实例
    */
   characterSpineCache: Map<number, CharacterInstance>,
-  effectPlayerMap: Map<CharacterEffectType, CharacterEffectPlayerInterface<EmotionWord | CharacterEffectWord | FXEffectWord>>,
 }
 
 /**
@@ -404,19 +403,6 @@ export interface GlobalEmotionOptions {
   scale: number;
   fadeOutPreDuration?: number;
   fadeOutDuration: number;
-  /**
-   * 为了解决spine作为Container使用时奇怪的pivot问题而生
-   *
-   * 用作比例, 填写的是当立绘scale前width,height为基准时
-   *
-   * 自身位于spine内的offset
-   *
-   * 目前使用yuuka(运动服)的width956,height2424作为基准
-   */
-  makeSpineHappyOffset: {
-    x: number;
-    y: number;
-  }
 }
 
 export type EmotionOptions = {

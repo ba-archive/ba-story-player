@@ -1,12 +1,15 @@
-import { usePlayerStore } from "@/stores";
+import {usePlayerStore} from "@/stores";
 import {
-  CharacterEffectInstance, CharacterEffectPlayer, CharacterEffectWord, PositionOffset
+  CharacterEffectInstance,
+  CharacterEffectPlayer,
+  CharacterEffectWord,
+  PositionOffset
 } from "@/types/characterLayer";
 import gsap from "gsap";
-import { Spine } from "pixi-spine";
-import actionOptions, { moveSpeed } from "./options/actionOptions";
-import { ColorOverlayFilter } from '@pixi/filter-color-overlay'
-import { calcCharacterYAndScale, CharacterLayerInstance } from './index'
+import {Spine} from "pixi-spine";
+import actionOptions, {moveSpeed} from "./options/actionOptions";
+import {ColorOverlayFilter} from '@pixi/filter-color-overlay'
+import {calcCharacterYAndScale, CharacterLayerInstance, getStageSize} from './index'
 
 const AnimationIdleTrack = 0; // 光环动画track index
 const AnimationFaceTrack = 1; // 差分切换
@@ -221,7 +224,7 @@ export const POS_X_CNETER_OFFSET = {
  */
 export function calcSpineStagePosition(character: Spine, position: number): PositionOffset {
   const { screenWidth, screenHeight } = getStageSize();
-  let center = screenWidth * 1 / 2
+  let center = screenWidth / 2
   //当角色pivot x变为人物中心附近时改变计算算法
   if (Math.abs(CharacterLayerInstance.characterScale! - character.scale.x) > 0.05) {
     let closeupScale = character.scale.x
@@ -243,25 +246,10 @@ export function calcSpineStagePosition(character: Spine, position: number): Posi
 }
 
 /**
- * 获取显示区域的大小
- * @return screenWidth 容器的宽 screenHeight 容器的高
- */
-export function getStageSize() {
-  const { app } = usePlayerStore();
-  const screen = app.screen;
-  const screenWidth = screen.width;
-  const screenHeight = screen.height;
-  return {
-    screenWidth,
-    screenHeight
-  };
-}
-
-/**
  * 根据timeline生成promise
- * @param tl 
+ * @param tl
  * @param callBack 可选, 返回promise前调用的函数
- * @returns 
+ * @returns
  */
 async function timeLinePromise(tl: gsap.core.Timeline, callBack?: () => any) {
   try {
@@ -277,7 +265,7 @@ async function timeLinePromise(tl: gsap.core.Timeline, callBack?: () => any) {
 
 /**
  * 初始化角色的位置, zIndex, 动画和可见性.
- * @param instance 
+ * @param instance
  */
 function initCharacter(instance: CharacterEffectInstance) {
   const characterInstance = instance.instance;
@@ -293,9 +281,9 @@ function initCharacter(instance: CharacterEffectInstance) {
 
 /**
  * 将立绘移动到指定位置, 返回一个移动动画timeline
- * @param instance 
- * @param position 
- * @returns 
+ * @param instance
+ * @param position
+ * @returns
  */
 function moveTo(instance: CharacterEffectInstance, position: number) {
   let movePos = calcSpineStagePosition(instance.instance, position)

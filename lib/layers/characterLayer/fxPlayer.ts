@@ -6,7 +6,7 @@ import gsap from "gsap";
 import { getStandardWidth } from ".";
 import { AdjustmentFilter } from '@pixi/filter-adjustment'
 
-const characterFXPlayer: CharacterFXPlayer = {
+const CharacterFXPlayerInstance: CharacterFXPlayer = {
   init() {
     return;
   },
@@ -72,10 +72,10 @@ const characterFXPlayer: CharacterFXPlayer = {
 
 /**
  * 设置图片相对于人物位置
- * @param instance 
- * @param img 
- * @param pos 
- * @returns 
+ * @param instance
+ * @param img
+ * @param pos
+ * @returns
  */
 function setPos(instance: CharacterEffectInstance, img: Sprite, pos: PositionOffset) {
   let standardWidth = getStandardWidth()
@@ -89,7 +89,7 @@ function setPos(instance: CharacterEffectInstance, img: Sprite, pos: PositionOff
 }
 
 /**
- * timeline执行后生成一个promise并自动回收sprite 
+ * timeline执行后生成一个promise并自动回收sprite
  * @param timeLine 执行的timeline
  * @param destroyImgs 要回收的sprite对象数组
  * @returns 生成的promise
@@ -106,4 +106,4 @@ function timelinePromise(timeLine: gsap.core.Timeline, destroyImgs: Sprite[], ca
   })
 }
 
-export default characterFXPlayer
+export default CharacterFXPlayerInstance
