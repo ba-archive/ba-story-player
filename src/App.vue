@@ -46,6 +46,27 @@ Reflect.set(window, 'next', () => {
 
 let width = ref(1000)
 let showPlayer = ref(true)
+
+const currentStoryIndex = ref(0)
+const indexCacheKey = 'storyIndex'
+const cacheIndex = localStorage.getItem(indexCacheKey)
+if (cacheIndex) {
+  currentStoryIndex.value = Number(cacheIndex)
+  storyHandler.currentStoryIndex = currentStoryIndex.value
+}
+/**
+ * 设置开始的storyIndex
+ */
+function setStartIndex() {
+  localStorage.setItem(indexCacheKey, currentStoryIndex.value.toString())
+}
+/**
+ * 切换到对应故事节点
+ */
+function changeStoryIndex() {
+  storyHandler.currentStoryIndex = currentStoryIndex.value
+  eventBus.emit('next')
+}
 </script>
 
 <template>
@@ -54,14 +75,17 @@ let showPlayer = ref(true)
       <BaStoryPlayer :story="prologue" data-url="https://yuuka.cdn.diyigemt.com/image/ba-all-data" :width="width"
         language="Cn" userName="testUser" :story-summary="storySummary" />
     </div>
-    <div style="position: absolute;left: 0;display: flex;flex-direction: column;">
+    <div style="position: absolute;left: 0;display: flex;flex-direction: column;width: 20vh;">
       <label>辅助工具选择</label>
       <select v-model="toolType">
         <option value="emotion">人物特效测试</option>
         <option value="effect">特效层特效</option>
         <option value="null">无</option>
       </select>
-      <button @click="showPlayer = true">显示</button>
+      <label>storyIndex</label>
+      <input v-model="currentStoryIndex" />
+      <button @click="setStartIndex">设为故事初始index</button>
+      <button @click="changeStoryIndex">更换故事index</button>
     </div>
     <ModifyEmotionOption class="absolute-right-center" v-if="toolType === 'emotion'" />
     <Suspense>
