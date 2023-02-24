@@ -41,7 +41,7 @@ const EffectPlayerMap: IEffectPlayerMap = {
 /**
  * 角色初始的pivot相对与长宽的比例, 当前值代表左上角
  */
-export const Character_Initial_Pivot_Proportion = { x: -1 / 2, y: -1 / 2 }
+export const Character_Initial_Pivot_Proportion = { x: 0, y: -1 / 2 }
 /**
  * 标准宽度基于的播放器宽度的相对值
  * 标准宽度用于计算图片缩放比例
@@ -76,6 +76,16 @@ export const CharacterLayerInstance: CharacterLayer = {
     eventBus.on("showCharacter", showCharacter);
     eventBus.on("hide", () => Reflect.apply(this.hideCharacter, this, []))
     eventBus.on("hideCharacter", () => Reflect.apply(this.hideCharacter, this, []))
+    eventBus.on("resize", originWidth => {
+      this.characterSpineCache.forEach(character => {
+        const instance = character.instance
+        if (instance.visible) {
+          console.log(instance.x)
+          instance.x *= app.screen.width / originWidth
+          console.log(instance.x)
+        }
+      })
+    })
     Object.keys(EffectPlayerMap).forEach((key) => {
       const player = Reflect.get(EffectPlayerMap, key) as ICharacterEffectPlayerInterface;
       player && player.init();

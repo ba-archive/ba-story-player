@@ -1,4 +1,4 @@
-import {usePlayerStore} from "@/stores";
+import { usePlayerStore } from "@/stores";
 import {
   CharacterEffectInstance,
   CharacterEffectPlayer,
@@ -6,10 +6,10 @@ import {
   PositionOffset
 } from "@/types/characterLayer";
 import gsap from "gsap";
-import {Spine} from "pixi-spine";
-import actionOptions, {moveSpeed} from "./options/actionOptions";
-import {ColorOverlayFilter} from '@pixi/filter-color-overlay'
-import {calcCharacterYAndScale, CharacterLayerInstance, getStageSize} from './index'
+import { Spine } from "pixi-spine";
+import actionOptions, { moveSpeed } from "./options/actionOptions";
+import { ColorOverlayFilter } from '@pixi/filter-color-overlay'
+import { calcCharacterYAndScale, CharacterLayerInstance, getStageSize } from './index'
 
 const AnimationIdleTrack = 0; // 光环动画track index
 const AnimationFaceTrack = 1; // 差分切换
@@ -226,22 +226,22 @@ export function calcSpineStagePosition(character: Spine, position: number): Posi
   const { screenWidth, screenHeight } = getStageSize();
   let center = screenWidth / 2
   //当角色pivot x变为人物中心附近时改变计算算法
-  if (Math.abs(CharacterLayerInstance.characterScale! - character.scale.x) > 0.05) {
-    let closeupScale = character.scale.x
-    character.scale.set(CharacterLayerInstance.characterScale)
-    const OriginHalfWidth = 0.55 * character.width
-    let pos = {
-      x: center + Reflect.get(POS_X_CNETER_OFFSET, position) * screenWidth - character.width / 2,
-      y: screenHeight * 0.3
-    }
-    character.scale.set(closeupScale)
-    pos.x -= 0.55 * character.width - OriginHalfWidth
-    return pos
-  }
+  // if (Math.abs(CharacterLayerInstance.characterScale! - character.scale.x) > 0.05) {
+  //   let closeupScale = character.scale.x
+  //   character.scale.set(CharacterLayerInstance.characterScale)
+  //   const OriginHalfWidth = 0.55 * character.width
+  //   let pos = {
+  //     x: center + Reflect.get(POS_X_CNETER_OFFSET, position) * screenWidth - character.width / 2,
+  //     y: screenHeight * 0.3
+  //   }
+  //   character.scale.set(closeupScale)
+  //   pos.x -= 0.55 * character.width - OriginHalfWidth
+  //   return pos
+  // }
 
   return {
-    x: center + Reflect.get(POS_X_CNETER_OFFSET, position) * screenWidth - character.width / 2,
-    y: screenHeight * 0.3
+    x: center + Reflect.get(POS_X_CNETER_OFFSET, position) * screenWidth,
+    y: screenHeight * 0.3 //未使用
   };
 }
 

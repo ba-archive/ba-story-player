@@ -62,10 +62,10 @@ const player = ref<HTMLDivElement>()
 watch([() => props.height, () => props.width], () => {
   const newWidth = playerHeight * props.width / props.height
   const app = usePlayerStore().app
-  console.log(app.screen.width, newWidth)
-  if (newWidth.toFixed(2) !== app.screen.width.toFixed(2)) {
+  const originWidth = app.screen.width
+  if (newWidth.toFixed(2) !== originWidth.toFixed(2)) {
     app.renderer.resize(newWidth, playerHeight)
-    eventBus.emit('resize')
+    eventBus.emit('resize', originWidth)
   }
 })
 
