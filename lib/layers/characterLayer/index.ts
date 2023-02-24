@@ -80,9 +80,7 @@ export const CharacterLayerInstance: CharacterLayer = {
       this.characterSpineCache.forEach(character => {
         const instance = character.instance
         if (instance.visible) {
-          console.log(instance.x)
           instance.x *= app.screen.width / originWidth
-          console.log(instance.x)
         }
       })
     })
@@ -455,10 +453,10 @@ function loopAnimationTime<AnimationState extends IAnimationState>(state: Animat
 const PlayerHeight = 550;
 const CharacterScale = 0.29;
 // spine在播放器之下的部分;
-const spineHideRate = 0.4;
+const spineHideRate = 0.5;
 export function calcCharacterYAndScale(spine: Spine) {
   const { screenHeight } = getStageSize();
-  const scale = screenHeight / PlayerHeight * CharacterScale;
+  const scale = 1.25 * screenHeight / PlayerHeight * CharacterScale;
   const spineHeight = spine.height / spine.scale.y * scale;
   return {
     scale,
