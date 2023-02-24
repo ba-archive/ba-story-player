@@ -21,6 +21,7 @@ let btnMenuTimmer: any
 
 let { storySummary } = defineProps<{ storySummary: StorySummary }>()
 const selectOptions = ref<ShowOption[]>([]);
+const emitter = defineEmits(['fullscreenChange'])
 
 eventBus.on("hide", () => {
   console.log("UI hide")
@@ -40,6 +41,9 @@ function handleBtnHiddenUi() {
   eventBus.emit("playOtherSounds", "select")
   refreshBtnMenuTimmer()
   eventBus.emit("hideDialog");
+}
+function handleBtnFullScreen() {
+  emitter('fullscreenChange')
 }
 function handleBtnChatLog() {
   eventBus.emit("playOtherSounds", "select")
@@ -130,7 +134,7 @@ const handleBtnMenuDebounced = debounce(handleBtnMenu, 200);
 
       <Transition>
         <div class="baui-menu-options lean-rect" v-if="!hiddenSubMenu">
-          <button class="button-nostyle ba-menu-option" @click="handleBtnHiddenUi" @mousedown="handleBtnMouseDown"
+          <button class="button-nostyle ba-menu-option" @click="handleBtnFullScreen" @mousedown="handleBtnMouseDown"
             @mouseup="handleBtnMouseUp" @mouseleave="handleBtnMouseUp">
             <img draggable="false" src="./assets/pan-arrow.svg" />
           </button>

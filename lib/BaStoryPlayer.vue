@@ -28,39 +28,51 @@ const props = withDefaults(defineProps<PlayerProps>(), {
 
 const emitter = defineEmits(['end'])
 
+
+const height = ref(props.height)
+const width = ref(props.width)
 const fullScreen = ref(props.startFullScreen)
-watch(fullScreen, val => {
-  if (val) {
-    // width.value = window.screen.availWidth
+watch(fullScreen, updateFullScreenState)
+/**
+ * 根据fullScrren值更新播放器状态
+ */
+async function updateFullScreenState() {
+  const currentFullScrrenState = document.fullscreenElement !== null
+  if (fullScreen.value) {
+    if (!currentFullScrrenState) {
+      await player.value?.requestFullscreen({ navigationUI: 'hide' })
+    }
+    console.log(window.screen.availWidth)
+    width.value = window.screen.availWidth
+    height.value = window.screen.availHeight
   }
   else {
-    // width.value = props.width
+    if (currentFullScrrenState) {
+      await document.exitFullscreen()
+    }
+    width.value = props.width
+    height.value = props.height
   }
-})
-
-
+}
+window.addEventListener('resize', updateFullScreenState)
 /**
  * 指定canvas一个固定的height保证画面表现
  */
 const playerHeight = 1012.5
 const playerConfig = { ...props, height: playerHeight }
 playerConfig.width = playerHeight * props.width / props.height
-if (fullScreen.value) {
-  // width.value = window.screen.availWidth
-}
-
 
 const playerScale = computed(
   //比实际放大一点放置并隐藏解决缩放不精确的问题
-  () => (props.height + 1) / playerConfig.height
+  () => (height.value + 1) / playerHeight
 )
 const playerStyle = computed(() => {
-  return { height: `${props.height}px`, width: `${props.width}px` }
+  return { height: `${height.value}px`, width: `${width.value}px` }
 })
 const player = ref<HTMLDivElement>()
 
-watch([() => props.height, () => props.width], () => {
-  const newWidth = playerHeight * props.width / props.height
+watch([width, height], () => {
+  const newWidth = playerHeight * width.value / height.value
   const app = usePlayerStore().app
   const originWidth = app.screen.width
   if (newWidth.toFixed(2) !== originWidth.toFixed(2)) {
@@ -68,15 +80,22 @@ watch([() => props.height, () => props.width], () => {
     eventBus.emit('resize', originWidth)
   }
 })
+watch([() => props.width, () => props.height], () => {
+  if (!fullScreen.value) {
+    width.value = props.width
+    height.value = props.height
+  }
+})
 
 onMounted(() => {
   init('player__main__canvas', playerConfig, () => emitter('end'))
   if (props.startFullScreen) {
-    player.value?.requestFullscreen({ navigationUI: 'hide' })
-    player.value?.addEventListener('fullscreenchange', () => {
-      fullScreen.value = document.fullscreenElement !== null
-    })
+    updateFullScreenState()
   }
+  //保证fullscreen值正确性
+  player.value?.addEventListener('fullscreenchange', () => {
+    fullScreen.value = document.fullscreenElement !== null
+  })
 })
 
 </script>
@@ -86,7 +105,7 @@ onMounted(() => {
     <div id="player__main" :style="playerStyle">
       <div id="player__main__canvas" :style="{ transform: `scale(${playerScale})` }"></div>
       <BaDialog :player-height="height" :player-width="width" :style="{ width: `${width}px` }"></BaDialog>
-      <BaUI :story-summary="storySummary" />
+      <BaUI :story-summary="storySummary" @fullscreen-change="fullScreen = !fullScreen" />
     </div>
   </div>
 </template>
