@@ -76,10 +76,8 @@ const CharacterEffectPlayerInstance: CharacterEffectPlayer = {
 
   }, closeup(instance: CharacterEffectInstance, options): Promise<void> {
     if (Math.abs(CharacterLayerInstance.characterScale! - instance.instance.scale.x) <= 0.05) {
-      const OriginHalfWidth = 0.55 * instance.instance.width
       let scale = instance.instance.scale.x * options.scale
       instance.instance.scale.set(scale)
-      instance.instance.position.x -= 0.55 * instance.instance.width - OriginHalfWidth
     }
 
     return Promise.resolve()
@@ -114,6 +112,7 @@ const CharacterEffectPlayerInstance: CharacterEffectPlayer = {
       y: instance.instance.height * options.anchor.y / instance.instance.scale.y
     }
     let orginPivot = instance.instance.pivot.clone()
+    let originY = instance.instance.y
     instance.instance.pivot.x += pivotOffset.x
     instance.instance.pivot.y += pivotOffset.y
     instance.instance.position.set(instance.instance.x + pivotOffset.x * instance.instance.scale.x, instance.instance.y + pivotOffset.y * instance.instance.scale.x)
@@ -124,7 +123,7 @@ const CharacterEffectPlayerInstance: CharacterEffectPlayer = {
       .to(instance.instance, { pixi: { angle: options.rightAngle }, duration: options.firstRotateDuration }, '>')
       .to(instance.instance, { pixi: { x: `+=${options.xOffset * instance.instance.width}` } }, 0)
 
-    return timeLinePromise(tl, () => { instance.instance.angle = 0; instance.instance.pivot = orginPivot })
+    return timeLinePromise(tl, () => { instance.instance.angle = 0; instance.instance.pivot = orginPivot; instance.instance.visible = false; instance.instance.y = originY; })
   }, greeting(instance: CharacterEffectInstance, options): Promise<void> {
     let tl = gsap.timeline()
     let yOffset = options.yOffset * instance.instance.height
