@@ -34,7 +34,7 @@ eventBus.on("hidemenu", () => {
 eventBus.on("showmenu", () => {
   hiddenMenu.value = false
 })
-eventBus.on("option", (e) => (selectOptions.value = e));
+eventBus.on("option", (e) => (selectOptions.value = [...e]));
 
 function handleBtnHiddenUi() {
   eventBus.emit("playOtherSounds", "select")
@@ -55,7 +55,7 @@ function handleBtnSkipSummary() {
 }
 
 // 处理选项
-function handleBaSelector(selectionGroup: number){
+function handleBaSelector(selectionGroup: number) {
   console.log("selectGroup: ", selectionGroup)
   console.log("select: ", selectOptions.value[selectionGroup])
   eventBus.emit('select', selectOptions.value[selectionGroup].SelectionGroup)
@@ -117,10 +117,7 @@ const handleBtnMenuDebounced = debounce(handleBtnMenu, 200);
 </script>
 
 <template>
-  <div
-    class="baui"
-    @click.self="eventBus.emit('click')"
-  >
+  <div class="baui" @click.self="eventBus.emit('click')">
     <div class="right-top" v-show="!hiddenMenu">
       <div class="baui-button-group">
         <BaButton @click="handleBtnAutoMode" :class="{ 'ba-button-auto': true, activated: autoMode }">
@@ -133,38 +130,24 @@ const handleBtnMenuDebounced = debounce(handleBtnMenu, 200);
 
       <Transition>
         <div class="baui-menu-options lean-rect" v-if="!hiddenSubMenu">
-          <button 
-            class="button-nostyle ba-menu-option" 
-            @click="handleBtnHiddenUi" 
-            @mousedown="handleBtnMouseDown" 
-            @mouseup="handleBtnMouseUp" 
-            @mouseleave="handleBtnMouseUp"
-          >
+          <button class="button-nostyle ba-menu-option" @click="handleBtnHiddenUi" @mousedown="handleBtnMouseDown"
+            @mouseup="handleBtnMouseUp" @mouseleave="handleBtnMouseUp">
             <img draggable="false" src="./assets/pan-arrow.svg" />
           </button>
-          <button 
-            class="button-nostyle ba-menu-option" 
-            @click="handleBtnChatLog" 
-            @mousedown="handleBtnMouseDown" 
-            @mouseup="handleBtnMouseUp" 
-            @mouseleave="handleBtnMouseUp"
-          >
+          <button class="button-nostyle ba-menu-option" @click="handleBtnChatLog" @mousedown="handleBtnMouseDown"
+            @mouseup="handleBtnMouseUp" @mouseleave="handleBtnMouseUp">
             <img draggable="false" src="./assets/menu.svg" />
           </button>
-          <button 
-            class="button-nostyle ba-menu-option" 
-            @click="handleBtnSkipSummary" 
-            @mousedown="handleBtnMouseDown" 
-            @mouseup="handleBtnMouseUp" 
-            @mouseleave="handleBtnMouseUp"
-          >
+          <button class="button-nostyle ba-menu-option" @click="handleBtnSkipSummary" @mousedown="handleBtnMouseDown"
+            @mouseup="handleBtnMouseUp" @mouseleave="handleBtnMouseUp">
             <img draggable="false" src="./assets/fast-forward.svg" />
           </button>
         </div>
       </Transition>
     </div>
 
-    <BaSelector id="ba-story-selector" :selection="selectOptions" @select="handleBaSelector" v-if="selectOptions.length !== 0"/>
+    <BaSelector id="ba-story-selector" :selection="selectOptions" @select="handleBaSelector"
+      v-if="selectOptions.length !== 0" />
 
     <BaDialog id="ba-story-summery" :title="'概要'" :show="!hiddenSummary" @close="hiddenSummary = true">
       <div class="ba-story-summery-container">
@@ -174,23 +157,23 @@ const handleBtnMenuDebounced = debounce(handleBtnMenu, 200);
         </p>
         <p class="ba-story-summery-tip">※ 是否略过此剧情？</p>
         <div class="ba-story-summery-button-group">
-          <BaButton size="large" class="polylight" @click="hiddenSummary=true">取消</BaButton>
-          <BaButton size="large" class="polydark" @click="eventBus.emit('skip'); hiddenSummary=true">确认</BaButton>
+          <BaButton size="large" class="polylight" @click="hiddenSummary = true">取消</BaButton>
+          <BaButton size="large" class="polydark" @click="eventBus.emit('skip'); hiddenSummary = true">确认</BaButton>
         </div>
       </div>
     </BaDialog>
-    
+
     <BaDialog id="ba-story-log" :title="'对话记录'" width="80%" height="90%" :show="!hiddenStoryLog"
       @close="hiddenStoryLog = !hiddenStoryLog">
-      <BaChatLog :show="!hiddenStoryLog"/>
+      <BaChatLog :show="!hiddenStoryLog" />
     </BaDialog>
   </div>
 </template>
 
 <style lang="scss" scoped>
-@font-face{
+@font-face {
   font-family: 'TJL';
-  src : url('https://yuuka.cdn.diyigemt.com/image/ba-all-data/assets/ResourceHanRoundedCN-Medium.ttf');
+  src: url('https://yuuka.cdn.diyigemt.com/image/ba-all-data/assets/ResourceHanRoundedCN-Medium.ttf');
 }
 
 .lean-rect {
@@ -220,14 +203,17 @@ const handleBtnMenuDebounced = debounce(handleBtnMenu, 200);
   top: 0;
   z-index: 100;
   overflow: hidden;
-  font-family: 'TJL','Microsoft YaHei', 'PingFang SC', -apple-system, system-ui,
+  font-family: 'TJL', 'Microsoft YaHei', 'PingFang SC', -apple-system, system-ui,
     'Segoe UI', Roboto, Ubuntu, Cantarell, 'Noto Sans', BlinkMacSystemFont,
     'Helvetica Neue', 'Hiragino Sans GB', Arial, sans-serif;
 
-  .v-enter-active, .v-leave-active {
+  .v-enter-active,
+  .v-leave-active {
     transition: opacity .2s;
   }
-  .v-enter-from, .v-leave-to {
+
+  .v-enter-from,
+  .v-leave-to {
     opacity: 0;
   }
 
@@ -280,7 +266,7 @@ const handleBtnMenuDebounced = debounce(handleBtnMenu, 200);
     }
   }
 
-  #ba-story-log{
+  #ba-story-log {
     z-index: 110;
   }
 
