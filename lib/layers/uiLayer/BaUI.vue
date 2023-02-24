@@ -10,11 +10,11 @@ import { effectBtnMouseDown, effectBtnMouseUp } from "./utils";
 import { ShowOption } from "@/types/events";
 import { usePlayerStore } from "@/stores";
 
-let hiddenAllUI = ref<'visible' | 'hidden'>('hidden');
 let hiddenSummary = ref(true);
 let hiddenStoryLog = ref(true);
 let autoMode = ref(false);
-let hiddenMenu = ref(true);
+let hiddenMenu = ref(false);
+let hiddenSubMenu = ref(true);
 
 // 计时器：当这个计时器到时间时 -- 回调函数会把 hiddenMenu 设置成 true 来影藏菜单
 let btnMenuTimmer: any
@@ -23,13 +23,16 @@ let { storySummary } = defineProps<{ storySummary: StorySummary }>()
 const selectOptions = ref<ShowOption[]>([]);
 
 eventBus.on("hide", () => {
-  hiddenAllUI.value = 'hidden'
+  console.log("UI hide")
+  hiddenSummary.value = true
+  hiddenStoryLog.value = true
+  autoMode.value = false
 })
 eventBus.on("hidemenu", () => {
-  hiddenAllUI.value = 'hidden'
+  hiddenMenu.value = true
 })
 eventBus.on("showmenu", () => {
-  hiddenAllUI.value = 'visible'
+  hiddenMenu.value = false
 })
 eventBus.on("option", (e) => (selectOptions.value = e));
 
@@ -42,6 +45,8 @@ function handleBtnChatLog() {
   eventBus.emit("playOtherSounds", "select")
   refreshBtnMenuTimmer()
   hiddenStoryLog.value = false
+  autoMode.value = false
+  eventBus.emit("stopAuto")
 }
 function handleBtnSkipSummary() {
   eventBus.emit("playOtherSounds", "select")
@@ -82,23 +87,23 @@ function handleBtnAutoMode() {
 }
 
 function handleBtnMenu() {
-  if (hiddenMenu.value) {
-    hiddenMenu.value = false;
+  if (hiddenSubMenu.value) {
+    hiddenSubMenu.value = false;
     // 一段时间后自动影藏
     clearInterval(btnMenuTimmer)
     btnMenuTimmer = setTimeout(() => {
-      hiddenMenu.value = true;
+      hiddenSubMenu.value = true;
     }, 5555);
   } else {
-    hiddenMenu.value = true;
+    hiddenSubMenu.value = true;
   }
 }
 
 function refreshBtnMenuTimmer() {
-  if (!hiddenMenu.value) {
+  if (!hiddenSubMenu.value) {
     clearTimeout(btnMenuTimmer)
     btnMenuTimmer = setTimeout(() => {
-      hiddenMenu.value = true;
+      hiddenSubMenu.value = true;
     }, 5555);
   }
 }
@@ -114,21 +119,20 @@ const handleBtnMenuDebounced = debounce(handleBtnMenu, 200);
 <template>
   <div
     class="baui"
-    :style="{ visibility: hiddenAllUI }"
     @click.self="eventBus.emit('click')"
   >
-    <div class="right-top">
+    <div class="right-top" v-show="!hiddenMenu">
       <div class="baui-button-group">
         <BaButton @click="handleBtnAutoMode" :class="{ 'ba-button-auto': true, activated: autoMode }">
           AUTO
         </BaButton>
-        <BaButton @click="handleBtnMenuDebounced" :class="{ 'ba-button-menu': true, activated: !hiddenMenu }">
+        <BaButton @click="handleBtnMenuDebounced" :class="{ 'ba-button-menu': true, activated: !hiddenSubMenu }">
           MENU
         </BaButton>
       </div>
 
       <Transition>
-        <div class="baui-menu-options lean-rect" v-if="!hiddenMenu">
+        <div class="baui-menu-options lean-rect" v-if="!hiddenSubMenu">
           <button 
             class="button-nostyle ba-menu-option" 
             @click="handleBtnHiddenUi" 
