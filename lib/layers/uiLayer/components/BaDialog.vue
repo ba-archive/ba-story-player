@@ -132,7 +132,7 @@ watch(
             width: 100%;
             height: 4px;
             background-color: #fbef62;
-            border-radius: 5px;
+            border-radius: 3px;
           }
         }
       }
