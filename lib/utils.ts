@@ -5,7 +5,7 @@ let otherSoundMap: OtherSoundsUrls
 /**
  * ogg类型的音频是否用其他音频类型代替
  */
-let oggAudioType='ogg'
+let oggAudioType = 'ogg'
 
 /**
  * 设置数据站点
@@ -23,8 +23,8 @@ export function setDataUrl(url: string): void {
 /**
  * 设置ogg类型音频的替代音频类型
  */
-export function setOggAudioType(audioType:'mp3'){
-  oggAudioType=audioType
+export function setOggAudioType(audioType: 'mp3') {
+  oggAudioType = audioType
 }
 
 /**
@@ -67,8 +67,8 @@ export function getResourcesUrl(type: ResourcesTypes, arg: string): string {
     case 'characterSpine':
       //arg UIs/03_Scenario/02_Character/CharacterSpine_hasumi
       let temp = String(arg).split('/')
-      temp = temp[temp.length - 1].split('_')
-      let id = temp[temp.length - 1]
+      let id = temp.pop()
+      id = id?.replace('CharacterSpine_', '')
       let filename = `${id}_spr` //hasumi_spr
       return `${dataUrl}/spine/${filename}/${filename}.skel`
     case 'bg':

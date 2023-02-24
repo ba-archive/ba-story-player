@@ -1,27 +1,43 @@
 import eventBus from "@/eventBus";
 import { usePlayerStore } from "@/stores";
 import {
-  CharacterEffectInstance, CharacterEffectPlayerInterface,
-  CharacterEffectWord, CharacterLayer,
-  EmotionWord, FXEffectWord, EffectsWord
+  CharacterEffectInstance,
+  CharacterEffectPlayerInterface,
+  CharacterEffectWord,
+  CharacterLayer,
+  EffectsWord,
+  EmotionWord,
+  FXEffectWord,
+  ILoopAnimationStateListener
 } from "@/types/characterLayer";
 import { Character, CharacterEffectType, CharacterInstance } from "@/types/common";
 import { ShowCharacter } from "@/types/events";
+import { AdjustmentFilter } from '@pixi/filter-adjustment';
+import { ColorOverlayFilter } from '@pixi/filter-color-overlay';
+import { CRTFilter } from '@pixi/filter-crt';
+import { MotionBlurFilter } from '@pixi/filter-motion-blur';
 import gsap, { Power0 } from "gsap";
 import { PixiPlugin } from 'gsap/PixiPlugin';
-import { ISkeletonData, Spine } from "pixi-spine";
+import { IAnimationState, ISkeletonData, Spine } from "pixi-spine";
 import * as PIXI from 'pixi.js';
-import CharacterEffectPlayerInstance, { calcSpineStagePosition, getStageSize, POS_INDEX_MAP } from "./actionPlayer";
+import CharacterEffectPlayerInstance, { calcSpineStagePosition, POS_INDEX_MAP } from "./actionPlayer";
 import CharacterEmotionPlayerInstance from './emotionPlayer';
-import characterFXPlayer from "./fxPlayer";
-import { ColorOverlayFilter } from '@pixi/filter-color-overlay'
-import { CRTFilter } from '@pixi/filter-crt'
-import { AdjustmentFilter } from '@pixi/filter-adjustment'
-import { MotionBlurFilter } from '@pixi/filter-motion-blur'
+import CharacterFXPlayerInstance from "./fxPlayer";
 
 const AnimationIdleTrack = 0; // 光环动画track index
 const AnimationFaceTrack = 1; // 差分切换
-const AnimationEyeCloseTrack = 2; // TODO 眨眼动画
+const AnimationWinkTrack = 2; // TODO 眨眼动画
+
+type ICharacterEffectPlayerInterface = CharacterEffectPlayerInterface<EmotionWord | CharacterEffectWord | FXEffectWord>;
+type IEffectPlayerMap = {
+  [key in CharacterEffectType]: ICharacterEffectPlayerInterface;
+}
+const EffectPlayerMap: IEffectPlayerMap = {
+  "action": CharacterEffectPlayerInstance,
+  "emotion": CharacterEmotionPlayerInstance,
+  "fx": CharacterFXPlayerInstance,
+}
+
 /**
  * 角色初始的pivot相对与长宽的比例, 当前值代表左上角
  */
@@ -60,17 +76,19 @@ export const CharacterLayerInstance: CharacterLayer = {
     eventBus.on("showCharacter", showCharacter);
     eventBus.on("hide", () => Reflect.apply(this.hideCharacter, this, []))
     eventBus.on("hideCharacter", () => Reflect.apply(this.hideCharacter, this, []))
-    this.effectPlayerMap.set("emotion", CharacterEmotionPlayerInstance);
-    this.effectPlayerMap.set("action", CharacterEffectPlayerInstance);
-    this.effectPlayerMap.set("fx", characterFXPlayer);
-    this.effectPlayerMap.forEach((value) => {
-      value.init();
+    Object.keys(EffectPlayerMap).forEach((key) => {
+      const player = Reflect.get(EffectPlayerMap, key) as ICharacterEffectPlayerInterface;
+      player && player.init();
     })
     return true;
   },
   dispose(): boolean {
     document.removeEventListener("resize", this.onWindowResize);
     eventBus.off("showCharacter", showCharacter);
+    // 删除眨眼的handler
+    this.characterSpineCache.forEach((it) => {
+      it.winkHandler && window.clearTimeout(it.winkHandler);
+    });
     //TODO 销毁各种sprite,spine实体
     return true;
   },
@@ -110,6 +128,7 @@ export const CharacterLayerInstance: CharacterLayer = {
     const characterInstance: CharacterInstance = {
       CharacterName: character.CharacterName,
       position: character.position,
+      currentFace: character.face,
       instance,
       isOnStage() {
         return Boolean(instance.parent);
@@ -129,6 +148,8 @@ export const CharacterLayerInstance: CharacterLayer = {
     const { app } = usePlayerStore()
     const instance = this.getCharacterInstance(character.CharacterName)!;
     instance.position = character.position;
+    instance.currentFace = character.face;
+    wink(instance);
     const spine = instance.instance
     if (!spine) {
       return false;
@@ -185,7 +206,7 @@ export const CharacterLayerInstance: CharacterLayer = {
     let mapList = this.buildCharacterEffectInstance(data);
     //将data没有但显示着的角色取消highlight
     this.characterSpineCache.forEach(character => {
-      if (character.instance.visible === true
+      if (character.instance.visible
         && !data.characters.some(value => value.CharacterName === character.CharacterName)) {
         let colorFilter = character.instance.filters![character.instance.filters!.length - 1] as ColorOverlayFilter
         colorFilter.alpha = 0.3
@@ -195,9 +216,6 @@ export const CharacterLayerInstance: CharacterLayer = {
     // 当目前显示的角色没有新的表情动作且和现有角色的position冲突时隐藏
     const filterEmotion = data.characters
       .filter(it => it.effects.some(ef => ef.type === "emotion"));
-    const filterNotEmotion = data.characters
-      .filter(it => !it.effects.some(ef => ef.type === "emotion"))
-      .map(it => it.CharacterName);
     const showName = filterEmotion.map(it => it.CharacterName);
     const showPosition = data.characters.map(it => it.position);
     const filterHide = [...this.characterSpineCache.values()]
@@ -246,7 +264,8 @@ export const CharacterLayerInstance: CharacterLayer = {
   },
   showOneCharacter(data: CharacterEffectInstance): Promise<void> {
     // 表情
-    data.instance.state.setAnimation(AnimationFaceTrack, data.face, true);
+    if (data.instance.state.hasAnimation(data.face))
+      data.instance.state.setAnimation(AnimationFaceTrack, data.face, true);
     data.instance.filters = []
 
     //处理全息状态
@@ -288,7 +307,7 @@ export const CharacterLayerInstance: CharacterLayer = {
       // 没有淡入效果, 直接显示
       const chara = data.instance;
       //当人物被移出画面时重设为初始位置
-      if (chara.visible === false) {
+      if (!chara.visible) {
         const { x } = calcSpineStagePosition(chara, data.position);
         chara.x = x;
         chara.zIndex = Reflect.get(POS_INDEX_MAP, data.position);
@@ -309,7 +328,7 @@ export const CharacterLayerInstance: CharacterLayer = {
       let effectPromise: Array<Promise<void>> = []
       for (const index in data.effects) {
         const effect = data.effects[index];
-        const effectPlayer = this.effectPlayerMap.get(effect.type);
+        const effectPlayer = getEffectPlayer(effect.type);
         if (!effectPlayer) {
           // TODO error handle
           reject(`获取特效类型{${effect.type}}对应的播放器时失败`);
@@ -331,7 +350,7 @@ export const CharacterLayerInstance: CharacterLayer = {
           // })
         }
       }
-      let results = await Promise.allSettled(effectPromise)
+      const results = await Promise.allSettled(effectPromise)
       for (let result of results) {
         if (result.status === 'rejected') {
           reasons.push(result.reason)
@@ -340,7 +359,7 @@ export const CharacterLayerInstance: CharacterLayer = {
       if (reasons.length !== 0) {
         reject(reasons)
       }
-      else{
+      else {
         resolve()
       }
     })
@@ -349,16 +368,77 @@ export const CharacterLayerInstance: CharacterLayer = {
     eventBus.emit("characterDone");
   },
   //TODO 根据角色是否已经缩放(靠近老师)分类更新
-  onWindowResize() {
-    this.characterScale = undefined;
-  },
+  onWindowResize() { },
   characterScale: undefined,
   characterSpineCache: new Map<number, CharacterInstance>(),
-  effectPlayerMap: new Map<CharacterEffectType, CharacterEffectPlayerInterface<EmotionWord | CharacterEffectWord | FXEffectWord>>(),
 }
 
 function loopCRtAnimation(crtFilter: CRTFilter) {
   gsap.to(crtFilter, { time: "+=10", duration: 1, ease: Power0.easeNone }).then(() => loopCRtAnimation(crtFilter))
+}
+
+function getEffectPlayer(type: CharacterEffectType) {
+  return Reflect.get(EffectPlayerMap, type) as ICharacterEffectPlayerInterface
+}
+/**
+ * 眨眼
+ *
+ * 至少游戏里只会眨一次或者两次
+ *
+ * 固定只有01表情时才会眨眼
+ * @param instance 要眨眼的角色结构体
+ * @param first 是否为改变表情时的初始化
+ */
+function wink(instance: CharacterInstance, first = true) {
+  //只在有眨眼动画时起作用
+  if (!instance.instance.state.hasAnimation('Eye_Close_01')) {
+    return
+  }
+  const face = instance.currentFace;
+  const spine = instance.instance;
+  if (face !== "01") {
+    spine.state.clearTrack(AnimationWinkTrack);
+    return;
+  }
+  instance.winkHandler && window.clearTimeout(instance.winkHandler);
+  const winkTimeout = Math.floor(Math.random() * 1000) + 3500
+  instance.winkHandler = window.setTimeout(wink, winkTimeout, instance, false);
+  if (first) {
+    return;
+  }
+  const loopTime = Math.floor(Math.random() * 2) + 1
+  loopAnimationTime(spine.state, AnimationWinkTrack, "Eye_Close_01", "eye", loopTime)
+}
+
+/**
+ * 指定循环次数的播放循环动画
+ *
+ * 通过AnimationStateListener在每次播放结束后判断播放次数,
+ *
+ * 如果没有达到次数就继续播放
+ * @param state spine的state对象
+ * @param trackIndex 动画的trackIndex
+ * @param animationName 动画的animationName
+ * @param id 用于标识loop handler的key
+ * @param loop 循环次数
+ */
+function loopAnimationTime<AnimationState extends IAnimationState>(state: AnimationState, trackIndex: number, animationName: string, id: string, loop: number) {
+  const controller = state.listeners.filter(it => Reflect.get(it, "complete") && Reflect.get(it, "key") === id)
+  if (controller.length !== 0) {
+    state.removeListener(controller[0]);
+  }
+  let loopCount = 1;
+  const listener: ILoopAnimationStateListener = {
+    complete() {
+      if (loopCount < loop) {
+        loopCount++;
+        state.setAnimation(trackIndex, animationName, false);
+      }
+    },
+    key: id
+  };
+  state.addListener(listener);
+  state.setAnimation(trackIndex, animationName, false);
 }
 
 // 当播放器高度为PlayerHeight时角色的CharacterScale
@@ -374,4 +454,19 @@ export function calcCharacterYAndScale(spine: Spine) {
     scale,
     y: screenHeight - spineHeight * (1 - spineHideRate)
   }
+}
+
+/**
+ * 获取显示区域的大小
+ * @return screenWidth 容器的宽 screenHeight 容器的高
+ */
+export function getStageSize() {
+  const { app } = usePlayerStore();
+  const screen = app.screen;
+  const screenWidth = screen.width;
+  const screenHeight = screen.height;
+  return {
+    screenWidth,
+    screenHeight
+  };
 }
