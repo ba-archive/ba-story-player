@@ -123,7 +123,7 @@ switch (props.chatMessage?.type) {
     position: relative;
     height: 75px;
     width: 80px;
-    margin: 16px 8px;
+    margin: 16px 16px;
     border: solid #fff 1.3px;
     border-radius: 16px;
     overflow: hidden;
