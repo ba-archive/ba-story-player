@@ -1,4 +1,5 @@
 import { Application, Sprite } from "pixi.js"
+import { Ref } from "vue"
 import { CharacterInstance, StoryUnit } from "./common"
 import { ShowOption, ShowText } from './events'
 import { BGEffectExcelTableItem, BGMExcelTableItem, BGNameExcelTableItem, CharacterNameExcelTableItem, TransitionTableItem } from "./excels"
@@ -45,7 +46,7 @@ export interface PrivateStates {
   /**
    * 已经展示过的语句的集合, 用于ui层显示日志
    */
-  logText: LogText[],
+  logText: Ref<LogText[]>,
   /**
      * 故事简要概述
      */

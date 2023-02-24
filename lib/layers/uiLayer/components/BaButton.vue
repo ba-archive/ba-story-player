@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { PropType, Ref, ref } from "vue";
-import gsap from "gsap";
+import eventBus from "@/eventBus";
+import { onMounted, PropType, Ref, ref } from "vue";
+import { buttonAnimation } from "../utils";
 
 const props = defineProps({
   bgcolor: String,
@@ -9,16 +10,28 @@ const props = defineProps({
     default: "small",
   },
 });
+const emit = defineEmits<{
+  (ev: "click", event: Event): void;
+}>()
 
-function effectBtnClick(ev: MouseEvent) {
-  let tl = gsap.timeline();
-  tl.to(ev.target, { duration: 0.15, scale: 0.94, ease: "power3.out" });
-  tl.to(ev.target, { duration: 0.3, scale: 1 });
+const button = ref(null) as unknown as Ref<Element>
+
+function handleClick(ev: Event) {
+  emit("click", ev)
+  eventBus.emit("playOtherSounds", "select")
 }
+
+onMounted(()=>{
+  buttonAnimation({elem: button.value})
+})
+
+
+
+
 </script>
 
 <template>
-  <button :class="['ba-button', size]" @click="effectBtnClick">
+  <button :class="['ba-button', size]" ref="button" @click="handleClick" tabindex="-1">
     <slot></slot>
   </button>
 </template>
@@ -28,7 +41,6 @@ function effectBtnClick(ev: MouseEvent) {
   position: relative;
   padding: 6px 16px;
   border-radius: 5px;
-  //   border:  solid 1px rgb(133, 133, 133);
   border: none;
   font-size: 18px;
   font-weight: bold;

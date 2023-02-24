@@ -2,7 +2,6 @@ lockfileVersion: 5.4
 
 specifiers:
   '@pixi-spine/base': ^3.1.0
-  '@pixi/core': 6.5.9
   '@pixi/filter-adjustment': ^4.0.0
   '@pixi/filter-color-overlay': ^4.0.0
   '@pixi/filter-crt': ^4.0.0
@@ -12,6 +11,7 @@ specifiers:
   '@types/node': ^18.11.9
   '@types/xxhashjs': ^0.2.2
   '@vitejs/plugin-vue': ^3.2.0
+  '@vueuse/core': ^9.13.0
   axios: ^1.1.3
   gsap: ^3.11.3
   mitt: ^3.0.0
@@ -27,13 +27,13 @@ specifiers:
 
 dependencies:
   '@pixi-spine/base': 3.1.2_ryjglqiwzzh7oeqknawrevxsyy
-  '@pixi/core': 6.5.9_yc3lyad5jwyinmndak3aswu4u4
   '@pixi/filter-adjustment': 4.2.0_dqzevfjatpgkazvzygt3lhapvq
   '@pixi/filter-color-overlay': 4.2.0_cdc76ffgm4v73gcbg7atrypbga
   '@pixi/filter-crt': 4.2.0_eglgx4c5gwa2m66bclmlwof5sm
   '@pixi/filter-motion-blur': 4.2.0_eglgx4c5gwa2m66bclmlwof5sm
   '@pixi/particle-emitter': 5.0.8_cdsarog4zxpu4qtxxfcpkaijsy
   '@pixi/sound': 4.3.1_ibovozuixmwpaojz5y223iwifi
+  '@vueuse/core': 9.13.0_vue@3.2.47
   axios: 1.3.3
   gsap: 3.11.4
   mitt: 3.0.0
@@ -766,6 +766,10 @@ packages:
     resolution: {integrity: sha512-PGcyveRIpL1XIqK8eBsmRBt76eFgtzuPiSTyKHZxnGemp2yzGzWpjYKAfK3wIMiU7eH+851yEpiuP8JZerTmWg==}
     dev: false
 
+  /@types/web-bluetooth/0.0.16:
+    resolution: {integrity: sha512-oh8q2Zc32S6gd/j50GowEjKLoOVOwHP/bWVjKJInBwQqdOYMdPrf1oVlelTlyfFK3CKxL1uahMDAr+vy8T7yMQ==}
+    dev: false
+
   /@types/xxhashjs/0.2.2:
     resolution: {integrity: sha512-+hlk/W1kgnZn0vR22XNhxHk/qIRQYF54i0UTF2MwBAPd0e7xSy+jKOJwSwTdRQrNnOMRVv+vsh8ITV0uyhp2yg==}
     dependencies:
@@ -848,6 +852,31 @@ packages:
 
   /@vue/shared/3.2.47:
     resolution: {integrity: sha512-BHGyyGN3Q97EZx0taMQ+OLNuZcW3d37ZEVmEAyeoA9ERdGvm9Irc/0Fua8SNyOtV1w6BS4q25wbMzJujO9HIfQ==}
+
+  /@vueuse/core/9.13.0_vue@3.2.47:
+    resolution: {integrity: sha512-pujnclbeHWxxPRqXWmdkKV5OX4Wk4YeK7wusHqRwU0Q7EFusHoqNA/aPhB6KCh9hEqJkLAJo7bb0Lh9b+OIVzw==}
+    dependencies:
+      '@types/web-bluetooth': 0.0.16
+      '@vueuse/metadata': 9.13.0
+      '@vueuse/shared': 9.13.0_vue@3.2.47
+      vue-demi: 0.13.11_vue@3.2.47
+    transitivePeerDependencies:
+      - '@vue/composition-api'
+      - vue
+    dev: false
+
+  /@vueuse/metadata/9.13.0:
+    resolution: {integrity: sha512-gdU7TKNAUVlXXLbaF+ZCfte8BjRJQWPCa2J55+7/h+yDtzw3vOoGQDRXzI6pyKyo6bXFT5/QoPE4hAknExjRLQ==}
+    dev: false
+
+  /@vueuse/shared/9.13.0_vue@3.2.47:
+    resolution: {integrity: sha512-UrnhU+Cnufu4S6JLCPZnkWh0WwZGUp72ktOF2DFptMlOs3TOdVv8xJN53zhHGARmVOsz5KqOls09+J1NR6sBKw==}
+    dependencies:
+      vue-demi: 0.13.11_vue@3.2.47
+    transitivePeerDependencies:
+      - '@vue/composition-api'
+      - vue
+    dev: false
 
   /anymatch/3.1.3:
     resolution: {integrity: sha512-KMReFUr0B4t+D+OBkjR3KYqvocp2XaSzO55UcB6mgQMd3KbcE+mWTyvVV7D/zsdEbNnV6acZUutkiHQXvTr1Rw==}
@@ -1363,6 +1392,21 @@ packages:
     dependencies:
       punycode: 1.3.2
       querystring: 0.2.0
+    dev: false
+
+  /vue-demi/0.13.11_vue@3.2.47:
+    resolution: {integrity: sha512-IR8HoEEGM65YY3ZJYAjMlKygDQn25D5ajNFNoKh9RSDMQtlzCxtfQjdQgv9jjK+m3377SsJXY8ysq8kLCZL25A==}
+    engines: {node: '>=12'}
+    hasBin: true
+    requiresBuild: true
+    peerDependencies:
+      '@vue/composition-api': ^1.0.0-rc.1
+      vue: ^3.0.0-0 || ^2.6.0
+    peerDependenciesMeta:
+      '@vue/composition-api':
+        optional: true
+    dependencies:
+      vue: 3.2.47
     dev: false
 
   /vue/3.2.47:

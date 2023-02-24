@@ -1,46 +1,67 @@
 <script lang="ts" setup>
 import BaButton from "@/layers/uiLayer/components/BaButton.vue";
 import { onMounted, ref } from "vue";
-import gsap from "gsap";
 import BaDialog from "./components/BaDialog.vue";
 import BaChatLog from "./components/BaChatLog/BaChatLog.vue";
+import BaSelector from "./components/BaSelector.vue";
 import eventBus from "@/eventBus";
-import { usePlayerStore } from "@/stores";
 import { StorySummary } from "@/types/store";
+import { effectBtnMouseDown, effectBtnMouseUp } from "./utils";
+import { ShowOption } from "@/types/events";
+import { usePlayerStore } from "@/stores";
 
-let hiddenAllUI = ref<'visible' | 'hidden'>('hidden');
 let hiddenSummary = ref(true);
 let hiddenStoryLog = ref(true);
 let autoMode = ref(false);
-let hiddenMenu = ref(true);
-let menuOpacity = ref(0);
+let hiddenMenu = ref(false);
+let hiddenSubMenu = ref(true);
 
-let store = usePlayerStore();
+// 计时器：当这个计时器到时间时 -- 回调函数会把 hiddenMenu 设置成 true 来影藏菜单
+let btnMenuTimmer: any
+
 let { storySummary } = defineProps<{ storySummary: StorySummary }>()
+const selectOptions = ref<ShowOption[]>([]);
 
 eventBus.on("hide", () => {
-  hiddenAllUI.value = 'hidden'
+  console.log("UI hide")
+  hiddenSummary.value = true
+  hiddenStoryLog.value = true
+  autoMode.value = false
 })
 eventBus.on("hidemenu", () => {
-  hiddenAllUI.value = 'hidden'
+  hiddenMenu.value = true
 })
 eventBus.on("showmenu", () => {
-  hiddenAllUI.value = 'visible'
+  hiddenMenu.value = false
 })
+eventBus.on("option", (e) => (selectOptions.value = [...e]));
 
 function handleBtnHiddenUi() {
+  eventBus.emit("playOtherSounds", "select")
+  refreshBtnMenuTimmer()
   eventBus.emit("hideDialog");
 }
-function handleBtnAutoMode() {
-  autoMode.value = !autoMode.value;
-  if (autoMode.value) {
-    eventBus.emit("auto");
-  } else {
-    eventBus.emit("stopAuto");
-  }
+function handleBtnChatLog() {
+  eventBus.emit("playOtherSounds", "select")
+  refreshBtnMenuTimmer()
+  hiddenStoryLog.value = false
+  autoMode.value = false
+  eventBus.emit("stopAuto")
 }
 function handleBtnSkipSummary() {
+  eventBus.emit("playOtherSounds", "select")
+  refreshBtnMenuTimmer()
   hiddenSummary.value = false;
+}
+
+// 处理选项
+function handleBaSelector(selectionGroup: number) {
+  console.log("selectGroup: ", selectionGroup)
+  console.log("select: ", selectOptions.value[selectionGroup])
+  eventBus.emit('select', selectOptions.value[selectionGroup].SelectionGroup)
+  usePlayerStore().updateLogText(selectOptions.value[selectionGroup])
+
+  selectOptions.value.length = 0;
 }
 
 // modi https://gist.github.com/ca0v/73a31f57b397606c9813472f7493a940
@@ -56,62 +77,78 @@ function debounce<T extends Function>(cb: T, wait = 20) {
   return <T>(<any>callable);
 }
 
-let handleBtnMenu = debounce(() => {
-  menuOpacity.value = menuOpacity.value === 0 ? 1 : 0;
-  if (hiddenMenu.value) {
-    hiddenMenu.value = false;
-    // todo 一段时间后自动影藏
-    // setTimeout(() => {
-    //   if (!hiddenMenu.value) handleBtnMenu();
-    // }, 6666);
+function handleBtnAutoMode() {
+  autoMode.value = !autoMode.value;
+  if (autoMode.value) {
+    eventBus.emit("auto");
   } else {
-    setTimeout(() => {
-      hiddenMenu.value = true;
-    }, 200);
+    eventBus.emit("stopAuto");
   }
-}, 200);
-
-function effectBtnClick(ev: Event) {
-  let tl = gsap.timeline();
-  tl.to(ev.currentTarget, { duration: 0.15, scale: 0.94, ease: "power3.out" });
-  tl.to(ev.currentTarget, { duration: 0.3, scale: 1 });
 }
 
-onMounted(() => {
-  document.querySelectorAll(".ba-menu-option").forEach((elem) => {
-    elem.addEventListener("click", effectBtnClick);
-  });
-});
+function handleBtnMenu() {
+  if (hiddenSubMenu.value) {
+    hiddenSubMenu.value = false;
+    // 一段时间后自动影藏
+    clearInterval(btnMenuTimmer)
+    btnMenuTimmer = setTimeout(() => {
+      hiddenSubMenu.value = true;
+    }, 5555);
+  } else {
+    hiddenSubMenu.value = true;
+  }
+}
+
+function refreshBtnMenuTimmer() {
+  if (!hiddenSubMenu.value) {
+    clearTimeout(btnMenuTimmer)
+    btnMenuTimmer = setTimeout(() => {
+      hiddenSubMenu.value = true;
+    }, 5555);
+  }
+}
+
+// 子菜单按钮动画
+let handleBtnMouseDown = effectBtnMouseDown()
+let handleBtnMouseUp = effectBtnMouseUp()
+
+const handleBtnMenuDebounced = debounce(handleBtnMenu, 200);
 
 </script>
 
 <template>
-  <div class="baui" :style="{ visibility: hiddenAllUI }">
-    <div class="right-top">
+  <div class="baui" @click.self="eventBus.emit('click')">
+    <div class="right-top" v-show="!hiddenMenu">
       <div class="baui-button-group">
         <BaButton @click="handleBtnAutoMode" :class="{ 'ba-button-auto': true, activated: autoMode }">
           AUTO
         </BaButton>
-        <BaButton @click="handleBtnMenu" :class="{ 'ba-button-menu': true, activated: !hiddenMenu }">
+        <BaButton @click="handleBtnMenuDebounced" :class="{ 'ba-button-menu': true, activated: !hiddenSubMenu }">
           MENU
         </BaButton>
       </div>
 
-      <div class="baui-menu-options lean-rect" :style="{
-        opacity: menuOpacity,
-        visibility: hiddenMenu === true ? 'hidden' : 'initial',
-      }">
-        <button class="button-nostyle ba-menu-option" @click="handleBtnHiddenUi">
-          <img src="./assets/pan-arrow.svg" />
-        </button>
-        <button class="button-nostyle ba-menu-option" @click="hiddenStoryLog = false">
-          <img src="./assets/menu.svg" />
-        </button>
-        <button class="button-nostyle ba-menu-option" @click="handleBtnSkipSummary">
-          <img src="./assets/fast-forward.svg" />
-        </button>
-      </div>
+      <Transition>
+        <div class="baui-menu-options lean-rect" v-if="!hiddenSubMenu">
+          <button class="button-nostyle ba-menu-option" @click="handleBtnHiddenUi" @mousedown="handleBtnMouseDown"
+            @mouseup="handleBtnMouseUp" @mouseleave="handleBtnMouseUp">
+            <img draggable="false" src="./assets/pan-arrow.svg" />
+          </button>
+          <button class="button-nostyle ba-menu-option" @click="handleBtnChatLog" @mousedown="handleBtnMouseDown"
+            @mouseup="handleBtnMouseUp" @mouseleave="handleBtnMouseUp">
+            <img draggable="false" src="./assets/menu.svg" />
+          </button>
+          <button class="button-nostyle ba-menu-option" @click="handleBtnSkipSummary" @mousedown="handleBtnMouseDown"
+            @mouseup="handleBtnMouseUp" @mouseleave="handleBtnMouseUp">
+            <img draggable="false" src="./assets/fast-forward.svg" />
+          </button>
+        </div>
+      </Transition>
     </div>
+
+    <BaSelector id="ba-story-selector" :selection="selectOptions" @select="handleBaSelector"
+      v-if="selectOptions.length !== 0" />
+
     <BaDialog id="ba-story-summery" :title="'概要'" :show="!hiddenSummary" @close="hiddenSummary = true">
       <div class="ba-story-summery-container">
         <h4 class="ba-story-summery-title">{{ storySummary.chapterName }}</h4>
@@ -120,19 +157,25 @@ onMounted(() => {
         </p>
         <p class="ba-story-summery-tip">※ 是否略过此剧情？</p>
         <div class="ba-story-summery-button-group">
-          <BaButton size="large" class="polylight">取消</BaButton>
-          <BaButton size="large" class="polydark" @click="eventBus.emit('skip')">确认</BaButton>
+          <BaButton size="large" class="polylight" @click="hiddenSummary = true">取消</BaButton>
+          <BaButton size="large" class="polydark" @click="eventBus.emit('skip'); hiddenSummary = true">确认</BaButton>
         </div>
       </div>
     </BaDialog>
+
     <BaDialog id="ba-story-log" :title="'对话记录'" width="80%" height="90%" :show="!hiddenStoryLog"
       @close="hiddenStoryLog = !hiddenStoryLog">
-      <BaChatLog />
+      <BaChatLog :show="!hiddenStoryLog" />
     </BaDialog>
   </div>
 </template>
 
 <style lang="scss" scoped>
+@font-face {
+  font-family: 'TJL';
+  src: url('https://yuuka.cdn.diyigemt.com/image/ba-all-data/assets/ResourceHanRoundedCN-Medium.ttf');
+}
+
 .lean-rect {
   transform: skew(-10deg);
 }
@@ -150,7 +193,7 @@ onMounted(() => {
   right: 0;
   padding: 1.5%;
   user-select: none;
-  z-index: 100;
+  z-index: 110;
 }
 
 .baui {
@@ -158,6 +201,21 @@ onMounted(() => {
   width: 100%;
   height: 100%;
   top: 0;
+  z-index: 100;
+  overflow: hidden;
+  font-family: 'TJL', 'Microsoft YaHei', 'PingFang SC', -apple-system, system-ui,
+    'Segoe UI', Roboto, Ubuntu, Cantarell, 'Noto Sans', BlinkMacSystemFont,
+    'Helvetica Neue', 'Hiragino Sans GB', Arial, sans-serif;
+
+  .v-enter-active,
+  .v-leave-active {
+    transition: opacity .2s;
+  }
+
+  .v-enter-from,
+  .v-leave-to {
+    opacity: 0;
+  }
 
   .baui-button-group {
     display: grid;
@@ -189,7 +247,6 @@ onMounted(() => {
     border-radius: 6px;
     background-color: rgba(244, 244, 244, 0.6);
     overflow: hidden;
-    transition: opacity 0.2s;
 
     .ba-menu-option {
       display: block;
@@ -209,12 +266,13 @@ onMounted(() => {
     }
   }
 
-  #ba-story-log{
+  #ba-story-log {
     z-index: 110;
   }
 
   #ba-story-summery {
-    z-index: 110;
+    color: #32363c;
+
     .ba-story-summery-container {
       height: 100%;
       display: flex;
@@ -227,8 +285,6 @@ onMounted(() => {
         80px 45% url(./assets/UITex_BGPoliLight_1.png) rgb(164 216 237);
       background-size: 100%;
     }
-
-    color: #32363c;
 
     .ba-story-summery-title {
       margin: 12px 0;

@@ -2,6 +2,7 @@
 import { watch } from "vue";
 import { onMounted, ref } from "vue";
 import gsap from "gsap";
+import eventBus from "@/eventBus";
 
 const props = defineProps({
   width: {
@@ -21,11 +22,19 @@ const emit = defineEmits<{
   (ev: "close", event: PointerEvent): void;
 }>();
 
+function handleClose(ev: Event) {
+  emit('close', ev as PointerEvent)
+  eventBus.emit("playOtherSounds", "back")
+}
+
+const dialogContainer = ref(null);
+
+// 对话框缓入动画
 watch(
   () => props.show,
   (newValue) => {
     if (newValue === true) {
-      gsap.from(".ba-dialog-container", {
+      gsap.from(dialogContainer.value, {
         opacity: 0,
         y: 100,
         duration: 0.3,
@@ -39,12 +48,13 @@ watch(
 <template>
   <div
     class="ba-dialog"
-    :style="{ visibility: show === false ? 'hidden' : 'initial' }"
-    @click.self="$emit('close', $event)"
+    :style="{ display: show === true ? '' : 'none' }"
+    @click.self="handleClose"
   >
     <div
       class="ba-dialog-container"
       :style="{ width: props.width, height: props.height }"
+      ref="dialogContainer"
     >
       <div class="ba-dialog-header">
         <h3 class="ba-dialog-title">
@@ -52,9 +62,15 @@ watch(
         </h3>
         <button
           class="ba-dialog-close button-nostyle"
-          @click="$emit('close', $event)"
+          @click="handleClose"
         >
-          <i style="user-select: none">X</i>
+          <i style="user-select: none">
+            <img
+              src="../assets/close.svg"
+              alt="close dialog"
+              style="width: 1em; height: 1em; vertical-align: -0.15em"
+            />
+          </i>
         </button>
       </div>
 
@@ -71,6 +87,7 @@ watch(
   width: 100%;
   height: 100%;
   background: rgba(63, 63, 63, 0.4);
+  z-index: 120;
 
   .ba-dialog-container {
     display: flex;
@@ -115,6 +132,7 @@ watch(
             width: 100%;
             height: 4px;
             background-color: #fbef62;
+            border-radius: 3px;
           }
         }
       }

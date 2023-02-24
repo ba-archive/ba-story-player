@@ -1,5 +1,5 @@
 <template>
-  <div class="container" @click="moveToNext" :style="{ height: `${playerHeight}px` }">
+  <div class="container" :style="{ height: `${playerHeight}px` }">
     <div class="container-inner">
       <div class="st-container" ref="stOutput" :style="{fontSize: `${standardFontSize}rem`}" />
       <div class="title-container"
@@ -20,28 +20,6 @@
            v-if="placeContent">
         <div class="round-place">
           <span class="place-content">{{ placeContent }}</span>
-        </div>
-      </div>
-      <div
-        class="select-container"
-        v-if="selection.length !== 0"
-        :style="{ 'top': `${selectContainerTop}px` }"
-      >
-        <div v-for="(e, index) in selection"
-             @mousedown="handleSelectMousedown(e.SelectionGroup)"
-             :key="index"
-             @click="handleSelect(e.SelectionGroup)"
-             @mouseout="selectionSelect = -1"
-             @mouseup="selectionSelect = -1"
-             role="button"
-             :tabindex="index"
-             >
-          <div
-            class="select-item"
-            :class="{ 'select-item-active': e.SelectionGroup === selectionSelect }"
-          >
-            {{ e.text }}
-          </div>
         </div>
       </div>
       <div v-if="showDialog" :style="{padding: `${fontSize(3)}rem ${fontSize(8)}rem`, height: `${dialogHeight}px`}"
@@ -70,15 +48,12 @@ import Typed, {TypedExtend, TypedOptions} from "typed.js";
 import {ShowOption, ShowText, StText} from "@/types/events";
 import {Text, TextEffectName} from "@/types/common";
 import {deepCopyObject} from "@/utils";
+import { usePlayerStore } from '@/stores';
 
 const typewriterOutput = ref(); // 对话框el
 const stOutput = ref(); // st特效字el
 // 外部传入播放器高度,用于动态计算字体等数值
 const props = withDefaults(defineProps<TextLayerProps>(), {playerHeight: 0, playerWidth: 0});
-// 选项
-const selection = ref<ShowOption[]>([]);
-// 按钮按下效果
-const selectionSelect = ref<number>(-1);
 // 标题
 const titleContent = ref<string>("");
 // 位置
@@ -96,7 +71,6 @@ let typingInstance: TypedExtend; // 全局打字机实例 因为不能有两个�
  * 单击屏幕后触发效果 next或者立即显示当前对话
  */
 function moveToNext() {
-  if (selection.value.length !== 0) return; // 选项列表不为零, 不能跳过选择支
   if (!showDialog) return; // 显示st期间不允许跳过
   // 没打过任何一行字(初始化)或者对话已经显示完成, 点击屏幕代表继续
   if (!typingInstance || typingComplete.value) {
@@ -110,30 +84,6 @@ function moveToNext() {
       eventBus.emit('textDone')
     }
   }
-}
-/**
- * 按钮按下特效
- * @param index 按钮位置
- */
-function handleSelectMousedown(index: number) {
-  selectionSelect.value = index;
-  eventBus.emit("playOtherSounds",'select');
-}
-/**
- * 选择支按钮被按下
- * @param select 选项
- */
-function handleSelect(select: number) {
-  eventBus.emit("select", select);
-  setTimeout(() => {
-    selection.value = [];
-  }, 100)
-}
-/**
- * mousedown事件, 用来显示按钮特效
- */
-function handleOption(e: ShowOption[]) {
-  selection.value = e;
 }
 /**
  * 展示主标题
@@ -231,6 +181,7 @@ function handleShowStEvent(e: StText) {
  * 处理dialog对话事件
  */
 function handleShowTextEvent(e: ShowText) {
+  usePlayerStore().updateLogText(e)
   showDialog.value = true;
   e = deepCopyObject(e);
   nextTick(() => {
@@ -401,7 +352,6 @@ const dialogHeight = computed(() => props.playerHeight / 2);
 // 选择框位置
 const standardDialogHeight = 550;
 const standardDialogTopOffset = 100;
-const selectContainerTop = computed(() => ((props.playerHeight - dialogHeight.value) / 2) + (props.playerHeight / standardDialogHeight) * standardDialogTopOffset);
 // 计算title的padding以让其符合边框第二边线
 const titleBorderWidth = 2280;
 const standardBorderWidth = 26;
@@ -412,8 +362,8 @@ onMounted(() => {
   eventBus.on('showText', handleShowTextEvent);
   eventBus.on('st', handleShowStEvent);
   eventBus.on('clearSt', handleClearSt);
-  eventBus.on("option", handleOption);
   eventBus.on("hide",()=>showDialog.value=false)
+  eventBus.on("click",moveToNext)
 });
 onUnmounted(() => {
   eventBus.off("showTitle", handleShowTitle);
@@ -421,7 +371,6 @@ onUnmounted(() => {
   eventBus.off('showText', handleShowTextEvent);
   eventBus.off('st', handleShowStEvent);
   eventBus.off('clearSt', handleClearSt);
-  eventBus.off("option", handleOption);
 });
 // 暂时用不上了, 比如font-size还需要根据屏幕进行适配
 type StyleEffectTemplateMap = {
@@ -527,49 +476,6 @@ $st-z-index: 10;
     width: 100%;
     height: 100%;
     position: relative;
-  }
-  .select-container {
-    width: 100%;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    display: flex;
-    gap: 16px;
-    flex-direction: column;
-    max-width: 80%;
-    z-index: $text-layer-z-index + $select-z-index;
-    .select-item {
-      flex: 1;
-      text-align: center;
-      line-height: 2;
-      font-size: 1.5rem;
-      color: black;
-      cursor: pointer;
-      transition: width 0.1s, height 0.1s;
-      position: relative;
-      &:before {
-        content: '';
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        border-radius: $border-radius;
-        transform: skewX(-10deg);
-        border: 1px solid white;
-        background: linear-gradient(
-            58deg,
-            rgba(240, 240, 240, 0.1) 0%,
-            rgba(240, 240, 240, 1) 38%,
-            rgba(240, 240, 240, 0.1) 100%
-        ), url("./assets/poli-light.png") rgb(164 216 237) no-repeat 0 30%;
-        z-index: -1;
-      }
-    }
-    .select-item-active {
-      transform: scale(0.95);
-    }
   }
   .title-container {
     width: 100%;

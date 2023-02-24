@@ -1,9 +1,165 @@
-<script lang="ts" setup></script>
+<script lang="ts" setup>
+import {computed, PropType, ref} from "vue";
+import { ShowOption } from "@/types/events";
+import { useElementSize } from "@vueuse/core";
+
+// 选项
+// const selection = ref<ShowOption[]>([]);
+const props = defineProps({
+  selection: {
+    type: Array as PropType<ShowOption[]>,
+    default: [],
+  },
+});
+const emit = defineEmits<{
+  (ev: "select", value: number): void;
+}>();
+
+const selectionCandidate = ref(-1);
+const selectedOption = ref(-1);
+const isMouseDown = ref(false);
+const selectorContainerElement = ref<HTMLElement | null>(null);
+const selectorElement = ref<HTMLElement | null>(null);
+
+const { height: selectorContainerHeight } = useElementSize(selectorContainerElement);
+
+const { height: selectorElementHeight } = useElementSize(selectorElement);
+
+const selectorMarginTop = computed(() =>
+  `${Math.max(0, selectorContainerHeight.value - selectorElementHeight.value) / 3}px`
+);
+
+/**
+ * 按钮按下特效
+ * @param index 按钮位置
+ */
+function handleSelectMouseDown(index: number) {
+  isMouseDown.value = true;
+  selectionCandidate.value = index;
+}
+
+function handleMouseUp() {
+  isMouseDown.value = false;
+}
+
+function handleSelectMouseEnter(index: number) {
+  if (isMouseDown.value) {
+    selectionCandidate.value = index;
+  }
+}
+
+/**
+ * 按钮松开特效
+ */
+function handleSelectMouseLeave() {
+  if (-1 === selectionCandidate.value) {
+    return;
+  }
+  selectionCandidate.value = -1;
+}
+
+/**
+ * 选择支按钮被按下
+ * @param select 选项
+ */
+function handleSelect(select: number) {
+  selectionCandidate.value = -1;
+  selectedOption.value = select;
+
+  setTimeout(() => {
+    selectedOption.value = -1;
+  }, 375);
+
+  setTimeout(() => {
+    // 延后 emit 事件，在选项完全消失后再 emit 出去
+    emit("select", select);
+  }, 400);
+}
+</script>
 
 <template>
-    <div class="ba-selector">
-        
+  <div class="ba-selector-container" ref="selectorContainerElement" @mouseup="handleMouseUp">
+    <div class="ba-selector" ref="selectorElement" :style="{marginTop: selectorMarginTop}">
+      <!-- 没有发生 DOM 顺序的移动，让 vue 使用就地复用策略提高效率，不需要 key -->
+      <!-- eslint-disable vue/require-v-for-key -->
+      <div
+        v-for="(option, index) in selection"
+        @mousedown="handleSelectMouseDown(index)"
+        @mouseenter="handleSelectMouseEnter(index)"
+        @mouseleave="handleSelectMouseLeave"
+        @click="handleSelect(index)"
+        role="button"
+        tabindex="-1"
+        class="ba-selector-list"
+        :class="{ activated: index === selectionCandidate, selected: index === selectedOption }"
+      >
+        <div
+          class="ba-selector-item"
+        >
+          <div>{{ option.text }}</div>
+        </div>
+      </div>
+      <!--eslint-enable vue/require-v-for-key-->
     </div>
+  </div>
 </template>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.ba-selector-container {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  user-select: none;
+
+  .ba-selector {
+    display: flex;
+    gap: 1rem;
+    flex-direction: column;
+    width: 100%;
+    max-width: 80%;
+
+
+    .ba-selector-item {
+      text-align: center;
+      padding: 0.4rem 1rem;
+      font-size: 1.5rem;
+      color: #344a6e;
+      cursor: pointer;
+      border: 1px solid white;
+      border-radius: 4px;
+      transform: skewX(-10deg);
+      background: linear-gradient(
+          58deg,
+          rgba(240, 240, 240, 0.1) 0%,
+          rgba(240, 240, 240, 1) 38%,
+          rgba(240, 240, 240, 0.1) 100%
+      ),
+      url("../assets/UITex_BGPoliLight_1.png") rgb(164 216 237) no-repeat 0
+      30%;
+      transition: all .175s ease-in-out;
+
+      div {
+        transform: skewX(10deg);
+      }
+    }
+  }
+}
+
+.activated {
+
+  .ba-selector-item {
+    scale: 0.95;
+  }
+}
+
+.selected {
+
+  .ba-selector-item {
+    scale: 1.1;
+    opacity: 0;
+  }
+}
+</style>

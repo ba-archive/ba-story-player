@@ -481,12 +481,13 @@ export let eventEmitter = {
     if (storyHandler.currentStoryUnit.hide) {
       //当下一节点仍是text时只隐藏character
       if (storyHandler.currentStoryUnit.hide === 'all') {
-        if (storyHandler.nextStoryUnit.type === 'text' && !storyHandler.currentStoryUnit.transition) {
-          eventBus.emit('hideCharacter')
-        }
-        else {
-          eventBus.emit('hide')
-        }
+        // if (storyHandler.nextStoryUnit.type === 'text' && !storyHandler.currentStoryUnit.transition) {
+        //   eventBus.emit('hideCharacter')
+        // }
+        // else {
+        //   eventBus.emit('hide')
+        // }
+        eventBus.emit('hideCharacter')
       }
       else {
         eventBus.emit('hidemenu')
@@ -521,6 +522,7 @@ export let eventEmitter = {
       await new Promise<void>(resolve => {
         let resolveFun = () => {
           eventBus.off('transitionInDone', resolveFun)
+          eventBus.emit('hide')
           resolve()
         }
         eventBus.on('transitionInDone', resolveFun)
