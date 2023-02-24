@@ -8,6 +8,7 @@ export type Events = {
    * 清除当前内容
    */
   hide: undefined
+  resize: undefined
 
   //特效层
 

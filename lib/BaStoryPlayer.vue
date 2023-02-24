@@ -5,6 +5,7 @@ import BaUI from "@/layers/uiLayer/BaUI.vue"
 import { StoryRawUnit } from '@/types/common';
 import { Language, StorySummary } from '@/types/store';
 import { computed, onMounted, ref, watch } from 'vue';
+import eventBus from './eventBus';
 import { usePlayerStore } from './stores';
 
 export type PlayerProps = {
@@ -64,6 +65,7 @@ watch([() => props.height, () => props.width], () => {
   console.log(app.screen.width, newWidth)
   if (newWidth.toFixed(2) !== app.screen.width.toFixed(2)) {
     app.renderer.resize(newWidth, playerHeight)
+    eventBus.emit('resize')
   }
 })
 
