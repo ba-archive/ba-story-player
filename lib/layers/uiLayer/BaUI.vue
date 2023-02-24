@@ -13,7 +13,7 @@ import { usePlayerStore } from "@/stores";
 let hiddenSummary = ref(true);
 let hiddenStoryLog = ref(true);
 let autoMode = ref(false);
-let hiddenMenu = ref(false);
+let hiddenMenu = ref(true);
 let hiddenSubMenu = ref(true);
 
 // 计时器：当这个计时器到时间时 -- 回调函数会把 hiddenMenu 设置成 true 来影藏菜单
@@ -24,9 +24,10 @@ const selectOptions = ref<ShowOption[]>([]);
 const emitter = defineEmits(['fullscreenChange'])
 
 eventBus.on("hide", () => {
-  console.log("UI hide")
+  // console.log("UI hide")
   hiddenSummary.value = true
   hiddenStoryLog.value = true
+  hiddenMenu.value = true
   autoMode.value = false
 })
 eventBus.on("hidemenu", () => {
