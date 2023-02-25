@@ -4,11 +4,11 @@ import { Container, Sprite, TilingSprite } from "pixi.js";
 import {
   emitterConfigs,
   emitterContainer,
-  emitterHelper,
-} from "../bgEffectHandlers";
-import { loadSpriteSheet, sprite2TransParent } from "../util";
+  emitterStarter,
+} from "../emitterUtils";
+import { loadSpriteSheet, sprite2TransParent } from "../resourcesUtils";
 
-export async function BG_Dust_L(resources: Sprite[]) {
+export default async function BG_Dust_L(resources: Sprite[]) {
   // 原理是三个平铺图片不断移动, 加上火光粒子效果
   const { app } = usePlayerStore();
   const appWidth = app.view.width;
@@ -59,7 +59,7 @@ export async function BG_Dust_L(resources: Sprite[]) {
   smokeContainer.addChild(smokeTextureTilingR1);
   smokeContainer.addChild(smokeTextureTilingR);
   smokeContainer.addChild(smokeTextureTilingL);
-  let smokeRemover = emitterHelper({
+  let smokeRemover = emitterStarter({
     update: () => {
       // 向左
       smokeTextureTilingL.tilePosition.x -= 1;
@@ -99,7 +99,7 @@ export async function BG_Dust_L(resources: Sprite[]) {
   setTimeout(() => {
     fireEmitter.maxParticles = 15;
   }, 1500);
-  let fireRemover = emitterHelper(fireEmitter);
+  let fireRemover = emitterStarter(fireEmitter);
   return async () => {
     await smokeRemover();
     await fireRemover();
