@@ -53,17 +53,19 @@
 </template>
 
 <script lang="ts" setup>
-import eventBus from '@/eventBus';
-import { usePlayerStore } from '@/stores/index';
-import { wait } from '@/utils';
+import eventBus from '../../lib/eventBus';
+import { usePlayerStore } from '../../lib/stores/index';
+import { wait } from '../../lib/utils';
 import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import { resizeTextareas } from '../utils';
-import { resourcesLoader } from '@/index'
-import { removeEffect } from '@/layers/effectLayer'
-import { bgEffectHandlerOptions } from '@/layers/effectLayer/bgEffectHandlers'
-import { BGEffectType } from '@/types/excels';
-import { Effect, ZmcArgs } from '@/types/common';
+import { resourcesLoader } from '../../lib/index'
+import { removeEffect } from '../../lib/layers/effectLayer'
+import { bgEffectHandlerOptions } from '../../lib/layers/effectLayer/bgEffectHandlers'
+import { BGEffectType } from '../../lib/types/excels';
+import { Effect, ZmcArgs } from '../../lib/types/common';
+import { setDataUrl } from '../../lib/utils'
 
+setDataUrl('https://yuuka.cdn.diyigemt.com/image/ba-all-data')
 await resourcesLoader.loadExcels()
 let effectType = ref<'transition' | 'bgeffect' | 'other'>('transition')
 async function playEffect() {
