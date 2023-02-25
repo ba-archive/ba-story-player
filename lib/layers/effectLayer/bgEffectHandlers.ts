@@ -3,10 +3,6 @@ import { BGEffectHandlerFunction, BGEffectHandlerOptions, CurrentBGEffect } from
 import { BGEffectExcelTableItem, BGEffectType } from "@/types/excels";
 import { Sprite } from "pixi.js";
 
-/**
- * app和bgInstance请从此处调用
- */
-const playerStore = usePlayerStore()
 
 const effectFunctionsRaw = import.meta.glob<{ default: BGEffectHandlerFunction<BGEffectType> }>('./effectFunctions/*', { eager: true })
 function getEffectFunctions(functionName: string) {
@@ -36,7 +32,7 @@ export async function playBGEffect(bgEffectItem: BGEffectExcelTableItem) {
   //   return
   // }
   await removeBGEffect()
-  let resources = playerStore.bgEffectImgMap.get(effect)
+  let resources = usePlayerStore().bgEffectImgMap.get(effect)
   if (resources) {
     let imgs: Sprite[] = []
     for (let resource of resources) {
@@ -74,7 +70,7 @@ const bgEffects = ['BG_ScrollT_0.5', 'BG_Filter_Red', 'BG_Wave_F', 'BG_Flash'
   , 'BG_Snow_L', 'BG_Fireworks_L_BGOff_01', 'BG_ScrollR_1.0']
 export let bgEffectHandlers: Record<string, BGEffectHandlerFunction<BGEffectType>> = {}
 for (const effect of bgEffects) {
-  const handler = getEffectFunctions(effect.replaceAll('.', '_'))
+  const handler = getEffectFunctions(effect)
   if (handler) {
     Reflect.set(bgEffectHandlers, effect, handler)
   }

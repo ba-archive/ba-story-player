@@ -13,17 +13,21 @@ let BGEffectHandlerOptions={
   }
 }
 ```
-4. 在`@/layers/effectLayer/bgEffectHandlers.ts`中的`bgEffectHandlers`加入自己的实现, 例子:
+4. 在`@/layers/effectLayer/effectFunctions/`文件夹中添加自己的实现并设置为默认导出, 需要命名为实现的特效名, 例子:
 ```js
-let bgEffectHandlers={
-  'BG_test': async function (resources, setting, options){
-    return removeFunction(){
-      //code
-    }
-  }
+//BG_test.ts
+import { usePlayerStore } from "@/stores"
+import { BGEffectHandlerFunction } from "@/types/effectLayer"
+import { Emitter, EmitterConfigV2, upgradeConfig } from "@pixi/particle-emitter"
+import { emitterConfigs, emitterContainer, emitterStarter } from "../emitterUtils"
+
+const handler: BGEffectHandlerFunction<'BG_Test'> = async function (resources, setting, options) {
+  ...
+  return removeFunction
 }
 
-//传入的参数分别为`resources`(图片资源对应的sprite数组), `setting`(BGEffect参数), `options`(自定义参数)
+export default handler
+//请符合BGEffectHandlerFunction规范
 //注意需要返回一个特效移除函数
 ```
 
@@ -46,11 +50,18 @@ let bgEffectImgTable: BGEffectImgTable = {
 }
 ```
 
-# emitter
-本层中经常使用的一个工具为`@pixi/particle-emitter`, 故对emitter有一些需要遵守的规范: 
+# utils
+## emitter
+提供常量
+- emitterContainr 放置emitter的container
 
-- 如果使用[官方可视化工具](https://pixijs.io/pixi-particles-editor/), 请将获取到的json放入`@/layers/effectLayer/emitterConfigs/`, 然后使用`emitterConfigs(filename)`获取config.
+提供函数
+- emitterStarter 开启emitter并返回终止函数
 
-- 创建`emitter`时请使用`emitterContainer`作为container参数值.
+设置路径
 
-本层同时提供了一个emitter的工具函数(`emitterHelper`), 它会自行启动emitter并返回对应的终止函数.
+请将emitter设置的json放入`@/layers/effectLayer/emitterConfigs/`, 然后使用`emitterConfigs(filename)`获取config.
+## resources
+提供函数
+- sprite2TransParent 将黑色背景转为透明
+- loadSpriteSheet 自动分割图片并生成spritesheet
