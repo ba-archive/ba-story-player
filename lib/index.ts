@@ -332,6 +332,7 @@ export let eventEmitter = {
     await this.transitionIn()
     this.hide()
     this.showBg()
+    this.showPopup()
     this.playEffect()
     this.playL2d()
     this.playAudio()
@@ -544,6 +545,16 @@ export let eventEmitter = {
       }
     }
   },
+
+  showPopup() {
+    if (storyHandler.currentStoryUnit.PopupFileName) {
+      eventBus.emit('popupImage', storyHandler.currentStoryUnit.PopupFileName)
+    }
+    else if (storyHandler.currentStoryUnit.video) {
+      eventBus.emit('popupVideo', storyHandler.currentStoryUnit.video.videoPath)
+      eventBus.emit('playAudio', { soundUrl: storyHandler.currentStoryUnit.video.soundPath })
+    }
+  }
 }
 
 

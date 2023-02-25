@@ -80,6 +80,8 @@ export function getResourcesUrl(type: ResourcesTypes, arg: string): string {
     case 'avatar':
       //arg: UIs/01_Common/01_Character/Student_Portrait_Hasumi
       return `${dataUrl}/${arg}.png`
+    case 'popupImage':
+      return `${dataUrl}/UIs/03_Scenario/04_ScenarioImage/${arg}.png`
     default:
       return ''
   }

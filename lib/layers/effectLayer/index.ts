@@ -4,7 +4,8 @@ import { ZmcArgs } from '@/types/common'
 import { wait } from '@/utils'
 import gsap from 'gsap'
 import { Application, Sprite } from 'pixi.js'
-import { emitterContainer, playBGEffect, removeBGEffect } from './bgEffectHandlers'
+import { playBGEffect, removeBGEffect } from './bgEffectHandlers'
+import { emitterContainer } from './emitterUtils'
 
 /**
  * 初始化特效层, 订阅player的剧情信息.
