@@ -4,6 +4,7 @@
       <div class="st-container" ref="stOutput" :style="{ fontSize: `${standardFontSize}rem` }" />
       <div class="title-container" :class="{ 'fade-in-out': titleContent }" v-if="titleContent">
         <div class="title-border" :style="{ '--side-padding': `${titleBorderPadding}px` }">
+          <img src="./assets/title-border.png" />
           <div class="title-contain" :style="{ '--font-size': `${fontSize(4)}rem` }">{{ titleContent }}
           </div>
         </div>
@@ -494,25 +495,35 @@ $st-z-index: 10;
     top: 0;
     left: 0;
     opacity: 0;
+    backdrop-filter: blur(7px);
     color: white;
     z-index: $text-layer-z-index + $title-z-index;
     $padding: 10px;
-    padding: $padding;
+    // padding: $padding;
 
     .title-border {
+      position: relative;
       --side-padding: 0px;
-      width: calc(100% - 2 * #{$padding} - 2 * var(--side-padding));
-      height: calc(100% - 2 * #{$padding});
-      background: url("./assets/title-border.png") no-repeat;
+      // width: calc(100% - 2 * #{$padding} - 2 * var(--side-padding));
+      height: 100%;
+      // background: url("./assets/title-border.png") no-repeat;
       background-size: 100% 100%;
-      display: flex;
+      display: inline-flex;
       align-items: center;
       justify-content: center;
       line-height: 1;
-      padding: 0 var(--side-padding);
+      padding: var(--side-padding) 0;
+      box-sizing: border-box;
+
+      img {
+        height: 100%;
+      }
+
 
       .title-contain {
         --font-size: 2rem;
+        position: absolute;
+        left: 0;
         line-height: 1;
         font-size: var(--font-size);
         color: black;
