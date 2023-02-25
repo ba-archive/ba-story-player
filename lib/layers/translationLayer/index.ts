@@ -43,7 +43,8 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
     //初始化unit, 将需要的原始属性填入unit, 同时查表填入其他属性
     let { GroupId, SelectionGroup, PopupFileName } = rawStoryUnit
     let unit: StoryUnit = {
-      GroupId, SelectionGroup, PopupFileName,
+      GroupId, SelectionGroup,
+      PopupFileName: !PopupFileName ? '' : getResourcesUrl('popupImage', PopupFileName),
       type: 'text',
       characters: [],
       textAbout: {

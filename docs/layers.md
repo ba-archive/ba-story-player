@@ -92,6 +92,16 @@ UI层负责UI的相关功能
 `hidemenu`: 隐藏ui
 
 `showmenu`: 显示ui
+
+`option`: 显示选项
+参数: ShowOption[]
+```ts
+interface Option {
+    SelectionGroup: number,
+    text: string
+}
+```
+
 ## 可使用getter
 `logText`: 已播放剧情语句
 ```ts
@@ -127,7 +137,7 @@ export interface StorySummary {
 }
 ```
 # 文字层
-文字层负责有对话框文字, 无对话框文字, 选项的显示.
+文字层剧情里没有交互的内容的显示(图片, 文字, 视频等)
 ## 发出事件
 `titleDone`: 标题显示完成
 
@@ -175,7 +185,7 @@ stArgs:
 ![](./img/text-position.png)
 注意100单位长度的位置应大于等于文字默认高度
 
-第二个参数代表效果, serial打字机效果, instant立即全部显示.
+第二个参数代表效果, serial打字机效果, instant立即全部显示, smooth表示fade in
 
 第三个参数目前尚不明确
 
@@ -183,16 +193,23 @@ stArgs:
 
 `clearSt`: 清除无对话框文字
 
-`option`: 显示选项
-参数: ShowOption[]
-```ts
-interface Option {
-    SelectionGroup: number,
-    text: string
-}
-```
 
 `hideDialog`: 隐藏对话框
+
+`popupImage`: 显示弹出的图片, 参数是图片url
+
+`popupVideo`: 显示弹出的视频, 参数是视频地址
+
+`toBeContinue`: 显示未完待续
+
+`nextEpisode`: 显示下一章节
+type
+```js
+{
+  title: string
+  text: string
+}
+```
 ## 发出事件
 `next`: 进入下一语句
 

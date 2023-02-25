@@ -24,12 +24,8 @@ export type Events = {
   transitionInDone: undefined
   transitionOut: TransitionTableItem
   transitionOutDone: undefined
-  /**
-   * 人物完成展示
-   */
 
   //人物层
-
   /**
    * 展示人物
    */
@@ -138,6 +134,25 @@ export type Events = {
    * 根据选项加入下一剧情语句
    */
   select: number
+  /**
+   * 弹出图片, 参数是图片url
+   */
+  popupImage: string
+  /**
+   * 弹出视频, 参数是视频url
+   */
+  popupVideo: string
+  /**
+   * 显示未完待续
+   */
+  toBeContinue: undefined
+  /**
+   * 显示下章节
+   */
+  nextEpisode: {
+    title: string
+    text: string
+  }
 
   //L2D层
   /**
@@ -208,7 +223,7 @@ export interface ShowText {
 /**
  * st特效参数, 第一个为位置, 第二个为显示效果
  */
-export type StArgs = [number[], 'serial' | 'instant', number]
+export type StArgs = [number[], 'serial' | 'instant' | 'smooth', number]
 
 export interface StText {
   /**
