@@ -57,7 +57,7 @@ const CharacterEffectPlayerInstance: CharacterEffectPlayer = {
     let { app } = usePlayerStore()
 
     let tl = gsap.timeline()
-    let initX = app.screen.width
+    let initX = app.screen.width + instance.instance.width
     let distance = initX - instance.instance.x
     let duration = distance / (instance.instance.width * options.speed)
     tl.fromTo(instance.instance, { pixi: { x: initX } },
@@ -99,7 +99,7 @@ const CharacterEffectPlayerInstance: CharacterEffectPlayer = {
     let { app } = usePlayerStore()
 
     let tl = gsap.timeline()
-    let finalX = app.screen.width
+    let finalX = app.screen.width + instance.instance.width
     let distance = finalX - instance.instance.x
     let duration = distance / (instance.instance.width * options.speed)
     tl.to(instance.instance, { pixi: { x: finalX }, duration },
@@ -209,11 +209,11 @@ export const POS_INDEX_MAP = {
  * 角色position x轴值相对于中心的偏移量, 单位是播放器宽度
  */
 export const POS_X_CNETER_OFFSET = {
-  "1": -1 / 4,
-  "2": -1 / 8,
+  "1": -7 / 24,
+  "2": -1 / 6,
   "3": 0,
-  "4": 1 / 8,
-  "5": 1 / 4,
+  "4": 1 / 6,
+  "5": 7 / 24,
 }
 
 /**
