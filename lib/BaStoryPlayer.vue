@@ -42,9 +42,8 @@ async function updateFullScreenState() {
     if (!currentFullScrrenState) {
       await player.value?.requestFullscreen({ navigationUI: 'hide' })
     }
-    console.log(window.screen.availWidth)
-    width.value = window.screen.availWidth
-    height.value = window.screen.availHeight
+    width.value = Math.max(window.screen.availWidth, window.screen.availHeight)
+    height.value = Math.min(window.screen.availWidth, window.screen.availHeight)
   }
   else {
     if (currentFullScrrenState) {
@@ -111,12 +110,28 @@ onMounted(() => {
 </template>
 
 <style lang="scss">
+@media screen and (orientation: portrait) {
+  #player:fullscreen {
+    #player__main {
+      transform: rotate(-90deg);
+      transform-origin: left top;
+      width: 100vh;
+      height: 100vw;
+      overflow-x: hidden;
+      position: absolute;
+      top: 100%;
+      left: 0;
+    }
+  }
+
+}
+
 #player {
   background-color: black;
-  overflow: hidden;
 
   &__main {
     position: relative;
+    overflow: hidden;
 
     &__canvas {
       position: absolute;

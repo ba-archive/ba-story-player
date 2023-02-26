@@ -102,7 +102,7 @@ function changeJSON() {
       <BaStoryPlayer :story="story" data-url="https://yuuka.cdn.diyigemt.com/image/ba-all-data" :width="width"
         :height="height" language="Cn" userName="testUser" :story-summary="storySummary" />
     </div>
-    <div style="position: absolute;left: 0;display: flex;flex-direction: column;width: 20vh;">
+    <div style="position: absolute;left: 0;display: flex;flex-direction: column;width: 20vh;z-index: 100;">
       <label>辅助工具选择</label>
       <select v-model="toolType">
         <option value="emotion">人物特效测试</option>
