@@ -505,6 +505,10 @@ export let eventEmitter = {
         eventBus.emit('hidemenu')
       }
     }
+    //在有变换时隐藏所有对象
+    if (storyHandler.currentStoryUnit.bg?.overlap || storyHandler.currentStoryUnit.transition) {
+      eventBus.emit('hide')
+    }
   },
 
   show() {
@@ -534,7 +538,6 @@ export let eventEmitter = {
       await new Promise<void>(resolve => {
         let resolveFun = () => {
           eventBus.off('transitionInDone', resolveFun)
-          eventBus.emit('hide')
           resolve()
         }
         eventBus.on('transitionInDone', resolveFun)
