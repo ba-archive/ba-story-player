@@ -4,7 +4,7 @@ import eventBus from '../../lib/eventBus'
 import emotionOptions, { emotionDescriptions } from '../../lib/layers/characterLayer/options/emotionOptions'
 import actionOptions, { actionDescriptions } from '../../lib/layers/characterLayer/options/actionOptions'
 import fxOptions, { fxOptionsDescriptions } from '../../lib/layers/characterLayer/options/fxOptions'
-import { EffectsWord } from '@/types/characterLayer'
+import { EffectsWord } from '../../lib/types/characterLayer'
 import { resizeTextareas } from '../utils'
 
 let effectType = ref<'action' | 'emotion' | 'fx'>('emotion')
