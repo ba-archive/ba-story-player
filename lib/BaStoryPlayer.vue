@@ -144,7 +144,7 @@ onMounted(() => {
 }
 
 #player {
-  background-color: black;
+  background-color: #080808;
 
   &:fullscreen {
     display: flex;
