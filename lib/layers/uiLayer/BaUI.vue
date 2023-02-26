@@ -28,7 +28,6 @@ eventBus.on("hide", () => {
   hiddenSummary.value = true
   hiddenStoryLog.value = true
   hiddenMenu.value = true
-  autoMode.value = false
 })
 eventBus.on("hidemenu", () => {
   hiddenMenu.value = true
