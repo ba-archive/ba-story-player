@@ -7,11 +7,11 @@ import eventBus from "@/eventBus";
 const props = defineProps({
   width: {
     type: String,
-    default: "520px",
+    default: "min(520px, 80%)",
   },
   height: {
     type: String,
-    default: "400px",
+    default: "min(400px, 70%)",
   },
   title: String,
   show: Boolean,
