@@ -39,7 +39,12 @@ export async function playBGEffect(bgEffectItem: BGEffectExcelTableItem) {
       imgs.push(Sprite.from(resource))
     }
     let handler = bgEffectHandlers[effect]
-    let removeFunction = await Reflect.apply(handler, undefined, [imgs, bgEffectItem, bgEffectHandlerOptions[effect]])
+    let removeFunction: any
+    try{
+      removeFunction = await Reflect.apply(handler, undefined, [imgs, bgEffectItem, bgEffectHandlerOptions[effect]])
+    }catch(e){
+      console.error(`执行 ${effect} 时发生错误`, e)
+    }
     currentBGEffect = {
       effect,
       removeFunction,

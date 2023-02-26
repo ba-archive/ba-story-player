@@ -98,7 +98,7 @@ function changeJSON() {
 <template>
   <div style="display:flex;justify-content: center;">
     <div v-if="showPlayer">
-      <BaStoryPlayer :story="story" data-url="https://yuuka.cdn.diyigemt.com/image/ba-all-data" :width="width"
+      <BaStoryPlayer :story="prologue" data-url="https://yuuka.cdn.diyigemt.com/image/ba-all-data" :width="width"
         language="Cn" userName="testUser" :story-summary="storySummary" />
     </div>
     <div style="position: absolute;left: 0;display: flex;flex-direction: column;width: 20vh;">

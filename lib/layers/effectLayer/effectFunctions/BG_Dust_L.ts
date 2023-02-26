@@ -13,9 +13,6 @@ export default async function BG_Dust_L(resources: Sprite[]) {
   const { app } = usePlayerStore();
   const appWidth = app.view.width;
   const appHeight = app.view.height;
-  let smokeContainer = new Container();
-  emitterContainer.addChild(smokeContainer);
-  smokeContainer.zIndex = 1;
   let smokeAnimationsName = "dust_smoke";
 
   let smokeSpritesheet = await loadSpriteSheet(
@@ -34,31 +31,31 @@ export default async function BG_Dust_L(resources: Sprite[]) {
   const smokeWidth = Math.sqrt(appWidth * appWidth + appHeight * appHeight);
   // 高度应该是当前分切图片的高度, 暂时没法确定, 先魔法数
   const smokeHeight = 200;
+  const scale = appHeight / smokeHeight / 2; // 这个2是随便定的
   [smokeTextureTilingL, smokeTextureTilingR, smokeTextureTilingR1].forEach(
     (i) => {
       // 避免 tiling 产生的像素
       i.clampMargin = 1.5;
-      i.rotation = 0.45;
+      i.rotation = 0.55;
       i.tint = 0x4c413f;
       i.width = smokeWidth;
       i.height = smokeHeight;
+      i.scale.set(scale);
+      app.stage.addChild(i);
     }
   );
-  smokeTextureTilingL.x = -10;
-  smokeTextureTilingL.y = appHeight - smokeHeight;
-  // 负数是以左上角为原点向上转角度
-  smokeTextureTilingR.rotation = -0.45;
+  smokeTextureTilingL.x = -(appWidth * 0.01);
+  smokeTextureTilingL.y = appHeight - smokeHeight * scale;
+  smokeTextureTilingR.rotation = -0.3;
   // 放大, 避免下方出现空隙
-  smokeTextureTilingR.scale.set(1.2);
+  smokeTextureTilingR.scale.set(1.2*scale);
   smokeTextureTilingR.x = appWidth / 2;
-  smokeTextureTilingR.y = appHeight;
-  // 角度高一点, 错乱一点, 避免和 R 一致, R1 是后边的图
-  smokeTextureTilingR1.rotation = -0.55;
+  smokeTextureTilingR.y = appHeight - (appHeight * 0.01);
+  // 角度高一点, 错乱一点, 避免和 R 一致, R1 是后边的图, 并且R1要在人物层之后
+  smokeTextureTilingR1.rotation = -0.75;
+  smokeTextureTilingR1.zIndex = -1;
   smokeTextureTilingR1.x = appWidth / 2 - 50;
-  smokeTextureTilingR1.y = appHeight - 10;
-  smokeContainer.addChild(smokeTextureTilingR1);
-  smokeContainer.addChild(smokeTextureTilingR);
-  smokeContainer.addChild(smokeTextureTilingL);
+  smokeTextureTilingR1.y = appHeight - appHeight * 0.02;
   let smokeRemover = emitterStarter({
     update: () => {
       // 向左
@@ -67,8 +64,11 @@ export default async function BG_Dust_L(resources: Sprite[]) {
       smokeTextureTilingR1.tilePosition.x += 1;
     },
     destroy: () => {
-      // 不能把函数直接赋值过去, this会变
-      smokeContainer.destroy();
+      [smokeTextureTilingL, smokeTextureTilingR, smokeTextureTilingR1].forEach(
+        (i) => {
+          app.stage.removeChild(i);
+        }
+      );
     },
   } as any);
   // 火光粒子特效

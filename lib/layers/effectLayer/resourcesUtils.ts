@@ -1,3 +1,4 @@
+import { EmitterConfigV3 } from "@pixi/particle-emitter";
 import { BaseTexture, ImageResource, Sprite, Spritesheet } from "pixi.js";
 /**
  * 把黑白png图片的黑色转为透明度
@@ -83,4 +84,12 @@ export async function loadSpriteSheet(img: Sprite, quantity: { x: number, y: num
   await spritesheet.parse();
 
   return spritesheet
+}
+/**
+ * 获取 emitter config behaviors 中的配置
+ */
+export function getEmitterType(config: EmitterConfigV3, type: string){
+  return config.behaviors.find(i=>{
+    return i.type === type
+  })!
 }

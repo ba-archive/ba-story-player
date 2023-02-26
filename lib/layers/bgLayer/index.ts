@@ -82,6 +82,7 @@ const BgLayerInstance: BgLayer = {
   loadBg(instance: Sprite) {
     const { app, bgInstance: oldInstance, setBgInstance } = usePlayerStore();
 
+    instance.zIndex = -100 // 背景层应该在特效, 人物层之下
     app.stage.addChild(instance);
     setBgInstance(instance);
 
