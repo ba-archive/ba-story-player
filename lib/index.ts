@@ -70,6 +70,7 @@ export async function init(elementID: string, props: PlayerConfigs, endCallback:
   resourcesLoader.load(() => {
     app.stage.removeChild(loadingText)
     loadingText.destroy()
+    eventBus.emit('hidemenu')
     //开始发送事件
     eventEmitter.init()
   })
@@ -626,6 +627,7 @@ export let resourcesLoader = {
    */
   load(callback: () => void) {
     let hasLoad = false
+    this.loader.onError.add((error) => { throw error })
     this.loader.load((loader, res) => {
       playerStore.app.loader.load((loader, res) => {
         //当chrome webgl inspector打开时可能导致callback被执行两次
