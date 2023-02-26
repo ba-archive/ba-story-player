@@ -112,6 +112,7 @@ const BgLayerInstance: BgLayer = {
 
     await tl
       .fromTo(instance, { alpha: 0 }, { alpha: 1, duration: overlap / 1000 })
+    eventBus.emit('bgOverLapDone')
 
     oldInstance && app.stage.removeChild(oldInstance);
   },

@@ -46,12 +46,16 @@ export type Events = {
    * l2d 动画播放状态, 当前动画是否播放完成
    */
   l2dAnimationDone: { done: boolean, animation: string }
-  //背景层
 
+  //背景层
   /**
    * 展示背景图片
    */
   showBg: BgParams
+  /**
+   * bgOverLap已完成
+   */
+  bgOverLapDone: undefined
 
   //声音层
 

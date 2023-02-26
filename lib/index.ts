@@ -331,7 +331,7 @@ export let eventEmitter = {
     console.log('剧情进度: ' + storyHandler.currentStoryIndex, storyHandler.currentStoryUnit)
     await this.transitionIn()
     this.hide()
-    this.showBg()
+    await this.showBg()
     this.showPopup()
     this.playEffect()
     this.playL2d()
@@ -424,15 +424,25 @@ export let eventEmitter = {
   /**
    * 显示背景
    */
-  showBg() {
+  async showBg() {
     if (storyHandler.currentStoryUnit.bg) {
+      const bgOverLap = storyHandler.currentStoryUnit.bg.overlap
       eventBus.emit("showBg", {
         url: storyHandler.currentStoryUnit.bg?.url,
-        overlap: storyHandler.currentStoryUnit.bg?.overlap,
+        overlap: bgOverLap
       });
       if (this.l2dPlaying) {
         eventBus.emit('endL2D')
         this.l2dPlaying = false
+      }
+      if (bgOverLap) {
+        await new Promise<void>((resolve) => {
+          const fn = () => {
+            eventBus.off('bgOverLapDone', fn)
+            resolve()
+          }
+          eventBus.on('bgOverLapDone', fn)
+        })
       }
     }
     // eventBus.emit('showBg', 'https://yuuka.cdn.diyigemt.com/image/ba-all-data/UIs/03_Scenario/01_Background/BG_CS_PR_16.jpg')
