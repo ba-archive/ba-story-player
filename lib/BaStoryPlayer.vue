@@ -25,13 +25,15 @@ const props = withDefaults(defineProps<PlayerProps>(), {
   useMp3: false,
   useSuperSampling: false
 })
+const storySummary = ref(props.storySummary)
+storySummary.value.summary = storySummary.value.summary.replace('[USERNAME]', props.userName)
 
 const emitter = defineEmits(['end'])
 
-
-const height = ref(props.height)
-const width = ref(props.width)
+const playerHeight = ref(props.height)
+const playerWidth = ref(props.width)
 const fullScreen = ref(props.startFullScreen)
+const fullScreenMaxAspectRatio = 16 / 9
 watch(fullScreen, updateFullScreenState)
 /**
  * 根据fullScrren值更新播放器状态
@@ -42,52 +44,65 @@ async function updateFullScreenState() {
     if (!currentFullScrrenState) {
       await player.value?.requestFullscreen({ navigationUI: 'hide' })
     }
-    width.value = Math.max(window.screen.availWidth, window.screen.availHeight)
-    height.value = Math.min(window.screen.availWidth, window.screen.availHeight)
+    playerHeight.value = Math.min(window.screen.availWidth, window.screen.availHeight)
+    const tempWidth = Math.max(window.screen.availWidth, window.screen.availHeight)
+    if (tempWidth / playerHeight.value > fullScreenMaxAspectRatio) {
+      playerWidth.value = playerHeight.value * fullScreenMaxAspectRatio
+    }
+    else {
+      playerWidth.value = tempWidth
+    }
   }
   else {
     if (currentFullScrrenState) {
       await document.exitFullscreen()
     }
-    width.value = props.width
-    height.value = props.height
+    playerWidth.value = props.width
+    playerHeight.value = props.height
   }
 }
 window.addEventListener('resize', updateFullScreenState)
 /**
  * 指定canvas一个固定的height保证画面表现
  */
-const playerHeight = 1012.5
-const playerConfig = { ...props, height: playerHeight }
-playerConfig.width = playerHeight * props.width / props.height
+const pixiHeight = 1012.5
+const pixiConfig = { ...props, height: pixiHeight }
+pixiConfig.width = pixiHeight * props.width / props.height
 
-const playerScale = computed(
+const pixiScale = computed(
   //比实际放大一点放置并隐藏解决缩放不精确的问题
-  () => (height.value + 1) / playerHeight
+  () => (playerHeight.value + 1) / pixiHeight
 )
 const playerStyle = computed(() => {
-  return { height: `${height.value}px`, width: `${width.value}px` }
+  return { height: `${playerHeight.value}px`, width: `${playerWidth.value}px` }
 })
 const player = ref<HTMLDivElement>()
+/**
+ * 强制横屏时的top
+ */
+const fullscreenTopOffset = computed(() => {
+  const screenWidth = Math.max(window.screen.availHeight, window.screen.availWidth)
+  return `${100 - (1 - playerWidth.value / screenWidth) / 2 * 100}%`
+})
 
-watch([width, height], () => {
-  const newWidth = playerHeight * width.value / height.value
+watch([playerWidth, playerHeight], () => {
+  const newWidth = pixiHeight * playerWidth.value / playerHeight.value
   const app = usePlayerStore().app
   const originWidth = app.screen.width
   if (newWidth.toFixed(2) !== originWidth.toFixed(2)) {
-    app.renderer.resize(newWidth, playerHeight)
+    app.renderer.resize(newWidth, pixiHeight)
     eventBus.emit('resize', originWidth)
   }
 })
 watch([() => props.width, () => props.height], () => {
   if (!fullScreen.value) {
-    width.value = props.width
-    height.value = props.height
+    playerWidth.value = props.width
+    playerHeight.value = props.height
   }
 })
 
 onMounted(() => {
-  init('player__main__canvas', playerConfig, () => emitter('end'))
+  init('player__main__canvas', pixiConfig, () => emitter('end'))
   if (props.startFullScreen) {
     updateFullScreenState()
   }
@@ -101,10 +116,13 @@ onMounted(() => {
 
 <template>
   <div id="player" :style="playerStyle" ref="player">
-    <div id="player__main" :style="playerStyle">
-      <div id="player__main__canvas" :style="{ transform: `scale(${playerScale})` }"></div>
-      <BaDialog :player-height="height" :player-width="width" :style="{ width: `${width}px` }"></BaDialog>
-      <BaUI :story-summary="storySummary" @fullscreen-change="fullScreen = !fullScreen" />
+    <div id="player__background" :style="playerStyle">
+      <div id="player__main" :style="playerStyle">
+        <div id="player__main__canvas" :style="{ transform: `scale(${pixiScale})` }"></div>
+        <BaDialog :player-height="playerHeight" :player-width="playerWidth" :style="{ width: `${playerWidth}px` }">
+        </BaDialog>
+        <BaUI :story-summary="storySummary" @fullscreen-change="fullScreen = !fullScreen" />
+      </div>
     </div>
   </div>
 </template>
@@ -112,14 +130,11 @@ onMounted(() => {
 <style lang="scss">
 @media screen and (orientation: portrait) {
   #player:fullscreen {
-    #player__main {
+    #player__background {
       transform: rotate(-90deg);
       transform-origin: left top;
-      width: 100vh;
-      height: 100vw;
-      overflow-x: hidden;
       position: absolute;
-      top: 100%;
+      top: v-bind(fullscreenTopOffset);
       left: 0;
     }
   }
@@ -129,8 +144,15 @@ onMounted(() => {
 #player {
   background-color: black;
 
+  &:fullscreen {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
   &__main {
     position: relative;
+    display: inline-block;
     overflow: hidden;
 
     &__canvas {

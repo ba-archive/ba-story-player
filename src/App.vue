@@ -22,7 +22,7 @@ eventBus.on('*', (type, e) => {
 
 let storySummary = {
   chapterName: '章节名',
-  summary: '总之就是总结'
+  summary: '从奇怪的梦中醒来之后的[USERNAME]老师从联邦学生会的干部七神凛那里听到学生会长失踪的消息。由于学生会长失踪，学园城市基沃托斯陷入了混乱。为了解决这场混乱，老师和学生会的干部一同前往夏莱办公室。'
 }
 let toolType = ref('')
 let cacheKey = 'toolType'

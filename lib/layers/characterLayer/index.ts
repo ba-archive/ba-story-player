@@ -451,9 +451,9 @@ function loopAnimationTime<AnimationState extends IAnimationState>(state: Animat
 
 // 当播放器高度为PlayerHeight时角色的CharacterScale
 const PlayerHeight = 550;
-const CharacterScale = 0.35;
+const CharacterScale = 0.34;
 // spine在播放器之下的部分;
-const spineHideRate = 0.47;
+const spineHideRate = 0.49;
 export function calcCharacterYAndScale(spine: Spine) {
   const { screenHeight } = getStageSize();
   const scale = screenHeight / PlayerHeight * CharacterScale;
