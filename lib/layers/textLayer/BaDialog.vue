@@ -435,20 +435,23 @@ function handleToBeContinued() {
     timeline
       .to(toBeContinuedBg0.value!, {
         opacity: 1,
-        duration: 0.6,
+        duration: 0.3,
       })
       .to(toBeContinuedBg1.value!, {
         opacity: 1,
-        duration: 0.6,
-      })
+        duration: 0.4,
+      }, "-=0.15")
       .to(toBeContinuedText.value!, {
         right: 20,
-        duration: 0.8,
+        duration: 0.3,
       }, "<")
       .to(toBeContinuedText.value!, {
         opacity: 0,
         duration: 0.6
-      }, "+=1.2");
+      }, "+=1.2")
+      // .then(() => {
+      //   handleNextEpisode({ title: "次回", text: "测试次回" });
+      // })
   });
 }
 function handleNextEpisode(e: { title: string, text: string }) {
@@ -469,7 +472,10 @@ function handleNextEpisode(e: { title: string, text: string }) {
       .to(bottomChild, {
         translateY: 0,
         duration: 0.5,
-        ease: "power4.out"
+        ease: "power4.out",
+        onComplete() {
+          showToBeContinue.value = false;
+        }
     }, "<")
       .to(topChild, {
         translateY: "-100%",
@@ -502,7 +508,6 @@ function handleNextEpisode(e: { title: string, text: string }) {
     }, "<");
   });
 }
-window.test = handleNextEpisode;
 const fontSizeBounds = computed(() => (props.playerHeight / 1080));
 const stWidth = 3000;
 const stHeight = 1600;
