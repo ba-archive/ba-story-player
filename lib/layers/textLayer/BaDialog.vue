@@ -28,7 +28,9 @@
             class="title-contain"
             :style="{ '--font-size': `${fontSize(4)}rem`}"
           >
-            <div class="sub-title" v-if="subTitleContent">{{ subTitleContent }}</div>
+            <div class="sub-title" v-if="subTitleContent">
+              <span class="sub-title-inner">{{ subTitleContent }}</span>
+            </div>
             <div class="main-title">{{ titleContent }}</div>
           </div>
         </div>
@@ -727,10 +729,15 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
         ), url("./assets/poli-light.png") rgb(164 216 237) no-repeat 0 30%;
         .sub-title {
           font-size: calc(var(--font-size) * 0.6);
-          margin-bottom: calc(var(--font-size) * 0.2);
+          margin-bottom: calc(var(--font-size) * 0.5);
+          .sub-title-inner {
+            padding: 0 5px;
+            background: linear-gradient(0deg, #f6ed7e 0%, #F6ED7D 13%, transparent 13%) 0 calc(var(--font-size) *
+            -0.12);
+          }
         }
         .main-title {
-          color: #496b9e;
+          color: #4a609a;
         }
       }
     }
