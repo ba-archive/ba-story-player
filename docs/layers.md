@@ -71,8 +71,6 @@ export interface PlayAudio {
 ```
 `playEmotionAudio`: 播放人物情绪动作特效音, 参数是一个string代表人物的情绪动作
 
-`playSelectSound`: 播放选择时的特效音
-
 ## 可使用getter
 `otherSoundUrl`: 获取其他声音资源url
 
@@ -88,6 +86,8 @@ UI层负责UI的相关功能
 `stopAuto`: 自动模式停止
 
 `hideDialog`: 隐藏对话框
+
+`playSelectSound`: 播放选择时的特效音
 ## 接受事件
 `hidemenu`: 隐藏ui
 
