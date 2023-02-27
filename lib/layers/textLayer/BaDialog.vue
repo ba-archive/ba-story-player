@@ -1,26 +1,43 @@
 <template>
   <div class="container" :style="{ height: `${playerHeight}px` }">
     <div class="container-inner">
-      <div class="to-be-continue-bg absolute-container">
-        <div class="to-be-continue" :style="{fontSize: `${standardFontSize}rem`}">To Be Continue...</div>
+      <div
+        ref="nextEpisodeContainer"
+        class="next-episode-container absolute-container"
+        @click="endPlay"
+        v-if="showNextEpisode"
+      >
+        <div class="next-episode-cover" />
+        <div class="next-episode-cover" />
+      </div>
+      <div class="to-be-continued-container absolute-container" v-if="showToBeContinue">
+        <div ref="toBeContinuedBg0" class="to-be-continued-bg0"/>
+        <div ref="toBeContinuedBg1" class="to-be-continued-bg1"/>
+        <div ref="toBeContinuedText" class="to-be-continued" :style="{fontSize: `${standardFontSize}rem`}">To Be Continued...</div>
       </div>
       <div class="st-container absolute-container" ref="stOutput" :style="{fontSize: `${standardFontSize}rem`}" />
-      <div class="title-container absolute-container"
-           :class="{ 'fade-in-out': titleContent }"
-           v-if="titleContent"
+      <div
+        ref="titleEL"
+        class="title-container absolute-container"
+        :style="overrideTitleStyle"
+        v-if="titleContent"
       >
         <div class="title-border" :style="{ '--side-padding': `${titleBorderPadding}px`}">
           <div
+            ref="titleContain"
             class="title-contain"
             :style="{ '--font-size': `${fontSize(4)}rem`}"
-          >{{ titleContent }}
+          >
+            <div class="sub-title" v-if="subTitleContent">{{ subTitleContent }}</div>
+            <div class="main-title">{{ titleContent }}</div>
           </div>
         </div>
       </div>
-      <div class="place-container"
-           :style="{ '--font-size': `${fontSize(2)}rem`}"
-           :class="{ 'fade-in-out': placeContent }"
-           v-if="placeContent">
+      <div
+        ref="placeEL"
+        class="place-container"
+        :style="{ '--font-size': `${fontSize(2)}rem`}"
+        v-if="placeContent">
         <div class="round-place">
           <span class="place-content">{{ placeContent }}</span>
         </div>
@@ -56,10 +73,20 @@ import gsap from "gsap";
 
 const typewriterOutput = ref<HTMLElement>(); // 对话框el
 const stOutput = ref<HTMLElement>(); // st特效字el
+const toBeContinuedBg0 = ref<HTMLElement>(); // to be continued的背景
+const toBeContinuedBg1 = ref<HTMLElement>(); // to be continued的背景
+const toBeContinuedText = ref<HTMLElement>(); // to be continued的字
+const titleEL = ref<HTMLElement>(); // 大标题的el
+const placeEL = ref<HTMLElement>(); // place的el
+const nextEpisodeContainer = ref<HTMLElement>(); // 下一章的el
+const titleContain = ref<HTMLElement>(); // 标题内容的el, 为了实现scale效果
+const overrideTitleZIndex = ref<number>();
 // 外部传入播放器高度,用于动态计算字体等数值
 const props = withDefaults(defineProps<TextLayerProps>(), {playerHeight: 0, playerWidth: 0});
 // 标题
 const titleContent = ref<string>("");
+// 副标题
+const subTitleContent = ref<string>("");
 // 位置
 const placeContent = ref<string>("");
 // 昵称
@@ -68,9 +95,20 @@ const name = ref<string>();
 const nickName = ref<string>();
 // 在执行st特效时置为false以隐藏对话框
 const showDialog = ref<boolean>(false);
+// 显示to be continued
+const showToBeContinue = ref<boolean>(false);
+// 显示next episode
+const showNextEpisode = ref<boolean>(false);
+let showNextEpisodeLock = false;
 // 打印完成
 const typingComplete = ref<boolean>(false);
 let typingInstance: TypedExtend; // 全局打字机实例 因为不能有两个实例同时持有一个el
+function endPlay() {
+  if (showNextEpisodeLock) {
+    return;
+  }
+  eventBus.emit("next");
+}
 /**
  * 单击屏幕后触发效果 next或者立即显示当前对话
  */
@@ -93,7 +131,7 @@ function moveToNext() {
  * 展示主标题
  */
 function handleShowTitle(e: string) {
-  proxyShowCoverTitle(titleContent, e).then(() => {
+  proxyShowCoverTitle(titleEL, titleContent, e).then(() => {
     eventBus.emit("titleDone");
   })
 }
@@ -101,19 +139,40 @@ function handleShowTitle(e: string) {
  * 展示左上角位置标题
  */
 function handleShowPlace(e: string) {
-  proxyShowCoverTitle(placeContent, e);
+  proxyShowCoverTitle(placeEL, placeContent, e);
 }
+
 /**
- * 统一方法, 通过css动画实现淡入淡出
+ * 统一方法, 淡入淡出el
+ * @param el 要操作的el
+ * @param proxy 要操作的el显示的内容
+ * @param value 要显示的内容
+ * @param onElUpdate 在el显示后的回调, 给next episode用的
  */
-function proxyShowCoverTitle(proxy: Ref<string>, value: string) {
-  proxy.value = value;
+function proxyShowCoverTitle(el: Ref<HTMLElement | undefined>, proxy: Ref<string>, value: string, onElUpdate?: (el: HTMLElement) => void) {
   return new Promise<void>((resolve) => {
-    setTimeout(() => {
-      proxy.value = "";
-      resolve();
-    }, 3000)
-  })
+    proxy.value = value;
+    nextTick(() => {
+      onElUpdate && onElUpdate(el.value!);
+      const timeline = gsap.timeline();
+      timeline.to(el.value!, {
+        opacity: 1,
+        duration: 0.75
+      });
+      if (!onElUpdate) {
+        timeline.to(el.value!, {
+          opacity: 0,
+          duration: 0.75
+        }, "+=1.5");
+      }
+      timeline.then(() => {
+        if (!onElUpdate) {
+          proxy.value = "";
+        }
+        resolve();
+      });
+    });
+  });
 }
 /**
  * 清除特效字
@@ -361,6 +420,89 @@ function showTextDialog(text: Text[], output: HTMLElement, onParseContent?: (sou
 function handleHideDialog() {
   showDialog.value = false;
 }
+
+/**
+ * 处理 to be continued 效果
+ */
+function handleToBeContinued() {
+  showToBeContinue.value = true;
+  nextTick(() => {
+    const style = getComputedStyle(toBeContinuedText.value!);
+    const w = Number(style.width.replace("px", ""));
+    toBeContinuedText.value!.style.right = `${-w - 10}px`;
+    toBeContinuedText.value!.style.opacity = "1";
+    const timeline = gsap.timeline();
+    timeline
+      .to(toBeContinuedBg0.value!, {
+        opacity: 1,
+        duration: 0.6,
+      })
+      .to(toBeContinuedBg1.value!, {
+        opacity: 1,
+        duration: 0.6,
+      })
+      .to(toBeContinuedText.value!, {
+        right: 20,
+        duration: 0.8,
+      }, "<")
+      .to(toBeContinuedText.value!, {
+        opacity: 0,
+        duration: 0.6
+      }, "+=1.2");
+  });
+}
+function handleNextEpisode(e: { title: string, text: string }) {
+  showNextEpisodeLock = true;
+  showNextEpisode.value = true;
+  eventBus.emit("hidemenu");
+  nextTick(() => {
+    const container = nextEpisodeContainer.value!;
+    const topChild = container.children[0];
+    const bottomChild = container.children[1];
+    let flag = false;
+    const timeline = gsap.timeline();
+    timeline.to(topChild, {
+      translateY: 0,
+      duration: 0.5,
+      ease: "power4.out"
+    })
+      .to(bottomChild, {
+        translateY: 0,
+        duration: 0.5,
+        ease: "power4.out"
+    }, "<")
+      .to(topChild, {
+        translateY: "-100%",
+        duration: 0.5,
+        ease: "power4.in"
+    })
+      .to(bottomChild, {
+        translateY: "100%",
+        duration: 0.5,
+        ease: "power4.in",
+        onUpdate() {
+          if (flag) {
+            return;
+          }
+          const matrix = getComputedStyle(bottomChild).transform;
+          if (Number(matrix.substring(matrix.lastIndexOf(",") + 2).replace(")","")) > 100) {
+            subTitleContent.value = e.text;
+            proxyShowCoverTitle(titleEL, titleContent, e.title, (el) => {
+              const tl = gsap.timeline();
+              tl.fromTo(el, {
+                scaleY: 0.8
+              }, {
+                scaleY: 1,
+                duration: 0.2
+              })
+            });
+            flag = true;
+          }
+        }
+    }, "<");
+  });
+}
+window.test = handleNextEpisode;
 const fontSizeBounds = computed(() => (props.playerHeight / 1080));
 const stWidth = 3000;
 const stHeight = 1600;
@@ -396,6 +538,14 @@ function setTypingComplete(complete: boolean, instance?: TypedExtend) {
     instance.typingComplete = complete;
   }
 }
+const overrideTitleStyle = computed(() => {
+  if (overrideTitleZIndex.value) {
+    return {
+      "z-index": overrideTitleZIndex.value
+    };
+  }
+  return {};
+});
 // 文本框总高度
 const dialogHeight = computed(() => props.playerHeight / 2);
 // 选择框位置
@@ -412,8 +562,10 @@ onMounted(() => {
   eventBus.on('st', handleShowStEvent);
   eventBus.on('clearSt', handleClearSt);
   eventBus.on("hide",handleHideDialog);
-  eventBus.on("hideDialog",handleHideDialog);
-  eventBus.on("click",moveToNext);
+  eventBus.on("hideDialog", handleHideDialog);
+  eventBus.on("click", moveToNext);
+  eventBus.on("toBeContinue", handleToBeContinued);
+  eventBus.on("nextEpisode", handleNextEpisode);
 });
 onUnmounted(() => {
   eventBus.off("showTitle", handleShowTitle);
@@ -421,9 +573,11 @@ onUnmounted(() => {
   eventBus.off('showText', handleShowTextEvent);
   eventBus.off('st', handleShowStEvent);
   eventBus.off('clearSt', handleClearSt);
-  eventBus.off("hide",handleHideDialog);
+  eventBus.off("hide", handleHideDialog);
   eventBus.off("hideDialog",handleHideDialog);
-  eventBus.off("click",moveToNext);
+  eventBus.off("click", moveToNext);
+  eventBus.off("toBeContinue", handleToBeContinued);
+  eventBus.off("nextEpisode", handleNextEpisode);
 });
 // 暂时用不上了, 比如font-size还需要根据屏幕进行适配
 type StyleEffectTemplateMap = {
@@ -460,7 +614,8 @@ $place-z-index: 8;
 $title-z-index: 10;
 $select-z-index: 10;
 $image-video-z-index: 10;
-$to-be-continue-z-index: 10;
+$to-be-continue-z-index: 200;
+$next-episode-z-index: 201;
 $st-z-index: 10;
 $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
 .name{
@@ -565,12 +720,20 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
             rgba(240, 240, 240, 1) 38%,
             rgba(240, 240, 240, 0.1) 100%
         ), url("./assets/poli-light.png") rgb(164 216 237) no-repeat 0 30%;
+        .sub-title {
+          font-size: calc(var(--font-size) * 0.6);
+          margin-bottom: calc(var(--font-size) * 0.2);
+        }
+        .main-title {
+          color: #496b9e;
+        }
       }
     }
   }
   .place-container {
     --font-size: 1rem;
     position: absolute;
+    opacity: 0;
     left: 0;
     top: 10%;
     color: white;
@@ -631,11 +794,47 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
     opacity: 0;
   }
 }
-.to-be-continue-bg {
-  z-index: $text-layer-z-index + $to-be-continue-z-index;
-  background: radial-gradient(#808080, #808080 30%,#545454 65%, #545454 100%);
-  text-shadow: $text-outline;
+.next-episode-container {
+  pointer-events: none;
+  z-index: $text-layer-z-index + $next-episode-z-index;
+  .next-episode-cover {
+    display: block;
+    height: 50%;
+    width: 100%;
+    background-color: black;
+    &:first-child {
+      transform: translateY(-100%);
+    }
+    &:last-child {
+      transform: translateY(100%);
+    }
+  }
 }
+.to-be-continued-container {
+  pointer-events: none;
+  z-index: $text-layer-z-index + $to-be-continue-z-index;
+  .to-be-continued-bg0, .to-be-continued-bg1 {
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+  }
+  .to-be-continued-bg0 {
+    background: #545454;
+  }
+  .to-be-continued-bg1 {
+    transform: translateY(-100%);
+    background: radial-gradient(#808080, #808080 30%,#545454 65%, #545454 100%);
+  }
+  .to-be-continued {
+    position: absolute;
+    color: white;
+    text-shadow: $text-outline;
+    right: -150px;
+    bottom: 20px;
+    opacity: 0;
+  }
+}
+
 .absolute-container {
   width: 100%;
   height: 100%;
