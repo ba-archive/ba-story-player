@@ -67,7 +67,7 @@
 import {onMounted, ref, computed, Ref, nextTick, onUnmounted} from 'vue'
 import eventBus from "@/eventBus";
 import Typed, {TypedExtend, TypedOptions} from "typed.js";
-import {ShowOption, ShowText, StArgs, StText} from "@/types/events";
+import {ShowOption, ShowText, ShowTitleOption, StArgs, StText} from "@/types/events";
 import {Text, TextEffectName} from "@/types/common";
 import {deepCopyObject} from "@/utils";
 import { usePlayerStore } from '@/stores';
@@ -132,8 +132,14 @@ function moveToNext() {
 /**
  * 展示主标题
  */
-function handleShowTitle(e: string) {
-  proxyShowCoverTitle(titleEL, titleContent, e).then(() => {
+function handleShowTitle(e: ShowTitleOption) {
+  // TODO 删除兼容代码
+  const isNew = typeof e === "object";
+  if (isNew) {
+    subTitleContent.value = e.subtitle;
+  }
+  proxyShowCoverTitle(titleEL, titleContent, isNew ? e.title : e as string).then(() => {
+    subTitleContent.value = "";
     eventBus.emit("titleDone");
   })
 }
@@ -456,7 +462,7 @@ function handleToBeContinued() {
       // })
   });
 }
-function handleNextEpisode(e: { title: string, text: string }) {
+function handleNextEpisode(e: ShowTitleOption) {
   showNextEpisodeLock = true;
   showNextEpisode.value = true;
   eventBus.emit("hidemenu");
@@ -494,7 +500,7 @@ function handleNextEpisode(e: { title: string, text: string }) {
           }
           const matrix = getComputedStyle(bottomChild).transform;
           if (Number(matrix.substring(matrix.lastIndexOf(",") + 2).replace(")","")) > 100) {
-            subTitleContent.value = e.text;
+            subTitleContent.value = e.subtitle;
             proxyShowCoverTitle(titleEL, titleContent, e.title, (el) => {
               const tl = gsap.timeline();
               tl.fromTo(el, {
