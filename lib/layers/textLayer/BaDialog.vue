@@ -1,8 +1,11 @@
 <template>
   <div class="container" :style="{ height: `${playerHeight}px` }">
     <div class="container-inner">
-      <div class="st-container" ref="stOutput" :style="{fontSize: `${standardFontSize}rem`}" />
-      <div class="title-container"
+      <div class="to-be-continue-bg absolute-container">
+        <div class="to-be-continue" :style="{fontSize: `${standardFontSize}rem`}">To Be Continue...</div>
+      </div>
+      <div class="st-container absolute-container" ref="stOutput" :style="{fontSize: `${standardFontSize}rem`}" />
+      <div class="title-container absolute-container"
            :class="{ 'fade-in-out': titleContent }"
            v-if="titleContent"
       >
@@ -45,13 +48,14 @@
 import {onMounted, ref, computed, Ref, nextTick, onUnmounted} from 'vue'
 import eventBus from "@/eventBus";
 import Typed, {TypedExtend, TypedOptions} from "typed.js";
-import {ShowOption, ShowText, StText} from "@/types/events";
+import {ShowOption, ShowText, StArgs, StText} from "@/types/events";
 import {Text, TextEffectName} from "@/types/common";
 import {deepCopyObject} from "@/utils";
 import { usePlayerStore } from '@/stores';
+import gsap from "gsap";
 
-const typewriterOutput = ref(); // 对话框el
-const stOutput = ref(); // st特效字el
+const typewriterOutput = ref<HTMLElement>(); // 对话框el
+const stOutput = ref<HTMLElement>(); // st特效字el
 // 外部传入播放器高度,用于动态计算字体等数值
 const props = withDefaults(defineProps<TextLayerProps>(), {playerHeight: 0, playerWidth: 0});
 // 标题
@@ -80,7 +84,7 @@ function moveToNext() {
       typingInstance.stop();
       typingInstance.destroy();
       setTypingComplete(true, typingInstance);
-      typewriterOutput.value.innerHTML = typingInstance.strings.pop()
+      typewriterOutput.value!.innerHTML = typingInstance.strings.pop() || ""
       eventBus.emit('textDone')
     }
   }
@@ -151,31 +155,69 @@ function handleShowStEvent(e: StText) {
     }
     // const unused = e.stArgs[3]; // 未知
     // 立即显示, 跳过打字机
-    if (stType === "instant") {
-      stOutput.value.innerHTML = parseTextEffect({
-        content: e.text.map(text => parseTextEffect(text).content).join(""),
-        effects: []
-      }, extendStyle, "div").content;
-      eventBus.emit("stDone");
-    } else if (stType === "serial") {
-      showTextDialog(
-        e.text.map(text => {
+    const fn = Reflect.get(StMap, stType);
+    if (fn) {
+      fn(e, extendStyle);
+    } else {
+      console.error(`st type handler: ${stType} not found!`);
+    }
+  })
+}
+
+/**
+ * 處理三種st特效的fn
+ */
+type StType = StArgs[1]
+type StMap = {
+  [key in StType]: (e: StText, parsedStyle: string) => void
+}
+const StMap: StMap = {
+  instant(e: StText, parsedStyle: string): void {
+    stOutput.value!.innerHTML = stOutput.value!.innerHTML + parseStInnerHtml(e, parsedStyle).content;
+    eventBus.emit("stDone");
+  },
+  serial(e: StText, parsedStyle: string): void {
+    showTextDialog(
+      e.text.map(text => {
         // 为啥要这样, 因为这个库在空字符时会删除当前的内容重新打印, 导致一句话出现两次的bug
         text.content = text.content || "&zwj;";
         return text;
       }).map(text => parseTextEffect(text)),
-        stOutput.value,
-        (content) => {
-        return `<div style="${extendStyle}">${content}</div>`
+      stOutput.value!,
+      (content) => {
+        return `<div style="${parsedStyle}">${content}</div>`
       }, {
-          typeSpeed: 10
-        }
-      ).then(() => {
-        eventBus.emit("stDone");
-      });
-      typingInstance.isSt = true;
-    }
-  })
+        typeSpeed: 10
+      }
+    ).then(() => {
+      eventBus.emit("stDone");
+    });
+    typingInstance.isSt = true;
+  },
+  smooth(e: StText, parsedStyle: string): void {
+    parsedStyle = parsedStyle + ";opacity: 0";
+    stOutput.value!.innerHTML = stOutput.value!.innerHTML + parseStInnerHtml(e, parsedStyle).content;
+    const el = stOutput.value!.children.item(stOutput.value!.children.length - 1);
+    const timeline = gsap.timeline();
+    timeline.to(el, {
+      opacity: 1,
+      duration: 1.5
+    }).then(() => {
+      eventBus.emit("stDone");
+    })
+  }
+}
+
+/**
+ * 處理st特效 instant和smooth
+ *
+ * 將e.text全部包裹在div中
+ */
+function parseStInnerHtml(e: StText, parsedStyle: string) {
+  return parseTextEffect({
+    content: e.text.map(text => parseTextEffect(text).content).join(""),
+    effects: []
+  }, parsedStyle, "div");
 }
 /**
  * 处理dialog对话事件
@@ -194,7 +236,7 @@ function handleShowTextEvent(e: ShowText) {
     typingInstance?.destroy();
     typingInstance && (typingInstance.isSt = false);
     // 显示
-    showTextDialog(e.text.map(text => parseTextEffect(text)), typewriterOutput.value).then(() => {
+    showTextDialog(e.text.map(text => parseTextEffect(text)), typewriterOutput.value!).then(() => {
       eventBus.emit("textDone");
     })
     typingInstance && (typingInstance.isSt = false);
@@ -235,6 +277,7 @@ function parseTextEffect(text: Text, extendStyle = "", tag = "span"): Text {
  * @param text 处理好的特效
  * @param output 输出到的dom
  * @param onParseContent 二次处理内容, 目前用于将st用div整体包裹实现定位
+ * @param override 覆蓋默認typing配置内容
  */
 function showTextDialog(text: Text[], output: HTMLElement, onParseContent?: (source: string) => string, override?: TypedOptions) {
   return new Promise<void>((resolve) => {
@@ -286,7 +329,7 @@ function showTextDialog(text: Text[], output: HTMLElement, onParseContent?: (sou
     }
     // st的续约, 因为不能两个Typed同时持有一个对象, 所以采用将之前的内容作为已打印内容拼接的形式
     if (typingInstance && typingInstance.isSt) {
-      lastStOutput = stOutput.value.innerHTML;
+      lastStOutput = stOutput.value!.innerHTML;
       setTypingComplete(false, typingInstance);
       typingInstance.pause.status = true;
       typingInstance.pause.typewrite = true;
@@ -312,6 +355,12 @@ function showTextDialog(text: Text[], output: HTMLElement, onParseContent?: (sou
   })
 }
 
+/**
+ * 處理hide和hideDialog事件
+ */
+function handleHideDialog() {
+  showDialog.value = false;
+}
 const fontSizeBounds = computed(() => (props.playerHeight / 1080));
 const stWidth = 3000;
 const stHeight = 1600;
@@ -323,7 +372,7 @@ function fontSize(multi: number) {
 }
 const standardFontSize = computed(() => fontSize(2.5));
 /**
- * 以64作为标准字体大小?
+ * 以64作为标准st字体大小?
  * @param size
  */
 function unityFontSizeToHTMLSize(size: number) {
@@ -362,8 +411,9 @@ onMounted(() => {
   eventBus.on('showText', handleShowTextEvent);
   eventBus.on('st', handleShowStEvent);
   eventBus.on('clearSt', handleClearSt);
-  eventBus.on("hide",()=>showDialog.value=false)
-  eventBus.on("click",moveToNext)
+  eventBus.on("hide",handleHideDialog);
+  eventBus.on("hideDialog",handleHideDialog);
+  eventBus.on("click",moveToNext);
 });
 onUnmounted(() => {
   eventBus.off("showTitle", handleShowTitle);
@@ -371,6 +421,9 @@ onUnmounted(() => {
   eventBus.off('showText', handleShowTextEvent);
   eventBus.off('st', handleShowStEvent);
   eventBus.off('clearSt', handleClearSt);
+  eventBus.off("hide",handleHideDialog);
+  eventBus.off("hideDialog",handleHideDialog);
+  eventBus.off("click",moveToNext);
 });
 // 暂时用不上了, 比如font-size还需要根据屏幕进行适配
 type StyleEffectTemplateMap = {
@@ -406,7 +459,10 @@ $dialog-z-index: 3;
 $place-z-index: 8;
 $title-z-index: 10;
 $select-z-index: 10;
+$image-video-z-index: 10;
+$to-be-continue-z-index: 10;
 $st-z-index: 10;
+$text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
 .name{
   font-size: 3.5rem;
   color : white;
@@ -478,12 +534,7 @@ $st-z-index: 10;
     position: relative;
   }
   .title-container {
-    width: 100%;
-    height: 100%;
     text-align: center;
-    position: absolute;
-    top: 0;
-    left: 0;
     opacity: 0;
     color: white;
     z-index: $text-layer-z-index + $title-z-index;
@@ -558,14 +609,9 @@ $st-z-index: 10;
     }
   }
   .st-container {
-    width: 100%;
-    height: 100%;
-    position: absolute;
-    top: 0;
-    left: 0;
     z-index: $text-layer-z-index + $st-z-index;
     color: white;
-    text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+    text-shadow: $text-outline;
   }
   .fade-in-out {
     animation: fade-in-out 3s;
@@ -584,5 +630,17 @@ $st-z-index: 10;
   100% {
     opacity: 0;
   }
+}
+.to-be-continue-bg {
+  z-index: $text-layer-z-index + $to-be-continue-z-index;
+  background: radial-gradient(#808080, #808080 30%,#545454 65%, #545454 100%);
+  text-shadow: $text-outline;
+}
+.absolute-container {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
 }
 </style>
