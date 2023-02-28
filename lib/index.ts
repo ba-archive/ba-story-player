@@ -571,6 +571,9 @@ export let eventEmitter = {
       eventBus.emit('popupVideo', storyHandler.currentStoryUnit.video.videoPath)
       eventBus.emit('playAudio', { soundUrl: storyHandler.currentStoryUnit.video.soundPath })
     }
+    else {
+      eventBus.emit('hidePopup')
+    }
   }
 }
 

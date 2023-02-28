@@ -143,6 +143,11 @@ export type Events = {
    */
   popupVideo: string
   /**
+   * 隐藏popup
+   */
+  hidePopup: undefined
+
+  /**
    * 显示未完待续
    */
   toBeContinue: undefined
