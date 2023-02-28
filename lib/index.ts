@@ -265,6 +265,8 @@ export let eventEmitter = {
   titleDone: true,
   textDone: true,
   stDone: true,
+  toBeContinueDone: true,
+  nextEpisodeDone: true,
   /** 当前l2d动画是否播放完成 */
   l2dAnimationDone: true,
   voiceJpPlaying: false,
@@ -319,6 +321,8 @@ export let eventEmitter = {
       }
       this.voiceJpPlaying = false
     })
+    eventBus.on('nextEpisodeDone', () => this.nextEpisodeDone = true)
+    eventBus.on('toBeContinueDone', () => this.toBeContinueDone = true)
 
     storyHandler.storyPlay()
   },
@@ -391,9 +395,11 @@ export let eventEmitter = {
       case 'effectOnly':
         break
       case 'continue':
+        this.toBeContinueDone = false
         eventBus.emit('toBeContinue')
         break
       case 'nextEpisode':
+        this.nextEpisodeDone = false
         if (currentStoryUnit.textAbout.titleInfo) {
           eventBus.emit('nextEpisode', currentStoryUnit.textAbout.titleInfo)
         }

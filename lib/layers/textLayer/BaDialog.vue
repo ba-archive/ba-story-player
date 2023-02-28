@@ -1,47 +1,31 @@
 <template>
   <div class="container" :style="{ height: `${playerHeight}px` }">
     <div class="container-inner">
-      <div
-        ref="nextEpisodeContainer"
-        class="next-episode-container absolute-container"
-        @click="endPlay"
-        v-if="showNextEpisode"
-      >
+      <div ref="nextEpisodeContainer" class="next-episode-container absolute-container" @click="endPlay"
+        v-if="showNextEpisode">
         <div class="next-episode-cover" />
         <div class="next-episode-cover" />
       </div>
       <div class="to-be-continued-container absolute-container" v-if="showToBeContinue">
-        <div ref="toBeContinuedBg0" class="to-be-continued-bg0"/>
-        <div ref="toBeContinuedBg1" class="to-be-continued-bg1"/>
-        <div ref="toBeContinuedText" class="to-be-continued" :style="{fontSize: `${standardFontSize}rem`}">To Be Continued...</div>
+        <div ref="toBeContinuedBg0" class="to-be-continued-bg0" />
+        <div ref="toBeContinuedBg1" class="to-be-continued-bg1" />
+        <div ref="toBeContinuedText" class="to-be-continued" :style="{ fontSize: `${standardFontSize}rem` }">To Be
+          Continued...</div>
       </div>
       <div class="image-video-container absolute-container" v-if="popupSrc.image || popupSrc.video">
         <div class="image-video-container-inner">
-          <div class="image-container absolute-container" :style="{ height: `${playerHeight - dialogHeight}px` }" v-if="popupSrc.image">
+          <div class="image-container absolute-container" :style="{ height: `${playerHeight - dialogHeight}px` }"
+            v-if="popupSrc.image">
             <img :src="popupSrc.image" alt="完了加载失败了" class="image" />
           </div>
-          <VideoBackground
-            :src="popupSrc.video"
-            objectFit="contain"
-            style="width: 100%; height: 100%"
-            v-if="popupSrc.video"
-            @ended="onPopupVideoEnd"
-          />
+          <VideoBackground :src="popupSrc.video" objectFit="contain" style="width: 100%; height: 100%"
+            v-if="popupSrc.video" @ended="onPopupVideoEnd" />
         </div>
       </div>
-      <div class="st-container absolute-container" ref="stOutput" :style="{fontSize: `${standardFontSize}rem`}" />
-      <div
-        ref="titleEL"
-        class="title-container absolute-container"
-        :style="overrideTitleStyle"
-        v-if="titleContent"
-      >
-        <div class="title-border" :style="{ '--side-padding': `${titleBorderPadding}px`}">
-          <div
-            ref="titleContain"
-            class="title-contain"
-            :style="{ '--font-size': `${fontSize(4)}rem`}"
-          >
+      <div class="st-container absolute-container" ref="stOutput" :style="{ fontSize: `${standardFontSize}rem` }" />
+      <div ref="titleEL" class="title-container absolute-container" :style="overrideTitleStyle" v-if="titleContent">
+        <div class="title-border" :style="{ '--side-padding': `${titleBorderPadding}px` }">
+          <div ref="titleContain" class="title-contain" :style="{ '--font-size': `${fontSize(4)}rem` }">
             <div class="sub-title" v-if="subTitleContent">
               <span class="sub-title-inner">{{ subTitleContent }}</span>
             </div>
@@ -49,27 +33,20 @@
           </div>
         </div>
       </div>
-      <div
-        ref="placeEL"
-        class="place-container"
-        :style="{ '--font-size': `${fontSize(2)}rem`}"
-        v-if="placeContent">
+      <div ref="placeEL" class="place-container" :style="{ '--font-size': `${fontSize(2)}rem` }" v-if="placeContent">
         <div class="round-place">
           <span class="place-content">{{ placeContent }}</span>
         </div>
       </div>
-      <div v-if="showDialog" :style="{padding: `0 ${fontSize(8)}rem ${fontSize(3)}rem`, height: `${dialogHeight}px`}"
-           class="dialog" >
+      <div v-if="showDialog" :style="{ padding: `0 ${fontSize(8)}rem ${fontSize(3)}rem`, height: `${dialogHeight}px` }"
+        class="dialog">
         <div class="inner-dialog">
           <div class="title">
-            <div :style="{fontSize: `${fontSize(3.5)}rem`}" class="name">{{ name ? name : '&emsp;' }}</div>
-            <div :style="{fontSize: `${fontSize(2)}rem`}" class="department">{{nickName}}</div>
+            <div :style="{ fontSize: `${fontSize(3.5)}rem` }" class="name">{{ name ? name : '&emsp;' }}</div>
+            <div :style="{ fontSize: `${fontSize(2)}rem` }" class="department">{{ nickName }}</div>
           </div>
           <hr>
-          <div
-            ref="typewriterOutput"
-            :style="{ '--font-size': `${standardFontSize}rem`}"
-            class="content" />
+          <div ref="typewriterOutput" :style="{ '--font-size': `${standardFontSize}rem` }" class="content" />
           <div class="next-image-btn" v-if="typingComplete">&zwj;</div>
         </div>
       </div>
@@ -78,12 +55,12 @@
 </template>
 
 <script setup lang="ts">
-import {onMounted, ref, computed, Ref, nextTick, onUnmounted, reactive} from 'vue'
+import { onMounted, ref, computed, Ref, nextTick, onUnmounted, reactive } from 'vue'
 import eventBus from "@/eventBus";
-import Typed, {TypedExtend, TypedOptions} from "typed.js";
-import {ShowOption, ShowText, ShowTitleOption, StArgs, StText} from "@/types/events";
-import {Text, TextEffectName} from "@/types/common";
-import {deepCopyObject} from "@/utils";
+import Typed, { TypedExtend, TypedOptions } from "typed.js";
+import { ShowOption, ShowText, ShowTitleOption, StArgs, StText } from "@/types/events";
+import { Text, TextEffectName } from "@/types/common";
+import { deepCopyObject } from "@/utils";
 import { usePlayerStore } from '@/stores';
 import gsap from "gsap";
 import VideoBackground from "vue-responsive-video-background-player";
@@ -100,7 +77,7 @@ const nextEpisodeContainer = ref<HTMLElement>(); // 下一章的el
 const titleContain = ref<HTMLElement>(); // 标题内容的el, 为了实现scale效果
 const overrideTitleZIndex = ref<number>();
 // 外部传入播放器高度,用于动态计算字体等数值
-const props = withDefaults(defineProps<TextLayerProps>(), {playerHeight: 0, playerWidth: 0});
+const props = withDefaults(defineProps<TextLayerProps>(), { playerHeight: 0, playerWidth: 0 });
 // 标题
 const titleContent = ref<string>("");
 // 副标题
@@ -276,8 +253,8 @@ const StMap: StMap = {
       (content) => {
         return `<div style="${parsedStyle}">${content}</div>`
       }, {
-        typeSpeed: 10
-      }
+      typeSpeed: 10
+    }
     ).then(() => {
       eventBus.emit("stDone");
     });
@@ -341,7 +318,7 @@ function handleShowTextEvent(e: ShowText) {
 function parseTextEffect(text: Text, extendStyle = "", tag = "span"): Text {
   const effects = text.effects;
   // 注解
-  const rt = (effects.filter(effect => effect.name === "ruby")[0] || {value: []}).value.join("")
+  const rt = (effects.filter(effect => effect.name === "ruby")[0] || { value: [] }).value.join("")
   const style = effects.filter(effect => effect.name !== "ruby").map(effect => {
     const value = effect.value.join("");
     const name = effect.name;
@@ -479,10 +456,10 @@ function handleToBeContinued() {
       .to(toBeContinuedText.value!, {
         opacity: 0,
         duration: 0.6
-      }, "+=1.2")
-      // .then(() => {
-      //   handleNextEpisode({ title: "次回", text: "测试次回" });
-      // })
+      }, "+=1.2").then(() => eventBus.emit('toBeContinueDone'))
+    // .then(() => {
+    //   handleNextEpisode({ title: "次回", text: "测试次回" });
+    // })
   });
 }
 
@@ -511,12 +488,12 @@ function handleNextEpisode(e: ShowTitleOption) {
         onComplete() {
           showToBeContinue.value = false;
         }
-    }, "<")
+      }, "<")
       .to(topChild, {
         translateY: "-100%",
         duration: 0.5,
         ease: "power4.in"
-    })
+      })
       .to(bottomChild, {
         translateY: "100%",
         duration: 0.5,
@@ -526,7 +503,7 @@ function handleNextEpisode(e: ShowTitleOption) {
             return;
           }
           const matrix = getComputedStyle(bottomChild).transform;
-          if (Number(matrix.substring(matrix.lastIndexOf(",") + 2).replace(")","")) > 100) {
+          if (Number(matrix.substring(matrix.lastIndexOf(",") + 2).replace(")", "")) > 100) {
             subTitleContent.value = e.subtitle;
             proxyShowCoverTitle(titleEL, titleContent, e.title, (el) => {
               const tl = gsap.timeline();
@@ -540,7 +517,7 @@ function handleNextEpisode(e: ShowTitleOption) {
             flag = true;
           }
         }
-    }, "<");
+      }, "<").then(() => { eventBus.emit('nextEpisodeDone') });
   });
 }
 function handlePopupImage(url: string) {
@@ -617,7 +594,7 @@ onMounted(() => {
   eventBus.on('showText', handleShowTextEvent);
   eventBus.on('st', handleShowStEvent);
   eventBus.on('clearSt', handleClearSt);
-  eventBus.on("hide",handleHideDialog);
+  eventBus.on("hide", handleHideDialog);
   eventBus.on("hideDialog", handleHideDialog);
   eventBus.on("click", moveToNext);
   eventBus.on("toBeContinue", handleToBeContinued);
@@ -632,7 +609,7 @@ onUnmounted(() => {
   eventBus.off('st', handleShowStEvent);
   eventBus.off('clearSt', handleClearSt);
   eventBus.off("hide", handleHideDialog);
-  eventBus.off("hideDialog",handleHideDialog);
+  eventBus.off("hideDialog", handleHideDialog);
   eventBus.off("click", moveToNext);
   eventBus.off("toBeContinue", handleToBeContinued);
   eventBus.off("nextEpisode", handleNextEpisode);
@@ -664,10 +641,11 @@ type TextLayerProps = {
 }
 </script>
 <style scoped lang="scss">
-@font-face{
+@font-face {
   font-family: 'TJL';
-  src : url('https://yuuka.cdn.diyigemt.com/image/ba-all-data/assets/ResourceHanRoundedCN-Medium.ttf');
+  src: url('https://yuuka.cdn.diyigemt.com/image/ba-all-data/assets/ResourceHanRoundedCN-Medium.ttf');
 }
+
 $border-radius: 5px;
 $dialog-z-index: 3;
 $place-z-index: 8;
@@ -678,37 +656,40 @@ $to-be-continue-z-index: 200;
 $next-episode-z-index: 201;
 $st-z-index: 10;
 $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
-.name{
+
+.name {
   font-size: 3.5rem;
-  color : white;
+  color: white;
   align-self: flex-end;
 }
 
-.department{
+.department {
   margin-left: 1rem;
   font-size: 2.5rem;
-  color : rgb(156,218,240);
+  color: rgb(156, 218, 240);
 }
 
-.title{
+.title {
   display: flex;
   align-items: flex-end;
 }
 
-.dialog{
+.dialog {
   width: 100%;
   padding: 3rem 8rem;
   box-sizing: border-box;
-  background-image: linear-gradient(to bottom , rgba(255,0,0,0) , rgba(19,32,45,0.9) 30%);
+  background-image: linear-gradient(to bottom, rgba(255, 0, 0, 0), rgba(19, 32, 45, 0.9) 30%);
   position: absolute;
   bottom: 0;
   z-index: $text-layer-z-index + $dialog-z-index;
   white-space: pre-line;
+
   .inner-dialog {
     width: 100%;
     height: 100%;
     position: relative;
   }
+
   .next-image-btn {
     $size: 10px;
     position: absolute;
@@ -720,32 +701,44 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
     background-size: $size $size;
     animation: next-btn .6s linear alternate infinite;
   }
+
   @keyframes next-btn {
-    0%   {transform: translateY(0)}
-    40%  {transform: translateY(10%)}
-    100% {transform: translateY(50%)}
+    0% {
+      transform: translateY(0)
+    }
+
+    40% {
+      transform: translateY(10%)
+    }
+
+    100% {
+      transform: translateY(50%)
+    }
   }
 }
 
-.content{
+.content {
   --font-size: 2rem;
   margin-top: 1.5rem;
-  color : white;
+  color: white;
   font-size: var(--font-size);
   line-height: 1.5em;
 }
+
 .container {
-  font-family: 'TJL','Microsoft YaHei', 'PingFang SC', -apple-system, system-ui,
+  font-family: 'TJL', 'Microsoft YaHei', 'PingFang SC', -apple-system, system-ui,
     'Segoe UI', Roboto, Ubuntu, Cantarell, 'Noto Sans', BlinkMacSystemFont,
     'Helvetica Neue', 'Hiragino Sans GB', Arial, sans-serif;
   position: absolute;
   user-select: none;
   overflow: hidden;
+
   .container-inner {
     width: 100%;
     height: 100%;
     position: relative;
   }
+
   .title-container {
     text-align: center;
     opacity: 0;
@@ -753,6 +746,7 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
     z-index: $text-layer-z-index + $title-z-index;
     $padding: 10px;
     padding: $padding;
+
     .title-border {
       --side-padding: 0px;
       width: calc(100% - 2 * #{$padding} - 2 * var(--side-padding));
@@ -764,6 +758,7 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
       justify-content: center;
       line-height: 1;
       padding: 0 var(--side-padding);
+
       .title-contain {
         --font-size: 2rem;
         line-height: 1;
@@ -772,27 +767,28 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
         font-weight: 700;
         padding: var(--font-size) 0;
         width: 100%;
-        background: linear-gradient(
-            58deg,
+        background: linear-gradient(58deg,
             rgba(240, 240, 240, 0.1) 0%,
             rgba(240, 240, 240, 1) 38%,
-            rgba(240, 240, 240, 0.1) 100%
-        ), url("./assets/poli-light.png") rgb(164 216 237) no-repeat 0 30%;
+            rgba(240, 240, 240, 0.1) 100%), url("./assets/poli-light.png") rgb(164 216 237) no-repeat 0 30%;
+
         .sub-title {
           font-size: calc(var(--font-size) * 0.6);
           margin-bottom: calc(var(--font-size) * 0.5);
+
           .sub-title-inner {
             padding: 0 5px;
-            background: linear-gradient(0deg, #f6ed7e 0%, #F6ED7D 13%, transparent 13%) 0 calc(var(--font-size) *
-            -0.12);
+            background: linear-gradient(0deg, #f6ed7e 0%, #F6ED7D 13%, transparent 13%) 0 calc(var(--font-size) * -0.12);
           }
         }
+
         .main-title {
           color: #4a609a;
         }
       }
     }
   }
+
   .place-container {
     --font-size: 1rem;
     position: absolute;
@@ -801,32 +797,36 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
     top: 10%;
     color: white;
     z-index: $text-layer-z-index + $place-z-index;
+
     .round-place {
       position: relative;
       line-height: var(--font-size);
       padding: calc(var(--font-size) / 2) 3rem calc(var(--font-size) / 2) 1rem;
+
       &:after {
         content: '';
         width: 100%;
         height: 100%;
         top: 0;
         left: -20px;
-        background-color: rgba(44,65,92,0.7);
+        background-color: rgba(44, 65, 92, 0.7);
         transform: skewX(-20deg);
         border-radius: 0 10px 10px 0;
         position: absolute;
         z-index: -1;
       }
+
       .place-content {
         padding-left: 10px;
         color: white;
         font-style: var(--font-size);
+
         &:after {
           content: '';
           width: 3px;
           display: block;
           height: var(--font-size);
-          background-color: rgba(255,255,255,0.3);
+          background-color: rgba(255, 255, 255, 0.3);
           position: absolute;
           top: 0;
           transform: translateY(50%);
@@ -834,60 +834,76 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
       }
     }
   }
+
   .st-container {
     z-index: $text-layer-z-index + $st-z-index;
     color: white;
     text-shadow: $text-outline;
   }
+
   .fade-in-out {
     animation: fade-in-out 3s;
   }
 }
+
 @keyframes fade-in-out {
   0% {
     opacity: 0;
   }
+
   25% {
     opacity: 1;
   }
+
   75% {
     opacity: 1;
   }
+
   100% {
     opacity: 0;
   }
 }
+
 .next-episode-container {
   pointer-events: none;
   z-index: $text-layer-z-index + $next-episode-z-index;
+
   .next-episode-cover {
     display: block;
     height: 50%;
     width: 100%;
     background-color: black;
+
     &:first-child {
       transform: translateY(-100%);
     }
+
     &:last-child {
       transform: translateY(100%);
     }
   }
 }
+
 .to-be-continued-container {
   pointer-events: none;
   z-index: $text-layer-z-index + $to-be-continue-z-index;
-  .to-be-continued-bg0, .to-be-continued-bg1 {
+
+  .to-be-continued-bg0,
+  .to-be-continued-bg1 {
     width: 100%;
     height: 100%;
     opacity: 0;
   }
+
   .to-be-continued-bg0 {
     background: #545454;
   }
+
   .to-be-continued-bg1 {
     transform: translateY(-100%);
-    background: radial-gradient(#808080, #808080 30%,#545454 65%, #545454 100%);
+    background: radial-gradient(#808080, #808080 30%, #545454 65%, #545454 100%);
   }
+
   .to-be-continued {
     position: absolute;
     color: white;
@@ -900,15 +916,18 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
 
 .image-video-container {
   z-index: $text-layer-z-index + $image-video-z-index;
+
   .image-video-container-inner {
     width: 100%;
     height: 100%;
     position: relative;
+
     .image-container {
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
+
       .image {
         object-fit: contain;
         height: 70%;

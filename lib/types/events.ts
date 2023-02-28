@@ -146,10 +146,12 @@ export type Events = {
    * 显示未完待续
    */
   toBeContinue: undefined
+  toBeContinueDone: undefined
   /**
    * 显示下章节
    */
   nextEpisode: ShowTitleOption
+  nextEpisodeDone: undefined
 
   //L2D层
   /**
