@@ -15,6 +15,20 @@
         <div ref="toBeContinuedBg1" class="to-be-continued-bg1"/>
         <div ref="toBeContinuedText" class="to-be-continued" :style="{fontSize: `${standardFontSize}rem`}">To Be Continued...</div>
       </div>
+      <div class="image-video-container absolute-container" v-if="popupSrc.image || popupSrc.video">
+        <div class="image-video-container-inner">
+          <div class="image-container absolute-container" :style="{ height: `${playerHeight - dialogHeight}px` }" v-if="popupSrc.image">
+            <img :src="popupSrc.image" alt="完了加载失败了" class="image" />
+          </div>
+          <VideoBackground
+            :src="popupSrc.video"
+            objectFit="contain"
+            style="width: 100%; height: 100%"
+            v-if="popupSrc.video"
+            @ended="onPopupVideoEnd"
+          />
+        </div>
+      </div>
       <div class="st-container absolute-container" ref="stOutput" :style="{fontSize: `${standardFontSize}rem`}" />
       <div
         ref="titleEL"
@@ -64,7 +78,7 @@
 </template>
 
 <script setup lang="ts">
-import {onMounted, ref, computed, Ref, nextTick, onUnmounted} from 'vue'
+import {onMounted, ref, computed, Ref, nextTick, onUnmounted, reactive} from 'vue'
 import eventBus from "@/eventBus";
 import Typed, {TypedExtend, TypedOptions} from "typed.js";
 import {ShowOption, ShowText, ShowTitleOption, StArgs, StText} from "@/types/events";
@@ -72,6 +86,8 @@ import {Text, TextEffectName} from "@/types/common";
 import {deepCopyObject} from "@/utils";
 import { usePlayerStore } from '@/stores';
 import gsap from "gsap";
+import VideoBackground from "vue-responsive-video-background-player";
+
 
 const typewriterOutput = ref<HTMLElement>(); // 对话框el
 const stOutput = ref<HTMLElement>(); // st特效字el
@@ -101,6 +117,12 @@ const showDialog = ref<boolean>(false);
 const showToBeContinue = ref<boolean>(false);
 // 显示next episode
 const showNextEpisode = ref<boolean>(false);
+const popupSrc = reactive({
+  // image: "https://yuuka.diyigemt.com/image/full-extra/output/media/UIs/03_Scenario/04_ScenarioImage/popup49.png",
+  // video: "https://yuuka.diyigemt.com/image/full-extra/output/media/Video/pv-v.mp4"
+  image: "",
+  video: ""
+})
 let showNextEpisodeLock = false;
 // 打印完成
 const typingComplete = ref<boolean>(false);
@@ -433,6 +455,7 @@ function handleHideDialog() {
  * 处理 to be continued 效果
  */
 function handleToBeContinued() {
+  hideMenu();
   showToBeContinue.value = true;
   nextTick(() => {
     const style = getComputedStyle(toBeContinuedText.value!);
@@ -462,10 +485,14 @@ function handleToBeContinued() {
       // })
   });
 }
+
+/**
+ * 显示下一章标题
+ */
 function handleNextEpisode(e: ShowTitleOption) {
   showNextEpisodeLock = true;
   showNextEpisode.value = true;
-  eventBus.emit("hidemenu");
+  hideMenu();
   nextTick(() => {
     const container = nextEpisodeContainer.value!;
     const topChild = container.children[0];
@@ -516,6 +543,22 @@ function handleNextEpisode(e: ShowTitleOption) {
     }, "<");
   });
 }
+function handlePopupImage(url: string) {
+  popupSrc.image = url;
+}
+function handlePopupVideo(url: string) {
+  hideMenu();
+  popupSrc.video = url;
+}
+function onPopupVideoEnd() {
+  console.log("video end");
+}
+function hideMenu() {
+  eventBus.emit("hidemenu");
+}
+function showMenu() {
+  eventBus.emit("showmenu");
+}
 const fontSizeBounds = computed(() => (props.playerHeight / 1080));
 const stWidth = 3000;
 const stHeight = 1600;
@@ -560,7 +603,7 @@ const overrideTitleStyle = computed(() => {
   return {};
 });
 // 文本框总高度
-const dialogHeight = computed(() => props.playerHeight / 2);
+const dialogHeight = computed(() => props.playerHeight * 0.4);
 // 选择框位置
 const standardDialogHeight = 550;
 const standardDialogTopOffset = 100;
@@ -579,6 +622,8 @@ onMounted(() => {
   eventBus.on("click", moveToNext);
   eventBus.on("toBeContinue", handleToBeContinued);
   eventBus.on("nextEpisode", handleNextEpisode);
+  eventBus.on("popupImage", handlePopupImage);
+  eventBus.on("popupVideo", handlePopupVideo);
 });
 onUnmounted(() => {
   eventBus.off("showTitle", handleShowTitle);
@@ -591,6 +636,8 @@ onUnmounted(() => {
   eventBus.off("click", moveToNext);
   eventBus.off("toBeContinue", handleToBeContinued);
   eventBus.off("nextEpisode", handleNextEpisode);
+  eventBus.off("popupImage", handlePopupImage);
+  eventBus.off("popupVideo", handlePopupVideo);
 });
 // 暂时用不上了, 比如font-size还需要根据屏幕进行适配
 type StyleEffectTemplateMap = {
@@ -848,6 +895,26 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
     right: -150px;
     bottom: 20px;
     opacity: 0;
+  }
+}
+
+.image-video-container {
+  z-index: $text-layer-z-index + $image-video-z-index;
+  .image-video-container-inner {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    .image-container {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      .image {
+        object-fit: contain;
+        height: 70%;
+        transform: translateY(10%);
+      }
+    }
   }
 }
 
