@@ -252,5 +252,5 @@ export interface PlayEffect {
 
 export interface ShowTitleOption {
   title: string;
-  subtitle: string;
+  subtitle?: string;
 }

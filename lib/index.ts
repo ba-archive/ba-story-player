@@ -345,8 +345,11 @@ export let eventEmitter = {
     switch (currentStoryUnit.type) {
       case 'title':
         this.titleDone = false
-        if (currentStoryUnit.textAbout.word) {
-          eventBus.emit('showTitle', currentStoryUnit.textAbout.word)
+        if (currentStoryUnit.textAbout.titleInfo) {
+          eventBus.emit('showTitle', currentStoryUnit.textAbout.titleInfo)
+        }
+        else {
+          throw new Error('没有标题信息提供')
         }
         break
       case 'place':
@@ -387,9 +390,17 @@ export let eventEmitter = {
         break
       case 'effectOnly':
         break
-      //to do
-      // case 'continue':
-      //   break
+      case 'continue':
+        eventBus.emit('toBeContinue')
+        break
+      case 'nextEpisode':
+        if (currentStoryUnit.textAbout.titleInfo) {
+          eventBus.emit('nextEpisode', currentStoryUnit.textAbout.titleInfo)
+        }
+        else {
+          throw new Error('没有标题信息提供')
+        }
+        break
       default:
         console.log(`本体中尚未处理${currentStoryUnit.type}类型故事节点`)
     }

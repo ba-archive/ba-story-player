@@ -1,7 +1,7 @@
 import { Speaker, StoryRawUnit, StoryUnit, Text, TextEffect } from "@/types/common"
 import { usePlayerStore } from '@/stores/index'
 import { Language } from "@/types/store"
-import { PlayAudio } from "@/types/events"
+import { PlayAudio, ShowTitleOption } from "@/types/events"
 import { getResourcesUrl } from '@/utils'
 import xxhash from 'xxhashjs'
 import { CharacterNameExcelTableItem } from "@/types/excels"
@@ -211,5 +211,20 @@ export function getText(rawStoryUnit: StoryRawUnit, language: Language): string 
   }
   else {
     return String(rawStoryUnit.TextJp)
+  }
+}
+
+export function generateTitleInfo(rawStoryUnit: StoryRawUnit, language: Language): ShowTitleOption {
+  const text = getText(rawStoryUnit, language)
+  const spiltedText = text.split(';')
+  if (spiltedText.length === 1) {
+    return {
+      title: text
+    }
+  } else {
+    return {
+      title: spiltedText[1],
+      subtitle: spiltedText[0]
+    }
   }
 }

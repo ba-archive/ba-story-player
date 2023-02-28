@@ -114,8 +114,15 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
       switch (scriptType) {
         case '#title':
           unit.type = 'title'
-          unit.textAbout.word = utils.generateText(rawStoryUnit)[0].content
+          unit.textAbout.titleInfo = utils.generateTitleInfo(rawStoryUnit, usePlayerStore().language)
           break;
+        case '#nextepisode':
+          unit.type = 'nextEpisode'
+          unit.textAbout.titleInfo = utils.generateTitleInfo(rawStoryUnit, usePlayerStore().language)
+          break
+        case '#continued':
+          unit.type = 'continue'
+          break
         case '#place':
           unit.type = 'place'
           unit.textAbout.word = utils.generateText(rawStoryUnit)[0].content
