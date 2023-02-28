@@ -44,9 +44,9 @@
           <span class="place-content">{{ placeContent }}</span>
         </div>
       </div>
-      <div v-if="showDialog" :style="{padding: `${fontSize(3)}rem ${fontSize(8)}rem`, height: `${dialogHeight}px`}"
+      <div v-if="showDialog" :style="{padding: `0 ${fontSize(8)}rem ${fontSize(3)}rem`, height: `${dialogHeight}px`}"
            class="dialog" >
-        <div class="inner-dialog" :style="{'--height-padding': `${fontSize(3)}rem`}">
+        <div class="inner-dialog">
           <div class="title">
             <div :style="{fontSize: `${fontSize(3.5)}rem`}" class="name">{{ name ? name : '&emsp;' }}</div>
             <div :style="{fontSize: `${fontSize(2)}rem`}" class="department">{{nickName}}</div>
@@ -638,7 +638,7 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
 }
 
 .department{
-  margin-left: 2rem;
+  margin-left: 1rem;
   font-size: 2.5rem;
   color : rgb(156,218,240);
 }
@@ -646,7 +646,6 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
 .title{
   display: flex;
   align-items: flex-end;
-  margin-top: 2rem;
 }
 
 .dialog{
@@ -659,9 +658,8 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
   z-index: $text-layer-z-index + $dialog-z-index;
   white-space: pre-line;
   .inner-dialog {
-    --height-padding: 0rem;
     width: 100%;
-    height: calc(100% - var(--height-padding));
+    height: 100%;
     position: relative;
   }
   .next-image-btn {
