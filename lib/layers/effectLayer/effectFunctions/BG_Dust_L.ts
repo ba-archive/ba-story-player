@@ -6,7 +6,7 @@ import {
   emitterContainer,
   emitterStarter,
 } from "../emitterUtils";
-import { loadSpriteSheet, sprite2TransParent } from "../resourcesUtils";
+import { getEmitterType, loadSpriteSheet, sprite2TransParent } from "../resourcesUtils";
 
 export default async function BG_Dust_L(resources: Sprite[]) {
   // 原理是三个平铺图片不断移动, 加上火光粒子效果
@@ -29,9 +29,9 @@ export default async function BG_Dust_L(resources: Sprite[]) {
   const smokeTextureTilingR1 = new TilingSprite(smokeTexture);
   // 算出一个当前渲染中最长的长度
   const smokeWidth = Math.sqrt(appWidth * appWidth + appHeight * appHeight);
-  // 高度应该是当前分切图片的高度, 暂时没法确定, 先魔法数
-  const smokeHeight = 200;
-  const scale = appHeight / smokeHeight / 2; // 这个2是随便定的
+  // 高度应该是当前分切图片的高度
+  const smokeHeight = smokeTexture.height;
+  const scale = appHeight / smokeHeight * 0.6;
   [smokeTextureTilingL, smokeTextureTilingR, smokeTextureTilingR1].forEach(
     (i) => {
       // 避免 tiling 产生的像素
@@ -46,15 +46,15 @@ export default async function BG_Dust_L(resources: Sprite[]) {
   );
   smokeTextureTilingL.x = -(appWidth * 0.01);
   smokeTextureTilingL.y = appHeight - smokeHeight * scale;
-  smokeTextureTilingR.rotation = -0.3;
   // 放大, 避免下方出现空隙
-  smokeTextureTilingR.scale.set(1.2*scale);
-  smokeTextureTilingR.x = appWidth / 2;
-  smokeTextureTilingR.y = appHeight - (appHeight * 0.01);
+  smokeTextureTilingR.rotation = -0.35;
+  smokeTextureTilingR.scale.set(1.2 * scale);
+  smokeTextureTilingR.x = appWidth / 2 - appWidth * 0.08;
+  smokeTextureTilingR.y = appHeight - appHeight * 0.08;
   // 角度高一点, 错乱一点, 避免和 R 一致, R1 是后边的图, 并且R1要在人物层之后
   smokeTextureTilingR1.rotation = -0.75;
   smokeTextureTilingR1.zIndex = -1;
-  smokeTextureTilingR1.x = appWidth / 2 - 50;
+  smokeTextureTilingR1.x = appWidth / 2 - appWidth * 0.05;
   smokeTextureTilingR1.y = appHeight - appHeight * 0.02;
   let smokeRemover = emitterStarter({
     update: () => {
@@ -95,6 +95,14 @@ export default async function BG_Dust_L(resources: Sprite[]) {
   );
   // 塞入随机 texture 中
   fireConfig.behaviors[2].config.textures.push(...fireTextures);
+  const baseRatio = (0.05 * appWidth) / fireTextures[0].width;
+  const scaleConfig = getEmitterType(fireConfig, "scale").config
+  scaleConfig.scale.list[0].value = baseRatio
+  scaleConfig.scale.list[1].value = baseRatio * 0.8
+  scaleConfig.scale.list[2].value = baseRatio
+  const speedConfig = getEmitterType(fireConfig, "moveSpeedStatic").config
+  speedConfig.min = appHeight * 0.4
+  speedConfig.max = appHeight * 0.65
   let fireEmitter = new Emitter(fireContainer, fireConfig);
   setTimeout(() => {
     fireEmitter.maxParticles = 15;

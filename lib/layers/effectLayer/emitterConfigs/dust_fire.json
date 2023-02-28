@@ -3,8 +3,8 @@
     "min": 4,
     "max": 8
   },
-  "frequency": 0.05,
-  "maxParticles": 5,
+  "frequency": 0.1,
+  "maxParticles": 10,
   "addAtBack": false,
   "pos": {
     "x": 0,
@@ -64,8 +64,8 @@
     {
       "type": "moveSpeedStatic",
       "config": {
-        "min": 200,
-        "max": 250
+        "min": 300,
+        "max": 350
       }
     },
     {
