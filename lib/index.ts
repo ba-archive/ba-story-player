@@ -618,6 +618,8 @@ export let resourcesLoader = {
       }
       //添加背景图片
       this.checkAndAdd(unit.bg, 'url')
+      //添加popupImage
+      this.checkAndAdd(unit.PopupFileName)
 
       //添加l2d spine资源
       this.checkAndAdd(unit.l2d, 'spineUrl')
