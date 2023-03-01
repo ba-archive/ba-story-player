@@ -104,16 +104,18 @@ void function(win) {
 
 	function refreshRem() {
 		var width = docEl.getBoundingClientRect().width;
-		if (width > 1600) { // 最大宽度
+		if (width >= 1600) { // 最大宽度
       docEl.style.fontSize = 16 + 'px';
-		} else if (width < 1600 && width > 1000) {
+		} else if (width < 1600 && width >= 1400) {
+      docEl.style.fontSize = 14 + 'px';
+    } else if (width < 1400 && width >= 1200) {
       docEl.style.fontSize = 12 + 'px';
-    } else if (width < 1000 && width > 800) {
+    } else if (width < 1200 && width >= 1000) {
       docEl.style.fontSize = 10 + 'px';
-    } else if (width < 800 && width > 600) {
-      docEl.style.fontSize = 9 + 'px';
-    } else if (width < 600 && width > 300) {
+    } else if (width < 1000 && width >= 800) {
       docEl.style.fontSize = 8 + 'px';
+    } else if (width < 800 && width >= 600) {
+      docEl.style.fontSize = 6 + 'px';
     } else {
       docEl.style.fontSize = 6 + 'px';
     }
