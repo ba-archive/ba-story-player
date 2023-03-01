@@ -153,7 +153,8 @@ const handleBtnMenuDebounced = debounce(handleBtnMenu, 200);
     <BaSelector id="ba-story-selector" :selection="selectOptions" @select="handleBaSelector"
       v-if="selectOptions.length !== 0" />
 
-    <BaDialog id="ba-story-summery" :title="'概要'" :show="!hiddenSummary" @close="hiddenSummary = true" width="min(520px, 70%)">
+    <BaDialog id="ba-story-summery" :title="'概要'" :show="!hiddenSummary" @close="hiddenSummary = true"
+      width="min(520px, 70%)" height="min(400px,85%)">
       <div class="ba-story-summery-container">
         <h4 class="ba-story-summery-title">{{ storySummary.chapterName }}</h4>
         <p class="ba-story-summery-text">
@@ -303,7 +304,7 @@ const handleBtnMenuDebounced = debounce(handleBtnMenu, 200);
       border: solid #d1d7dc 2px;
       margin: 0 1rem;
       border-radius: 0.25rem;
-      overflow: hidden;
+      overflow-y: auto;
       padding: 0.3125rem 0.4375rem;
       background-color: #f0f0f0;
     }
