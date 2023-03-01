@@ -45,8 +45,8 @@ Reflect.set(window, 'next', () => {
   eventBus.emit('next')
 })
 
-let width = ref(1000)
-const height = ref(550)
+let width = ref(500)
+const height = ref(275)
 
 const currentStoryIndex = ref(0)
 const indexCacheKey = 'storyIndex'
@@ -94,6 +94,38 @@ function changeJSON() {
   localStorage.setItem(storyCacheKey, storyJsonName.value)
   location.reload()
 }
+
+
+//字体适配
+void function(win) {
+	const doc = win.document;
+	const docEl = doc.documentElement;
+	let tid: NodeJS.Timeout;
+
+	function refreshRem() {
+		var width = docEl.getBoundingClientRect().width;
+		if (width > 1600) { // 最大宽度
+      docEl.style.fontSize = 16 + 'px';
+		} else if (width < 1600 && width > 1000) {
+      docEl.style.fontSize = 12 + 'px';
+    } else if (width < 1000 && width > 800) {
+      docEl.style.fontSize = 10 + 'px';
+    } else if (width < 800 && width > 600) {
+      docEl.style.fontSize = 9 + 'px';
+    } else if (width < 600 && width > 300) {
+      docEl.style.fontSize = 8 + 'px';
+    } else {
+      docEl.style.fontSize = 6 + 'px';
+    }
+	}
+
+	win.addEventListener('resize', function() {
+		clearTimeout(tid);
+		tid = setTimeout(refreshRem, 10);
+	}, false);
+	refreshRem();
+}(window);
+
 </script>
 
 <template>

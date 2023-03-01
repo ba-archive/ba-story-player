@@ -93,7 +93,7 @@ switch (props.chatMessage?.type) {
       height: 0;
     }
     .ba-chat-message-bubble {
-      margin: 8px 28px 4px 0;
+      margin: 0.5rem 1.75rem 0.25rem 0;
       .ba-chat-message-bubble-name-bg {
         background-color: #426487;
         visibility: hidden;
@@ -121,11 +121,11 @@ switch (props.chatMessage?.type) {
   }
   .ba-chat-message-avatar-border {
     position: relative;
-    height: 75px;
-    width: 80px;
-    margin: 16px 16px;
+    height: 4.6875rem;
+    width: 5rem;
+    margin: 1rem 1rem;
     border: solid #fff 1.3px;
-    border-radius: 16px;
+    border-radius: 1rem;
     overflow: hidden;
     transform: skewX(-10deg);
     transform-origin: center;
@@ -145,7 +145,7 @@ switch (props.chatMessage?.type) {
   }
   .ba-chat-message-bubble {
     position: relative;
-    margin: 8px 24px 4px 0;
+    margin: 0.5rem 1.5rem 0.25rem 0;
     flex: 1;
 
     .ba-chat-message-bubble-name-bg {
@@ -156,16 +156,16 @@ switch (props.chatMessage?.type) {
       bottom: 0;
       transform: skewX(-10deg);
       z-index: -2;
-      border-radius: 5px;
+      border-radius: 0.3125rem;
 
       .ba-chat-message-bubble-text-bg {
         position: absolute;
-        top: 31.2px;
+        top: 1.95rem;
         left: 0;
         right: 0;
         bottom: 0;
         z-index: -1;
-        border-radius: 5px;
+        border-radius: 0.3125rem;
       }
     }
     // 小箭头
@@ -179,19 +179,19 @@ switch (props.chatMessage?.type) {
 
       border-color: transparent #f5f5f5 transparent transparent;
       z-index: -3;
-      top: 31.2px;
+      top: 1.95rem;
       left: 0;
     }
 
     .ba-chat-message-name {
-      min-height: 23.4px;
-      margin: 4px 24px;
+      min-height: 1.4625rem;
+      margin: 0.25rem 1.25rem;
     }
 
     .ba-chat-message-text {
-      font-size: 15px;
-      margin: 8px 24px;
-      min-height: 80px;
+      font-size: 0.9375rem;
+      margin: 0.5rem 1.5rem;
+      min-height: 5rem;
     }
   }
 }
