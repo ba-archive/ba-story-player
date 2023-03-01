@@ -18,7 +18,7 @@
             v-if="popupSrc.image">
             <img :src="popupSrc.image" alt="完了加载失败了" class="image" />
           </div>
-          <VideoBackground :src="popupSrc.video" objectFit="contain" style="width: 100%; height: 100%"
+          <VideoBackground ref="videoComponent" :src="popupSrc.video" objectFit="contain" style="width: 100%; height: 100%"
             v-if="popupSrc.video" @ended="onPopupVideoEnd" />
         </div>
       </div>
@@ -58,7 +58,7 @@
 import { onMounted, ref, computed, Ref, nextTick, onUnmounted, reactive } from 'vue'
 import eventBus from "@/eventBus";
 import Typed, { TypedExtend, TypedOptions } from "typed.js";
-import { ShowOption, ShowText, ShowTitleOption, StArgs, StText } from "@/types/events";
+import { ShowText, ShowTitleOption, StArgs, StText } from "@/types/events";
 import { Text, TextEffectName } from "@/types/common";
 import { deepCopyObject } from "@/utils";
 import { usePlayerStore } from '@/stores';
@@ -76,6 +76,7 @@ const placeEL = ref<HTMLElement>(); // place的el
 const nextEpisodeContainer = ref<HTMLElement>(); // 下一章的el
 const titleContain = ref<HTMLElement>(); // 标题内容的el, 为了实现scale效果
 const overrideTitleZIndex = ref<number>();
+const videoComponent = ref();
 // 外部传入播放器高度,用于动态计算字体等数值
 const props = withDefaults(defineProps<TextLayerProps>(), { playerHeight: 0, playerWidth: 0 });
 // 标题
@@ -132,12 +133,8 @@ function moveToNext() {
  * 展示主标题
  */
 function handleShowTitle(e: ShowTitleOption) {
-  // TODO 删除兼容代码
-  const isNew = typeof e === "object";
-  if (isNew) {
-    subTitleContent.value = e.subtitle;
-  }
-  proxyShowCoverTitle(titleEL, titleContent, isNew ? e.title : e as string).then(() => {
+  subTitleContent.value = e.subtitle || "";
+  proxyShowCoverTitle(titleEL, titleContent, e.title).then(() => {
     subTitleContent.value = "";
     eventBus.emit("titleDone");
   })
@@ -457,9 +454,9 @@ function handleToBeContinued() {
         opacity: 0,
         duration: 0.6
       }, "+=1.2").then(() => eventBus.emit('toBeContinueDone'))
-    // .then(() => {
-    //   handleNextEpisode({ title: "次回", text: "测试次回" });
-    // })
+    .then(() => {
+      eventBus.emit("toBeContinueDone");
+    })
   });
 }
 
@@ -504,7 +501,7 @@ function handleNextEpisode(e: ShowTitleOption) {
           }
           const matrix = getComputedStyle(bottomChild).transform;
           if (Number(matrix.substring(matrix.lastIndexOf(",") + 2).replace(")", "")) > 100) {
-            subTitleContent.value = e.subtitle;
+            subTitleContent.value = e.subtitle || "";
             proxyShowCoverTitle(titleEL, titleContent, e.title, (el) => {
               const tl = gsap.timeline();
               tl.fromTo(el, {
@@ -517,7 +514,7 @@ function handleNextEpisode(e: ShowTitleOption) {
             flag = true;
           }
         }
-      }, "<").then(() => { eventBus.emit('nextEpisodeDone') });
+      }, "<").then(() => { eventBus.emit("nextEpisodeDone") });
   });
 }
 function handlePopupImage(url: string) {
@@ -535,6 +532,13 @@ function hideMenu() {
 }
 function showMenu() {
   eventBus.emit("showmenu");
+}
+function handlePopupClose() {
+  popupSrc.image = "";
+  videoComponent.value?.pause();
+  nextTick(() => {
+    popupSrc.video = "";
+  })
 }
 const fontSizeBounds = computed(() => (props.playerHeight / 1080));
 const stWidth = 3000;
@@ -601,6 +605,7 @@ onMounted(() => {
   eventBus.on("nextEpisode", handleNextEpisode);
   eventBus.on("popupImage", handlePopupImage);
   eventBus.on("popupVideo", handlePopupVideo);
+  eventBus.on("hidePopup", handlePopupClose);
 });
 onUnmounted(() => {
   eventBus.off("showTitle", handleShowTitle);
@@ -615,6 +620,7 @@ onUnmounted(() => {
   eventBus.off("nextEpisode", handleNextEpisode);
   eventBus.off("popupImage", handlePopupImage);
   eventBus.off("popupVideo", handlePopupVideo);
+  eventBus.off("hidePopup", handlePopupClose);
 });
 // 暂时用不上了, 比如font-size还需要根据屏幕进行适配
 type StyleEffectTemplateMap = {
