@@ -550,18 +550,13 @@ function fontSize(multi: number) {
   return fontSizeBounds.value * multi;
 }
 const standardFontSize = computed(() => fontSize(2.5));
+const standardUnityFontSize = 64;
 /**
  * 以64作为标准st字体大小?
  * @param size
  */
 function unityFontSizeToHTMLSize(size: number) {
-  if (size === 64) {
-    return standardFontSize.value;
-  } else if (size < 64) {
-    return fontSize(2);
-  } else {
-    return fontSize(3);
-  }
+  return (size / standardUnityFontSize) * standardFontSize.value;
 }
 
 /**
