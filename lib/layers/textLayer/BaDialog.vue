@@ -187,6 +187,9 @@ function handleClearSt() {
   if (!showDialog.value) {
     typingInstance?.stop();
     typingInstance?.destroy();
+    if (stOutput.value) {
+      stOutput.value!.innerHTML = "";
+    }
   }
 }
 /**
@@ -216,7 +219,8 @@ function handleShowStEvent(e: StText) {
     if (e.middle) {
       extendStyle = extendStyle + `;text-align: center; left: 50%; transform: translateX(-50%)`;
     }
-    // const unused = e.stArgs[3]; // 未知
+    const fontSize = e.stArgs[2]; // st的字号
+    extendStyle = extendStyle + `;font-size: ${unityFontSizeToHTMLSize(Number(fontSize))}rem`;
     // 立即显示, 跳过打字机
     const fn = Reflect.get(StMap, stType);
     if (fn) {
