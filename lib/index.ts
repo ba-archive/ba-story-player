@@ -314,6 +314,7 @@ export let eventEmitter = {
     })
     eventBus.on('auto', () => storyHandler.startAuto())
     eventBus.on('stopAuto', () => storyHandler.stopAuto())
+    eventBus.on('skip', () => storyHandler.end())
     eventBus.on('playVoiceJPDone', async () => {
       if (storyHandler.auto) {
         await wait(1200)
