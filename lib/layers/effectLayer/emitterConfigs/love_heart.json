@@ -1,9 +1,9 @@
 {
   "lifetime": {
-    "min": 4,
-    "max": 8
+    "min": 2,
+    "max": 3
   },
-  "frequency": 0.1,
+  "frequency": 0.5,
   "maxParticles": 10,
   "addAtBack": false,
   "pos": {
@@ -12,20 +12,26 @@
   },
   "behaviors": [
     {
+      "type": "noRotation",
+      "config": {
+        "rotation": 0
+      }
+    },
+    {
       "type": "scale",
       "config": {
         "scale": {
           "list": [
             {
-              "value": 0.3,
+              "value": 1,
               "time": 0
             },
             {
-              "value": 0.15,
+              "value": 0.8,
               "time": 0.5
             },
             {
-              "value": 0.3,
+              "value": 1,
               "time": 1
             }
           ]
@@ -39,8 +45,8 @@
         "accel": 0,
         "minSpeed": 0,
         "maxSpeed": 0,
-        "minStart": 275,
-        "maxStart": 353
+        "minStart": 180,
+        "maxStart": 360
       }
     },
     {
@@ -50,22 +56,16 @@
       }
     },
     {
-      "type": "spawnShape",
+      "type": "moveSpeedStatic",
       "config": {
-        "type": "rect",
-        "data": {
-          "x": 0,
-          "y": 0,
-          "w": 260,
-          "h": 0
-        }
+        "min": 150,
+        "max": 200
       }
     },
     {
-      "type": "moveSpeedStatic",
+      "type": "colorStatic",
       "config": {
-        "min": 300,
-        "max": 350
+        "color": "#fea399"
       }
     },
     {
@@ -74,6 +74,7 @@
         "alpha": {
           "list": [
             { "value": 1, "time": 0 },
+            { "value": 0.3, "time": 0.5 },
             { "value": 1, "time": 0.9 },
             { "value": 0, "time": 1 }
           ]
