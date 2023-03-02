@@ -1,39 +1,29 @@
 <template>
   <div class="container" :style="{ height: `${playerHeight}px` }">
     <div class="container-inner">
-      <div class="st-container" ref="stOutput" :style="{fontSize: `${standardFontSize}rem`}" />
-      <div class="title-container"
-           :class="{ 'fade-in-out': titleContent }"
-           v-if="titleContent"
-      >
-        <div class="title-border" :style="{ '--side-padding': `${titleBorderPadding}px`}">
-          <div
-            class="title-contain"
-            :style="{ '--font-size': `${fontSize(4)}rem`}"
-          >{{ titleContent }}
+      <div class="st-container" ref="stOutput" :style="{ fontSize: `${standardFontSize}rem` }" />
+      <div class="title-container" :class="{ 'fade-in-out': titleContent }" v-if="titleContent">
+        <div class="title-border" :style="{ '--side-padding': `${titleBorderPadding}px` }">
+          <img src="./assets/title-border.png" />
+          <div class="title-contain" :style="{ '--font-size': `${fontSize(4)}rem` }">{{ titleContent }}
           </div>
         </div>
       </div>
-      <div class="place-container"
-           :style="{ '--font-size': `${fontSize(2)}rem`}"
-           :class="{ 'fade-in-out': placeContent }"
-           v-if="placeContent">
+      <div class="place-container" :style="{ '--font-size': `${fontSize(2)}rem` }"
+        :class="{ 'fade-in-out': placeContent }" v-if="placeContent">
         <div class="round-place">
           <span class="place-content">{{ placeContent }}</span>
         </div>
       </div>
-      <div v-if="showDialog" :style="{padding: `${fontSize(3)}rem ${fontSize(8)}rem`, height: `${dialogHeight}px`}"
-           class="dialog" >
-        <div class="inner-dialog" :style="{'--height-padding': `${fontSize(3)}rem`}">
+      <div v-if="showDialog" :style="{ padding: `${fontSize(3)}rem ${fontSize(8)}rem`, height: `${dialogHeight}px` }"
+        class="dialog">
+        <div class="inner-dialog" :style="{ '--height-padding': `${fontSize(3)}rem` }">
           <div class="title">
-            <div :style="{fontSize: `${fontSize(3.5)}rem`}" class="name">{{ name ? name : '&emsp;' }}</div>
-            <div :style="{fontSize: `${fontSize(2)}rem`}" class="department">{{nickName}}</div>
+            <div :style="{ fontSize: `${fontSize(3.5)}rem` }" class="name">{{ name ? name : '&emsp;' }}</div>
+            <div :style="{ fontSize: `${fontSize(2)}rem` }" class="department">{{ nickName }}</div>
           </div>
           <hr>
-          <div
-            ref="typewriterOutput"
-            :style="{ '--font-size': `${standardFontSize}rem`}"
-            class="content" />
+          <div ref="typewriterOutput" :style="{ '--font-size': `${standardFontSize}rem` }" class="content" />
           <div class="next-image-btn" v-if="typingComplete">&zwj;</div>
         </div>
       </div>
@@ -42,18 +32,30 @@
 </template>
 
 <script setup lang="ts">
-import {onMounted, ref, computed, Ref, nextTick, onUnmounted} from 'vue'
+import { onMounted, ref, computed, Ref, nextTick, onUnmounted, onBeforeMount } from 'vue'
 import eventBus from "@/eventBus";
-import Typed, {TypedExtend, TypedOptions} from "typed.js";
-import {ShowOption, ShowText, StText} from "@/types/events";
-import {Text, TextEffectName} from "@/types/common";
-import {deepCopyObject} from "@/utils";
+import Typed, { TypedExtend, TypedOptions } from "typed.js";
+import { ShowOption, ShowText, StText } from "@/types/events";
+import { Text, TextEffectName } from "@/types/common";
+import { deepCopyObject } from "@/utils";
 import { usePlayerStore } from '@/stores';
 
 const typewriterOutput = ref(); // 对话框el
 const stOutput = ref(); // st特效字el
 // 外部传入播放器高度,用于动态计算字体等数值
-const props = withDefaults(defineProps<TextLayerProps>(), {playerHeight: 0, playerWidth: 0});
+const props = withDefaults(defineProps<TextLayerProps>(), { playerHeight: 0, playerWidth: 0 });
+
+//加载字体
+onBeforeMount(() => {
+  const newStyle = document.createElement('style');
+  newStyle.appendChild(document.createTextNode(`\
+  @font-face {
+    font-family: 'TJL';
+    src: url(${props.fontUrl});`));
+
+  document.head.appendChild(newStyle);
+})
+
 // 标题
 const titleContent = ref<string>("");
 // 位置
@@ -160,16 +162,16 @@ function handleShowStEvent(e: StText) {
     } else if (stType === "serial") {
       showTextDialog(
         e.text.map(text => {
-        // 为啥要这样, 因为这个库在空字符时会删除当前的内容重新打印, 导致一句话出现两次的bug
-        text.content = text.content || "&zwj;";
-        return text;
-      }).map(text => parseTextEffect(text)),
+          // 为啥要这样, 因为这个库在空字符时会删除当前的内容重新打印, 导致一句话出现两次的bug
+          text.content = text.content || "&zwj;";
+          return text;
+        }).map(text => parseTextEffect(text)),
         stOutput.value,
         (content) => {
-        return `<div style="${extendStyle}">${content}</div>`
-      }, {
-          typeSpeed: 10
-        }
+          return `<div style="${extendStyle}">${content}</div>`
+        }, {
+        typeSpeed: 10
+      }
       ).then(() => {
         eventBus.emit("stDone");
       });
@@ -210,7 +212,7 @@ function handleShowTextEvent(e: ShowText) {
 function parseTextEffect(text: Text, extendStyle = "", tag = "span"): Text {
   const effects = text.effects;
   // 注解
-  const rt = (effects.filter(effect => effect.name === "ruby")[0] || {value: []}).value.join("")
+  const rt = (effects.filter(effect => effect.name === "ruby")[0] || { value: [] }).value.join("")
   const style = effects.filter(effect => effect.name !== "ruby").map(effect => {
     const value = effect.value.join("");
     const name = effect.name;
@@ -362,8 +364,8 @@ onMounted(() => {
   eventBus.on('showText', handleShowTextEvent);
   eventBus.on('st', handleShowStEvent);
   eventBus.on('clearSt', handleClearSt);
-  eventBus.on("hide",()=>showDialog.value=false)
-  eventBus.on("click",moveToNext)
+  eventBus.on("hide", () => showDialog.value = false)
+  eventBus.on("click", moveToNext)
 });
 onUnmounted(() => {
   eventBus.off("showTitle", handleShowTitle);
@@ -394,52 +396,53 @@ const DefaultTypedOptions: TypedOptions = {
 type TextLayerProps = {
   playerHeight: number; // 整块视口的高
   playerWidth: number; // 整块视口的宽
+  fontUrl: string; //字体地址
 }
 </script>
+
 <style scoped lang="scss">
-@font-face{
-  font-family: 'TJL';
-  src : url('https://yuuka.cdn.diyigemt.com/image/ba-all-data/assets/ResourceHanRoundedCN-Medium.ttf');
-}
 $border-radius: 5px;
 $dialog-z-index: 3;
 $place-z-index: 8;
 $title-z-index: 10;
 $select-z-index: 10;
 $st-z-index: 10;
-.name{
+
+.name {
   font-size: 3.5rem;
-  color : white;
+  color: white;
   align-self: flex-end;
 }
 
-.department{
+.department {
   margin-left: 2rem;
   font-size: 2.5rem;
-  color : rgb(156,218,240);
+  color: rgb(156, 218, 240);
 }
 
-.title{
+.title {
   display: flex;
   align-items: flex-end;
   margin-top: 2rem;
 }
 
-.dialog{
+.dialog {
   width: 100%;
   padding: 3rem 8rem;
   box-sizing: border-box;
-  background-image: linear-gradient(to bottom , rgba(255,0,0,0) , rgba(19,32,45,0.9) 30%);
+  background-image: linear-gradient(to bottom, rgba(255, 0, 0, 0), rgba(19, 32, 45, 0.9) 30%);
   position: absolute;
   bottom: 0;
   z-index: $text-layer-z-index + $dialog-z-index;
   white-space: pre-line;
+
   .inner-dialog {
     --height-padding: 0rem;
     width: 100%;
     height: calc(100% - var(--height-padding));
     position: relative;
   }
+
   .next-image-btn {
     $size: 10px;
     position: absolute;
@@ -451,32 +454,48 @@ $st-z-index: 10;
     background-size: $size $size;
     animation: next-btn .6s linear alternate infinite;
   }
+
   @keyframes next-btn {
-    0%   {transform: translateY(0)}
-    40%  {transform: translateY(10%)}
-    100% {transform: translateY(50%)}
+    0% {
+      transform: translateY(0)
+    }
+
+    40% {
+      transform: translateY(10%)
+    }
+
+    100% {
+      transform: translateY(50%)
+    }
   }
 }
 
-.content{
+.content {
   --font-size: 2rem;
   margin-top: 1.5rem;
-  color : white;
+  color: white;
   font-size: var(--font-size);
   line-height: 1.5em;
 }
+
 .container {
-  font-family: 'TJL','Microsoft YaHei', 'PingFang SC', -apple-system, system-ui,
+  font-family: 'TJL', 'Microsoft YaHei', 'PingFang SC', -apple-system, system-ui,
     'Segoe UI', Roboto, Ubuntu, Cantarell, 'Noto Sans', BlinkMacSystemFont,
     'Helvetica Neue', 'Hiragino Sans GB', Arial, sans-serif;
   position: absolute;
   user-select: none;
   overflow: hidden;
+
+  hr {
+    border: 0.1px rgba(255, 255, 255, 0.666) solid;
+  }
+
   .container-inner {
     width: 100%;
     height: 100%;
     position: relative;
   }
+
   .title-container {
     width: 100%;
     height: 100%;
@@ -485,38 +504,49 @@ $st-z-index: 10;
     top: 0;
     left: 0;
     opacity: 0;
+    backdrop-filter: blur(7px);
     color: white;
     z-index: $text-layer-z-index + $title-z-index;
     $padding: 10px;
-    padding: $padding;
+    // padding: $padding;
+
     .title-border {
+      position: relative;
       --side-padding: 0px;
-      width: calc(100% - 2 * #{$padding} - 2 * var(--side-padding));
-      height: calc(100% - 2 * #{$padding});
-      background: url("./assets/title-border.png") no-repeat;
+      // width: calc(100% - 2 * #{$padding} - 2 * var(--side-padding));
+      height: 100%;
+      // background: url("./assets/title-border.png") no-repeat;
       background-size: 100% 100%;
-      display: flex;
+      display: inline-flex;
       align-items: center;
       justify-content: center;
       line-height: 1;
-      padding: 0 var(--side-padding);
+      padding: var(--side-padding) 0;
+      box-sizing: border-box;
+
+      img {
+        height: 95%;
+      }
+
+
       .title-contain {
         --font-size: 2rem;
+        position: absolute;
+        left: 0;
         line-height: 1;
         font-size: var(--font-size);
         color: black;
         font-weight: 700;
         padding: var(--font-size) 0;
         width: 100%;
-        background: linear-gradient(
-            58deg,
+        background: linear-gradient(58deg,
             rgba(240, 240, 240, 0.1) 0%,
             rgba(240, 240, 240, 1) 38%,
-            rgba(240, 240, 240, 0.1) 100%
-        ), url("./assets/poli-light.png") rgb(164 216 237) no-repeat 0 30%;
+            rgba(240, 240, 240, 0.1) 100%), url("./assets/poli-light.png") rgb(164 216 237) no-repeat 0 30%;
       }
     }
   }
+
   .place-container {
     --font-size: 1rem;
     position: absolute;
@@ -524,32 +554,36 @@ $st-z-index: 10;
     top: 10%;
     color: white;
     z-index: $text-layer-z-index + $place-z-index;
+
     .round-place {
       position: relative;
       line-height: var(--font-size);
       padding: calc(var(--font-size) / 2) 3rem calc(var(--font-size) / 2) 1rem;
+
       &:after {
         content: '';
         width: 100%;
         height: 100%;
         top: 0;
         left: -20px;
-        background-color: rgba(44,65,92,0.7);
+        background-color: rgba(44, 65, 92, 0.7);
         transform: skewX(-20deg);
         border-radius: 0 10px 10px 0;
         position: absolute;
         z-index: -1;
       }
+
       .place-content {
         padding-left: 10px;
         color: white;
         font-style: var(--font-size);
+
         &:after {
           content: '';
           width: 3px;
           display: block;
           height: var(--font-size);
-          background-color: rgba(255,255,255,0.3);
+          background-color: rgba(255, 255, 255, 0.3);
           position: absolute;
           top: 0;
           transform: translateY(50%);
@@ -557,6 +591,7 @@ $st-z-index: 10;
       }
     }
   }
+
   .st-container {
     width: 100%;
     height: 100%;
@@ -567,20 +602,25 @@ $st-z-index: 10;
     color: white;
     text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
   }
+
   .fade-in-out {
     animation: fade-in-out 3s;
   }
 }
+
 @keyframes fade-in-out {
   0% {
     opacity: 0;
   }
+
   25% {
     opacity: 1;
   }
+
   75% {
     opacity: 1;
   }
+
   100% {
     opacity: 0;
   }

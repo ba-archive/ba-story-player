@@ -7,11 +7,11 @@ import eventBus from "@/eventBus";
 const props = defineProps({
   width: {
     type: String,
-    default: "520px",
+    default: "min(520px, 80%)",
   },
   height: {
     type: String,
-    default: "400px",
+    default: "min(400px, 70%)",
   },
   title: String,
   show: Boolean,
@@ -93,7 +93,7 @@ watch(
     display: flex;
     flex-flow: nowrap column;
     background-color: #f0f0f0;
-    border-radius: 10px;
+    border-radius: 0.625rem;
     position: absolute;
     left: 50%;
     top: 50%;
@@ -118,8 +118,8 @@ watch(
       flex: 0 0 auto;
 
       .ba-dialog-title {
-        margin: 8px 16px 0 8px;
-        font-size: 25px;
+        margin: 0.5rem 1rem 0 0.5rem;
+        font-size: 1.5rem;
         font-weight: bold;
         text-align: center;
         user-select: none;
@@ -130,9 +130,9 @@ watch(
             content: "";
             display: block;
             width: 100%;
-            height: 4px;
+            height: 0.25rem;
             background-color: #fbef62;
-            border-radius: 3px;
+            border-radius: 0.1875rem;
           }
         }
       }
@@ -144,9 +144,9 @@ watch(
         padding: 0;
         border: none;
         position: absolute;
-        font-size: 25px;
+        font-size: 1.5rem;
         font-weight: bold;
-        margin-right: 16px;
+        margin-right: 1rem;
         right: 0;
         top: 50%;
         transform: translateY(-50%);

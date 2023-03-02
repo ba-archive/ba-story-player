@@ -41,7 +41,7 @@ const EffectPlayerMap: IEffectPlayerMap = {
 /**
  * 角色初始的pivot相对与长宽的比例, 当前值代表左上角
  */
-export const Character_Initial_Pivot_Proportion = { x: -1 / 2, y: -1 / 2 }
+export const Character_Initial_Pivot_Proportion = { x: 0, y: -1 / 2 }
 /**
  * 标准宽度基于的播放器宽度的相对值
  * 标准宽度用于计算图片缩放比例
@@ -76,6 +76,14 @@ export const CharacterLayerInstance: CharacterLayer = {
     eventBus.on("showCharacter", showCharacter);
     eventBus.on("hide", () => Reflect.apply(this.hideCharacter, this, []))
     eventBus.on("hideCharacter", () => Reflect.apply(this.hideCharacter, this, []))
+    eventBus.on("resize", originWidth => {
+      this.characterSpineCache.forEach(character => {
+        const instance = character.instance
+        if (instance.visible) {
+          instance.x *= app.screen.width / originWidth
+        }
+      })
+    })
     Object.keys(EffectPlayerMap).forEach((key) => {
       const player = Reflect.get(EffectPlayerMap, key) as ICharacterEffectPlayerInterface;
       player && player.init();
@@ -443,9 +451,9 @@ function loopAnimationTime<AnimationState extends IAnimationState>(state: Animat
 
 // 当播放器高度为PlayerHeight时角色的CharacterScale
 const PlayerHeight = 550;
-const CharacterScale = 0.29;
+const CharacterScale = 0.34;
 // spine在播放器之下的部分;
-const spineHideRate = 0.4;
+const spineHideRate = 0.49;
 export function calcCharacterYAndScale(spine: Spine) {
   const { screenHeight } = getStageSize();
   const scale = screenHeight / PlayerHeight * CharacterScale;

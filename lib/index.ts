@@ -2,7 +2,7 @@ import eventBus from "@/eventBus";
 import { bgInit } from "@/layers/bgLayer";
 import { characterInit } from "@/layers/characterLayer";
 import { effectInit } from '@/layers/effectLayer';
-import { soundInit } from "@/layers/soundLayer";
+import { soundInit, preloadSound } from "@/layers/soundLayer";
 import { translate } from '@/layers/translationLayer';
 import { initPrivateState, usePlayerStore } from "@/stores";
 import { PlayerConfigs, StoryUnit } from "@/types/common";
@@ -66,10 +66,11 @@ export async function init(elementID: string, props: PlayerConfigs, endCallback:
   L2DInit()
 
   //加载剩余资源
-  resourcesLoader.addLoadResources()
+  await resourcesLoader.addLoadResources()
   resourcesLoader.load(() => {
     app.stage.removeChild(loadingText)
     loadingText.destroy()
+    eventBus.emit('hidemenu')
     //开始发送事件
     eventEmitter.init()
   })
@@ -267,14 +268,7 @@ export let eventEmitter = {
   stDone: true,
   /** 当前l2d动画是否播放完成 */
   l2dAnimationDone: true,
-  voiceJpPlaying: false,
-  get VoiceJpDone(): boolean {
-    if (!storyHandler.auto) {
-      return true
-    }
-    return !this.voiceJpPlaying
-  },
-
+  VoiceJpDone: true,
 
   get unitDone(): boolean {
     let result = true
@@ -292,6 +286,10 @@ export let eventEmitter = {
   init() {
     eventBus.on('next', () => {
       storyHandler.next()
+      if (!this.unitDone) {
+        this.textDone = true
+        this.VoiceJpDone = true
+      }
     })
     eventBus.on('select', e => {
       if (this.unitDone) {
@@ -313,11 +311,12 @@ export let eventEmitter = {
     })
     eventBus.on('auto', () => storyHandler.startAuto())
     eventBus.on('stopAuto', () => storyHandler.stopAuto())
+    eventBus.on('skip', () => storyHandler.end())
     eventBus.on('playVoiceJPDone', async () => {
       if (storyHandler.auto) {
         await wait(1200)
       }
-      this.voiceJpPlaying = false
+      this.VoiceJpDone = true
     })
 
     storyHandler.storyPlay()
@@ -331,7 +330,7 @@ export let eventEmitter = {
     console.log('剧情进度: ' + storyHandler.currentStoryIndex, storyHandler.currentStoryUnit)
     await this.transitionIn()
     this.hide()
-    this.showBg()
+    await this.showBg()
     this.showPopup()
     this.playEffect()
     this.playL2d()
@@ -424,15 +423,25 @@ export let eventEmitter = {
   /**
    * 显示背景
    */
-  showBg() {
+  async showBg() {
     if (storyHandler.currentStoryUnit.bg) {
+      const bgOverLap = storyHandler.currentStoryUnit.bg.overlap
       eventBus.emit("showBg", {
         url: storyHandler.currentStoryUnit.bg?.url,
-        overlap: storyHandler.currentStoryUnit.bg?.overlap,
+        overlap: bgOverLap
       });
       if (this.l2dPlaying) {
         eventBus.emit('endL2D')
         this.l2dPlaying = false
+      }
+      if (bgOverLap) {
+        await new Promise<void>((resolve) => {
+          const fn = () => {
+            eventBus.off('bgOverLapDone', fn)
+            resolve()
+          }
+          eventBus.on('bgOverLapDone', fn)
+        })
       }
     }
     // eventBus.emit('showBg', 'https://yuuka.cdn.diyigemt.com/image/ba-all-data/UIs/03_Scenario/01_Background/BG_CS_PR_16.jpg')
@@ -457,7 +466,7 @@ export let eventEmitter = {
     if (storyHandler.currentStoryUnit.audio) {
       eventBus.emit('playAudio', storyHandler.currentStoryUnit.audio)
       if (storyHandler.currentStoryUnit.audio.voiceJPUrl) {
-        this.voiceJpPlaying = true
+        this.VoiceJpDone = false
       }
     }
   },
@@ -494,6 +503,10 @@ export let eventEmitter = {
         eventBus.emit('hidemenu')
       }
     }
+    //在有变换时隐藏所有对象
+    if (storyHandler.currentStoryUnit.bg?.overlap || storyHandler.currentStoryUnit.transition) {
+      eventBus.emit('hide')
+    }
   },
 
   show() {
@@ -523,7 +536,6 @@ export let eventEmitter = {
       await new Promise<void>(resolve => {
         let resolveFun = () => {
           eventBus.off('transitionInDone', resolveFun)
-          eventBus.emit('hide')
           resolve()
         }
         eventBus.on('transitionInDone', resolveFun)
@@ -571,9 +583,9 @@ export let resourcesLoader = {
     this.loader = loader
   },
   /**
-   * 添加所有资源
+   * 添加所有资源, 有些pixi loader不能处理的资源则会调用资源处理函数, 故会返回promise
    */
-  addLoadResources() {
+  async addLoadResources() {
     // this.loader.add('https://yuuka.cdn.diyigemt.com/image/ba-all-data/UIs/03_Scenario/01_Background/BG_CS_PR_16.jpg',
     //   'https://yuuka.cdn.diyigemt.com/image/ba-all-data/UIs/03_Scenario/01_Background/BG_CS_PR_16.jpg'
     // )
@@ -581,6 +593,7 @@ export let resourcesLoader = {
     this.addFXResources()
     this.addOtherSounds()
     this.addBGEffectImgs()
+    const audioUrls: string[] = []
     for (let unit of playerStore.allStoryUnit) {
       //添加人物spine
       if (unit.characters.length != 0) {
@@ -593,11 +606,20 @@ export let resourcesLoader = {
       }
       if (unit.audio) {
         //添加bgm资源
-        this.checkAndAdd(unit.audio.bgm?.url)
+        if (unit.audio.bgm?.url) {
+          audioUrls.push(unit.audio.bgm.url)
+        }
+        if (unit.audio.soundUrl) {
+          audioUrls.push(unit.audio.soundUrl)
+        }
+        if (unit.audio.voiceJPUrl) {
+          audioUrls.push(unit.audio.voiceJPUrl)
+        }
+        // this.checkAndAdd(unit.audio.bgm?.url)
 
-        //添加sound
-        this.checkAndAdd(unit.audio.soundUrl)
-        this.checkAndAdd(unit.audio.voiceJPUrl)
+        // //添加sound
+        // this.checkAndAdd(unit.audio.soundUrl)
+        // this.checkAndAdd(unit.audio.voiceJPUrl)
       }
       //添加背景图片
       this.checkAndAdd(unit.bg, 'url')
@@ -608,6 +630,7 @@ export let resourcesLoader = {
         playerStore.curL2dConfig?.otherSpine.forEach(i => this.checkAndAdd(utils.getResourcesUrl('otherL2dSpine', i)))
       }
     }
+    await preloadSound(audioUrls)
   },
 
   /**
@@ -616,6 +639,7 @@ export let resourcesLoader = {
    */
   load(callback: () => void) {
     let hasLoad = false
+    this.loader.onError.add((error) => { throw error })
     this.loader.load((loader, res) => {
       playerStore.app.loader.load((loader, res) => {
         //当chrome webgl inspector打开时可能导致callback被执行两次

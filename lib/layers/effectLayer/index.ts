@@ -81,8 +81,8 @@ export async function removeEffect() {
  * @param mode 渐变方式 in为淡入, out为淡出
  */
 async function playTransition(color: 'black' | 'white', durationMs: number, mode: 'in' | 'out'): Promise<void> {
-  let player = document.querySelector('#player') as HTMLDivElement
-  player.style.backgroundColor = color
+  let background = document.querySelector('#player__background') as HTMLDivElement
+  background.style.backgroundColor = color
   let playerMain = document.querySelector('#player__main')
   switch (mode) {
     case 'in':

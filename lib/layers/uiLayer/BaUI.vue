@@ -21,12 +21,13 @@ let btnMenuTimmer: any
 
 let { storySummary } = defineProps<{ storySummary: StorySummary }>()
 const selectOptions = ref<ShowOption[]>([]);
+const emitter = defineEmits(['fullscreenChange'])
 
 eventBus.on("hide", () => {
-  console.log("UI hide")
+  // console.log("UI hide")
   hiddenSummary.value = true
   hiddenStoryLog.value = true
-  autoMode.value = false
+  hiddenMenu.value = true
 })
 eventBus.on("hidemenu", () => {
   hiddenMenu.value = true
@@ -40,6 +41,9 @@ function handleBtnHiddenUi() {
   eventBus.emit("playOtherSounds", "select")
   refreshBtnMenuTimmer()
   eventBus.emit("hideDialog");
+}
+function handleBtnFullScreen() {
+  emitter('fullscreenChange')
 }
 function handleBtnChatLog() {
   eventBus.emit("playOtherSounds", "select")
@@ -130,7 +134,7 @@ const handleBtnMenuDebounced = debounce(handleBtnMenu, 200);
 
       <Transition>
         <div class="baui-menu-options lean-rect" v-if="!hiddenSubMenu">
-          <button class="button-nostyle ba-menu-option" @click="handleBtnHiddenUi" @mousedown="handleBtnMouseDown"
+          <button class="button-nostyle ba-menu-option" @click="handleBtnFullScreen" @mousedown="handleBtnMouseDown"
             @mouseup="handleBtnMouseUp" @mouseleave="handleBtnMouseUp">
             <img draggable="false" src="./assets/pan-arrow.svg" />
           </button>
@@ -149,7 +153,8 @@ const handleBtnMenuDebounced = debounce(handleBtnMenu, 200);
     <BaSelector id="ba-story-selector" :selection="selectOptions" @select="handleBaSelector"
       v-if="selectOptions.length !== 0" />
 
-    <BaDialog id="ba-story-summery" :title="'概要'" :show="!hiddenSummary" @close="hiddenSummary = true">
+    <BaDialog id="ba-story-summery" :title="'概要'" :show="!hiddenSummary" @close="hiddenSummary = true"
+      width="min(520px, 70%)" height="min(400px,85%)">
       <div class="ba-story-summery-container">
         <h4 class="ba-story-summery-title">{{ storySummary.chapterName }}</h4>
         <p class="ba-story-summery-text">
@@ -220,7 +225,7 @@ const handleBtnMenuDebounced = debounce(handleBtnMenu, 200);
   .baui-button-group {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    grid-gap: 8px;
+    grid-gap: 0.5rem;
 
     .ba-button {
       &:hover {
@@ -240,20 +245,20 @@ const handleBtnMenuDebounced = debounce(handleBtnMenu, 200);
 
   .baui-menu-options {
     display: grid;
-    grid-gap: 8px;
+    grid-gap: 0.5rem;
     grid-template-columns: repeat(3, 1fr);
-    margin-top: 9px;
-    padding: 12px 12px;
-    border-radius: 6px;
+    margin-top: 0.56rem;
+    padding: 0.75rem 0.75rem;
+    border-radius: 0.375rem;
     background-color: rgba(244, 244, 244, 0.6);
     overflow: hidden;
 
     .ba-menu-option {
       display: block;
-      font-size: 24px;
+      font-size: 1.5rem;
       background-color: #2c4565;
-      border-radius: 3px;
-      padding: 4px 8px;
+      border-radius: 0.1875rem;
+      padding: 0.25rem 0.5rem;
       transition: background-color 0.3s ease-out;
 
       &:hover {
@@ -287,37 +292,37 @@ const handleBtnMenuDebounced = debounce(handleBtnMenu, 200);
     }
 
     .ba-story-summery-title {
-      margin: 12px 0;
+      margin: 0.75rem 0;
       text-align: center;
       color: #32363c;
-      font-size: 18px;
+      font-size: 1.125rem;
       font-weight: bold;
     }
 
     .ba-story-summery-text {
       flex: 1;
       border: solid #d1d7dc 2px;
-      margin: 0 16px;
-      border-radius: 4px;
-      overflow: hidden;
-      padding: 5px 7px;
+      margin: 0 1rem;
+      border-radius: 0.25rem;
+      overflow-y: auto;
+      padding: 0.3125rem 0.4375rem;
       background-color: #f0f0f0;
     }
 
     .ba-story-summery-tip {
       color: #32363c;
-      font-size: 18px;
+      font-size: 1.125rem;
       font-weight: bold;
       text-align: center;
-      margin: 12px auto 0;
+      margin: 0.75rem auto 0;
       user-select: none;
     }
 
     .ba-story-summery-button-group {
       display: grid;
-      margin: 12px 16px 24px;
+      margin: 0.75rem 1rem 1.5rem;
       grid-template-columns: repeat(2, 1fr);
-      grid-gap: 16px;
+      grid-gap: 1rem;
     }
   }
 }

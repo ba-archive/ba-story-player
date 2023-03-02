@@ -31,6 +31,7 @@ const BgLayerInstance: BgLayer = {
     this.handleShowBg = this.handleShowBg.bind(this);
 
     eventBus.on("showBg", this.handleShowBg);
+    eventBus.on("resize", this.handleResize)
   },
   disposeEvent() {
     eventBus.off("showBg", this.handleShowBg);
@@ -53,6 +54,21 @@ const BgLayerInstance: BgLayer = {
         }
       }
     });
+  },
+
+  handleResize() {
+    const { bgInstance, app } = usePlayerStore()
+    if (bgInstance) {
+      const { x, y, width, height } = calcImageCoverSize(
+        bgInstance.width,
+        bgInstance.height,
+        app.renderer.width,
+        app.renderer.height
+      );
+      bgInstance.position.set(x, y)
+      bgInstance.width = width
+      bgInstance.height = height
+    }
   },
 
   /**
@@ -97,6 +113,7 @@ const BgLayerInstance: BgLayer = {
 
     await tl
       .fromTo(instance, { alpha: 0 }, { alpha: 1, duration: overlap / 1000 })
+    eventBus.emit('bgOverLapDone')
 
     oldInstance && app.stage.removeChild(oldInstance);
   },

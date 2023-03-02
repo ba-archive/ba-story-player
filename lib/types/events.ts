@@ -8,6 +8,10 @@ export type Events = {
    * 清除当前内容
    */
   hide: undefined
+  /**
+   * 参数是原来的宽度大小
+   */
+  resize: number
 
   //特效层
 
@@ -42,14 +46,16 @@ export type Events = {
    * l2d 动画播放状态, 当前动画是否播放完成
    */
   l2dAnimationDone: { done: boolean, animation: string }
-  //背景层
 
+  //背景层
   /**
    * 展示背景图片
    */
   showBg: BgParams
-
-  //声音层
+  /**
+   * bgOverLap已完成
+   */
+  bgOverLapDone: undefined
 
   /**
    * 播放bgm, sound或voiceJP
@@ -198,7 +204,7 @@ export interface ShowCharacter {
 
 export interface PlayAudio {
   bgm?: {
-    url?: string
+    url: string
     bgmArgs: BGMExcelTableItem
   }
   soundUrl?: string

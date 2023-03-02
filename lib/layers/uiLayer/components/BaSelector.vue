@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import {computed, PropType, ref} from "vue";
+import { computed, PropType, ref } from "vue";
 import { ShowOption } from "@/types/events";
 import { useElementSize } from "@vueuse/core";
 
@@ -79,23 +79,14 @@ function handleSelect(select: number) {
 
 <template>
   <div class="ba-selector-container" ref="selectorContainerElement" @mouseup="handleMouseUp">
-    <div class="ba-selector" ref="selectorElement" :style="{marginTop: selectorMarginTop}">
+    <div class="ba-selector" ref="selectorElement" :style="{ marginTop: selectorMarginTop }">
       <!-- 没有发生 DOM 顺序的移动，让 vue 使用就地复用策略提高效率，不需要 key -->
       <!-- eslint-disable vue/require-v-for-key -->
-      <div
-        v-for="(option, index) in selection"
-        @mousedown="handleSelectMouseDown(index)"
-        @mouseenter="handleSelectMouseEnter(index)"
-        @mouseleave="handleSelectMouseLeave"
-        @click="handleSelect(index)"
-        role="button"
-        tabindex="-1"
-        class="ba-selector-list"
-        :class="{ activated: index === selectionCandidate, selected: index === selectedOption }"
-      >
-        <div
-          class="ba-selector-item"
-        >
+      <div v-for="(option, index) in selection" @mousedown="handleSelectMouseDown(index)"
+        @mouseenter="handleSelectMouseEnter(index)" @mouseleave="handleSelectMouseLeave" @click="handleSelect(index)"
+        role="button" tabindex="-1" class="ba-selector-list"
+        :class="{ activated: index === selectionCandidate, selected: index === selectedOption }">
+        <div class="ba-selector-item">
           <div>{{ option.text }}</div>
         </div>
       </div>
@@ -131,15 +122,15 @@ function handleSelect(select: number) {
       border: 1px solid white;
       border-radius: 4px;
       transform: skewX(-10deg);
-      background: linear-gradient(
-          58deg,
+      background: linear-gradient(58deg,
           rgba(240, 240, 240, 0.1) 0%,
           rgba(240, 240, 240, 1) 38%,
-          rgba(240, 240, 240, 0.1) 100%
-      ),
-      url("../assets/UITex_BGPoliLight_1.png") rgb(164 216 237) no-repeat 0
-      30%;
+          rgba(240, 240, 240, 0.1) 100%),
+        url("../assets/UITex_BGPoliLight_1.png") rgb(164 216 237) no-repeat 0 30%;
       transition: all .175s ease-in-out;
+      -webkit-tap-highlight-color: transparent;
+
+
 
       div {
         transform: skewX(10deg);
