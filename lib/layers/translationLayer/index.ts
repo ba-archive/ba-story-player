@@ -270,10 +270,10 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
           else if (utils.isOption(scriptType)) {
             unit.type = 'option'
             let text = String(Reflect.get(rawStoryUnit, `Text${playerStore.language}`)).split('\n')[optionIndex]
-            text = text.slice(4)
 
-            //[ns]或[s]
-            if (scriptType[2] === 's' || scriptType[2] === ']') {
+            //[s]
+            if (scriptType[2] === ']') {
+              text = text.slice(3)
               if (unit.textAbout.options) {
                 unit.textAbout.options.push({ SelectionGroup: 0, text })
               }
@@ -281,8 +281,19 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
                 unit.textAbout.options = [{ SelectionGroup: 0, text }]
               }
             }
+            //[ns]
+            else if (scriptType[2] === 's') {
+              text = text.slice(4)
+              if (unit.textAbout.options) {
+                unit.textAbout.options.push({ SelectionGroup: 0, text })
+              }
+              else {
+                unit.textAbout.options = [{ SelectionGroup: 0, text }]
+              }
+            }
+            //[s1]
             else {
-              //[s1]
+              text = text.slice(4)
               if (unit.textAbout.options) {
                 unit.textAbout.options.push({ SelectionGroup: Number(scriptType[2]), text })
               }
