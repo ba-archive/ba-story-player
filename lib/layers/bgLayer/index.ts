@@ -107,6 +107,7 @@ const BgLayerInstance: BgLayer = {
   async loadBgOverlap(instance: Sprite, overlap: number) {
     const { app, bgInstance: oldInstance, setBgInstance } = usePlayerStore();
     let tl = gsap.timeline();
+    instance.zIndex = -99
 
     app.stage.addChild(instance);
     setBgInstance(instance);
