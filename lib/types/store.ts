@@ -6,7 +6,7 @@ import { BGEffectExcelTableItem, BGMExcelTableItem, BGNameExcelTableItem, Charac
 import { IL2dConfig } from "./l2d"
 import { OtherSounds } from "./resources"
 
-export type Language = 'Cn' | 'Jp'
+export type Language = 'Cn' | 'Jp' | 'En' | 'Tw'
 
 /**
  * 仅可通过函数修改的state
