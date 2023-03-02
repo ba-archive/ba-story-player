@@ -41,12 +41,12 @@ watch(
 
 <style lang="scss" scoped>
 .ba-chat-log {
-  --ba-chat-log: 8px;
+  --ba-chat-log: 0.5rem;
   width: calc(100% - 2 * var(--ba-chat-log));
   height: calc(100% - 2 * var(--ba-chat-log));
   background-color: #d5d5d5; // 213
   margin: var(--ba-chat-log);
-  border-radius: 0 0 7px 7px;
+  border-radius: 0 0 0.4375rem 0.4375rem;
   overflow-y: hidden;
   position: relative;
   box-shadow: inset #bdc8d0 0 0px 2px 1px;

@@ -6,7 +6,6 @@ import {
 import gsap from 'gsap';
 import { Spine } from "pixi-spine";
 import { Container, Sprite } from "pixi.js";
-import { getStandardWidth } from ".";
 import emotionOptions from "./options/emotionOptions";
 
 

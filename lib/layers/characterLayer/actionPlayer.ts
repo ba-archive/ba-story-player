@@ -1,4 +1,4 @@
-import {usePlayerStore} from "@/stores";
+import { usePlayerStore } from "@/stores";
 import {
   CharacterEffectInstance,
   CharacterEffectPlayer,
@@ -6,10 +6,10 @@ import {
   PositionOffset
 } from "@/types/characterLayer";
 import gsap from "gsap";
-import {Spine} from "pixi-spine";
-import actionOptions, {moveSpeed} from "./options/actionOptions";
-import {ColorOverlayFilter} from '@pixi/filter-color-overlay'
-import {calcCharacterYAndScale, CharacterLayerInstance, getStageSize} from './index'
+import { Spine } from "pixi-spine";
+import actionOptions, { moveSpeed } from "./options/actionOptions";
+import { ColorOverlayFilter } from '@pixi/filter-color-overlay'
+import { calcCharacterYAndScale, CharacterLayerInstance, getStageSize } from './index'
 
 const AnimationIdleTrack = 0; // 光环动画track index
 const AnimationFaceTrack = 1; // 差分切换
@@ -57,7 +57,7 @@ const CharacterEffectPlayerInstance: CharacterEffectPlayer = {
     let { app } = usePlayerStore()
 
     let tl = gsap.timeline()
-    let initX = app.screen.width
+    let initX = app.screen.width + instance.instance.width
     let distance = initX - instance.instance.x
     let duration = distance / (instance.instance.width * options.speed)
     tl.fromTo(instance.instance, { pixi: { x: initX } },
@@ -76,10 +76,8 @@ const CharacterEffectPlayerInstance: CharacterEffectPlayer = {
 
   }, closeup(instance: CharacterEffectInstance, options): Promise<void> {
     if (Math.abs(CharacterLayerInstance.characterScale! - instance.instance.scale.x) <= 0.05) {
-      const OriginHalfWidth = 0.55 * instance.instance.width
       let scale = instance.instance.scale.x * options.scale
       instance.instance.scale.set(scale)
-      instance.instance.position.x -= 0.55 * instance.instance.width - OriginHalfWidth
     }
 
     return Promise.resolve()
@@ -101,7 +99,7 @@ const CharacterEffectPlayerInstance: CharacterEffectPlayer = {
     let { app } = usePlayerStore()
 
     let tl = gsap.timeline()
-    let finalX = app.screen.width
+    let finalX = app.screen.width + instance.instance.width
     let distance = finalX - instance.instance.x
     let duration = distance / (instance.instance.width * options.speed)
     tl.to(instance.instance, { pixi: { x: finalX }, duration },
@@ -114,6 +112,7 @@ const CharacterEffectPlayerInstance: CharacterEffectPlayer = {
       y: instance.instance.height * options.anchor.y / instance.instance.scale.y
     }
     let orginPivot = instance.instance.pivot.clone()
+    let originY = instance.instance.y
     instance.instance.pivot.x += pivotOffset.x
     instance.instance.pivot.y += pivotOffset.y
     instance.instance.position.set(instance.instance.x + pivotOffset.x * instance.instance.scale.x, instance.instance.y + pivotOffset.y * instance.instance.scale.x)
@@ -124,7 +123,7 @@ const CharacterEffectPlayerInstance: CharacterEffectPlayer = {
       .to(instance.instance, { pixi: { angle: options.rightAngle }, duration: options.firstRotateDuration }, '>')
       .to(instance.instance, { pixi: { x: `+=${options.xOffset * instance.instance.width}` } }, 0)
 
-    return timeLinePromise(tl, () => { instance.instance.angle = 0; instance.instance.pivot = orginPivot })
+    return timeLinePromise(tl, () => { instance.instance.angle = 0; instance.instance.pivot = orginPivot; instance.instance.visible = false; instance.instance.y = originY; })
   }, greeting(instance: CharacterEffectInstance, options): Promise<void> {
     let tl = gsap.timeline()
     let yOffset = options.yOffset * instance.instance.height
@@ -210,11 +209,11 @@ export const POS_INDEX_MAP = {
  * 角色position x轴值相对于中心的偏移量, 单位是播放器宽度
  */
 export const POS_X_CNETER_OFFSET = {
-  "1": -1 / 4,
-  "2": -1 / 8,
+  "1": -7 / 24,
+  "2": -1 / 6,
   "3": 0,
-  "4": 1 / 8,
-  "5": 1 / 4,
+  "4": 1 / 6,
+  "5": 7 / 24,
 }
 
 /**
@@ -226,22 +225,22 @@ export function calcSpineStagePosition(character: Spine, position: number): Posi
   const { screenWidth, screenHeight } = getStageSize();
   let center = screenWidth / 2
   //当角色pivot x变为人物中心附近时改变计算算法
-  if (Math.abs(CharacterLayerInstance.characterScale! - character.scale.x) > 0.05) {
-    let closeupScale = character.scale.x
-    character.scale.set(CharacterLayerInstance.characterScale)
-    const OriginHalfWidth = 0.55 * character.width
-    let pos = {
-      x: center + Reflect.get(POS_X_CNETER_OFFSET, position) * screenWidth - character.width / 2,
-      y: screenHeight * 0.3
-    }
-    character.scale.set(closeupScale)
-    pos.x -= 0.55 * character.width - OriginHalfWidth
-    return pos
-  }
+  // if (Math.abs(CharacterLayerInstance.characterScale! - character.scale.x) > 0.05) {
+  //   let closeupScale = character.scale.x
+  //   character.scale.set(CharacterLayerInstance.characterScale)
+  //   const OriginHalfWidth = 0.55 * character.width
+  //   let pos = {
+  //     x: center + Reflect.get(POS_X_CNETER_OFFSET, position) * screenWidth - character.width / 2,
+  //     y: screenHeight * 0.3
+  //   }
+  //   character.scale.set(closeupScale)
+  //   pos.x -= 0.55 * character.width - OriginHalfWidth
+  //   return pos
+  // }
 
   return {
-    x: center + Reflect.get(POS_X_CNETER_OFFSET, position) * screenWidth - character.width / 2,
-    y: screenHeight * 0.3
+    x: center + Reflect.get(POS_X_CNETER_OFFSET, position) * screenWidth,
+    y: screenHeight * 0.3 //未使用
   };
 }
 
