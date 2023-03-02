@@ -272,6 +272,7 @@ const handleBtnMenuDebounced = debounce(handleBtnMenu, 200);
   }
 
   #ba-story-log {
+    color: #32363c;
     z-index: 110;
   }
 
