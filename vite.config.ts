@@ -4,8 +4,9 @@ import { resolve } from 'path'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  resolve:{alias:{
-      '@':resolve(__dirname,'./lib')
+  resolve: {
+    alias: {
+      '@': resolve(__dirname, './lib')
     },
   },
   plugins: [vue()],
@@ -18,14 +19,7 @@ export default defineConfig({
     rollupOptions: {
       // make sure to externalize deps that shouldn't be bundled
       // into your library
-      external: ['vue'],
-      output: {
-        // Provide global variables to use in the UMD build
-        // for externalized deps
-        globals: {
-          vue: 'Vue'
-        }
-      }
+      external: [/node_modules/]
     }
   },
   css: {
