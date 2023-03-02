@@ -3,6 +3,14 @@
 
 注意目前播放器的宽高比会自动固定为设备宽高比, 不可改变, 全屏模式可能会出现问题, 后续会改进.
 
+# 使用
+```html
+<script setup>
+import storyPlayer from 'ba-story-player'
+import 'ba-story-player/dist/style.css'
+</script>
+```
+
 # props
 ## story 
 type: `StoryRawUnit[]`
