@@ -1,6 +1,6 @@
 {
   "name": "ba-story-player",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "license": "MIT",
   "type": "module",
   "files": [
@@ -48,6 +48,7 @@
     "@types/node": "^18.11.9",
     "@types/xxhashjs": "^0.2.2",
     "@vitejs/plugin-vue": "^3.2.0",
+    "rollup-plugin-node-externals": "^5.1.2",
     "sass": "^1.57.1",
     "typescript": "^4.6.4",
     "vite": "^3.2.3",

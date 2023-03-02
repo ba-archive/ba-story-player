@@ -45,16 +45,7 @@ const stOutput = ref(); // st特效字el
 // 外部传入播放器高度,用于动态计算字体等数值
 const props = withDefaults(defineProps<TextLayerProps>(), { playerHeight: 0, playerWidth: 0 });
 
-//加载字体
-onBeforeMount(() => {
-  const newStyle = document.createElement('style');
-  newStyle.appendChild(document.createTextNode(`\
-  @font-face {
-    font-family: 'TJL';
-    src: url(${props.fontUrl});`));
 
-  document.head.appendChild(newStyle);
-})
 
 // 标题
 const titleContent = ref<string>("");
@@ -396,7 +387,6 @@ const DefaultTypedOptions: TypedOptions = {
 type TextLayerProps = {
   playerHeight: number; // 整块视口的高
   playerWidth: number; // 整块视口的宽
-  fontUrl: string; //字体地址
 }
 </script>
 

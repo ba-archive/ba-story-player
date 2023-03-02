@@ -4,7 +4,7 @@ import BaDialog from "@/layers/textLayer/BaDialog.vue";
 import BaUI from "@/layers/uiLayer/BaUI.vue"
 import { StoryRawUnit } from '@/types/common';
 import { Language, StorySummary } from '@/types/store';
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, onBeforeMount, onMounted, ref, watch } from 'vue';
 import eventBus from './eventBus';
 import { usePlayerStore } from './stores';
 
@@ -104,6 +104,16 @@ watch([playerWidth, playerHeight], () => {
 })
 
 const fontUrl = `${props.dataUrl}/assets/ResourceHanRoundedCN-Medium.woff2`
+//加载字体
+onBeforeMount(() => {
+  const newStyle = document.createElement('style');
+  newStyle.appendChild(document.createTextNode(`\
+  @font-face {
+    font-family: 'TJL';
+    src: url(${fontUrl});`));
+
+  document.head.appendChild(newStyle);
+})
 onMounted(() => {
   init('player__main__canvas', pixiConfig, () => emit('end'))
   if (props.startFullScreen) {
@@ -121,8 +131,7 @@ onMounted(() => {
     <div id="player__background" :style="playerStyle">
       <div id="player__main" :style="playerStyle">
         <div id="player__main__canvas" :style="{ transform: `scale(${pixiScale})` }"></div>
-        <BaDialog :font-url="fontUrl" :player-height="playerHeight" :player-width="playerWidth"
-          :style="{ width: `${playerWidth}px` }">
+        <BaDialog :player-height="playerHeight" :player-width="playerWidth" :style="{ width: `${playerWidth}px` }">
         </BaDialog>
         <BaUI :story-summary="storySummary" @fullscreen-change="fullScreen = !fullScreen" />
       </div>

@@ -1,31 +1,31 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { resolve } from 'path'
+import type { Plugin } from 'vite'
+import { externals, ExternalsOptions } from 'rollup-plugin-node-externals'
+
+function nodeExternals(options?: ExternalsOptions): Plugin {
+  return {
+    ...externals(options),
+    name: 'vite-plugin-node-externals',
+    enforce: 'pre', // https://cn.vitejs.dev/guide/api-plugin.html#plugin-ordering
+  }
+}
+
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  resolve:{alias:{
-      '@':resolve(__dirname,'./lib')
+  resolve: {
+    alias: {
+      '@': resolve(__dirname, './lib')
     },
   },
-  plugins: [vue()],
+  plugins: [nodeExternals(), vue()],
   build: {
     lib: {
       entry: resolve(__dirname, 'lib/main.ts'),
       name: 'BaStoryPlayer',
       fileName: 'ba-story-player'
-    },
-    rollupOptions: {
-      // make sure to externalize deps that shouldn't be bundled
-      // into your library
-      external: ['vue'],
-      output: {
-        // Provide global variables to use in the UMD build
-        // for externalized deps
-        globals: {
-          vue: 'Vue'
-        }
-      }
     }
   },
   css: {

@@ -14,11 +14,12 @@ function getAudio(url: string): Sound {
     return audio
   }
   else {
-    return Sound.from({
+    const newAudio = Sound.from({
       url,
-      preload: true,
       autoPlay: false,
     })
+    audioMap.set(url, newAudio)
+    return newAudio
   }
 }
 
@@ -74,8 +75,8 @@ export function soundInit() {
         loop: false,
         start: 0,
         end: playAudioInfo.bgm?.bgmArgs.LoopEndTime,
-        complete: function (sound) {    // 第一次播放结束后进入loop
-          sound?.play({
+        complete: function () {    // 第一次播放结束后进入loop
+          bgm?.play({
             loop: true,
             start: playAudioInfo.bgm?.bgmArgs.LoopStartTime,
             end: playAudioInfo.bgm?.bgmArgs.LoopEndTime
