@@ -103,7 +103,7 @@ watch([playerWidth, playerHeight], () => {
   }
 })
 
-
+const fontUrl = `${props.dataUrl}/assets/ResourceHanRoundedCN-Medium.woff2`
 onMounted(() => {
   init('player__main__canvas', pixiConfig, () => emit('end'))
   if (props.startFullScreen) {
@@ -121,7 +121,8 @@ onMounted(() => {
     <div id="player__background" :style="playerStyle">
       <div id="player__main" :style="playerStyle">
         <div id="player__main__canvas" :style="{ transform: `scale(${pixiScale})` }"></div>
-        <BaDialog :player-height="playerHeight" :player-width="playerWidth" :style="{ width: `${playerWidth}px` }">
+        <BaDialog :font-url="fontUrl" :player-height="playerHeight" :player-width="playerWidth"
+          :style="{ width: `${playerWidth}px` }">
         </BaDialog>
         <BaUI :story-summary="storySummary" @fullscreen-change="fullScreen = !fullScreen" />
       </div>

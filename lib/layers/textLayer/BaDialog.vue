@@ -32,7 +32,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, computed, Ref, nextTick, onUnmounted } from 'vue'
+import { onMounted, ref, computed, Ref, nextTick, onUnmounted, onBeforeMount } from 'vue'
 import eventBus from "@/eventBus";
 import Typed, { TypedExtend, TypedOptions } from "typed.js";
 import { ShowOption, ShowText, StText } from "@/types/events";
@@ -44,6 +44,18 @@ const typewriterOutput = ref(); // 对话框el
 const stOutput = ref(); // st特效字el
 // 外部传入播放器高度,用于动态计算字体等数值
 const props = withDefaults(defineProps<TextLayerProps>(), { playerHeight: 0, playerWidth: 0 });
+
+//加载字体
+onBeforeMount(() => {
+  const newStyle = document.createElement('style');
+  newStyle.appendChild(document.createTextNode(`\
+  @font-face {
+    font-family: 'TJL';
+    src: url(${props.fontUrl});`));
+
+  document.head.appendChild(newStyle);
+})
+
 // 标题
 const titleContent = ref<string>("");
 // 位置
@@ -384,14 +396,11 @@ const DefaultTypedOptions: TypedOptions = {
 type TextLayerProps = {
   playerHeight: number; // 整块视口的高
   playerWidth: number; // 整块视口的宽
+  fontUrl: string; //字体地址
 }
 </script>
-<style scoped lang="scss">
-@font-face {
-  font-family: 'TJL';
-  src: url('https://yuuka.cdn.diyigemt.com/image/ba-all-data/assets/ResourceHanRoundedCN-Medium.ttf');
-}
 
+<style scoped lang="scss">
 $border-radius: 5px;
 $dialog-z-index: 3;
 $place-z-index: 8;
@@ -516,7 +525,7 @@ $st-z-index: 10;
       box-sizing: border-box;
 
       img {
-        height: 100%;
+        height: 95%;
       }
 
 
