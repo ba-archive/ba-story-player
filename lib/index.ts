@@ -2,7 +2,7 @@ import eventBus from "@/eventBus";
 import { bgInit } from "@/layers/bgLayer";
 import { characterInit } from "@/layers/characterLayer";
 import { effectInit } from '@/layers/effectLayer';
-import { soundInit } from "@/layers/soundLayer";
+import { soundInit, preloadSound } from "@/layers/soundLayer";
 import { translate } from '@/layers/translationLayer';
 import { initPrivateState, usePlayerStore } from "@/stores";
 import { PlayerConfigs, StoryUnit } from "@/types/common";
@@ -66,7 +66,7 @@ export async function init(elementID: string, props: PlayerConfigs, endCallback:
   L2DInit()
 
   //加载剩余资源
-  resourcesLoader.addLoadResources()
+  await resourcesLoader.addLoadResources()
   resourcesLoader.load(() => {
     app.stage.removeChild(loadingText)
     loadingText.destroy()
@@ -586,9 +586,9 @@ export let resourcesLoader = {
     this.loader = loader
   },
   /**
-   * 添加所有资源
+   * 添加所有资源, 有些pixi loader不能处理的资源则会调用资源处理函数, 故会返回promise
    */
-  addLoadResources() {
+  async addLoadResources() {
     // this.loader.add('https://yuuka.cdn.diyigemt.com/image/ba-all-data/UIs/03_Scenario/01_Background/BG_CS_PR_16.jpg',
     //   'https://yuuka.cdn.diyigemt.com/image/ba-all-data/UIs/03_Scenario/01_Background/BG_CS_PR_16.jpg'
     // )
@@ -596,6 +596,7 @@ export let resourcesLoader = {
     this.addFXResources()
     this.addOtherSounds()
     this.addBGEffectImgs()
+    const audioUrls: string[] = []
     for (let unit of playerStore.allStoryUnit) {
       //添加人物spine
       if (unit.characters.length != 0) {
@@ -608,11 +609,20 @@ export let resourcesLoader = {
       }
       if (unit.audio) {
         //添加bgm资源
-        this.checkAndAdd(unit.audio.bgm?.url)
+        if (unit.audio.bgm?.url) {
+          audioUrls.push(unit.audio.bgm.url)
+        }
+        if (unit.audio.soundUrl) {
+          audioUrls.push(unit.audio.soundUrl)
+        }
+        if (unit.audio.voiceJPUrl) {
+          audioUrls.push(unit.audio.voiceJPUrl)
+        }
+        // this.checkAndAdd(unit.audio.bgm?.url)
 
-        //添加sound
-        this.checkAndAdd(unit.audio.soundUrl)
-        this.checkAndAdd(unit.audio.voiceJPUrl)
+        // //添加sound
+        // this.checkAndAdd(unit.audio.soundUrl)
+        // this.checkAndAdd(unit.audio.voiceJPUrl)
       }
       //添加背景图片
       this.checkAndAdd(unit.bg, 'url')
@@ -623,6 +633,7 @@ export let resourcesLoader = {
         playerStore.curL2dConfig?.otherSpine.forEach(i => this.checkAndAdd(utils.getResourcesUrl('otherL2dSpine', i)))
       }
     }
+    await preloadSound(audioUrls)
   },
 
   /**

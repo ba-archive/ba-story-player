@@ -57,8 +57,6 @@ export type Events = {
    */
   bgOverLapDone: undefined
 
-  //声音层
-
   /**
    * 播放bgm, sound或voiceJP
    */
@@ -206,7 +204,7 @@ export interface ShowCharacter {
 
 export interface PlayAudio {
   bgm?: {
-    url?: string
+    url: string
     bgmArgs: BGMExcelTableItem
   }
   soundUrl?: string
