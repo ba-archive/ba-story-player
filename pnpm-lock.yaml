@@ -17,6 +17,7 @@ specifiers:
   mitt: ^3.0.0
   pixi-spine: ^3.1.0
   pixi.js: ^6.0.0
+  rollup-plugin-node-externals: ^5.1.2
   sass: ^1.57.1
   typed.js: ^2.0.12
   typescript: ^4.6.4
@@ -47,6 +48,7 @@ devDependencies:
   '@types/node': registry.npmmirror.com/@types/node/18.11.9
   '@types/xxhashjs': 0.2.2
   '@vitejs/plugin-vue': registry.npmmirror.com/@vitejs/plugin-vue/3.2.0_vite@3.2.3+vue@3.2.47
+  rollup-plugin-node-externals: 5.1.2_rollup@2.79.1
   sass: 1.57.1
   typescript: registry.npmmirror.com/typescript/4.8.4
   vite: registry.npmmirror.com/vite/3.2.3_pftdh3zqu4qevmbqg2nu3a7f3e
@@ -1348,6 +1350,23 @@ packages:
     engines: {node: '>=8.10.0'}
     dependencies:
       picomatch: 2.3.1
+    dev: true
+
+  /rollup-plugin-node-externals/5.1.2_rollup@2.79.1:
+    resolution: {integrity: sha512-M32v8yPeVT0dYOYHfd6SNyl0X1xskB15jYFlwUPzIIVpLQ200KVlilbFsoNMUho4SnQuT7Di3s/aLm79bnP48w==}
+    engines: {node: '>=14.0.0'}
+    peerDependencies:
+      rollup: ^2.60.0 || ^3.0.0
+    dependencies:
+      rollup: 2.79.1
+    dev: true
+
+  /rollup/2.79.1:
+    resolution: {integrity: sha512-uKxbd0IhMZOhjAiD5oAFp7BqvkA4Dv47qpOCtaNvng4HBwdbWtdOh8f5nZNuk2rp51PMGk3bzfWu5oayNEuYnw==}
+    engines: {node: '>=10.0.0'}
+    hasBin: true
+    optionalDependencies:
+      fsevents: 2.3.2
     dev: true
 
   /sass/1.57.1:
