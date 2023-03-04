@@ -249,7 +249,7 @@ onDeactivated(() => {
     top: 100dvh;
     left: 0;
     transform-origin: top left;
-
+    z-index: 201;
     #player__main__canvas {
       z-index: -1;
     }
