@@ -221,8 +221,7 @@ onDeactivated(() => {
 
 //noinspection CssOverwrittenProperties
 #player {
-  //background-color: #080808;
-  background-color: magenta;
+  background-color: #080808;
   padding: 0;
   margin: 0;
 
@@ -265,6 +264,19 @@ onDeactivated(() => {
       position: absolute;
       left: 0;
       transform-origin: top left;
+    }
+  }
+}
+</style>
+<style lang="scss">
+.pseudo-fullscreen {
+  .container,.baui {
+    animation: fuck-safari 999999s alternate infinite;
+  }
+  // 给 Safari 一鞭子，让渲染引擎别睡死
+  @keyframes fuck-safari {
+    to {
+      transform: translateX(1px)
     }
   }
 }
