@@ -615,4 +615,17 @@ $st-z-index: 10;
     opacity: 0;
   }
 }
+
+.pseudo-fullscreen {
+  .container {
+    animation: fuck-safari 999999s alternate infinite;
+  }
+}
+
+// 给 Safari 一鞭子，让渲染引擎别睡死
+@keyframes fuck-safari {
+  to {
+    transform: translateX(1px)
+  }
+}
 </style>

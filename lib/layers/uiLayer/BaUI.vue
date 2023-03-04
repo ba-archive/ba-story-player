@@ -323,4 +323,16 @@ const handleBtnMenuDebounced = debounce(handleBtnMenu, 200);
     }
   }
 }
+
+.pseudo-fullscreen {
+  .baui {
+    animation: fuck-safari 999999s alternate infinite;
+  }
+}
+
+@keyframes fuck-safari {
+  to {
+    transform: translateX(1px)
+  }
+}
 </style>
