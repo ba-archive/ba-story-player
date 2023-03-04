@@ -82,7 +82,8 @@ function handleSelect(select: number) {
     <div class="ba-selector" ref="selectorElement" :style="{ marginTop: selectorMarginTop }">
       <!-- 没有发生 DOM 顺序的移动，让 vue 使用就地复用策略提高效率，不需要 key -->
       <!-- eslint-disable vue/require-v-for-key -->
-      <div v-for="(option, index) in selection" @mousedown="handleSelectMouseDown(index)"
+      <div v-for="(option, index) in selection" @mousedown="handleSelectMouseDown(index)" 
+        @touchstart="handleSelectMouseDown(index)" @touchend="handleSelectMouseLeave"
         @mouseenter="handleSelectMouseEnter(index)" @mouseleave="handleSelectMouseLeave" @click="handleSelect(index)"
         role="button" tabindex="-1" class="ba-selector-list"
         :class="{ activated: index === selectionCandidate, selected: index === selectedOption }">

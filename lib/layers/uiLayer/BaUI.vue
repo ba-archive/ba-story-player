@@ -134,15 +134,18 @@ const handleBtnMenuDebounced = debounce(handleBtnMenu, 200);
 
       <Transition>
         <div class="baui-menu-options lean-rect" v-if="!hiddenSubMenu">
-          <button class="button-nostyle ba-menu-option" @click="handleBtnFullScreen" @mousedown="handleBtnMouseDown"
+          <button class="button-nostyle ba-menu-option" @click="handleBtnFullScreen" 
+            @mousedown="handleBtnMouseDown" @touchstart="handleBtnMouseDown" @touchend="handleBtnMouseUp"
             @mouseup="handleBtnMouseUp" @mouseleave="handleBtnMouseUp">
             <img draggable="false" src="./assets/pan-arrow.svg" />
           </button>
-          <button class="button-nostyle ba-menu-option" @click="handleBtnChatLog" @mousedown="handleBtnMouseDown"
+          <button class="button-nostyle ba-menu-option" @click="handleBtnChatLog" 
+            @mousedown="handleBtnMouseDown" @touchstart="handleBtnMouseDown" @touchend="handleBtnMouseUp"
             @mouseup="handleBtnMouseUp" @mouseleave="handleBtnMouseUp">
             <img draggable="false" src="./assets/menu.svg" />
           </button>
-          <button class="button-nostyle ba-menu-option" @click="handleBtnSkipSummary" @mousedown="handleBtnMouseDown"
+          <button class="button-nostyle ba-menu-option" @click="handleBtnSkipSummary" 
+            @mousedown="handleBtnMouseDown" @touchstart="handleBtnMouseDown" @touchend="handleBtnMouseUp"
             @mouseup="handleBtnMouseUp" @mouseleave="handleBtnMouseUp">
             <img draggable="false" src="./assets/fast-forward.svg" />
           </button>
