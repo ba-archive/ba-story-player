@@ -266,6 +266,8 @@ export let eventEmitter = {
   titleDone: true,
   textDone: true,
   stDone: true,
+  toBeContinueDone: true,
+  nextEpisodeDone: true,
   /** 当前l2d动画是否播放完成 */
   l2dAnimationDone: true,
   VoiceJpDone: true,
@@ -318,6 +320,8 @@ export let eventEmitter = {
       }
       this.VoiceJpDone = true
     })
+    eventBus.on('nextEpisodeDone', () => this.nextEpisodeDone = true)
+    eventBus.on('toBeContinueDone', () => this.toBeContinueDone = true)
 
     storyHandler.storyPlay()
   },
@@ -344,8 +348,11 @@ export let eventEmitter = {
     switch (currentStoryUnit.type) {
       case 'title':
         this.titleDone = false
-        if (currentStoryUnit.textAbout.word) {
-          eventBus.emit('showTitle', currentStoryUnit.textAbout.word)
+        if (currentStoryUnit.textAbout.titleInfo) {
+          eventBus.emit('showTitle', currentStoryUnit.textAbout.titleInfo)
+        }
+        else {
+          throw new Error('没有标题信息提供')
         }
         break
       case 'place':
@@ -386,9 +393,19 @@ export let eventEmitter = {
         break
       case 'effectOnly':
         break
-      //to do
-      // case 'continue':
-      //   break
+      case 'continue':
+        this.toBeContinueDone = false
+        eventBus.emit('toBeContinue')
+        break
+      case 'nextEpisode':
+        this.nextEpisodeDone = false
+        if (currentStoryUnit.textAbout.titleInfo) {
+          eventBus.emit('nextEpisode', currentStoryUnit.textAbout.titleInfo)
+        }
+        else {
+          throw new Error('没有标题信息提供')
+        }
+        break
       default:
         console.log(`本体中尚未处理${currentStoryUnit.type}类型故事节点`)
     }
@@ -504,7 +521,8 @@ export let eventEmitter = {
       }
     }
     //在有变换时隐藏所有对象
-    if (storyHandler.currentStoryUnit.bg?.overlap || storyHandler.currentStoryUnit.transition) {
+    if (storyHandler.currentStoryUnit.bg?.overlap || storyHandler.currentStoryUnit.transition 
+      || storyHandler.currentStoryUnit.type==='continue') {
       eventBus.emit('hide')
     }
   },
@@ -566,6 +584,9 @@ export let eventEmitter = {
       eventBus.emit('popupVideo', storyHandler.currentStoryUnit.video.videoPath)
       eventBus.emit('playAudio', { soundUrl: storyHandler.currentStoryUnit.video.soundPath })
     }
+    else {
+      eventBus.emit('hidePopup')
+    }
   }
 }
 
@@ -623,6 +644,8 @@ export let resourcesLoader = {
       }
       //添加背景图片
       this.checkAndAdd(unit.bg, 'url')
+      //添加popupImage
+      this.checkAndAdd(unit.PopupFileName)
 
       //添加l2d spine资源
       this.checkAndAdd(unit.l2d, 'spineUrl')

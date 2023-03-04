@@ -1,14 +1,14 @@
 import type { Spine } from 'pixi-spine';
-import { PlayAudio, PlayEffect, ShowOption, ShowText, StArgs } from './events';
+import { PlayAudio, PlayEffect, ShowOption, ShowText, ShowTitleOption, StArgs } from './events';
 import { TransitionTableItem } from './excels';
-import {PlayerProps} from '@/BaStoryPlayer.vue'
-export type StoryType = "title" | "place" | "text" | "option" | "st" | "effectOnly" | 'continue'
+import { PlayerProps } from '@/BaStoryPlayer.vue'
+export type StoryType = "title" | "place" | "text" | "option" | "st" | "effectOnly" | 'continue' | 'nextEpisode'
 
 export type Dict<T> = {
   [key: string]: T;
 };
 
-export type PlayerConfigs = PlayerProps &{height:number}
+export type PlayerConfigs = PlayerProps & { height: number }
 
 
 export interface Text {
@@ -174,6 +174,7 @@ export interface StoryUnit {
      * 当内容为一个单词时填入, 如地点, 标题, 章节名
      */
     word?: string
+    titleInfo?: ShowTitleOption
     /**
      * 显示的对话文字
      */
