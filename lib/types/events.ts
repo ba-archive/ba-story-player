@@ -182,6 +182,19 @@ export type Events = {
    * 用户点击
    */
   click: undefined
+  /**
+   * 开始播放加载动画
+   * @param string 资源地址
+   */
+  startLoading: string;
+  /**
+   * 某个资源加载完成或失败
+   */
+  oneResourceLoaded: ResourceLoadState;
+  /**
+   * 所有资源加载完成
+   */
+  loaded: undefined;
 }
 
 export interface BgParams {
@@ -266,4 +279,9 @@ export interface PlayEffect {
 export interface ShowTitleOption {
   title: string;
   subtitle?: string;
+}
+
+export interface ResourceLoadState {
+  type: "success" | "fail";
+  resourceName: string;
 }

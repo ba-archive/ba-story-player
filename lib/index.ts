@@ -52,10 +52,16 @@ export async function init(elementID: string, props: PlayerConfigs, endCallback:
   Loader.registerPlugin(SpineParser);
 
   //添加加载文字并加载初始化资源以便翻译层进行翻译
-  let loadingText = new Text('loading...', { fill: ['white'] })
-  loadingText.y = app.screen.height - 50
-  loadingText.x = app.screen.width - 150
-  app.stage.addChild(loadingText)
+  app.loader.onLoad.add((_, resource) => {
+    eventBus.emit("oneResourceLoaded", { type: "success", resourceName: resource.name });
+  });
+  app.loader.onError.add((err, _, resource) => {
+    console.error(err);
+    eventBus.emit("oneResourceLoaded", { type: "fail", resourceName: resource.name });
+  });
+  app.loader.onStart.add(() => {
+    eventBus.emit("startLoading", props.dataUrl);
+  });
   await resourcesLoader.init(app.loader)
   privateState.allStoryUnit = translate(props.story)
 
@@ -68,8 +74,7 @@ export async function init(elementID: string, props: PlayerConfigs, endCallback:
   //加载剩余资源
   await resourcesLoader.addLoadResources()
   resourcesLoader.load(() => {
-    app.stage.removeChild(loadingText)
-    loadingText.destroy()
+    eventBus.emit("loaded");
     eventBus.emit('hidemenu')
     //开始发送事件
     eventEmitter.init()
@@ -521,7 +526,7 @@ export let eventEmitter = {
       }
     }
     //在有变换时隐藏所有对象
-    if (storyHandler.currentStoryUnit.bg?.overlap || storyHandler.currentStoryUnit.transition 
+    if (storyHandler.currentStoryUnit.bg?.overlap || storyHandler.currentStoryUnit.transition
       || storyHandler.currentStoryUnit.type==='continue') {
       eventBus.emit('hide')
     }
