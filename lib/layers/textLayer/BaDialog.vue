@@ -587,7 +587,7 @@ const overrideTitleStyle = computed(() => {
   };
 });
 // 文本框总高度
-const dialogHeight = computed(() => props.playerHeight * 0.4);
+const dialogHeight = computed(() => props.playerHeight * 0.37);
 // 选择框位置
 const standardDialogHeight = 550;
 const standardDialogTopOffset = 100;
@@ -724,7 +724,7 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
 
 .content {
   --font-size: 2rem;
-  margin-top: 1.5rem;
+  margin-top: 1.5%; 
   color: white;
   font-size: var(--font-size);
   line-height: 1.5em;
