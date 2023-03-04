@@ -22,7 +22,7 @@ eventBus.on('*', (type, e) => {
 
 let storySummary = {
   chapterName: '章节名',
-  summary: '总之就是总结'
+  summary: '从奇怪的梦中醒来之后的[USERNAME]老师从联邦学生会的干部七神凛那里听到学生会长失踪的消息。由于学生会长失踪，学园城市基沃托斯陷入了混乱。为了解决这场混乱，老师和学生会的干部一同前往夏莱办公室。'
 }
 let toolType = ref('')
 let cacheKey = 'toolType'
@@ -46,6 +46,7 @@ Reflect.set(window, 'next', () => {
 })
 
 let width = ref(1000)
+const height = ref(562.5)
 
 const currentStoryIndex = ref(0)
 const indexCacheKey = 'storyIndex'
@@ -93,15 +94,49 @@ function changeJSON() {
   localStorage.setItem(storyCacheKey, storyJsonName.value)
   location.reload()
 }
+
+
+// //字体适配
+// void function(win) {
+// 	const doc = win.document;
+// 	const docEl = doc.documentElement;
+// 	let tid: NodeJS.Timeout;
+
+// 	function refreshRem() {
+// 		var width = docEl.getBoundingClientRect().width;
+// 		if (width >= 1600) { // 最大宽度
+//       docEl.style.fontSize = 16 + 'px';
+// 		} else if (width < 1600 && width >= 1400) {
+//       docEl.style.fontSize = 14 + 'px';
+//     } else if (width < 1400 && width >= 1200) {
+//       docEl.style.fontSize = 12 + 'px';
+//     } else if (width < 1200 && width >= 1000) {
+//       docEl.style.fontSize = 10 + 'px';
+//     } else if (width < 1000 && width >= 800) {
+//       docEl.style.fontSize = 8 + 'px';
+//     } else if (width < 800 && width >= 600) {
+//       docEl.style.fontSize = 6 + 'px';
+//     } else {
+//       docEl.style.fontSize = 6 + 'px';
+//     }
+// 	}
+
+// 	win.addEventListener('resize', function() {
+// 		clearTimeout(tid);
+// 		tid = setTimeout(refreshRem, 10);
+// 	}, false);
+// 	refreshRem();
+// }(window);
+
 </script>
 
 <template>
   <div style="display:flex;justify-content: center;">
     <div v-if="showPlayer">
       <BaStoryPlayer :story="story" data-url="https://yuuka.cdn.diyigemt.com/image/ba-all-data" :width="width"
-        language="Cn" userName="testUser" :story-summary="storySummary" />
+        :height="height" language="Cn" userName="testUser" :story-summary="storySummary" />
     </div>
-    <div style="position: absolute;left: 0;display: flex;flex-direction: column;width: 20vh;">
+    <div style="position: absolute;left: 0;display: flex;flex-direction: column;width: 20vh;z-index: 100;">
       <label>辅助工具选择</label>
       <select v-model="toolType">
         <option value="emotion">人物特效测试</option>

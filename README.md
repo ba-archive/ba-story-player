@@ -1,7 +1,16 @@
 # 剧情播放器组件仓库
 本仓库是剧情播放器组件仓库, 用于播放碧蓝档案游戏剧情.
 
-注意目前播放器的宽高比会自动固定为设备宽高比, 不可改变, 全屏模式可能会出现问题, 后续会改进.
+在进入全屏后, 如果宽高比小于16/9, 则维持宽高比, 若大于, 则锁定为16/9.
+全屏时会自动检测是否横屏并自动旋转.
+
+# 使用
+```html
+<script setup>
+import storyPlayer from 'ba-story-player'
+import 'ba-story-player/dist/style.css'
+</script>
+```
 
 # props
 ## story 
@@ -19,6 +28,10 @@ type: `number`
 
 播放器宽度, 单位是px, 可变.
 
+## height
+
+播放器高度, 单位是px, 可变. 注意请不要设置偏离16/9太多的宽高比, 可能导致播放器表现变差.
+
 ## storySummary
 type: 
 ```ts
@@ -35,9 +48,9 @@ export interface StorySummary {
 ```
 
 ## language 
-type: `'Cn'|'Jp'`
+type: `'Cn'|'Jp'|'En'|'Tw'`
 
-语言选项, 目前只有`Cn`和`Jp`两个选项.
+语言选项
 
 ## startFullScreen
 type: `boolean`

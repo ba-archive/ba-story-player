@@ -26,6 +26,10 @@ export interface BgLayer {
    */
   handleShowBg(params: BgParams): void;
   /**
+   * 处理canvas尺寸变化
+   */
+  handleResize(): void;
+  /**
    * 从 Loader Resource 获取背景 Sprite
    * @param resources loader resources
    * @param name 背景图片名

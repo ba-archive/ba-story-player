@@ -4,12 +4,15 @@ import BaDialog from "@/layers/textLayer/BaDialog.vue";
 import BaUI from "@/layers/uiLayer/BaUI.vue"
 import { StoryRawUnit } from '@/types/common';
 import { Language, StorySummary } from '@/types/store';
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, onBeforeMount, onMounted, ref, watch } from 'vue';
+import eventBus from './eventBus';
+import { usePlayerStore } from './stores';
 
 export type PlayerProps = {
   story: StoryRawUnit[]
   dataUrl: string
   width: number
+  height: number
   language: Language
   userName: string
   storySummary: StorySummary
@@ -22,100 +25,147 @@ const props = withDefaults(defineProps<PlayerProps>(), {
   useMp3: false,
   useSuperSampling: false
 })
+const storySummary = ref(props.storySummary)
+storySummary.value.summary = storySummary.value.summary.replace('[USERNAME]', props.userName)
+const emit = defineEmits(['end'])
 
-let emitter = defineEmits(['end'])
 
-let fullScreen = ref(props.startFullScreen)
-watch(fullScreen, val => {
-  if (val) {
-    width.value = window.screen.availWidth
-  }
-  else {
-    width.value = props.width
-  }
-})
-
-/**
- * 根据屏幕大小计算宽高比 
- */
-let aspectRatio = 0
-if (window.screen.height > window.screen.width) {
-  aspectRatio = window.screen.width / window.screen.height
-}
-else {
-  aspectRatio = window.screen.height / window.screen.width
-}
-
-/**
- * 指定canvas一个固定的width保证画面表现
- */
-let playerWidth = 1800
-let playerConfig = { ...props, height: 0 }
-playerConfig.width = playerWidth
-playerConfig.height = playerWidth * aspectRatio
-let width = ref(props.width)
-let height = computed(() => width.value * aspectRatio)
-if (fullScreen.value) {
-  width.value = window.screen.availWidth
-}
-watch(() => props.width, val => {
+const playerHeight = ref(props.height)
+const playerWidth = ref(props.width)
+watch([() => props.width, () => props.height], () => {
   if (!fullScreen.value) {
-    width.value = val
+    playerWidth.value = props.width
+    playerHeight.value = props.height
   }
 })
-window.addEventListener('resize', e => {
+const playerStyle = computed(() => {
+  return { height: `${playerHeight.value}px`, width: `${playerWidth.value}px` }
+})
+const player = ref<HTMLDivElement>()
+
+
+const fullScreen = ref(props.startFullScreen)
+const fullScreenMaxAspectRatio = 16 / 9
+watch(fullScreen, updateFullScreenState)
+/**
+ * 强制横屏使播放器居中的top值
+ */
+const fullscreenTopOffset = computed(() => {
+  const screenWidth = Math.max(window.screen.availHeight, window.screen.availWidth)
+  return `${100 - (1 - playerWidth.value / screenWidth) / 2 * 100}%`
+})
+/**
+ * 根据fullScrren值更新播放器状态
+ */
+async function updateFullScreenState() {
+  const currentFullScrrenState = document.fullscreenElement !== null
   if (fullScreen.value) {
-    width.value = window.screen.availWidth
-  }
-})
-let scale = computed(
-  () => (height.value + 1) / playerConfig.height
-)
-let playerStyle = computed(() => {
-  return { height: `${height.value}px`, width: `${width.value}px` }
-})
-let player = ref<HTMLDivElement>()
-//当availheight与height不匹配时进行偏移
-let topPx = computed(() => {
-  if (fullScreen.value && Math.abs(window.screen.availHeight - height.value) >= 10) {
-    return `${(window.screen.availHeight - height.value) / 2}px`
+    if (!currentFullScrrenState) {
+      await player.value?.requestFullscreen({ navigationUI: 'hide' })
+    }
+    playerHeight.value = Math.min(window.screen.availWidth, window.screen.availHeight)
+    const tempWidth = Math.max(window.screen.availWidth, window.screen.availHeight)
+    if (tempWidth / playerHeight.value > fullScreenMaxAspectRatio) {
+      playerWidth.value = playerHeight.value * fullScreenMaxAspectRatio
+    }
+    else {
+      playerWidth.value = tempWidth
+    }
   }
   else {
-    return '0px'
+    if (currentFullScrrenState) {
+      await document.exitFullscreen()
+    }
+    playerWidth.value = props.width
+    playerHeight.value = props.height
+  }
+}
+window.addEventListener('resize', updateFullScreenState)
+
+
+/**
+ * 指定canvas一个固定的height保证画面表现
+ */
+const pixiHeight = 1012.5
+const pixiConfig = { ...props, height: pixiHeight }
+pixiConfig.width = pixiHeight * props.width / props.height
+const pixiScale = computed(
+  //比实际放大一点放置并隐藏解决缩放不精确的问题
+  () => (playerHeight.value + 1) / pixiHeight
+)
+watch([playerWidth, playerHeight], () => {
+  const newWidth = pixiHeight * playerWidth.value / playerHeight.value
+  const app = usePlayerStore().app
+  const originWidth = app.screen.width
+  if (newWidth.toFixed(2) !== originWidth.toFixed(2)) {
+    app.renderer.resize(newWidth, pixiHeight)
+    eventBus.emit('resize', originWidth)
   }
 })
 
+const fontUrl = `${props.dataUrl}/assets/ResourceHanRoundedCN-Medium.woff2`
+//加载字体
+onBeforeMount(() => {
+  const newStyle = document.createElement('style');
+  newStyle.appendChild(document.createTextNode(`\
+  @font-face {
+    font-family: 'TJL';
+    src: url(${fontUrl});`));
 
+  document.head.appendChild(newStyle);
+})
 onMounted(() => {
-  init('player__main__canvas', playerConfig, () => emitter('end'))
+  init('player__main__canvas', pixiConfig, () => emit('end'))
   if (props.startFullScreen) {
-    player.value?.requestFullscreen({ navigationUI: 'hide' })
-    player.value?.addEventListener('fullscreenchange', () => {
-      fullScreen.value = document.fullscreenElement !== null
-    })
+    updateFullScreenState()
   }
+  //保证fullscreen值正确性
+  player.value?.addEventListener('fullscreenchange', () => {
+    fullScreen.value = document.fullscreenElement !== null
+  })
 })
-
 </script>
 
 <template>
   <div id="player" :style="playerStyle" ref="player">
-    <div id="player__main" :style="playerStyle">
-      <div id="player__main__canvas" :style="{ transform: `scale(${scale})` }"></div>
-      <BaDialog :player-height="height" :player-width="width" :style="{ width: `${width}px` }"></BaDialog>
-      <BaUI :story-summary="storySummary" />
+    <div id="player__background" :style="playerStyle">
+      <div id="player__main" :style="playerStyle">
+        <div id="player__main__canvas" :style="{ transform: `scale(${pixiScale})` }"></div>
+        <BaDialog :player-height="playerHeight" :player-width="playerWidth" :style="{ width: `${playerWidth}px` }">
+        </BaDialog>
+        <BaUI :story-summary="storySummary" @fullscreen-change="fullScreen = !fullScreen" />
+      </div>
     </div>
   </div>
 </template>
 
 <style lang="scss">
+@media screen and (orientation: portrait) {
+  #player:fullscreen {
+    #player__background {
+      transform: rotate(-90deg);
+      transform-origin: left top;
+      position: absolute;
+      top: v-bind(fullscreenTopOffset);
+      left: 0;
+    }
+  }
+
+}
+
 #player {
-  background-color: black;
-  overflow: hidden;
+  background-color: #080808;
+
+  &:fullscreen {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
 
   &__main {
     position: relative;
-    top: v-bind(topPx);
+    display: inline-block;
+    overflow: hidden;
 
     &__canvas {
       position: absolute;

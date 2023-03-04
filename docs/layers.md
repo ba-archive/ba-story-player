@@ -71,8 +71,6 @@ export interface PlayAudio {
 ```
 `playEmotionAudio`: 播放人物情绪动作特效音, 参数是一个string代表人物的情绪动作
 
-`playSelectSound`: 播放选择时的特效音
-
 ## 可使用getter
 `otherSoundUrl`: 获取其他声音资源url
 
@@ -88,6 +86,8 @@ UI层负责UI的相关功能
 `stopAuto`: 自动模式停止
 
 `hideDialog`: 隐藏对话框
+
+`playOtherSound`: 参数: `select`. 播放选择时的特效音
 ## 接受事件
 `hidemenu`: 隐藏ui
 
@@ -215,7 +215,6 @@ type
 
 `select`: 选择后加入下一剧情语句, 需要带一个number类型的参数
 
-`playSelectSound`: 播放选择时的特效音
 ## 需要处理的state
 `logText`: 已播放剧情语句, 通过`setLogText`进行修改.
 # 特效层
@@ -238,5 +237,3 @@ L2D层用于播放L2D
 `endL2D`: 停止L2D
 ## 可使用getter
 `l2dSpineData`: 获取l2d的spine数据
-
-

@@ -26,6 +26,7 @@
       <div ref="titleEL" class="title-container absolute-container" :style="overrideTitleStyle" v-if="titleContent">
         <div class="title-border" :style="{ '--side-padding': `${titleBorderPadding}px` }">
           <div ref="titleContain" class="title-contain" :style="{ '--font-size': `${fontSize(4)}rem` }">
+            <img src="./assets/title-border.png" />
             <div class="sub-title" v-if="subTitleContent">
               <span class="sub-title-inner">{{ subTitleContent }}</span>
             </div>
@@ -645,12 +646,8 @@ type TextLayerProps = {
   playerWidth: number; // 整块视口的宽
 }
 </script>
-<style scoped lang="scss">
-@font-face {
-  font-family: 'TJL';
-  src: url('https://yuuka.cdn.diyigemt.com/image/ba-all-data/assets/ResourceHanRoundedCN-Medium.ttf');
-}
 
+<style scoped lang="scss">
 $border-radius: 5px;
 $dialog-z-index: 3;
 $place-z-index: 8;
@@ -738,6 +735,10 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
   user-select: none;
   overflow: hidden;
 
+  hr {
+    border: 0.1px rgba(255, 255, 255, 0.666) solid;
+  }
+
   .container-inner {
     width: 100%;
     height: 100%;
@@ -747,25 +748,35 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
   .title-container {
     text-align: center;
     opacity: 0;
+    backdrop-filter: blur(7px);
     color: white;
     z-index: $text-layer-z-index + $title-z-index;
     $padding: 10px;
     padding: $padding;
 
     .title-border {
+      position: relative;
       --side-padding: 0px;
-      width: calc(100% - 2 * #{$padding} - 2 * var(--side-padding));
-      height: calc(100% - 2 * #{$padding});
-      background: url("./assets/title-border.png") no-repeat;
+      // width: calc(100% - 2 * #{$padding} - 2 * var(--side-padding));
+      height: 100%;
+      // background: url("./assets/title-border.png") no-repeat;
       background-size: 100% 100%;
-      display: flex;
+      display: inline-flex;
       align-items: center;
       justify-content: center;
       line-height: 1;
-      padding: 0 var(--side-padding);
+      padding: var(--side-padding) 0;
+      box-sizing: border-box;
+
+      img {
+        height: 95%;
+      }
+
 
       .title-contain {
         --font-size: 2rem;
+        position: absolute;
+        left: 0;
         line-height: 1;
         font-size: var(--font-size);
         color: black;
