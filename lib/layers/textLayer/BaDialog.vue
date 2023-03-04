@@ -25,8 +25,8 @@
       <div class="st-container absolute-container" ref="stOutput" :style="{ fontSize: `${standardFontSize}rem` }" />
       <div ref="titleEL" class="title-container absolute-container" :style="overrideTitleStyle" v-if="titleContent">
         <div class="title-border" :style="{ '--side-padding': `${titleBorderPadding}px` }">
+          <img src="./assets/title-border.png" />
           <div ref="titleContain" class="title-contain" :style="{ '--font-size': `${fontSize(4)}rem` }">
-            <img src="./assets/title-border.png" />
             <div class="sub-title" v-if="subTitleContent">
               <span class="sub-title-inner">{{ subTitleContent }}</span>
             </div>
@@ -578,10 +578,13 @@ function setTypingComplete(complete: boolean, instance?: TypedExtend) {
 const overrideTitleStyle = computed(() => {
   if (overrideTitleZIndex.value) {
     return {
-      "z-index": overrideTitleZIndex.value
+      "z-index": overrideTitleZIndex.value,
     };
   }
-  return {};
+  return {
+      //当为nexetEpisode时取消背景模糊
+      "backdrop-filter": showNextEpisode.value? 'none' : 'blur(7px)'
+  };
 });
 // 文本框总高度
 const dialogHeight = computed(() => props.playerHeight * 0.4);
@@ -748,11 +751,10 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
   .title-container {
     text-align: center;
     opacity: 0;
-    backdrop-filter: blur(7px);
     color: white;
     z-index: $text-layer-z-index + $title-z-index;
-    $padding: 10px;
-    padding: $padding;
+    // $padding: 10px;
+    // padding: $padding;
 
     .title-border {
       position: relative;
