@@ -163,9 +163,9 @@ const handleBtnMenuDebounced = debounce(handleBtnMenu, 200);
         <p class="ba-story-summery-text">
           {{ storySummary.summary }}
         </p>
-        <p class="ba-story-summery-tip">※ 是否略过此剧情？</p>
+        <!-- <p class="ba-story-summery-tip">※ 是否略过此剧情？</p> -->
         <div class="ba-story-summery-button-group">
-          <BaButton size="large" class="polylight" @click="hiddenSummary = true">取消</BaButton>
+          <!-- <BaButton size="large" class="polylight" @click="hiddenSummary = true">取消</BaButton> -->
           <BaButton size="large" class="polydark" @click="eventBus.emit('skip'); hiddenSummary = true">确认</BaButton>
         </div>
       </div>
@@ -325,7 +325,7 @@ const handleBtnMenuDebounced = debounce(handleBtnMenu, 200);
     .ba-story-summery-button-group {
       display: grid;
       margin: 0.75rem 1rem 1.5rem;
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(1, 1fr);
       grid-gap: 1rem;
     }
   }
