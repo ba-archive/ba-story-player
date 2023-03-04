@@ -43,6 +43,7 @@ const playerStyle = computed(() => {
 })
 const player = ref<HTMLDivElement>()
 
+const isPseudoFullscreen = ref(false)
 
 const fullScreen = ref(props.startFullScreen)
 const fullScreenMaxAspectRatio = 16 / 9
@@ -77,16 +78,27 @@ async function updateFullScreenState() {
           console.log('mozRequestFullScreen')
           await player.value?.mozRequestFullScreen({navigationUI: 'hide'})
         }
+      } else {
+        // 无法全屏，将 player 从文档流中脱出并手动伪造全屏效果
+        // 估计只有手机 Safari 会走到这里，所以直接不考虑横屏设备的情况
+        isPseudoFullscreen.value = true
+        player.value?.classList.add('pseudo-fullscreen')
+        playerWidth.value = window.innerHeight
+        playerHeight.value = window.innerWidth
+        console.log('pseudo-fullscreen')
       }
     }
-    playerHeight.value = Math.min(window.screen.availWidth, window.screen.availHeight)
-    const tempWidth = Math.max(window.screen.availWidth, window.screen.availHeight)
-    if (tempWidth / playerHeight.value > fullScreenMaxAspectRatio) {
-      playerWidth.value = playerHeight.value * fullScreenMaxAspectRatio
-    } else {
-      playerWidth.value = tempWidth
+    if (!isPseudoFullscreen.value) {
+      playerHeight.value = Math.min(window.screen.availWidth, window.screen.availHeight)
+      const tempWidth = Math.max(window.screen.availWidth, window.screen.availHeight)
+      if (tempWidth / playerHeight.value > fullScreenMaxAspectRatio) {
+        playerWidth.value = playerHeight.value * fullScreenMaxAspectRatio
+      } else {
+        playerWidth.value = tempWidth
+      }
     }
   } else {
+    // 退出全屏
     if (currentFullScreenState) {
       if (document.exitFullscreen) {
         await document.exitFullscreen()
@@ -96,12 +108,18 @@ async function updateFullScreenState() {
         await document.mozCancelFullScreen()
       }
     }
+    if (isPseudoFullscreen.value) {
+      isPseudoFullscreen.value = false
+      player.value?.classList.remove('pseudo-fullscreen')
+    }
+
     playerWidth.value = props.width
     playerHeight.value = props.height
   }
 }
 
-window.addEventListener('resize', updateFullScreenState)
+// FIXME：在手机上滑动页面导致地址栏高度变化时也会触发resize事件，但是这时候不应该更新播放器大小
+// window.addEventListener('resize', updateFullScreenState)
 
 
 /**
@@ -221,6 +239,16 @@ onDeactivated(() => {
     flex-direction: column;
     justify-content: center;
     align-items: center;
+  }
+  // make mobile safari happy
+  &.pseudo-fullscreen {
+    position: fixed;
+    transform: rotate(-90deg);
+    // 宽高已经设置成了屏幕宽高，所以接下来就是想办法让它居中
+    top: 100vh;
+    top: 100dvh;
+    left: 0;
+    transform-origin: top left;
   }
 
   &__main {
