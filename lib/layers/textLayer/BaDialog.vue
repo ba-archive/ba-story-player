@@ -666,7 +666,6 @@ onMounted(() => {
   eventBus.on("startLoading", handleStartLoading);
   eventBus.on("oneResourceLoaded", handleOneResourceLoaded);
   eventBus.on("loaded", handleEndLoading);
-  eventBus.on("dispose",()=>typingInstance.destroy())
 });
 onUnmounted(() => {
   eventBus.off("showTitle", handleShowTitle);

@@ -10,7 +10,7 @@ import * as utils from '@/utils';
 import { getOtherSoundUrls, wait } from "@/utils";
 import axios from 'axios';
 import { SpineParser } from 'pixi-spine';
-import { Application, Loader, settings, Text } from "pixi.js";
+import { Application, Loader, settings, utils as pixiUtils } from "pixi.js";
 import { L2DInit } from "./layers/l2dLayer/L2D";
 
 let playerStore: ReturnType<typeof usePlayerStore>
@@ -25,7 +25,6 @@ let l2dVoiceExcelTable = {
 export async function init(elementID: string, props: PlayerConfigs, endCallback: () => void) {
   //缓解图片缩放失真
   settings.MIPMAP_TEXTURES = 2
-
 
   if (props.useMp3) {
     utils.setOggAudioType('mp3')
@@ -104,7 +103,9 @@ export function dispose() {
   initPrivateState().app = null
   eventBus.emit('dispose')
   eventBus.all.clear()
-  storyHandler.currentStoryIndex = 0
+  usePlayerStore().logText.value = []
+  pixiUtils.clearTextureCache()
+  storyHandler.isEnd = true
 }
 
 
@@ -317,6 +318,12 @@ export let eventEmitter = {
    * 注册事件
    */
   init() {
+    //初始化值
+    for (const key of Object.keys(eventEmitter) as Array<keyof typeof eventEmitter>) {
+      if (key.endsWith('Done') && key !== 'unitDone') {
+        Reflect.set(eventEmitter, key, true)
+      }
+    }
     eventBus.on('next', () => {
       storyHandler.next()
       if (!this.unitDone) {
@@ -354,6 +361,8 @@ export let eventEmitter = {
     eventBus.on('nextEpisodeDone', () => this.nextEpisodeDone = true)
     eventBus.on('toBeContinueDone', () => this.toBeContinueDone = true)
 
+    storyHandler.currentStoryIndex = 0
+    storyHandler.isEnd = false
     storyHandler.storyPlay()
   },
 
@@ -444,12 +453,23 @@ export let eventEmitter = {
     let startTime = Date.now()
     let checkEffectDone = new Promise<void>((resolve, reject) => {
       let interval = setInterval(() => {
+        if (storyHandler.isEnd) {
+          resolve()
+        }
         if (this.unitDone) {
           clearInterval(interval)
           resolve()
         }
         else if (Date.now() - startTime >= 50000) {
-          reject('特效长时间未完成')
+          for (const key of Object.keys(eventEmitter) as Array<keyof typeof eventEmitter>) {
+            if (key.endsWith('Done') && key !== 'unitDone') {
+              if (!eventEmitter[key]) {
+                console.error(`${key}未完成: `)
+              }
+            }
+          }
+          reject(`故事节点 index: ${storyHandler.currentStoryIndex},object:${storyHandler.currentStoryUnit}长时间未完成`)
+          clearInterval(interval)
         }
       })
     })
