@@ -133,8 +133,9 @@ function changeJSON() {
 <template>
   <div style="display:flex;justify-content: center;">
     <div v-if="showPlayer">
-      <BaStoryPlayer :story="prologue" data-url="https://yuuka.cdn.diyigemt.com/image/ba-all-data" :width="width"
+      <BaStoryPlayer :story="story" data-url="https://yuuka.cdn.diyigemt.com/image/ba-all-data" :width="width"
         :height="height" language="Cn" userName="testUser" :story-summary="storySummary" />
+      <!--其实在左边的剧情json里填入11000就能测试序章, 不需要改动这里-->
     </div>
     <div style="position: absolute;left: 0;display: flex;flex-direction: column;width: 20vh;z-index: 100;">
       <label>辅助工具选择</label>
