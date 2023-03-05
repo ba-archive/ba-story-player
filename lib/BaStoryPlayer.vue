@@ -118,8 +118,7 @@ async function updateFullScreenState() {
   }
 }
 
-// FIXME：在手机上滑动页面导致地址栏高度变化时也会触发resize事件，但是这时候不应该更新播放器大小
-// window.addEventListener('resize', updateFullScreenState)
+window.addEventListener('resize', updateFullScreenState)
 
 
 /**
