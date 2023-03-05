@@ -55,7 +55,9 @@ function handleBtnChatLog() {
 function handleBtnSkipSummary() {
   eventBus.emit("playOtherSounds", "select")
   refreshBtnMenuTimmer()
+  autoMode.value = false
   hiddenSummary.value = false;
+  eventBus.emit("stopAuto")
 }
 
 // 处理选项
@@ -165,8 +167,8 @@ const handleBtnMenuDebounced = debounce(handleBtnMenu, 200);
         </p>
         <!-- <p class="ba-story-summary-tip">※ 是否略过此剧情？</p> -->
         <div class="ba-story-summary-button-group">
-          <!-- <BaButton size="large" class="polylight" @click="hiddenSummary = true">取消</BaButton> -->
-          <BaButton size="large" class="polydark" @click="eventBus.emit('skip'); hiddenSummary = true">确认</BaButton>
+           <BaButton size="medium" class="polylight button-close-summary" @click="hiddenSummary = true">关闭</BaButton>
+<!--          <BaButton size="large" class="polydark" @click="eventBus.emit('skip'); hiddenSummary = true">确认</BaButton>-->
         </div>
       </div>
     </BaDialog>
@@ -323,10 +325,14 @@ const handleBtnMenuDebounced = debounce(handleBtnMenu, 200);
     }
 
     .ba-story-summary-button-group {
-      display: grid;
+      display: flex;
       margin: 0.75rem 1rem 1.5rem;
-      grid-template-columns: repeat(1, 1fr);
-      grid-gap: 1rem;
+      justify-content: center;
+      align-items: center;
+
+      .button-close-summary {
+        width: 50%;
+      }
     }
   }
 }
