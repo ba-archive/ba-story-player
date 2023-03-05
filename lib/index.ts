@@ -543,7 +543,7 @@ export let eventEmitter = {
     }
     //在有变换时隐藏所有对象
     if (storyHandler.currentStoryUnit.bg?.overlap || storyHandler.currentStoryUnit.transition
-      || storyHandler.currentStoryUnit.type==='continue') {
+      || storyHandler.currentStoryUnit.type === 'continue') {
       eventBus.emit('hide')
     }
   },

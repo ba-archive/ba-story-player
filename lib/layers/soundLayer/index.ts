@@ -136,3 +136,10 @@ export function soundInit() {
     playAudio({ soundUrl: usePlayerStore().otherSoundUrl(sound) })
   })
 }
+
+
+export function soundDispose() {
+  for (const sound of audioMap.values()) {
+    sound.destroy()
+  }
+}

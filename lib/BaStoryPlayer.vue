@@ -4,9 +4,10 @@ import BaDialog from "@/layers/textLayer/BaDialog.vue";
 import BaUI from "@/layers/uiLayer/BaUI.vue"
 import {StoryRawUnit} from '@/types/common';
 import {Language, StorySummary} from '@/types/store';
-import {computed, onActivated, onBeforeMount, onBeforeUnmount, onDeactivated, onMounted, ref, watch} from 'vue';
+import {computed, onActivated, onBeforeMount, onBeforeUnmount, onDeactivated, onUnmounted,onMounted, ref, watch} from 'vue';
 import eventBus from './eventBus';
 import {usePlayerStore} from './stores';
+import { soundDispose} from '@/layers/soundLayer'
 
 export type PlayerProps = {
   story: StoryRawUnit[]
@@ -171,6 +172,11 @@ onMounted(() => {
   prefixes.forEach(prefix => {
     player.value?.addEventListener(`${prefix}fullscreenchange`, handleFullScreenChange)
   })
+})
+
+onUnmounted(()=>{
+  usePlayerStore().app.destroy()
+  soundDispose()
 })
 
 onActivated(() => {
