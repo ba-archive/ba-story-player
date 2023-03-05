@@ -211,11 +211,22 @@ export interface CharacterInstance {
   /**
    * 眨眼定时器的handler
    */
-  winkHandler?: number;
+  winkObject?: WinkObject;
   instance: Spine;
   isShow: () => boolean;
   isOnStage: () => boolean;
   isHeightLight: () => boolean;
+}
+
+export interface WinkObject {
+  handler: number;
+  animationObject?: WinkAnimationObject;
+}
+
+export interface WinkAnimationObject {
+  _pause: boolean;
+  start(): void;
+  pause(): void;
 }
 
 export interface Speaker {

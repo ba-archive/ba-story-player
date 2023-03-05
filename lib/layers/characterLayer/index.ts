@@ -10,7 +10,7 @@ import {
   FXEffectWord,
   ILoopAnimationStateListener
 } from "@/types/characterLayer";
-import { Character, CharacterEffectType, CharacterInstance } from "@/types/common";
+import {Character, CharacterEffectType, CharacterInstance, WinkAnimationObject, WinkObject} from "@/types/common";
 import { ShowCharacter } from "@/types/events";
 import { AdjustmentFilter } from '@pixi/filter-adjustment';
 import { ColorOverlayFilter } from '@pixi/filter-color-overlay';
@@ -94,9 +94,7 @@ export const CharacterLayerInstance: CharacterLayer = {
     document.removeEventListener("resize", this.onWindowResize);
     eventBus.off("showCharacter", showCharacter);
     // 删除眨眼的handler
-    this.characterSpineCache.forEach((it) => {
-      it.winkHandler && window.clearTimeout(it.winkHandler);
-    });
+    this.characterSpineCache.forEach((it) => clearWinkHandler(it.winkObject));
     //TODO 销毁各种sprite,spine实体
     return true;
   },
@@ -408,14 +406,18 @@ function wink(instance: CharacterInstance, first = true) {
     spine.state.clearTrack(AnimationWinkTrack);
     return;
   }
-  instance.winkHandler && window.clearTimeout(instance.winkHandler);
-  const winkTimeout = Math.floor(Math.random() * 1000) + 3500
-  instance.winkHandler = window.setTimeout(wink, winkTimeout, instance, false);
+  clearWinkHandler(instance.winkObject);
+  const winkTimeout = Math.floor(Math.random() * 1000) + 3500;
+  instance.winkObject = {
+    handler: window.setTimeout(wink, winkTimeout, instance, false)
+  }
   if (first) {
     return;
   }
   const loopTime = Math.floor(Math.random() * 2) + 1
-  loopAnimationTime(spine.state, AnimationWinkTrack, "Eye_Close_01", "eye", loopTime)
+  const winkAnimationObject = loopAnimationTime(spine.state, AnimationWinkTrack, "Eye_Close_01", "eye", loopTime);
+  instance.winkObject.animationObject = winkAnimationObject;
+  winkAnimationObject.start();
 }
 
 /**
@@ -430,23 +432,42 @@ function wink(instance: CharacterInstance, first = true) {
  * @param id 用于标识loop handler的key
  * @param loop 循环次数
  */
-function loopAnimationTime<AnimationState extends IAnimationState>(state: AnimationState, trackIndex: number, animationName: string, id: string, loop: number) {
-  const controller = state.listeners.filter(it => Reflect.get(it, "complete") && Reflect.get(it, "key") === id)
-  if (controller.length !== 0) {
-    state.removeListener(controller[0]);
-  }
-  let loopCount = 1;
-  const listener: ILoopAnimationStateListener = {
-    complete() {
-      if (loopCount < loop) {
-        loopCount++;
-        state.setAnimation(trackIndex, animationName, false);
+function loopAnimationTime<AnimationState extends IAnimationState>(state: AnimationState, trackIndex: number, animationName: string, id: string, loop: number): WinkAnimationObject {
+  return {
+    _pause: false,
+    start() {
+      const controller = state.listeners.filter(it => Reflect.get(it, "complete") && Reflect.get(it, "key") === id)
+      if (controller.length !== 0) {
+        state.removeListener(controller[0]);
       }
+      let loopCount = 1;
+      const listener: ILoopAnimationStateListener = {
+        complete: (entry) => {
+          if (entry.trackIndex !== trackIndex) {
+            return;
+          }
+          if (loopCount < loop && !this._pause) {
+            loopCount++;
+            state.setAnimation(trackIndex, animationName, false);
+          }
+        },
+        key: id
+      };
+      state.addListener(listener);
+      state.setAnimation(trackIndex, animationName, false);
     },
-    key: id
-  };
-  state.addListener(listener);
-  state.setAnimation(trackIndex, animationName, false);
+    pause() {
+      this._pause = true;
+    }
+  }
+}
+
+function clearWinkHandler(winkObject?: WinkObject) {
+  if (!winkObject) {
+    return
+  }
+  winkObject.handler && window.clearTimeout(winkObject.handler);
+  winkObject.animationObject?.pause();
 }
 
 // 当播放器高度为PlayerHeight时角色的CharacterScale
