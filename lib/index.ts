@@ -51,11 +51,21 @@ export async function init(elementID: string, props: PlayerConfigs, endCallback:
 
   Loader.registerPlugin(SpineParser);
 
-  //添加加载文字并加载初始化资源以便翻译层进行翻译
-  let loadingText = new Text('loading...', { fill: ['white'] })
-  loadingText.y = app.screen.height - 50
-  loadingText.x = app.screen.width - 150
-  app.stage.addChild(loadingText)
+  // 注册加载回调实现log滚动效果
+  app.loader.onLoad.add((_, resource) => {
+    eventBus.emit("oneResourceLoaded", { type: "success", resourceName: resource.name });
+  });
+  app.loader.onError.add((err, _, resource) => {
+    console.error(err);
+    eventBus.emit("oneResourceLoaded", { type: "fail", resourceName: resource.name });
+  });
+  // 记录加载开始时间 优化光速加载的体验
+  let startLoadTime = 0;
+  app.loader.onStart.add(() => {
+    startLoadTime = Date.now();
+    eventBus.emit("startLoading", props.dataUrl);
+  });
+  //加载初始化资源以便翻译层进行翻译
   await resourcesLoader.init(app.loader)
   privateState.allStoryUnit = translate(props.story)
 
@@ -68,11 +78,22 @@ export async function init(elementID: string, props: PlayerConfigs, endCallback:
   //加载剩余资源
   await resourcesLoader.addLoadResources()
   resourcesLoader.load(() => {
-    app.stage.removeChild(loadingText)
-    loadingText.destroy()
-    eventBus.emit('hidemenu')
-    //开始发送事件
-    eventEmitter.init()
+    // 加载时间少于1秒, 延迟一下再开始
+    const loadedTime = Date.now() - startLoadTime;
+    new Promise<void>((resolve) => {
+      if (loadedTime < 1000) {
+        setTimeout(() => {
+          resolve();
+        }, 1000 - loadedTime);
+      } else {
+        resolve();
+      }
+    }).then(() => {
+      eventBus.emit("loaded");
+      eventBus.emit('hidemenu')
+      //开始发送事件
+      eventEmitter.init()
+    })
   })
 }
 
@@ -521,7 +542,7 @@ export let eventEmitter = {
       }
     }
     //在有变换时隐藏所有对象
-    if (storyHandler.currentStoryUnit.bg?.overlap || storyHandler.currentStoryUnit.transition 
+    if (storyHandler.currentStoryUnit.bg?.overlap || storyHandler.currentStoryUnit.transition
       || storyHandler.currentStoryUnit.type==='continue') {
       eventBus.emit('hide')
     }

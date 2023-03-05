@@ -1,6 +1,22 @@
 <template>
   <div class="container" :style="{ height: `${playerHeight}px` }">
     <div class="container-inner">
+      <div class="loading-container absolute-container" v-if="showLoading">
+        <img class="loading-image" :src="loadingImageSrc" alt="本来应该是加载图片的">
+        <div class="loading-log">
+          <div
+            v-for="(e, index) in mapLoadLog"
+            class="loading-log-item"
+            :key="index">
+            <span v-if="e.type === 'success'" class="loading-log-item-success">
+              加载资源:{{ e.resourceName }}
+            </span>
+            <span v-else class="loading-log-item-error">
+              加载错误:{{ e.resourceName }}
+            </span>
+          </div>
+        </div>
+      </div>
       <div ref="nextEpisodeContainer" class="next-episode-container absolute-container" @click="endPlay"
         v-if="showNextEpisode">
         <div class="next-episode-cover" />
@@ -59,7 +75,7 @@
 import { onMounted, ref, computed, Ref, nextTick, onUnmounted, reactive } from 'vue'
 import eventBus from "@/eventBus";
 import Typed, { TypedExtend, TypedOptions } from "typed.js";
-import { ShowText, ShowTitleOption, StArgs, StText } from "@/types/events";
+import {ResourceLoadState, ShowText, ShowTitleOption, StArgs, StText} from "@/types/events";
 import { Text, TextEffectName } from "@/types/common";
 import { deepCopyObject } from "@/utils";
 import { usePlayerStore } from '@/stores';
@@ -92,6 +108,8 @@ const name = ref<string>();
 const nickName = ref<string>();
 // 在执行st特效时置为false以隐藏对话框
 const showDialog = ref<boolean>(false);
+// 显示加载动画
+const showLoading = ref<boolean>(false);
 // 显示to be continued
 const showToBeContinue = ref<boolean>(false);
 // 显示next episode
@@ -101,7 +119,8 @@ const popupSrc = reactive({
   // video: "https://yuuka.diyigemt.com/image/full-extra/output/media/Video/pv-v.mp4"
   image: "",
   video: ""
-})
+});
+const loadingImageSrc = ref<string>("");
 let showNextEpisodeLock = false;
 // 打印完成
 const typingComplete = ref<boolean>(false);
@@ -545,6 +564,39 @@ function handlePopupClose() {
     popupSrc.video = "";
   })
 }
+/**
+ * 播放加载动画
+ * @param dataUrl
+ */
+function handleStartLoading(dataUrl: string) {
+  if (loadingImageSrc.value) {
+    return;
+  }
+  const loadingImageIndex = Math.floor(Math.random() * 40);
+  loadingImageSrc.value = `${dataUrl}/loading/${loadingImageIndex}.webp`;
+  showLoading.value = true;
+}
+
+/**
+ * 滚动加载log
+ * @param state 已加载的资源状态
+ */
+function handleOneResourceLoaded(state: ResourceLoadState) {
+  showLoading.value = true;
+  const lastUrlPathIndex = state.resourceName.lastIndexOf("/") + 1;
+  const resourceName = state.resourceName.substring(lastUrlPathIndex === -1 ? 0 : lastUrlPathIndex, state.resourceName.length);
+  loadLog.value.push({
+    type: state.type,
+    resourceName: resourceName
+  });
+}
+
+/**
+ * 隐藏加载动画
+ */
+function handleEndLoading() {
+  showLoading.value = false;
+}
 const fontSizeBounds = computed(() => (props.playerHeight / 1080));
 const stWidth = 3000;
 const stHeight = 1600;
@@ -594,7 +646,9 @@ const standardDialogTopOffset = 100;
 // 计算title的padding以让其符合边框第二边线
 const titleBorderWidth = 2280;
 const standardBorderWidth = 26;
-const titleBorderPadding = computed(() => props.playerWidth / titleBorderWidth * standardBorderWidth)
+const titleBorderPadding = computed(() => props.playerWidth / titleBorderWidth * standardBorderWidth);
+const loadLog = ref<ResourceLoadState[]>([]);
+const mapLoadLog = computed(() => deepCopyObject(loadLog.value).reverse().slice(0, 4).map(it => it || { type: "success", resourceName: "" }));
 onMounted(() => {
   eventBus.on("showTitle", handleShowTitle);
   eventBus.on("showPlace", handleShowPlace);
@@ -609,6 +663,9 @@ onMounted(() => {
   eventBus.on("popupImage", handlePopupImage);
   eventBus.on("popupVideo", handlePopupVideo);
   eventBus.on("hidePopup", handlePopupClose);
+  eventBus.on("startLoading", handleStartLoading);
+  eventBus.on("oneResourceLoaded", handleOneResourceLoaded);
+  eventBus.on("loaded", handleEndLoading);
 });
 onUnmounted(() => {
   eventBus.off("showTitle", handleShowTitle);
@@ -624,6 +681,9 @@ onUnmounted(() => {
   eventBus.off("popupImage", handlePopupImage);
   eventBus.off("popupVideo", handlePopupVideo);
   eventBus.off("hidePopup", handlePopupClose);
+  eventBus.off("startLoading", handleStartLoading);
+  eventBus.off("oneResourceLoaded", handleOneResourceLoaded);
+  eventBus.off("loaded", handleEndLoading);
 });
 // 暂时用不上了, 比如font-size还需要根据屏幕进行适配
 type StyleEffectTemplateMap = {
@@ -659,6 +719,7 @@ $select-z-index: 10;
 $image-video-z-index: 10;
 $to-be-continue-z-index: 200;
 $next-episode-z-index: 201;
+$loading-z-index: 202;
 $st-z-index: 10;
 $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
 
@@ -724,7 +785,7 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
 
 .content {
   --font-size: 2rem;
-  margin-top: 1.5%; 
+  margin-top: 1.5%;
   color: white;
   font-size: var(--font-size);
   line-height: 1.5em;
@@ -951,6 +1012,32 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
         height: 70%;
         transform: translateY(10%);
       }
+    }
+  }
+}
+
+.loading-container {
+  z-index: $text-layer-z-index + $loading-z-index;
+  background-color: black;
+  .loading-image {
+    position: absolute;
+    width: 70%;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    object-fit: contain;
+  }
+  .loading-log {
+    position: absolute;
+    right: 1rem;
+    bottom: 1rem;
+    text-align: right;
+    .loading-log-item {
+      color: grey;
+    }
+    .loading-log-item-success {}
+    .loading-log-item-error {
+      color: red;
     }
   }
 }
