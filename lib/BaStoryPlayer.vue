@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import {init} from '@/index';
+import {init,dispose} from '@/index';
 import BaDialog from "@/layers/textLayer/BaDialog.vue";
 import BaUI from "@/layers/uiLayer/BaUI.vue"
 import {StoryRawUnit} from '@/types/common';
@@ -7,7 +7,6 @@ import {Language, StorySummary} from '@/types/store';
 import {computed, onActivated, onBeforeMount, onBeforeUnmount, onDeactivated, onUnmounted,onMounted, ref, watch} from 'vue';
 import eventBus from './eventBus';
 import {usePlayerStore} from './stores';
-import { soundDispose} from '@/layers/soundLayer'
 
 export type PlayerProps = {
   story: StoryRawUnit[]
@@ -175,8 +174,7 @@ onMounted(() => {
 })
 
 onUnmounted(()=>{
-  usePlayerStore().app.destroy()
-  soundDispose()
+  dispose()
 })
 
 onActivated(() => {

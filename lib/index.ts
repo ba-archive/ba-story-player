@@ -48,7 +48,6 @@ export async function init(elementID: string, props: PlayerConfigs, endCallback:
 
   let app = playerStore.app
   document.querySelector(`#${elementID}`)?.appendChild(app.view)
-
   Loader.registerPlugin(SpineParser);
 
   // 注册加载回调实现log滚动效果
@@ -95,6 +94,17 @@ export async function init(elementID: string, props: PlayerConfigs, endCallback:
       eventEmitter.init()
     })
   })
+}
+
+/**
+ * 回收
+ */
+export function dispose() {
+  initPrivateState().app?.destroy()
+  initPrivateState().app = null
+  eventBus.emit('dispose')
+  eventBus.all.clear()
+  storyHandler.currentStoryIndex = 0
 }
 
 

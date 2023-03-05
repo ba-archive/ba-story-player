@@ -151,6 +151,7 @@ function changeJSON() {
       <label>故事json</label>
       <input v-model="storyJsonName" />
       <button @click="changeJSON">更换故事json</button>
+      <button @click="showPlayer=!showPlayer">切换显示状态</button>
     </div>
     <ModifyEmotionOption class="absolute-right-center" v-if="toolType === 'emotion'" />
     <Suspense>

@@ -135,11 +135,13 @@ export function soundInit() {
     console.log("Play Select Sound!")
     playAudio({ soundUrl: usePlayerStore().otherSoundUrl(sound) })
   })
+
+  eventBus.on('dispose', () => soundDispose())
 }
 
 
 export function soundDispose() {
   for (const sound of audioMap.values()) {
-    sound.destroy()
+    sound.stop()
   }
 }

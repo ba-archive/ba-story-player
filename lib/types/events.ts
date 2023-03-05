@@ -12,6 +12,10 @@ export type Events = {
    * 参数是原来的宽度大小
    */
   resize: number
+  /**
+   * 注销
+   */
+  dispose: undefined
 
   //特效层
 
