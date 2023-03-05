@@ -1,12 +1,12 @@
 <script lang="ts" setup>
-import { init } from '@/index';
+import {init} from '@/index';
 import BaDialog from "@/layers/textLayer/BaDialog.vue";
 import BaUI from "@/layers/uiLayer/BaUI.vue"
-import { StoryRawUnit } from '@/types/common';
-import { Language, StorySummary } from '@/types/store';
-import { computed, onBeforeMount, onMounted, ref, watch } from 'vue';
+import {StoryRawUnit} from '@/types/common';
+import {Language, StorySummary} from '@/types/store';
+import {computed, onActivated, onBeforeMount, onBeforeUnmount, onDeactivated, onMounted, ref, watch} from 'vue';
 import eventBus from './eventBus';
-import { usePlayerStore } from './stores';
+import {usePlayerStore} from './stores';
 
 export type PlayerProps = {
   story: StoryRawUnit[]
@@ -39,10 +39,11 @@ watch([() => props.width, () => props.height], () => {
   }
 })
 const playerStyle = computed(() => {
-  return { height: `${playerHeight.value}px`, width: `${playerWidth.value}px` }
+  return {height: `${playerHeight.value}px`, width: `${playerWidth.value}px`}
 })
 const player = ref<HTMLDivElement>()
 
+const isPseudoFullscreen = ref(false)
 
 const fullScreen = ref(props.startFullScreen)
 const fullScreenMaxAspectRatio = 16 / 9
@@ -54,41 +55,79 @@ const fullscreenTopOffset = computed(() => {
   const screenWidth = Math.max(window.screen.availHeight, window.screen.availWidth)
   return `${100 - (1 - playerWidth.value / screenWidth) / 2 * 100}%`
 })
+
 /**
- * 根据fullScrren值更新播放器状态
+ * 根据fullScreen值更新播放器状态
  */
 async function updateFullScreenState() {
-  const currentFullScrrenState = document.fullscreenElement !== null
+  const currentFullScreenState = (
+    ![null, undefined].includes(document.fullscreenElement) ||
+    ![null, undefined].includes(document.webkitFullscreenElement) ||
+    ![null, undefined].includes(document.mozFullScreenElement)
+  )
   if (fullScreen.value) {
-    if (!currentFullScrrenState) {
-      await player.value?.requestFullscreen({ navigationUI: 'hide' })
+    if (!currentFullScreenState) {
+      if (document.fullscreenEnabled || document.webkitFullscreenEnabled || document.mozFullScreenEnabled) {
+        if ('function' === typeof document.documentElement.requestFullscreen) {
+          console.log('requestFullscreen')
+          await player.value?.requestFullscreen({navigationUI: 'hide'})
+        } else if ('function' === typeof document.documentElement.webkitRequestFullScreen) {
+          console.log('webkitRequestFullScreen')
+          await player.value?.webkitRequestFullScreen({navigationUI: 'hide'})
+        } else if ('function' === typeof document.documentElement.mozRequestFullScreen) {
+          console.log('mozRequestFullScreen')
+          await player.value?.mozRequestFullScreen({navigationUI: 'hide'})
+        }
+      } else {
+        // 无法全屏，将 player 从文档流中脱出并手动伪造全屏效果
+        // 估计只有手机 Safari 会走到这里，所以直接不考虑横屏设备的情况
+        isPseudoFullscreen.value = true
+        player.value?.classList.add('pseudo-fullscreen')
+        playerWidth.value = window.innerHeight
+        playerHeight.value = window.innerWidth
+        console.log('pseudo-fullscreen')
+      }
     }
-    playerHeight.value = Math.min(window.screen.availWidth, window.screen.availHeight)
-    const tempWidth = Math.max(window.screen.availWidth, window.screen.availHeight)
-    if (tempWidth / playerHeight.value > fullScreenMaxAspectRatio) {
-      playerWidth.value = playerHeight.value * fullScreenMaxAspectRatio
+    if (!isPseudoFullscreen.value) {
+      playerHeight.value = Math.min(window.screen.availWidth, window.screen.availHeight)
+      const tempWidth = Math.max(window.screen.availWidth, window.screen.availHeight)
+      if (tempWidth / playerHeight.value > fullScreenMaxAspectRatio) {
+        playerWidth.value = playerHeight.value * fullScreenMaxAspectRatio
+      } else {
+        playerWidth.value = tempWidth
+      }
     }
-    else {
-      playerWidth.value = tempWidth
+  } else {
+    // 退出全屏
+    if (currentFullScreenState) {
+      if (document.exitFullscreen) {
+        await document.exitFullscreen()
+      } else if (document.webkitCancelFullScreen) {
+        await document.webkitCancelFullScreen()
+      } else if (document.mozCancelFullScreen) {
+        await document.mozCancelFullScreen()
+      }
     }
-  }
-  else {
-    if (currentFullScrrenState) {
-      await document.exitFullscreen()
+    if (isPseudoFullscreen.value) {
+      isPseudoFullscreen.value = false
+      player.value?.classList.remove('pseudo-fullscreen')
     }
+
     playerWidth.value = props.width
     playerHeight.value = props.height
   }
 }
-window.addEventListener('resize', updateFullScreenState)
+
+// FIXME：在手机上滑动页面导致地址栏高度变化时也会触发resize事件，但是这时候不应该更新播放器大小
+// window.addEventListener('resize', updateFullScreenState)
 
 
 /**
  * 指定canvas一个固定的height保证画面表现
  */
 const pixiHeight = 1012.5
-const pixiConfig = { ...props, height: pixiHeight }
-pixiConfig.width = pixiHeight * props.width / props.height
+const pixiConfig = {...props, height: pixiHeight}
+pixiConfig.width = pixiHeight * props.width / props.height // FIXME: Attempt to assign to const or readonly variable.
 const pixiScale = computed(
   //比实际放大一点放置并隐藏解决缩放不精确的问题
   () => (playerHeight.value + 1) / pixiHeight
@@ -114,14 +153,41 @@ onBeforeMount(() => {
 
   document.head.appendChild(newStyle);
 })
+
+const prefixes = ["", "moz", "webkit", "ms"]
+
+function handleFullScreenChange() {
+  fullScreen.value = ![null, undefined].includes(document.fullscreenElement) ||
+    ![null, undefined].includes(document.webkitFullscreenElement) ||
+    ![null, undefined].includes(document.mozFullScreenElement)
+}
+
 onMounted(() => {
   init('player__main__canvas', pixiConfig, () => emit('end'))
   if (props.startFullScreen) {
     updateFullScreenState()
   }
   //保证fullscreen值正确性
-  player.value?.addEventListener('fullscreenchange', () => {
-    fullScreen.value = document.fullscreenElement !== null
+  prefixes.forEach(prefix => {
+    player.value?.addEventListener(`${prefix}fullscreenchange`, handleFullScreenChange)
+  })
+})
+
+onActivated(() => {
+  prefixes.forEach(prefix => {
+    player.value?.addEventListener(`${prefix}fullscreenchange`, handleFullScreenChange)
+  })
+})
+
+onBeforeUnmount(() => {
+  prefixes.forEach(prefix => {
+    player.value?.removeEventListener(`${prefix}fullscreenchange`, handleFullScreenChange)
+  })
+})
+
+onDeactivated(() => {
+  prefixes.forEach(prefix => {
+    player.value?.removeEventListener(`${prefix}fullscreenchange`, handleFullScreenChange)
   })
 })
 </script>
@@ -133,7 +199,7 @@ onMounted(() => {
         <div id="player__main__canvas" :style="{ transform: `scale(${pixiScale})` }"></div>
         <BaDialog :player-height="playerHeight" :player-width="playerWidth" :style="{ width: `${playerWidth}px` }">
         </BaDialog>
-        <BaUI :story-summary="storySummary" @fullscreen-change="fullScreen = !fullScreen" />
+        <BaUI :story-summary="storySummary" @fullscreen-change="fullScreen = !fullScreen"/>
       </div>
     </div>
   </div>
@@ -153,13 +219,40 @@ onMounted(() => {
 
 }
 
+//noinspection CssOverwrittenProperties
 #player {
   background-color: #080808;
+  padding: 0;
+  margin: 0;
 
   &:fullscreen {
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
+  }
+
+  // 不知道为什么这个伪类只能分开写，合起来就不生效
+  &:-webkit-full-screen {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+  // make mobile safari happy
+  &.pseudo-fullscreen {
+    position: fixed;
+    transform: rotate(-90deg);
+    // 宽高已经设置成了屏幕宽高，所以接下来就是想办法让它居中
+    top: 100vh;
+    top: 100dvh;
+    left: 0;
+    transform-origin: top left;
+    z-index: 201;
+
+    #player__main__canvas {
+      z-index: 0;
+    }
   }
 
   &__main {
@@ -171,6 +264,19 @@ onMounted(() => {
       position: absolute;
       left: 0;
       transform-origin: top left;
+    }
+  }
+}
+</style>
+<style lang="scss">
+.pseudo-fullscreen {
+  .container,.baui {
+    animation: fuck-safari 999999s alternate infinite;
+  }
+  // 给 Safari 一鞭子，让渲染引擎别睡死
+  @keyframes fuck-safari {
+    to {
+      transform: translateX(1px)
     }
   }
 }

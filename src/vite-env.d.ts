@@ -7,3 +7,6 @@ declare module '*.vue' {
 }
 
 declare interface Window { baStore?: any; baResource: any; baStory: any }
+declare interface Document { webkitCancelFullScreen?: any; mozCancelFullScreen?: any; webkitFullscreenElement?: any; mozFullScreenElement?:any; fullscreenElement?: any; webkitFullscreenEnabled?: any; mozFullScreenEnabled?: any; }
+
+declare interface HTMLElement { webkitRequestFullScreen: any; mozRequestFullScreen?: any; }
