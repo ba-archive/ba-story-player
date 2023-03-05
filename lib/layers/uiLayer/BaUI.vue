@@ -167,7 +167,7 @@ const handleBtnMenuDebounced = debounce(handleBtnMenu, 200);
         </p>
         <!-- <p class="ba-story-summary-tip">※ 是否略过此剧情？</p> -->
         <div class="ba-story-summary-button-group">
-           <BaButton size="medium" class="polylight button-close-summary" @click="hiddenSummary = true">关闭</BaButton>
+           <BaButton size="middle" class="polylight button-close-summary" @click="hiddenSummary = true">关闭</BaButton>
 <!--          <BaButton size="large" class="polydark" @click="eventBus.emit('skip'); hiddenSummary = true">确认</BaButton>-->
         </div>
       </div>
