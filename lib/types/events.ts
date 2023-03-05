@@ -98,7 +98,7 @@ export type Events = {
   /**
    * 展示标题
    */
-  showTitle: string
+  showTitle: ShowTitleOption
   /**
    * 标题展示完成
    */
@@ -149,16 +149,20 @@ export type Events = {
    */
   popupVideo: string
   /**
+   * 隐藏popup
+   */
+  hidePopup: undefined
+
+  /**
    * 显示未完待续
    */
   toBeContinue: undefined
+  toBeContinueDone: undefined
   /**
    * 显示下章节
    */
-  nextEpisode: {
-    title: string
-    text: string
-  }
+  nextEpisode: ShowTitleOption
+  nextEpisodeDone: undefined
 
   //L2D层
   /**
@@ -257,4 +261,9 @@ export interface ShowOption {
 export interface PlayEffect {
   BGEffect?: BGEffectExcelTableItem
   otherEffect: Effect[]
+}
+
+export interface ShowTitleOption {
+  title: string;
+  subtitle?: string;
 }

@@ -1,23 +1,47 @@
 <template>
   <div class="container" :style="{ height: `${playerHeight}px` }">
     <div class="container-inner">
-      <div class="st-container" ref="stOutput" :style="{ fontSize: `${standardFontSize}rem` }" />
-      <div class="title-container" :class="{ 'fade-in-out': titleContent }" v-if="titleContent">
+      <div ref="nextEpisodeContainer" class="next-episode-container absolute-container" @click="endPlay"
+        v-if="showNextEpisode">
+        <div class="next-episode-cover" />
+        <div class="next-episode-cover" />
+      </div>
+      <div class="to-be-continued-container absolute-container" v-if="showToBeContinue">
+        <div ref="toBeContinuedBg0" class="to-be-continued-bg0" />
+        <div ref="toBeContinuedBg1" class="to-be-continued-bg1" />
+        <div ref="toBeContinuedText" class="to-be-continued" :style="{ fontSize: `${standardFontSize}rem` }">To Be
+          Continued...</div>
+      </div>
+      <div class="image-video-container absolute-container" v-if="popupSrc.image || popupSrc.video">
+        <div class="image-video-container-inner">
+          <div class="image-container absolute-container" :style="{ height: `${playerHeight - dialogHeight}px` }"
+            v-if="popupSrc.image">
+            <img :src="popupSrc.image" alt="完了加载失败了" class="image" />
+          </div>
+          <VideoBackground ref="videoComponent" :src="popupSrc.video" objectFit="contain" style="width: 100%; height: 100%"
+            v-if="popupSrc.video" @ended="onPopupVideoEnd" />
+        </div>
+      </div>
+      <div class="st-container absolute-container" ref="stOutput" :style="{ fontSize: `${standardFontSize}rem` }" />
+      <div ref="titleEL" class="title-container absolute-container" :style="overrideTitleStyle" v-if="titleContent">
         <div class="title-border" :style="{ '--side-padding': `${titleBorderPadding}px` }">
           <img src="./assets/title-border.png" />
-          <div class="title-contain" :style="{ '--font-size': `${fontSize(4)}rem` }">{{ titleContent }}
+          <div ref="titleContain" class="title-contain" :style="{ '--font-size': `${fontSize(4)}rem` }">
+            <div class="sub-title" v-if="subTitleContent">
+              <span class="sub-title-inner">{{ subTitleContent }}</span>
+            </div>
+            <div class="main-title">{{ titleContent }}</div>
           </div>
         </div>
       </div>
-      <div class="place-container" :style="{ '--font-size': `${fontSize(2)}rem` }"
-        :class="{ 'fade-in-out': placeContent }" v-if="placeContent">
+      <div ref="placeEL" class="place-container" :style="{ '--font-size': `${fontSize(2)}rem` }" v-if="placeContent">
         <div class="round-place">
           <span class="place-content">{{ placeContent }}</span>
         </div>
       </div>
-      <div v-if="showDialog" :style="{ padding: `${fontSize(3)}rem ${fontSize(8)}rem`, height: `${dialogHeight}px` }"
+      <div v-if="showDialog" :style="{ padding: `0 ${fontSize(8)}rem ${fontSize(3)}rem`, height: `${dialogHeight}px` }"
         class="dialog">
-        <div class="inner-dialog" :style="{ '--height-padding': `${fontSize(3)}rem` }">
+        <div class="inner-dialog">
           <div class="title">
             <div :style="{ fontSize: `${fontSize(3.5)}rem` }" class="name">{{ name ? name : '&emsp;' }}</div>
             <div :style="{ fontSize: `${fontSize(2)}rem` }" class="department">{{ nickName }}</div>
@@ -32,23 +56,34 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, computed, Ref, nextTick, onUnmounted, onBeforeMount } from 'vue'
+import { onMounted, ref, computed, Ref, nextTick, onUnmounted, reactive } from 'vue'
 import eventBus from "@/eventBus";
 import Typed, { TypedExtend, TypedOptions } from "typed.js";
-import { ShowOption, ShowText, StText } from "@/types/events";
+import { ShowText, ShowTitleOption, StArgs, StText } from "@/types/events";
 import { Text, TextEffectName } from "@/types/common";
 import { deepCopyObject } from "@/utils";
 import { usePlayerStore } from '@/stores';
+import gsap from "gsap";
+import VideoBackground from "vue-responsive-video-background-player";
 
-const typewriterOutput = ref(); // 对话框el
-const stOutput = ref(); // st特效字el
+
+const typewriterOutput = ref<HTMLElement>(); // 对话框el
+const stOutput = ref<HTMLElement>(); // st特效字el
+const toBeContinuedBg0 = ref<HTMLElement>(); // to be continued的背景
+const toBeContinuedBg1 = ref<HTMLElement>(); // to be continued的背景
+const toBeContinuedText = ref<HTMLElement>(); // to be continued的字
+const titleEL = ref<HTMLElement>(); // 大标题的el
+const placeEL = ref<HTMLElement>(); // place的el
+const nextEpisodeContainer = ref<HTMLElement>(); // 下一章的el
+const titleContain = ref<HTMLElement>(); // 标题内容的el, 为了实现scale效果
+const overrideTitleZIndex = ref<number>();
+const videoComponent = ref();
 // 外部传入播放器高度,用于动态计算字体等数值
 const props = withDefaults(defineProps<TextLayerProps>(), { playerHeight: 0, playerWidth: 0 });
-
-
-
 // 标题
 const titleContent = ref<string>("");
+// 副标题
+const subTitleContent = ref<string>("");
 // 位置
 const placeContent = ref<string>("");
 // 昵称
@@ -57,9 +92,26 @@ const name = ref<string>();
 const nickName = ref<string>();
 // 在执行st特效时置为false以隐藏对话框
 const showDialog = ref<boolean>(false);
+// 显示to be continued
+const showToBeContinue = ref<boolean>(false);
+// 显示next episode
+const showNextEpisode = ref<boolean>(false);
+const popupSrc = reactive({
+  // image: "https://yuuka.diyigemt.com/image/full-extra/output/media/UIs/03_Scenario/04_ScenarioImage/popup49.png",
+  // video: "https://yuuka.diyigemt.com/image/full-extra/output/media/Video/pv-v.mp4"
+  image: "",
+  video: ""
+})
+let showNextEpisodeLock = false;
 // 打印完成
 const typingComplete = ref<boolean>(false);
 let typingInstance: TypedExtend; // 全局打字机实例 因为不能有两个实例同时持有一个el
+function endPlay() {
+  if (showNextEpisodeLock) {
+    return;
+  }
+  eventBus.emit("next");
+}
 /**
  * 单击屏幕后触发效果 next或者立即显示当前对话
  */
@@ -73,7 +125,7 @@ function moveToNext() {
       typingInstance.stop();
       typingInstance.destroy();
       setTypingComplete(true, typingInstance);
-      typewriterOutput.value.innerHTML = typingInstance.strings.pop()
+      typewriterOutput.value!.innerHTML = typingInstance.strings.pop() || ""
       eventBus.emit('textDone')
     }
   }
@@ -81,8 +133,10 @@ function moveToNext() {
 /**
  * 展示主标题
  */
-function handleShowTitle(e: string) {
-  proxyShowCoverTitle(titleContent, e).then(() => {
+function handleShowTitle(e: ShowTitleOption) {
+  subTitleContent.value = e.subtitle || "";
+  proxyShowCoverTitle(titleEL, titleContent, e.title).then(() => {
+    subTitleContent.value = "";
     eventBus.emit("titleDone");
   })
 }
@@ -90,19 +144,40 @@ function handleShowTitle(e: string) {
  * 展示左上角位置标题
  */
 function handleShowPlace(e: string) {
-  proxyShowCoverTitle(placeContent, e);
+  proxyShowCoverTitle(placeEL, placeContent, e);
 }
+
 /**
- * 统一方法, 通过css动画实现淡入淡出
+ * 统一方法, 淡入淡出el
+ * @param el 要操作的el
+ * @param proxy 要操作的el显示的内容
+ * @param value 要显示的内容
+ * @param onElUpdate 在el显示后的回调, 给next episode用的
  */
-function proxyShowCoverTitle(proxy: Ref<string>, value: string) {
-  proxy.value = value;
+function proxyShowCoverTitle(el: Ref<HTMLElement | undefined>, proxy: Ref<string>, value: string, onElUpdate?: (el: HTMLElement) => void) {
   return new Promise<void>((resolve) => {
-    setTimeout(() => {
-      proxy.value = "";
-      resolve();
-    }, 3000)
-  })
+    proxy.value = value;
+    nextTick(() => {
+      onElUpdate && onElUpdate(el.value!);
+      const timeline = gsap.timeline();
+      timeline.to(el.value!, {
+        opacity: 1,
+        duration: 0.75
+      });
+      if (!onElUpdate) {
+        timeline.to(el.value!, {
+          opacity: 0,
+          duration: 0.75
+        }, "+=1.5");
+      }
+      timeline.then(() => {
+        if (!onElUpdate) {
+          proxy.value = "";
+        }
+        resolve();
+      });
+    });
+  });
 }
 /**
  * 清除特效字
@@ -113,6 +188,9 @@ function handleClearSt() {
   if (!showDialog.value) {
     typingInstance?.stop();
     typingInstance?.destroy();
+    if (stOutput.value) {
+      stOutput.value!.innerHTML = "";
+    }
   }
 }
 /**
@@ -142,33 +220,72 @@ function handleShowStEvent(e: StText) {
     if (e.middle) {
       extendStyle = extendStyle + `;text-align: center; left: 50%; transform: translateX(-50%)`;
     }
-    // const unused = e.stArgs[3]; // 未知
+    const fontSize = e.stArgs[2]; // st的字号
+    extendStyle = extendStyle + `;font-size: ${unityFontSizeToHTMLSize(Number(fontSize))}rem`;
     // 立即显示, 跳过打字机
-    if (stType === "instant") {
-      stOutput.value.innerHTML = parseTextEffect({
-        content: e.text.map(text => parseTextEffect(text).content).join(""),
-        effects: []
-      }, extendStyle, "div").content;
-      eventBus.emit("stDone");
-    } else if (stType === "serial") {
-      showTextDialog(
-        e.text.map(text => {
-          // 为啥要这样, 因为这个库在空字符时会删除当前的内容重新打印, 导致一句话出现两次的bug
-          text.content = text.content || "&zwj;";
-          return text;
-        }).map(text => parseTextEffect(text)),
-        stOutput.value,
-        (content) => {
-          return `<div style="${extendStyle}">${content}</div>`
-        }, {
-        typeSpeed: 10
-      }
-      ).then(() => {
-        eventBus.emit("stDone");
-      });
-      typingInstance.isSt = true;
+    const fn = Reflect.get(StMap, stType);
+    if (fn) {
+      fn(e, extendStyle);
+    } else {
+      console.error(`st type handler: ${stType} not found!`);
     }
   })
+}
+
+/**
+ * 處理三種st特效的fn
+ */
+type StType = StArgs[1]
+type StMap = {
+  [key in StType]: (e: StText, parsedStyle: string) => void
+}
+const StMap: StMap = {
+  instant(e: StText, parsedStyle: string): void {
+    stOutput.value!.innerHTML = stOutput.value!.innerHTML + parseStInnerHtml(e, parsedStyle).content;
+    eventBus.emit("stDone");
+  },
+  serial(e: StText, parsedStyle: string): void {
+    showTextDialog(
+      e.text.map(text => {
+        // 为啥要这样, 因为这个库在空字符时会删除当前的内容重新打印, 导致一句话出现两次的bug
+        text.content = text.content || "&zwj;";
+        return text;
+      }).map(text => parseTextEffect(text)),
+      stOutput.value!,
+      (content) => {
+        return `<div style="${parsedStyle}">${content}</div>`
+      }, {
+      typeSpeed: 10
+    }
+    ).then(() => {
+      eventBus.emit("stDone");
+    });
+    typingInstance.isSt = true;
+  },
+  smooth(e: StText, parsedStyle: string): void {
+    parsedStyle = parsedStyle + ";opacity: 0";
+    stOutput.value!.innerHTML = stOutput.value!.innerHTML + parseStInnerHtml(e, parsedStyle).content;
+    const el = stOutput.value!.children.item(stOutput.value!.children.length - 1);
+    const timeline = gsap.timeline();
+    timeline.to(el, {
+      opacity: 1,
+      duration: 1.5
+    }).then(() => {
+      eventBus.emit("stDone");
+    })
+  }
+}
+
+/**
+ * 處理st特效 instant和smooth
+ *
+ * 將e.text全部包裹在div中
+ */
+function parseStInnerHtml(e: StText, parsedStyle: string) {
+  return parseTextEffect({
+    content: e.text.map(text => parseTextEffect(text).content).join(""),
+    effects: []
+  }, parsedStyle, "div");
 }
 /**
  * 处理dialog对话事件
@@ -187,7 +304,7 @@ function handleShowTextEvent(e: ShowText) {
     typingInstance?.destroy();
     typingInstance && (typingInstance.isSt = false);
     // 显示
-    showTextDialog(e.text.map(text => parseTextEffect(text)), typewriterOutput.value).then(() => {
+    showTextDialog(e.text.map(text => parseTextEffect(text)), typewriterOutput.value!).then(() => {
       eventBus.emit("textDone");
     })
     typingInstance && (typingInstance.isSt = false);
@@ -228,6 +345,7 @@ function parseTextEffect(text: Text, extendStyle = "", tag = "span"): Text {
  * @param text 处理好的特效
  * @param output 输出到的dom
  * @param onParseContent 二次处理内容, 目前用于将st用div整体包裹实现定位
+ * @param override 覆蓋默認typing配置内容
  */
 function showTextDialog(text: Text[], output: HTMLElement, onParseContent?: (source: string) => string, override?: TypedOptions) {
   return new Promise<void>((resolve) => {
@@ -279,7 +397,7 @@ function showTextDialog(text: Text[], output: HTMLElement, onParseContent?: (sou
     }
     // st的续约, 因为不能两个Typed同时持有一个对象, 所以采用将之前的内容作为已打印内容拼接的形式
     if (typingInstance && typingInstance.isSt) {
-      lastStOutput = stOutput.value.innerHTML;
+      lastStOutput = stOutput.value!.innerHTML;
       setTypingComplete(false, typingInstance);
       typingInstance.pause.status = true;
       typingInstance.pause.typewrite = true;
@@ -305,6 +423,128 @@ function showTextDialog(text: Text[], output: HTMLElement, onParseContent?: (sou
   })
 }
 
+/**
+ * 處理hide和hideDialog事件
+ */
+function handleHideDialog() {
+  showDialog.value = false;
+}
+
+/**
+ * 处理 to be continued 效果
+ */
+function handleToBeContinued() {
+  hideMenu();
+  showToBeContinue.value = true;
+  nextTick(() => {
+    const style = getComputedStyle(toBeContinuedText.value!);
+    const w = Number(style.width.replace("px", ""));
+    toBeContinuedText.value!.style.right = `${-w - 10}px`;
+    toBeContinuedText.value!.style.opacity = "1";
+    const timeline = gsap.timeline();
+    timeline
+      .to(toBeContinuedBg0.value!, {
+        opacity: 1,
+        duration: 0.3,
+      })
+      .to(toBeContinuedBg1.value!, {
+        opacity: 1,
+        duration: 0.4,
+      }, "-=0.15")
+      .to(toBeContinuedText.value!, {
+        right: 20,
+        duration: 0.3,
+      }, "<")
+      .to(toBeContinuedText.value!, {
+        opacity: 0,
+        duration: 0.6
+      }, "+=1.2").then(() => eventBus.emit('toBeContinueDone'))
+    .then(() => {
+      eventBus.emit("toBeContinueDone");
+    })
+  });
+}
+
+/**
+ * 显示下一章标题
+ */
+function handleNextEpisode(e: ShowTitleOption) {
+  showNextEpisodeLock = true;
+  showNextEpisode.value = true;
+  hideMenu();
+  nextTick(() => {
+    const container = nextEpisodeContainer.value!;
+    const topChild = container.children[0];
+    const bottomChild = container.children[1];
+    let flag = false;
+    const timeline = gsap.timeline();
+    timeline.to(topChild, {
+      translateY: 0,
+      duration: 0.5,
+      ease: "power4.out"
+    })
+      .to(bottomChild, {
+        translateY: 0,
+        duration: 0.5,
+        ease: "power4.out",
+        onComplete() {
+          showToBeContinue.value = false;
+        }
+      }, "<")
+      .to(topChild, {
+        translateY: "-100%",
+        duration: 0.5,
+        ease: "power4.in"
+      })
+      .to(bottomChild, {
+        translateY: "100%",
+        duration: 0.5,
+        ease: "power4.in",
+        onUpdate() {
+          if (flag) {
+            return;
+          }
+          const matrix = getComputedStyle(bottomChild).transform;
+          if (Number(matrix.substring(matrix.lastIndexOf(",") + 2).replace(")", "")) > 100) {
+            subTitleContent.value = e.subtitle || "";
+            proxyShowCoverTitle(titleEL, titleContent, e.title, (el) => {
+              const tl = gsap.timeline();
+              tl.fromTo(el, {
+                scaleY: 0.8
+              }, {
+                scaleY: 1,
+                duration: 0.2
+              })
+            });
+            flag = true;
+          }
+        }
+      }, "<").then(() => { eventBus.emit("nextEpisodeDone") });
+  });
+}
+function handlePopupImage(url: string) {
+  popupSrc.image = url;
+}
+function handlePopupVideo(url: string) {
+  hideMenu();
+  popupSrc.video = url;
+}
+function onPopupVideoEnd() {
+  console.log("video end");
+}
+function hideMenu() {
+  eventBus.emit("hidemenu");
+}
+function showMenu() {
+  eventBus.emit("showmenu");
+}
+function handlePopupClose() {
+  popupSrc.image = "";
+  videoComponent.value?.pause();
+  nextTick(() => {
+    popupSrc.video = "";
+  })
+}
 const fontSizeBounds = computed(() => (props.playerHeight / 1080));
 const stWidth = 3000;
 const stHeight = 1600;
@@ -315,18 +555,13 @@ function fontSize(multi: number) {
   return fontSizeBounds.value * multi;
 }
 const standardFontSize = computed(() => fontSize(2.5));
+const standardUnityFontSize = 64;
 /**
- * 以64作为标准字体大小?
+ * 以64作为标准st字体大小?
  * @param size
  */
 function unityFontSizeToHTMLSize(size: number) {
-  if (size === 64) {
-    return standardFontSize.value;
-  } else if (size < 64) {
-    return fontSize(2);
-  } else {
-    return fontSize(3);
-  }
+  return (size / standardUnityFontSize) * standardFontSize.value;
 }
 
 /**
@@ -340,8 +575,19 @@ function setTypingComplete(complete: boolean, instance?: TypedExtend) {
     instance.typingComplete = complete;
   }
 }
+const overrideTitleStyle = computed(() => {
+  if (overrideTitleZIndex.value) {
+    return {
+      "z-index": overrideTitleZIndex.value,
+    };
+  }
+  return {
+      //当为nexetEpisode时取消背景模糊
+      "backdrop-filter": showNextEpisode.value? 'none' : 'blur(7px)'
+  };
+});
 // 文本框总高度
-const dialogHeight = computed(() => props.playerHeight / 2);
+const dialogHeight = computed(() => props.playerHeight * 0.37);
 // 选择框位置
 const standardDialogHeight = 550;
 const standardDialogTopOffset = 100;
@@ -355,8 +601,14 @@ onMounted(() => {
   eventBus.on('showText', handleShowTextEvent);
   eventBus.on('st', handleShowStEvent);
   eventBus.on('clearSt', handleClearSt);
-  eventBus.on("hide", () => showDialog.value = false)
-  eventBus.on("click", moveToNext)
+  eventBus.on("hide", handleHideDialog);
+  eventBus.on("hideDialog", handleHideDialog);
+  eventBus.on("click", moveToNext);
+  eventBus.on("toBeContinue", handleToBeContinued);
+  eventBus.on("nextEpisode", handleNextEpisode);
+  eventBus.on("popupImage", handlePopupImage);
+  eventBus.on("popupVideo", handlePopupVideo);
+  eventBus.on("hidePopup", handlePopupClose);
 });
 onUnmounted(() => {
   eventBus.off("showTitle", handleShowTitle);
@@ -364,6 +616,14 @@ onUnmounted(() => {
   eventBus.off('showText', handleShowTextEvent);
   eventBus.off('st', handleShowStEvent);
   eventBus.off('clearSt', handleClearSt);
+  eventBus.off("hide", handleHideDialog);
+  eventBus.off("hideDialog", handleHideDialog);
+  eventBus.off("click", moveToNext);
+  eventBus.off("toBeContinue", handleToBeContinued);
+  eventBus.off("nextEpisode", handleNextEpisode);
+  eventBus.off("popupImage", handlePopupImage);
+  eventBus.off("popupVideo", handlePopupVideo);
+  eventBus.off("hidePopup", handlePopupClose);
 });
 // 暂时用不上了, 比如font-size还需要根据屏幕进行适配
 type StyleEffectTemplateMap = {
@@ -396,7 +656,11 @@ $dialog-z-index: 3;
 $place-z-index: 8;
 $title-z-index: 10;
 $select-z-index: 10;
+$image-video-z-index: 10;
+$to-be-continue-z-index: 200;
+$next-episode-z-index: 201;
 $st-z-index: 10;
+$text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
 
 .name {
   font-size: 3.5rem;
@@ -405,7 +669,7 @@ $st-z-index: 10;
 }
 
 .department {
-  margin-left: 2rem;
+  margin-left: 1rem;
   font-size: 2.5rem;
   color: rgb(156, 218, 240);
 }
@@ -413,7 +677,6 @@ $st-z-index: 10;
 .title {
   display: flex;
   align-items: flex-end;
-  margin-top: 2rem;
 }
 
 .dialog {
@@ -427,9 +690,8 @@ $st-z-index: 10;
   white-space: pre-line;
 
   .inner-dialog {
-    --height-padding: 0rem;
     width: 100%;
-    height: calc(100% - var(--height-padding));
+    height: 100%;
     position: relative;
   }
 
@@ -462,7 +724,7 @@ $st-z-index: 10;
 
 .content {
   --font-size: 2rem;
-  margin-top: 1.5rem;
+  margin-top: 1.5%; 
   color: white;
   font-size: var(--font-size);
   line-height: 1.5em;
@@ -487,17 +749,11 @@ $st-z-index: 10;
   }
 
   .title-container {
-    width: 100%;
-    height: 100%;
     text-align: center;
-    position: absolute;
-    top: 0;
-    left: 0;
     opacity: 0;
-    backdrop-filter: blur(7px);
     color: white;
     z-index: $text-layer-z-index + $title-z-index;
-    $padding: 10px;
+    // $padding: 10px;
     // padding: $padding;
 
     .title-border {
@@ -533,6 +789,20 @@ $st-z-index: 10;
             rgba(240, 240, 240, 0.1) 0%,
             rgba(240, 240, 240, 1) 38%,
             rgba(240, 240, 240, 0.1) 100%), url("./assets/poli-light.png") rgb(164 216 237) no-repeat 0 30%;
+
+        .sub-title {
+          font-size: calc(var(--font-size) * 0.6);
+          margin-bottom: calc(var(--font-size) * 0.5);
+
+          .sub-title-inner {
+            padding: 0 5px;
+            background: linear-gradient(0deg, #f6ed7e 0%, #F6ED7D 13%, transparent 13%) 0 calc(var(--font-size) * -0.12);
+          }
+        }
+
+        .main-title {
+          color: #4a609a;
+        }
       }
     }
   }
@@ -540,6 +810,7 @@ $st-z-index: 10;
   .place-container {
     --font-size: 1rem;
     position: absolute;
+    opacity: 0;
     left: 0;
     top: 10%;
     color: white;
@@ -583,14 +854,9 @@ $st-z-index: 10;
   }
 
   .st-container {
-    width: 100%;
-    height: 100%;
-    position: absolute;
-    top: 0;
-    left: 0;
     z-index: $text-layer-z-index + $st-z-index;
     color: white;
-    text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+    text-shadow: $text-outline;
   }
 
   .fade-in-out {
@@ -614,5 +880,86 @@ $st-z-index: 10;
   100% {
     opacity: 0;
   }
+}
+
+.next-episode-container {
+  pointer-events: none;
+  z-index: $text-layer-z-index + $next-episode-z-index;
+
+  .next-episode-cover {
+    display: block;
+    height: 50%;
+    width: 100%;
+    background-color: black;
+
+    &:first-child {
+      transform: translateY(-100%);
+    }
+
+    &:last-child {
+      transform: translateY(100%);
+    }
+  }
+}
+
+.to-be-continued-container {
+  pointer-events: none;
+  z-index: $text-layer-z-index + $to-be-continue-z-index;
+
+  .to-be-continued-bg0,
+  .to-be-continued-bg1 {
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+  }
+
+  .to-be-continued-bg0 {
+    background: #545454;
+  }
+
+  .to-be-continued-bg1 {
+    transform: translateY(-100%);
+    background: radial-gradient(#808080, #808080 30%, #545454 65%, #545454 100%);
+  }
+
+  .to-be-continued {
+    position: absolute;
+    color: white;
+    text-shadow: $text-outline;
+    right: -150px;
+    bottom: 20px;
+    opacity: 0;
+  }
+}
+
+.image-video-container {
+  z-index: $text-layer-z-index + $image-video-z-index;
+
+  .image-video-container-inner {
+    width: 100%;
+    height: 100%;
+    position: relative;
+
+    .image-container {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+
+      .image {
+        object-fit: contain;
+        height: 70%;
+        transform: translateY(10%);
+      }
+    }
+  }
+}
+
+.absolute-container {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
 }
 </style>
