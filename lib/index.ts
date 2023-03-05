@@ -51,7 +51,7 @@ export async function init(elementID: string, props: PlayerConfigs, endCallback:
 
   Loader.registerPlugin(SpineParser);
 
-  //添加加载文字并加载初始化资源以便翻译层进行翻译
+  // 注册加载回调实现log滚动效果
   app.loader.onLoad.add((_, resource) => {
     eventBus.emit("oneResourceLoaded", { type: "success", resourceName: resource.name });
   });
@@ -59,9 +59,13 @@ export async function init(elementID: string, props: PlayerConfigs, endCallback:
     console.error(err);
     eventBus.emit("oneResourceLoaded", { type: "fail", resourceName: resource.name });
   });
+  // 记录加载开始时间 优化光速加载的体验
+  let startLoadTime = 0;
   app.loader.onStart.add(() => {
+    startLoadTime = Date.now();
     eventBus.emit("startLoading", props.dataUrl);
   });
+  //加载初始化资源以便翻译层进行翻译
   await resourcesLoader.init(app.loader)
   privateState.allStoryUnit = translate(props.story)
 
@@ -74,10 +78,22 @@ export async function init(elementID: string, props: PlayerConfigs, endCallback:
   //加载剩余资源
   await resourcesLoader.addLoadResources()
   resourcesLoader.load(() => {
-    eventBus.emit("loaded");
-    eventBus.emit('hidemenu')
-    //开始发送事件
-    eventEmitter.init()
+    // 加载时间少于1秒, 延迟一下再开始
+    const loadedTime = Date.now() - startLoadTime;
+    new Promise<void>((resolve) => {
+      if (loadedTime < 1000) {
+        setTimeout(() => {
+          resolve();
+        }, 1000 - loadedTime);
+      } else {
+        resolve();
+      }
+    }).then(() => {
+      eventBus.emit("loaded");
+      eventBus.emit('hidemenu')
+      //开始发送事件
+      eventEmitter.init()
+    })
   })
 }
 
