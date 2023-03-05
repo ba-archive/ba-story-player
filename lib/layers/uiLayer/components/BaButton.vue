@@ -40,6 +40,7 @@ onMounted(()=>{
 .ba-button {
   position: relative;
   padding: 0.375rem 1rem;
+  margin: 0.125rem 0.4rem 0 0.4rem;
   border-radius: 0.3125rem;
   border: none;
   font-size: 1.125rem;

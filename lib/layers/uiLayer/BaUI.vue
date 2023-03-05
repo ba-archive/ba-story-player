@@ -55,7 +55,9 @@ function handleBtnChatLog() {
 function handleBtnSkipSummary() {
   eventBus.emit("playOtherSounds", "select")
   refreshBtnMenuTimmer()
+  autoMode.value = false
   hiddenSummary.value = false;
+  eventBus.emit("stopAuto")
 }
 
 // 处理选项
@@ -134,15 +136,18 @@ const handleBtnMenuDebounced = debounce(handleBtnMenu, 200);
 
       <Transition>
         <div class="baui-menu-options lean-rect" v-if="!hiddenSubMenu">
-          <button class="button-nostyle ba-menu-option" @click="handleBtnFullScreen" @mousedown="handleBtnMouseDown"
+          <button class="button-nostyle ba-menu-option" @click="handleBtnFullScreen"
+            @mousedown="handleBtnMouseDown" @touchstart="handleBtnMouseDown" @touchend="handleBtnMouseUp"
             @mouseup="handleBtnMouseUp" @mouseleave="handleBtnMouseUp">
             <img draggable="false" src="./assets/pan-arrow.svg" />
           </button>
-          <button class="button-nostyle ba-menu-option" @click="handleBtnChatLog" @mousedown="handleBtnMouseDown"
+          <button class="button-nostyle ba-menu-option" @click="handleBtnChatLog"
+            @mousedown="handleBtnMouseDown" @touchstart="handleBtnMouseDown" @touchend="handleBtnMouseUp"
             @mouseup="handleBtnMouseUp" @mouseleave="handleBtnMouseUp">
             <img draggable="false" src="./assets/menu.svg" />
           </button>
-          <button class="button-nostyle ba-menu-option" @click="handleBtnSkipSummary" @mousedown="handleBtnMouseDown"
+          <button class="button-nostyle ba-menu-option" @click="handleBtnSkipSummary"
+            @mousedown="handleBtnMouseDown" @touchstart="handleBtnMouseDown" @touchend="handleBtnMouseUp"
             @mouseup="handleBtnMouseUp" @mouseleave="handleBtnMouseUp">
             <img draggable="false" src="./assets/fast-forward.svg" />
           </button>
@@ -153,17 +158,17 @@ const handleBtnMenuDebounced = debounce(handleBtnMenu, 200);
     <BaSelector id="ba-story-selector" :selection="selectOptions" @select="handleBaSelector"
       v-if="selectOptions.length !== 0" />
 
-    <BaDialog id="ba-story-summery" :title="'概要'" :show="!hiddenSummary" @close="hiddenSummary = true"
+    <BaDialog id="ba-story-summary" :title="'概要'" :show="!hiddenSummary" @close="hiddenSummary = true"
       width="min(520px, 70%)" height="min(400px,85%)">
-      <div class="ba-story-summery-container">
-        <h4 class="ba-story-summery-title">{{ storySummary.chapterName }}</h4>
-        <p class="ba-story-summery-text">
+      <div class="ba-story-summary-container">
+        <h4 class="ba-story-summary-title">{{ storySummary.chapterName }}</h4>
+        <p class="ba-story-summary-text">
           {{ storySummary.summary }}
         </p>
-        <p class="ba-story-summery-tip">※ 是否略过此剧情？</p>
-        <div class="ba-story-summery-button-group">
-          <BaButton size="large" class="polylight" @click="hiddenSummary = true">取消</BaButton>
-          <BaButton size="large" class="polydark" @click="eventBus.emit('skip'); hiddenSummary = true">确认</BaButton>
+        <!-- <p class="ba-story-summary-tip">※ 是否略过此剧情？</p> -->
+        <div class="ba-story-summary-button-group">
+           <BaButton size="medium" class="polylight button-close-summary" @click="hiddenSummary = true">关闭</BaButton>
+<!--          <BaButton size="large" class="polydark" @click="eventBus.emit('skip'); hiddenSummary = true">确认</BaButton>-->
         </div>
       </div>
     </BaDialog>
@@ -272,10 +277,10 @@ const handleBtnMenuDebounced = debounce(handleBtnMenu, 200);
     z-index: 110;
   }
 
-  #ba-story-summery {
+  #ba-story-summary {
     color: #32363c;
 
-    .ba-story-summery-container {
+    .ba-story-summary-container {
       height: 100%;
       display: flex;
       flex-flow: nowrap column;
@@ -288,7 +293,7 @@ const handleBtnMenuDebounced = debounce(handleBtnMenu, 200);
       background-size: 100%;
     }
 
-    .ba-story-summery-title {
+    .ba-story-summary-title {
       margin: 0.75rem 0;
       text-align: center;
       color: #32363c;
@@ -296,7 +301,7 @@ const handleBtnMenuDebounced = debounce(handleBtnMenu, 200);
       font-weight: bold;
     }
 
-    .ba-story-summery-text {
+    .ba-story-summary-text {
       flex: 1;
       border: solid #d1d7dc 2px;
       margin: 0 1rem;
@@ -306,7 +311,7 @@ const handleBtnMenuDebounced = debounce(handleBtnMenu, 200);
       background-color: #f0f0f0;
     }
 
-    .ba-story-summery-tip {
+    .ba-story-summary-tip {
       color: #32363c;
       font-size: 1.125rem;
       font-weight: bold;
@@ -315,11 +320,15 @@ const handleBtnMenuDebounced = debounce(handleBtnMenu, 200);
       user-select: none;
     }
 
-    .ba-story-summery-button-group {
-      display: grid;
+    .ba-story-summary-button-group {
+      display: flex;
       margin: 0.75rem 1rem 1.5rem;
-      grid-template-columns: repeat(2, 1fr);
-      grid-gap: 1rem;
+      justify-content: center;
+      align-items: center;
+
+      .button-close-summary {
+        width: 50%;
+      }
     }
   }
 }
