@@ -200,7 +200,7 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
         options.perImgSetting[i].anchor.x,
         options.perImgSetting[i].anchor.y,
       )
-      respondImg.scale.set(scale * options.perImgSetting[i].scale / spine.scale.x)
+      respondImg.scale.set(scale * options.perImgSetting[i].scale / 0.5)
       container.addChild(respondImg)
     }
     container.zIndex = 10
@@ -308,7 +308,7 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
   }, Twinkle(instance: CharacterEffectInstance, options: EmotionOptions['Twinkle'], sprites: Sprite[]): Promise<void> {
     const { container } = prepareEmotionContainer(instance.instance, options);
 
-    const scale = getRelativeScale(sprites[0], options) / instance.instance.scale.x;
+    const scale = getRelativeScale(sprites[0], options) / 0.5;
     const starImgs: Sprite[] = []
     const starImgScales: number[] = []
     for (let i = 0; i < 3; ++i) {
@@ -440,7 +440,6 @@ function prepareEmotionContainer(spine: Spine, options: EmotionOptions[EmotionWo
  * @returns 缩放比例绝对值
  */
 function getRelativeScale(img: Sprite, options: EmotionOptions[EmotionWord]) {
-  //用播放器宽度的1/5作为图片缩放的基准
   return options.scale * 540 / img.width
 }
 
