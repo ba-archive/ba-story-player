@@ -6,7 +6,7 @@ import { usePlayerStore } from "@/stores";
 const audioMap = new Map<string, Sound>()
 /**
  * 获取url对于的Sound对象, 缓存不存在则新建
- * @param url 
+ * @param url
  */
 function getAudio(url: string): Sound {
   const audio = audioMap.get(url)
@@ -35,7 +35,10 @@ export async function preloadSound(audioUrls: string[]) {
         url: audioUrl,
         preload: true,
         autoPlay: false,
-        loaded: () => resolve()
+        loaded(err, resource) {
+          eventBus.emit("oneResourceLoaded", { type: err ? "fail" : "success", resourceName: audioUrl });
+          resolve();
+        }
       }))
     }))
   }
