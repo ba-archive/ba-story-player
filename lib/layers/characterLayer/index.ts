@@ -402,11 +402,11 @@ function wink(instance: CharacterInstance, first = true) {
   }
   const face = instance.currentFace;
   const spine = instance.instance;
+  clearWinkHandler(instance.winkObject);
   if (face !== "01") {
     spine.state.clearTrack(AnimationWinkTrack);
     return;
   }
-  clearWinkHandler(instance.winkObject);
   const winkTimeout = Math.floor(Math.random() * 1000) + 3500;
   instance.winkObject = {
     handler: window.setTimeout(wink, winkTimeout, instance, false)
@@ -466,7 +466,10 @@ function clearWinkHandler(winkObject?: WinkObject) {
   if (!winkObject) {
     return
   }
-  winkObject.handler && window.clearTimeout(winkObject.handler);
+  if (winkObject.handler) {
+    window.clearTimeout(winkObject.handler);
+    winkObject.handler = 0;
+  }
   winkObject.animationObject?.pause();
 }
 
