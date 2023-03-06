@@ -271,6 +271,12 @@ export const CharacterLayerInstance: CharacterLayer = {
     return true;
   },
   showOneCharacter(data: CharacterEffectInstance): Promise<void> {
+    if (Math.abs(CharacterLayerInstance.characterScale! - data.instance.scale.x) > 0.05) {
+      if (!data.effects.some(effect => effect.effect === 'closeup')) {
+        data.instance.scale.set(CharacterLayerInstance.characterScale)
+      }
+    }
+
     // 表情
     if (data.instance.state.hasAnimation(data.face))
       data.instance.state.setAnimation(AnimationFaceTrack, data.face, true);
