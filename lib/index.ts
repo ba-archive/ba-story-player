@@ -324,6 +324,9 @@ export let eventEmitter = {
         Reflect.set(eventEmitter, key, true)
       }
     }
+    this.l2dPlaying = false
+    this.playL2dVoice = true
+    this.voiceIndex = 1
     eventBus.on('next', () => {
       storyHandler.next()
       if (!this.unitDone) {

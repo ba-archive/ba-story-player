@@ -4,7 +4,10 @@ import { usePlayerStore } from "@/stores";
 import { getResourcesUrl } from "@/utils";
 import gsap from "gsap";
 
+let disposed = true
+
 export function L2DInit() {
+  disposed = false
   const { app } = usePlayerStore();
   // 主要播放 spine
   let mainItem: Spine;
@@ -13,6 +16,14 @@ export function L2DInit() {
   // 当前顶层的spine index
   let currentIndex: number = 0;
   let startAnimations: { animation: string; spine: Spine; fade?: boolean }[];
+  let timeOutArray: NodeJS.Timeout[] = []
+  eventBus.on('dispose', () => {
+    for (const timeout of timeOutArray) {
+      clearInterval(timeout)
+    }
+    timeOutArray = []
+    disposed = true
+  })
   // 接收动画消息
   eventBus.on("changeAnimation", (e) => {
     const temAnimation = e.replace(/_(A|M)/, "");
@@ -65,7 +76,9 @@ export function L2DInit() {
           const duration = entry.animation.duration;
           if (startAnimations[currentIndex - 1]?.fade) {
             // 在快结束的时候触发 fade
-            setTimeout(fadeEffect, (duration - 0.8) * 1000);
+            timeOutArray.push(
+              setTimeout(fadeEffect, (duration - 0.8) * 1000)
+            );
           }
           // 如果没有播放过的话就设置播放状态为播放
           if (!hasPlayedAnimation[entryAnimationName]) {
@@ -79,9 +92,11 @@ export function L2DInit() {
         complete: function (entry: any) {
           // 如果不是有待机动作的主 spine 就去掉
           if (item !== mainItem) {
-            setTimeout(() => {
-              app.stage.removeChild(item);
-            }, 4);
+            timeOutArray.push(
+              setTimeout(() => {
+                app.stage.removeChild(item);
+              }, 4)
+            );
           }
           const entryAnimationName = entry.animation.name + item.name;
           if (
@@ -93,13 +108,15 @@ export function L2DInit() {
             app.stage.addChild(curStartAnimations.spine);
             // 待机动画 Idle 循环播放, 为空时代表起始动画播放完成, 开始播放待机动画
             // 必须要先加入 app 才能播放
-            setTimeout(() => {
-              let e = curStartAnimations.spine.state.setAnimation(
-                0,
-                curStartAnimations.animation,
-                !startAnimations[currentIndex] // 最后一个待机动作循环
-              );
-            }, 4);
+            timeOutArray.push(
+              setTimeout(() => {
+                let e = curStartAnimations.spine.state.setAnimation(
+                  0,
+                  curStartAnimations.animation,
+                  !startAnimations[currentIndex] // 最后一个待机动作循环
+                );
+              }, 4)
+            );
             return;
           }
           // TODO: 是否播放完可以下一步
@@ -175,12 +192,12 @@ export function L2DInit() {
       const curStartAnimations = startAnimations[currentIndex]!;
       currentIndex += 1;
       app.stage.addChild(curStartAnimations.spine);
-        curStartAnimations.spine.state.setAnimation(
-          0,
-          curStartAnimations.animation,
-          false
-        );
-    } catch {}
+      curStartAnimations.spine.state.setAnimation(
+        0,
+        curStartAnimations.animation,
+        false
+      );
+    } catch { }
   });
 }
 /**
@@ -199,11 +216,15 @@ function calcL2DSize(
   return { width, height, ratio };
 }
 function fadeEffect() {
-  let player = document.querySelector("#player__main") as HTMLDivElement;
-  player.style.backgroundColor = "white";
-  let playerCanvas = document.querySelector("#player canvas");
-  gsap.to(playerCanvas, { alpha: 0, duration: 1 });
-  setTimeout(() => {
-    gsap.to(playerCanvas, { alpha: 1, duration: 0.8 });
-  }, 1000);
+  if (!disposed) {
+    let player = document.querySelector("#player__main") as HTMLDivElement;
+    player.style.backgroundColor = "white";
+    let playerCanvas = document.querySelector("#player canvas");
+    gsap.to(playerCanvas, { alpha: 0, duration: 1 });
+    setTimeout(() => {
+      if (!disposed) {
+        gsap.to(playerCanvas, { alpha: 1, duration: 0.8 });
+      }
+    }, 1000);
+  }
 }
