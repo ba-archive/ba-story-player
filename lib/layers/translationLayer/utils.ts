@@ -228,3 +228,8 @@ export function generateTitleInfo(rawStoryUnit: StoryRawUnit, language: Language
     }
   }
 }
+
+export function getEmotionName(rawName: string): string | undefined {
+  const name = xxhash.h32(rawName, 0).toNumber()
+  return usePlayerStore().EmotionExcelTable.get(name)
+}

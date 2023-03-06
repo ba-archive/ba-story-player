@@ -103,6 +103,7 @@ let privateState: PrivateStates = {
   BGMExcelTable: new Map(),
   BGEffectExcelTable: new Map(),
   TransitionExcelTable: new Map(),
+  EmotionExcelTable: new Map(),
   emotionResourcesTable: new Map(Object.entries(emotionResourcesTable)),
   fxImageTable: new Map(Object.entries(fxImageTable)),
   bgEffectImgMap: new Map(Object.entries(bgEffectImgTable))
