@@ -3,7 +3,7 @@ import { ActionOptions, OptionDescriptions } from "@/types/characterLayer";
 /**
  * 立绘移动速度
  */
-export let moveSpeed = 2.4
+export const moveSpeed = 2.4
 
 export let actionDescriptions: OptionDescriptions['action'] = {
   a: {},
