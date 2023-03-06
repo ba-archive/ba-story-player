@@ -10,7 +10,7 @@ import {
   FXEffectWord,
   ILoopAnimationStateListener
 } from "@/types/characterLayer";
-import {Character, CharacterEffectType, CharacterInstance, WinkAnimationObject, WinkObject} from "@/types/common";
+import { Character, CharacterEffectType, CharacterInstance, WinkAnimationObject, WinkObject } from "@/types/common";
 import { ShowCharacter } from "@/types/events";
 import { AdjustmentFilter } from '@pixi/filter-adjustment';
 import { ColorOverlayFilter } from '@pixi/filter-color-overlay';
@@ -164,6 +164,8 @@ export const CharacterLayerInstance: CharacterLayer = {
     if (spine.position.y === 0) {
       // 供特效使用
       const { scale, y } = calcCharacterYAndScale(spine);
+      //设置x轴初始位置
+      const { x } = calcSpineStagePosition(spine, character.position)
       // 设置缩放比列
       this.characterScale = scale;
 
@@ -174,7 +176,7 @@ export const CharacterLayerInstance: CharacterLayer = {
       };
       spine.scale.set(scale);
       // 设置spine在播放器的y轴坐标
-      spine.position.set(spine.position.x, y);
+      spine.position.set(x, y);
     }
     // 不显示
     spine.alpha = 0
