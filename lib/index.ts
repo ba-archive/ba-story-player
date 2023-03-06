@@ -9,7 +9,7 @@ import { PlayerConfigs, StoryUnit } from "@/types/common";
 import * as utils from '@/utils';
 import { getOtherSoundUrls, wait } from "@/utils";
 import axios from 'axios';
-import { SpineParser } from 'pixi-spine';
+import { SpineParser, IEventData } from 'pixi-spine';
 import { Application, Loader, settings, utils as pixiUtils } from "pixi.js";
 import { L2DInit } from "./layers/l2dLayer/L2D";
 
@@ -291,8 +291,6 @@ export let storyHandler = {
 export let eventEmitter = {
   /** 当前是否处于l2d播放中, 并不特指l2d某个动画 */
   l2dPlaying: false,
-  voiceIndex: 1,
-  playL2dVoice: true,
   characterDone: true,
   effectDone: true,
   titleDone: true,
@@ -325,8 +323,6 @@ export let eventEmitter = {
       }
     }
     this.l2dPlaying = false
-    this.playL2dVoice = true
-    this.voiceIndex = 1
     eventBus.on('next', () => {
       storyHandler.next()
       if (!this.unitDone) {
@@ -425,14 +421,6 @@ export let eventEmitter = {
             })
           }
         }
-        if (this.l2dPlaying && this.playL2dVoice) {
-          //to do 后续加入声音对应表
-          //判断并播放l2d语音, 根据clearST增加语音的下标
-          eventBus.emit('playAudio', {
-            voiceJPUrl: `${playerStore.dataUrl}/Audio/VoiceJp/CH0184_MemorialLobby/${this.voiceIndex}.wav`
-          })
-          this.playL2dVoice = false
-        }
         break
       case 'effectOnly':
         break
@@ -483,10 +471,6 @@ export let eventEmitter = {
     if (storyHandler.currentStoryUnit.textAbout.st) {
       if (storyHandler.currentStoryUnit.textAbout.st.clearSt) {
         eventBus.emit('clearSt')
-        if (this.l2dPlaying) {
-          this.voiceIndex++
-          this.playL2dVoice = true
-        }
       }
     }
   },
@@ -545,7 +529,6 @@ export let eventEmitter = {
   playL2d() {
     if (storyHandler.currentStoryUnit.l2d) {
       if (storyHandler.currentStoryUnit.l2d.animationName === 'Idle_01') {
-        playerStore.setL2DSpineUrl(storyHandler.currentStoryUnit.l2d.spineUrl)
         eventBus.emit('playL2D')
         this.l2dPlaying = true
       }
@@ -673,7 +656,7 @@ export let resourcesLoader = {
       //添加人物spine
       if (unit.characters.length != 0) {
         for (let character of unit.characters) {
-          let spineUrl = character.spineUrl
+          const spineUrl = character.spineUrl
           if (!this.loader.resources[character.CharacterName]) {
             this.loader.add(String(character.CharacterName), spineUrl)
           }
@@ -705,6 +688,7 @@ export let resourcesLoader = {
       this.checkAndAdd(unit.l2d, 'spineUrl')
       if (unit.l2d) {
         playerStore.curL2dConfig?.otherSpine.forEach(i => this.checkAndAdd(utils.getResourcesUrl('otherL2dSpine', i)))
+        playerStore.setL2DSpineUrl(unit.l2d.spineUrl)
       }
     }
     await preloadSound(audioUrls)
@@ -718,13 +702,18 @@ export let resourcesLoader = {
     let hasLoad = false
     this.loader.onError.add((error) => { throw error })
     this.loader.load((loader, res) => {
-      playerStore.app.loader.load((loader, res) => {
+      playerStore.app.loader.load(async (loader, res) => {
         //当chrome webgl inspector打开时可能导致callback被执行两次
         if (!hasLoad) {
           console.log('已加载资源:', res)
-          callback()
           hasLoad = true
+          const spineData = usePlayerStore().l2dSpineData
+          if (spineData) {
+            await this.loadL2dVoice(spineData.events)
+          }
+          callback()
         }
+
       })
     })
   },
@@ -784,12 +773,19 @@ export let resourcesLoader = {
   /**
    * 添加l2d语音
    */
-  addL2dVoice(name: string) {
-    let voicePath = `${name}_MemorialLobby`
-    for (let voiceFileName of l2dVoiceExcelTable[voicePath]) {
-      this.loader.add(voiceFileName, `${voicePath}/${voiceFileName}`
-      )
+  loadL2dVoice(audioEvents: IEventData[]) {
+    for (let event of audioEvents) {
+      if (event.name.includes('MemorialLobby')) {
+        const voiceUrl = utils.getResourcesUrl('l2dVoice', event.name)
+        this.loader.add(voiceUrl, voiceUrl)
+      }
     }
+
+    return new Promise<void>(resolve => {
+      this.loader.load(() => {
+        resolve()
+      })
+    })
   },
 
   /**

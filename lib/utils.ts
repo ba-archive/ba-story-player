@@ -51,7 +51,10 @@ export function getResourcesUrl(type: ResourcesTypes, arg: string): string {
     case 'fx':
       return `${dataUrl}/effectTexture/${arg}`
     case 'l2dVoice':
-      return `${dataUrl}/Audio/VoiceJp/${arg}.wav`
+      //arg "sound/CH0184_MemorialLobby_1_1"
+      const voiceDirectory = arg.replace(/sound\/([A-Z0-9]*)_MemorialLobby.*/, 'JP_$1')
+      const voiceFilename = arg.split('/').pop()
+      return `${dataUrl}/Audio/VoiceJp/Character_voice/${voiceDirectory}/${voiceFilename}.${oggAudioType}`
     case 'l2dSpine':
       return `${dataUrl}/spine/${arg}/${arg}.skel`
     case 'otherL2dSpine':

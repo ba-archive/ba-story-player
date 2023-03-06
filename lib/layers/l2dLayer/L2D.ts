@@ -146,6 +146,15 @@ export function L2DInit() {
       });
     }
     mainItem = new Spine(l2dSpineData!);
+    mainItem.state.addListener({
+      event(entry, event) {
+        if (event.data.name !== 'Talk')
+          eventBus.emit('playAudio', {
+            voiceJPUrl: getResourcesUrl('l2dVoice', event.data.name)
+          })
+      }
+    })
+
     // 设置名字区分
     mainItem.name = curL2dConfig?.name || "";
     if (curL2dConfig?.otherSpine) {
