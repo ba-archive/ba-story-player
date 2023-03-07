@@ -79,6 +79,11 @@ export const emotionDescriptions: OptionDescriptions['emotion'] = {
     "imgAngles": "各图片选择角度",
     "imgPivot": "图片原点",
     "imgScaleAnimation": "图片放大动画参数"
+  },
+  "Sigh": {
+    "scaleAnimation": "图片缩放动画",
+    "angle": "图片选择角度",
+    "anchor": "缩放的起始点"
   }
 }
 
@@ -457,6 +462,23 @@ const emotionOptions: EmotionOptions = {
       -30,
       0
     ]
+  },
+  "Sigh": {
+    "startPositionOffset": {
+      "x": 0.4,
+      "y": 0.15
+    },
+    "scale": 0.27,
+    "fadeOutDuration": 0.3,
+    "angle": 0,
+    "scaleAnimation": {
+      "start": 0.3,
+      "end": 0.9
+    },
+    "anchor": {
+      "x": 1,
+      "y": -0.2
+    }
   }
 }
 

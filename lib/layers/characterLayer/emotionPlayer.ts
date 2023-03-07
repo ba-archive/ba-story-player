@@ -3,7 +3,7 @@ import { usePlayerStore } from "@/stores";
 import {
   CharacterEffectInstance, CharacterEmotionPlayer, EmotionOptions, EmotionWord, PositionOffset, Scale
 } from "@/types/characterLayer";
-import gsap from 'gsap';
+import gsap, { Power4 } from 'gsap';
 import { Spine } from "pixi-spine";
 import { Container, Sprite } from "pixi.js";
 import emotionOptions from "./options/emotionOptions";
@@ -416,6 +416,21 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
       .to(steamImage2, { pixi: { alpha: 0 }, duration: 8 / 60 }, '>')
 
     return timelinePromise(tl, [steamImage1, steamImage2])
+  }, Sigh(instance, options, sprites) {
+    const { container } = prepareEmotionContainer(instance.instance, options)
+    const sighImage = Sprite.from(sprites[0].texture)
+    sighImage.alpha = 0
+    sighImage.angle = options.angle
+    sighImage.anchor.set(options.anchor.x, options.anchor.y)
+    sighImage.scale.set(options.scaleAnimation.start)
+    container.addChild(sighImage)
+
+    const tl = gsap.timeline()
+    tl.to(sighImage, { pixi: { alpha: 1 }, duration: 2 / 60 })
+      .to(sighImage, { pixi: { scale: options.scaleAnimation.end }, ease: Power4.easeOut, duration: 33 / 60 })
+      .to(sighImage, { pixi: { alpha: 0 }, duration: 11 / 60 }, `>+=${12 / 60}`)
+
+    return timelinePromise(tl, [sighImage])
   }
 }
 

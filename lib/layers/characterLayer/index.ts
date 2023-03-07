@@ -270,20 +270,23 @@ export const CharacterLayerInstance: CharacterLayer = {
 
     // 处理sync情况
     Promise
-      .allSettled(
+      .all(
         mapList.map(character => this.showOneCharacter(character))
       )
       .then(this.characterDone)
-      .catch(this.characterDone);
+      .catch(reason => {
+        console.log(reason)
+        this.characterDone()
+      });
     return true;
   },
   showOneCharacter(data: CharacterEffectInstance): Promise<void> {
-    //当人物没有closeup时取消closeup
-    // if (Math.abs(CharacterLayerInstance.characterScale! - data.instance.scale.x) > 0.05) {
-    //   if (!data.effects.some(effect => effect.effect === 'closeup')) {
-    //     data.instance.scale.set(CharacterLayerInstance.characterScale)
-    //   }
-    // }
+    // 当人物没有closeup时取消closeup
+    if (Math.abs(CharacterLayerInstance.characterScale! - data.instance.scale.x) > 0.05) {
+      if (!data.effects.some(effect => effect.effect === 'closeup')) {
+        data.instance.scale.set(CharacterLayerInstance.characterScale)
+      }
+    }
 
     // 表情
     if (data.instance.state.hasAnimation(data.face))

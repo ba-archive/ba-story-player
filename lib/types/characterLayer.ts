@@ -203,7 +203,8 @@ export interface PositionOffset {
 export type EmotionWord =
   "Heart" | "Respond" | "Music" | "Twinkle" |
   "Sad" | "Sweat" | "Dot" | "Chat" | "Exclaim" |
-  "Angry" | "Surprise" | "Question" | "Shy" | "Upset" | "Steam";
+  "Angry" | "Surprise" | "Question" | "Shy" | "Upset" | "Steam" |
+  "Sigh";
 
 /**
  * 人物特效定义
@@ -402,6 +403,11 @@ export interface BasicEmotionOptions extends BaseOptions<EmotionWord> {
       start: number
       end: number
     }[]
+  },
+  Sigh: {
+    angle: number
+    scaleAnimation: { start: number, end: number },
+    anchor: PositionOffset
   }
 }
 
