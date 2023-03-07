@@ -84,6 +84,12 @@ export const emotionDescriptions: OptionDescriptions['emotion'] = {
     "scaleAnimation": "图片缩放动画",
     "angle": "图片选择角度",
     "anchor": "缩放的起始点"
+  },
+  "Bulb": {
+    "bulbYPosition": "灯泡在y轴的位置",
+    "dialogScaleAnimation": "对话框缩放动画",
+    "lightScale": "光线图片的缩放",
+    "lightYPosition": "光线图片y轴位置"
   }
 }
 
@@ -479,6 +485,21 @@ const emotionOptions: EmotionOptions = {
       "x": 1,
       "y": -0.2
     }
+  },
+  "Bulb": {
+    "startPositionOffset": {
+      "x": 0.1,
+      "y": -0.1
+    },
+    "scale": 0.27,
+    "fadeOutDuration": 0.3,
+    "dialogScaleAnimation": {
+      "start": 0.7,
+      "end": 1
+    },
+    "bulbYPosition": 100,
+    "lightScale": 1.13,
+    "lightYPosition": 82
   }
 }
 

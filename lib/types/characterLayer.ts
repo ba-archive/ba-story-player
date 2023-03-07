@@ -204,7 +204,7 @@ export type EmotionWord =
   "Heart" | "Respond" | "Music" | "Twinkle" |
   "Sad" | "Sweat" | "Dot" | "Chat" | "Exclaim" |
   "Angry" | "Surprise" | "Question" | "Shy" | "Upset" | "Steam" |
-  "Sigh";
+  "Sigh" | 'Bulb';
 
 /**
  * 人物特效定义
@@ -408,6 +408,12 @@ export interface BasicEmotionOptions extends BaseOptions<EmotionWord> {
     angle: number
     scaleAnimation: { start: number, end: number },
     anchor: PositionOffset
+  },
+  Bulb: {
+    dialogScaleAnimation: ScaleAnimation
+    bulbYPosition: number
+    lightYPosition: number
+    lightScale: number
   }
 }
 
@@ -511,4 +517,9 @@ export interface ILoopAnimationStateListener extends IAnimationStateListener {
 
 export interface SignalOptions extends BaseOptions<SignalEffectWord> {
 
+}
+
+export type ScaleAnimation = {
+  start: number
+  end: number
 }

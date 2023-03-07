@@ -30,7 +30,8 @@ let emotionResourcesTable = {
   'Chat': ['Emoticon_Chat.png'],
   'Sad': ['Emoji_Sad.png'],
   'Steam': ['Emoji_Steam.png'],
-  "Sigh": ['Emoji_Sigh.png']
+  "Sigh": ['Emoji_Sigh.png'],
+  'Bulb': ['Emoticon_Balloon_N.png', 'Emoji_Bulb_1.png', 'Emoji_Bulb_2.png']
   // TODO: Upset, Music, Think, Bulb, Sigh, Steam, Zzz, Tear
 }
 

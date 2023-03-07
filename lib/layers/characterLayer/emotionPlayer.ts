@@ -431,6 +431,35 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
       .to(sighImage, { pixi: { alpha: 0 }, duration: 11 / 60 }, `>+=${12 / 60}`)
 
     return timelinePromise(tl, [sighImage])
+  }, Bulb(instance, options, sprites) {
+    const dialogImg = Sprite.from(sprites[0].texture)
+    const { container } = prepareEmotionContainer(instance.instance, options, dialogImg)
+    container.alpha = 0
+
+    const bulbImage = Sprite.from(sprites[1].texture)
+    bulbImage.anchor.set(0.5, 0.5)
+    bulbImage.position.set(dialogImg.width / 2, options.bulbYPosition)
+    bulbImage.visible = false
+    container.addChild(bulbImage)
+
+    const lightImage = Sprite.from(sprites[2].texture)
+    lightImage.anchor.set(0.5, 0.5)
+    lightImage.position.set(dialogImg.width / 2, options.lightYPosition)
+    lightImage.scale.set(options.lightScale)
+    lightImage.visible = false
+    container.addChild(lightImage)
+
+    const tl = gsap.timeline()
+    tl.to(container, { pixi: { alpha: 1 }, duration: 6 / 60 })
+      .to(container, { onStart() { bulbImage.visible = lightImage.visible = true }, duration: 6 / 60 })
+      .to(container, { onStart() { bulbImage.visible = true, lightImage.visible = false }, duration: 7 / 60 })
+      .to(container, {
+        onStart() { bulbImage.visible = lightImage.visible = true }, duration: 52 / 60, onComplete() {
+          container.visible = false
+        }
+      })
+
+    return timelinePromise(tl, [bulbImage, lightImage])
   }
 }
 
