@@ -76,7 +76,7 @@ import { onMounted, ref, computed, Ref, nextTick, onUnmounted, reactive } from '
 import eventBus from "@/eventBus";
 import Typed, { TypedExtend, TypedOptions } from "typed.js";
 import {ResourceLoadState, ShowText, ShowTitleOption, StArgs, StText} from "@/types/events";
-import {Text, TextEffect, TextEffectName} from "@/types/common";
+import {Text, TextEffectName} from "@/types/common";
 import { deepCopyObject } from "@/utils";
 import { usePlayerStore } from '@/stores';
 import gsap from "gsap";

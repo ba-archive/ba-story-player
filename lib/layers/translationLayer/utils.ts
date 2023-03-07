@@ -1,4 +1,4 @@
-import { Speaker, StoryRawUnit, StoryUnit, Text, TextEffect } from "@/types/common"
+import {Speaker, StoryRawUnit, StoryUnit, Text, TextEffect, TextEffectName} from "@/types/common"
 import { usePlayerStore } from '@/stores/index'
 import { Language } from "@/types/store"
 import {PlayAudio, ShowTitleOption} from "@/types/events"
@@ -62,15 +62,16 @@ export function generateText(rawStoryUnit: StoryRawUnit, stm?: boolean) {
     //例子[FF6666]……我々は望む、七つの[-][ruby=なげ][FF6666]嘆[-][/ruby][FF6666]きを。[-]
     rawText = rawText.replace('[/ruby]', '')
     let textUnits = rawText.split('[-]')
+    debugger
     for (let [index, textUnit] of textUnits.entries()) {
       let temp = textUnit.split(']')
-      if (/^[\[A-F0-9]{6}/.test(textUnit)) {
+      if (/^[\[A-Fa-f0-9]{6}/.test(textUnit)) {
         result.push({
           content: temp[1],
           effects: [
             { name: 'color', value: ['#' + temp[0].slice(1)] }
           ]
-        })
+        });
       }
       else if (textUnit.startsWith('[ruby')) {
         result.push({
@@ -79,7 +80,12 @@ export function generateText(rawStoryUnit: StoryRawUnit, stm?: boolean) {
             { name: 'color', value: ['#' + temp[1].slice(1)] },
             { name: 'ruby', value: [temp[0].slice(6)] }
           ]
-        })
+        });
+      } else {
+        result.push({
+          content: temp[0],
+          effects: []
+        });
       }
     }
   }
@@ -88,6 +94,41 @@ export function generateText(rawStoryUnit: StoryRawUnit, stm?: boolean) {
   }
 
   return result
+}
+
+function parseCustomTag(rawText: string) {
+
+}
+
+function parseOneCustomTag(rawText: string): { effect: TextEffect, remain: string } {
+  let raw = rawText;
+  Object.keys(ICustomTagParserMap).map(key => {
+    const fn = Reflect.get(ICustomTagParserMap, key) as CustomTagParserFn;
+    const res = fn(raw);
+  })
+}
+
+type CustomTagParser = {
+  regex: string;
+  groups: number;
+}
+
+type CustomTagParserFn = (rawText: string) => { effect: TextEffect, remain: string } | undefined;
+
+type CustomTagParserMap = {
+  [key in TextEffectName]: CustomTagParserFn;
+}
+
+const ICustomTagParserMap: CustomTagParserMap = {
+  ruby() {
+    return { effect: { name: "ruby", value: [] }, remain: "" }
+  },
+  color() {
+    return { effect: { name: "color", value: [] }, remain: "" }
+  },
+  fontsize() {
+    return { effect: { name: "fontsize", value: [] }, remain: "" }
+  }
 }
 
 /**
