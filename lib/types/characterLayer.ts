@@ -89,10 +89,7 @@ export interface CharacterLayer {
    * document resize事件监听器, 在大小变换时同时修改所有spine/sprite的缩放比列
    */
   onWindowResize(): void;
-  /**
-   * 当前角色spine的缩放比例
-   */
-  characterScale: number | undefined;
+
   /**
    * 保存所有创建好的角色spine对象
    * @key number 角色唯一key
@@ -163,6 +160,7 @@ export interface CharacterFXPlayer extends BaseCharacterEffectPlayer<FXEffectWor
  */
 export interface CharacterEffectInstance extends Character {
   instance: Spine;
+  isCloseUp: () => boolean;
 }
 
 export type EffectsWord = EmotionWord | CharacterEffectWord | FXEffectWord
