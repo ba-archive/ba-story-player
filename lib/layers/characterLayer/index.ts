@@ -144,7 +144,7 @@ export const CharacterLayerInstance: CharacterLayer = {
       },
       isHeightLight() {
         return this.isOnStage() && instance.alpha != 0;
-      }
+      },
     }
     currentCharacterMap.set(character.CharacterName, characterInstance)
     this.characterSpineCache.set(character.CharacterName, characterInstance)
@@ -166,8 +166,6 @@ export const CharacterLayerInstance: CharacterLayer = {
       const { scale, y } = calcCharacterYAndScale(spine);
       //设置x轴初始位置
       const { x } = calcSpineStagePosition(spine, character.position)
-      // 设置缩放比列
-      this.characterScale = scale;
 
       // 设置锚点到左上角
       spine.pivot = {
@@ -189,7 +187,12 @@ export const CharacterLayerInstance: CharacterLayer = {
     return row.characters.map(item => {
       return {
         ...item,
-        instance: this.getCharacterSpineInstance(item.CharacterName)!
+        instance: this.getCharacterSpineInstance(item.CharacterName)!,
+        isCloseUp() {
+          // 供特效使用
+          const { scale } = calcCharacterYAndScale(this.instance);
+          return Math.abs(scale - this.instance.scale.x) >= 0.05
+        }
       };
     })
   },
@@ -204,7 +207,8 @@ export const CharacterLayerInstance: CharacterLayer = {
         y: Character_Initial_Pivot_Proportion.y * character.instance.height,
       };
       // 设置缩放比列
-      character.instance.scale.set(this.characterScale);
+      const { scale: defaultScale } = calcCharacterYAndScale(character.instance);
+      character.instance.scale.set(defaultScale);
     })
   },
   showCharacter(data: ShowCharacter): boolean {
@@ -387,7 +391,6 @@ export const CharacterLayerInstance: CharacterLayer = {
   },
   //TODO 根据角色是否已经缩放(靠近老师)分类更新
   onWindowResize() { },
-  characterScale: undefined,
   characterSpineCache: new Map<number, CharacterInstance>(),
 }
 
