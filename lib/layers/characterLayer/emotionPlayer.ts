@@ -387,6 +387,35 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
         .to(dialogImg, { pixi: { alpha: 0 }, duration: options.fadeOutDuration })
       , [upsetImg]
     )
+  }, Steam(instance, options, sprites) {
+    const { container } = prepareEmotionContainer(instance.instance, options)
+    const steamImage1 = Sprite.from(sprites[0].texture)
+    steamImage1.angle = options.imgAngles[0]
+    steamImage1.anchor.set(options.imgPivot.x, options.imgPivot.y)
+    steamImage1.scale.set(options.imgScaleAnimation[0].start)
+
+    const steamImage2 = Sprite.from(sprites[0].texture)
+    steamImage2.angle = options.imgAngles[1]
+    steamImage2.anchor.set(options.imgPivot.x, options.imgPivot.y)
+    steamImage2.scale.set(options.imgScaleAnimation[1].start)
+    steamImage2.visible = false
+    container.addChild(steamImage2)
+    container.addChild(steamImage1)
+
+    const tl = gsap.timeline()
+    tl.to(steamImage1, { pixi: { scale: options.imgScaleAnimation[0].end }, duration: 14 / 60 })
+      .addLabel('image2Start')
+      .to(steamImage1, { pixi: { alpha: 0 }, duration: 12 / 60 })
+      .to(steamImage2, {
+        pixi: { scale: options.imgScaleAnimation[1].end },
+        duration: 21 / 60,
+        onStart() {
+          steamImage2.visible = true
+        }
+      }, 'image2Start')
+      .to(steamImage2, { pixi: { alpha: 0 }, duration: 8 / 60 }, '>')
+
+    return timelinePromise(tl, [steamImage1, steamImage2])
   }
 }
 

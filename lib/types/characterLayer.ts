@@ -205,7 +205,7 @@ export interface PositionOffset {
 export type EmotionWord =
   "Heart" | "Respond" | "Music" | "Twinkle" |
   "Sad" | "Sweat" | "Dot" | "Chat" | "Exclaim" |
-  "Angry" | "Surprise" | "Question" | "Shy" | "Upset";
+  "Angry" | "Surprise" | "Question" | "Shy" | "Upset" | "Steam";
 
 /**
  * 人物特效定义
@@ -396,6 +396,14 @@ export interface BasicEmotionOptions extends BaseOptions<EmotionWord> {
       duration: number
     }
     animationTotalDuration: number
+  },
+  Steam: {
+    imgAngles: [number, number]
+    imgPivot: PositionOffset
+    imgScaleAnimation: {
+      start: number
+      end: number
+    }[]
   }
 }
 
