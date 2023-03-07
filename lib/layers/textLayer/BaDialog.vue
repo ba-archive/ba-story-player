@@ -418,7 +418,7 @@ function showTextDialog(text: Text[], output: HTMLElement, onParseContent?: (sou
       index++;
     }
     // st的续约, 因为不能两个Typed同时持有一个对象, 所以采用将之前的内容作为已打印内容拼接的形式
-    if (typingInstance && typingInstance.isSt) {
+    function continueSt() {
       lastStOutput = stOutput.value!.innerHTML;
       setTypingComplete(false, typingInstance);
       typingInstance.pause.status = true;
@@ -426,21 +426,38 @@ function showTextDialog(text: Text[], output: HTMLElement, onParseContent?: (sou
       typingInstance.pause.curString = lastStOutput + firstContent;
       typingInstance.pause.curStrPos = lastStOutput.length;
       typingInstance.options.onComplete = onComplete;
+      typingInstance.startDelay = 0;
+      debugger
       setTimeout(() => {
         typingInstance.start();
-      }, text[0].waitTime || 0)
+      }, text[0].waitTime || 0);
+    }
+    if (typingInstance && typingInstance.isSt) {
+      continueSt();
     } else {
-      // 全新清空
-      typingInstance?.stop();
-      typingInstance?.destroy();
-      output.innerHTML = "";
-      typingInstance = new Typed(output, {
-        ...DefaultTypedOptions,
-        ...override,
-        startDelay: text[0].waitTime || 0,
-        strings: [lastStOutput + firstContent],
-        onComplete: onComplete
-      }) as TypedExtend;
+      // 如果之前st是instant也会走到这里, 因此判断代理的el是不是st的container
+      if (output === stOutput.value) {
+        typingInstance = new Typed(output, {
+          ...DefaultTypedOptions,
+          ...override,
+          startDelay: 99999,
+          strings: [""],
+        }) as TypedExtend;
+        typingInstance.isSt = true;
+        typingInstance.stop();
+        continueSt();
+      } else {
+        // 全新清空
+        typingInstance?.stop && typingInstance?.stop();
+        typingInstance?.destroy && typingInstance?.destroy();output.innerHTML = "";
+        typingInstance = new Typed(output, {
+          ...DefaultTypedOptions,
+          ...override,
+          startDelay: text[0].waitTime || 0,
+          strings: [lastStOutput + firstContent],
+          onComplete: onComplete,
+        }) as TypedExtend;
+      }
     }
   })
 }
