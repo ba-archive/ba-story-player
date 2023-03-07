@@ -204,7 +204,7 @@ export type EmotionWord =
   "Heart" | "Respond" | "Music" | "Twinkle" |
   "Sad" | "Sweat" | "Dot" | "Chat" | "Exclaim" |
   "Angry" | "Surprise" | "Question" | "Shy" | "Upset" | "Steam" |
-  "Sigh" | 'Bulb';
+  "Sigh" | 'Bulb' | 'Tear';
 
 /**
  * 人物特效定义
@@ -414,6 +414,11 @@ export interface BasicEmotionOptions extends BaseOptions<EmotionWord> {
     bulbYPosition: number
     lightYPosition: number
     lightScale: number
+  },
+  Tear: {
+    positions: PositionOffset[]
+    scaleAnimations: ScaleAnimation[]
+    anchors: PositionOffset[]
   }
 }
 

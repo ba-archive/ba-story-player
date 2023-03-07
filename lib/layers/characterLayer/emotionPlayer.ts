@@ -460,6 +460,32 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
       })
 
     return timelinePromise(tl, [bulbImage, lightImage])
+  }, Tear(instance, options, sprites) {
+    const { container } = prepareEmotionContainer(instance.instance, options)
+
+    const largeTearImage = Sprite.from(sprites[0].texture)
+    largeTearImage.position = options.positions[0]
+    largeTearImage.anchor.set(options.anchors[0].x, options.anchors[0].y)
+    largeTearImage.scale.set(options.scaleAnimations[0].start)
+    container.addChild(largeTearImage)
+    largeTearImage.alpha = 0
+
+    const smallTearImage = Sprite.from(sprites[1].texture)
+    smallTearImage.position = options.positions[1]
+    smallTearImage.anchor.set(options.anchors[1].x, options.anchors[1].y)
+    smallTearImage.scale.set(options.scaleAnimations[1].start)
+    container.addChild(smallTearImage)
+    smallTearImage.alpha = 0
+
+    const tl = gsap.timeline()
+    tl.to(smallTearImage, { pixi: { alpha: 1 }, duration: 7 / 60 })
+      .to(smallTearImage, { pixi: { scale: options.scaleAnimations[0].end }, ease: Power4.easeOut, duration: 12 / 60 })
+      .to(smallTearImage, { pixi: { alpha: 0 }, duration: 15 / 60 }, `>+=${13 / 60}`)
+      .to(largeTearImage, { pixi: { alpha: 1 }, duration: 3 / 60 }, 12 / 60)
+      .to(largeTearImage, { pixi: { scale: options.scaleAnimations[1].end }, ease: Power4.easeOut, duration: 13 / 60 }, '<')
+      .to(largeTearImage, { pixi: { alpha: 0 }, ease: Power4.easeOut, duration: 4 / 60 }, `>+=${32 / 60}`)
+
+    return timelinePromise(tl, [smallTearImage, largeTearImage])
   }
 }
 

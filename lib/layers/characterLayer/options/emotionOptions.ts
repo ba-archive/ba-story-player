@@ -90,6 +90,11 @@ export const emotionDescriptions: OptionDescriptions['emotion'] = {
     "dialogScaleAnimation": "对话框缩放动画",
     "lightScale": "光线图片的缩放",
     "lightYPosition": "光线图片y轴位置"
+  },
+  "Tear": {
+    "positions": "图片位置",
+    "anchors": "图片anchor",
+    "scaleAnimations": "图片缩放动画"
   }
 }
 
@@ -500,6 +505,44 @@ const emotionOptions: EmotionOptions = {
     "bulbYPosition": 100,
     "lightScale": 1.13,
     "lightYPosition": 82
+  },
+  "Tear": {
+    "startPositionOffset": {
+      "x": 0.45,
+      "y": 0.15
+    },
+    "scale": 0.27,
+    "fadeOutDuration": 0.3,
+    "positions": [
+      {
+        "x": 0,
+        "y": 30
+      },
+      {
+        "x": 0,
+        "y": 0
+      }
+    ],
+    "scaleAnimations": [
+      {
+        "start": 0.5,
+        "end": 1
+      },
+      {
+        "start": 0.6,
+        "end": 1
+      }
+    ],
+    "anchors": [
+      {
+        "x": 1,
+        "y": 0
+      },
+      {
+        "x": 1,
+        "y": 0
+      }
+    ]
   }
 }
 
