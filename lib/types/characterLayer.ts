@@ -282,7 +282,11 @@ export interface BasicEmotionOptions extends BaseOptions<EmotionWord> {
       totalDuration: number
     }
   },
-  Sad: {},
+  Sad: {
+    imageGap: number
+    moveYDistance: number
+    imgInitYPosition: [number, number, number]
+  },
   Sweat: {
     smallImg: {
       scale: number

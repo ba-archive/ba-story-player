@@ -216,8 +216,24 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
     );
   }, Sad(instance: CharacterEffectInstance, options: EmotionOptions['Sad'], sprites: Sprite[]): Promise<void> {
     const { container } = prepareEmotionContainer(instance.instance, options);
-    // TODO
-    return Promise.resolve(undefined);
+    const tl = gsap.timeline()
+    const sadLineImages: Sprite[] = []
+    for (let i = 0; i < 3; ++i) {
+      const sadLineImage = Sprite.from(sprites[0].texture)
+      sadLineImages.push(sadLineImage)
+      sadLineImage.alpha = 0
+      sadLineImage.scale.y = 0.5
+      sadLineImage.position.x = options.imageGap * i
+      sadLineImage.position.y = options.imgInitYPosition[i]
+      container.addChild(sadLineImage)
+      tl.to(sadLineImage, { pixi: { alpha: 1 }, duration: 1 / 15 }, i / 6)
+        .to(sadLineImage, { pixi: { scaleY: 1 }, duration: 4 / 15 }, '>')
+        .to(sadLineImage, { pixi: { positionY: `+=${options.moveYDistance}` } }, '<')
+        .to(sadLineImage, { duration: 26 / 60 }, '>')
+    }
+    tl.to(container, { pixi: { alpha: 0 }, duration: 8 / 60 })
+
+    return timelinePromise(tl, sadLineImages)
   }, Shy(instance: CharacterEffectInstance, options: EmotionOptions['Shy'], sprites: Sprite[]): Promise<void> {
     const dialogImg = sprites[0]
     const shyImg = sprites[1]

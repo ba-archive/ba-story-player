@@ -27,7 +27,11 @@ export const emotionDescriptions: OptionDescriptions['emotion'] = {
     "flashAnimation": "闪烁动画设置, 包括放大缩小倍数-动画时长",
     "fadeInDuration": "出现动画时长"
   },
-  "Sad": {},
+  "Sad": {
+    "moveYDistance": "在y轴移动的距离",
+    "imageGap": "个图片的间距",
+    "imgInitYPosition": "各图片开始时y轴位置"
+  },
   "Sweat": {
     "smallImg": "较小的图片相较于较大图片的设置, 包括缩放和相对位置",
     "dropAnimation": "下落动画的参数",
@@ -203,13 +207,19 @@ const emotionOptions: EmotionOptions = {
     "fadeInDuration": 0.2
   },
   "Sad": {
-
     "startPositionOffset": {
-      "x": 50,
+      "x": 0.4,
       "y": 0
     },
     "scale": 0.3,
-    "fadeOutDuration": 0.1
+    "fadeOutDuration": 0.1,
+    "imageGap": 30,
+    "moveYDistance": 35,
+    "imgInitYPosition": [
+      0,
+      30,
+      -30
+    ]
   },
   "Sweat": {
 
