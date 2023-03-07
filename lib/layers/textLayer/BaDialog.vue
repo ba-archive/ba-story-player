@@ -356,7 +356,7 @@ function parseTextEffect(text: Text, extendStyle = "", tag = "span"): Text {
   }).join(";");
   // 如果有注解就用ruby标签实现
   if (rt) {
-    text.content = `<ruby style="${style};${extendStyle};ruby-align: center;">${text.content}<rt>${rt}</rt><rp>烫</rp></ruby>`
+    text.content = `<${tag} style="${style};${extendStyle}" class="ruby" data-content="${rt}"><span class="rb">${text.content}</span><span class="rt">${rt}</span></${tag}>`
   } else {
     text.content = `<${tag} style="${style};${extendStyle}">${text.content}</${tag}>`
   }
@@ -856,7 +856,7 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
 
         .sub-title {
           font-size: calc(var(--font-size) * 0.6);
-          margin-bottom: calc(var(--font-size) * 0.5);
+          margin-bottom: calc(var(--font-size) * 0.52);
 
           .sub-title-inner {
             padding: 0 5px;
@@ -867,6 +867,12 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
         .main-title {
           color: #4a609a;
         }
+      }
+    }
+    :deep(.ruby) {
+      position: relative;
+      .rt {
+        top: calc(-1 * var(--font-size) * 0.3 - 6px);
       }
     }
   }
@@ -926,6 +932,28 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
   .fade-in-out {
     animation: fade-in-out 3s;
   }
+
+  :deep(.ruby) {
+    position: relative;
+    display: inline-block;
+    line-height: var(--font-size);
+    height: var(--font-size);
+    .rb {
+      display: inline-block;
+      line-height: var(--font-size);
+      height: var(--font-size);
+    }
+    .rt {
+      position: absolute;
+      left: 0;
+      top: calc(-1 * var(--font-size) * 0.5 - 6px);
+      font-size: calc(var(--font-size) * 0.5);
+      width: 100%;
+      text-align: center;
+      line-height: 1;
+    }
+  }
+
 }
 
 @keyframes fade-in-out {

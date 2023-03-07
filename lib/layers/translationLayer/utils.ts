@@ -84,7 +84,7 @@ export function generateText(rawStoryUnit: StoryRawUnit, stm?: boolean) {
     }
   }
   else {
-    result.push({ content: rawText, effects: [] })
+    result.push(...parseRubyText(rawText));
   }
 
   return result
