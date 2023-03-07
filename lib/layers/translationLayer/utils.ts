@@ -1,7 +1,7 @@
 import { Speaker, StoryRawUnit, StoryUnit, Text, TextEffect } from "@/types/common"
 import { usePlayerStore } from '@/stores/index'
 import { Language } from "@/types/store"
-import { PlayAudio, ShowTitleOption } from "@/types/events"
+import {PlayAudio, ShowTitleOption} from "@/types/events"
 import { getResourcesUrl } from '@/utils'
 import xxhash from 'xxhashjs'
 import { CharacterNameExcelTableItem } from "@/types/excels"
@@ -195,7 +195,7 @@ export function getSpeaker(characterInfo: CharacterNameExcelTableItem): Speaker 
 
 /**
  * 根据角色韩文名获取CharacterName
- * @param krName 
+ * @param krName
  */
 export function getCharacterName(krName: string) {
   return xxhash.h32(krName, 0).toNumber()
@@ -216,15 +216,54 @@ export function getText(rawStoryUnit: StoryRawUnit, language: Language): string 
 
 export function generateTitleInfo(rawStoryUnit: StoryRawUnit, language: Language): ShowTitleOption {
   const text = getText(rawStoryUnit, language)
-  const spiltedText = text.split(';')
-  if (spiltedText.length === 1) {
-    return {
-      title: text
-    }
-  } else {
-    return {
-      title: spiltedText[1],
-      subtitle: spiltedText[0]
-    }
+  // 第114话;这是514个主标题
+  // [这是514个主标题, 第114话]
+  const spiltText = text.split(';').reverse();
+  const rawTitle = spiltText[0];
+  const title = parseRubyText(rawTitle);
+  return {
+    title: title,
+    subtitle: spiltText[1]
   }
+}
+
+function parseRubyText(raw: string): Text[] {
+  // etc.
+  // [ruby=Hod]ホド[/ruby]……その[ruby=Path]パス[/ruby]は名誉を通じた完成。
+  // [ruby=Hod]ホド ……その[ruby=Path]パス は名誉を通じた完成。
+  const a = raw
+    .split("[/ruby]")
+    .filter(s => s);
+  return a.map(it => {
+      const rubyIndex = it.indexOf("[ruby=");
+      // は名誉を通じた完成。
+      if (rubyIndex === -1) {
+        return {
+          content: it,
+          effects: []
+        };
+      }
+      // Hod]ホド
+      // ……その Path]パス
+    const b = it
+      .split("[ruby=")
+      .filter(s => s);
+      return b.map(item => {
+          // ……その
+          // パス Path
+          const split = item.split("]").reverse();
+          const content = split[0];
+          const ruby = split[1];
+          const effects: TextEffect[] = [];
+          if (ruby) {
+            effects.push({
+              name: "ruby", value: [ruby]
+            })
+          }
+          return {
+            content: content,
+            effects: effects
+          }
+        });
+    }).flat(1);
 }
