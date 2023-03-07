@@ -75,7 +75,7 @@ const CharacterEffectPlayerInstance: CharacterEffectPlayer = {
     return timeLinePromise(tl)
 
   }, closeup(instance: CharacterEffectInstance, options): Promise<void> {
-    if (Math.abs(CharacterLayerInstance.characterScale! - instance.instance.scale.x) <= 0.05) {
+    if (!instance.isCloseUp()) {
       let scale = instance.instance.scale.x * options.scale
       instance.instance.scale.set(scale)
     }
