@@ -57,60 +57,101 @@ export function generateText(rawStoryUnit: StoryRawUnit, stm?: boolean) {
       let textUnit = str.slice(spiltIndex + 1)
       result.push({ content: textUnit, waitTime, effects: [] })
     }
+    return result;
   }
-  else if (stm) {
-    //例子[FF6666]……我々は望む、七つの[-][ruby=なげ][FF6666]嘆[-][/ruby][FF6666]きを。[-]
-    rawText = rawText.replace('[/ruby]', '')
-    let textUnits = rawText.split('[-]')
-    debugger
-    for (let [index, textUnit] of textUnits.entries()) {
-      let temp = textUnit.split(']')
-      if (/^[\[A-Fa-f0-9]{6}/.test(textUnit)) {
-        result.push({
-          content: temp[1],
-          effects: [
-            { name: 'color', value: ['#' + temp[0].slice(1)] }
-          ]
-        });
+  return splitStScript(rawText).map(it => parseCustomTag(it));
+  // else if (stm) {
+  //   debugger
+  //   //例子[FF6666]……我々は望む、七つの[-][ruby=なげ][FF6666]嘆[-][/ruby][FF6666]きを。[-]
+  //
+  //   rawText = rawText.replace('[/ruby]', '')
+  //   let textUnits = rawText.split('[-]')
+  //   debugger
+  //   for (let [index, textUnit] of textUnits.entries()) {
+  //     let temp = textUnit.split(']')
+  //     if (/^[\[A-Fa-f0-9]{6}/.test(textUnit)) {
+  //       result.push({
+  //         content: temp[1],
+  //         effects: [
+  //           { name: 'color', value: ['#' + temp[0].slice(1)] }
+  //         ]
+  //       });
+  //     }
+  //     else if (textUnit.startsWith('[ruby')) {
+  //       result.push({
+  //         content: temp[2],
+  //         effects: [
+  //           { name: 'color', value: ['#' + temp[1].slice(1)] },
+  //           { name: 'ruby', value: [temp[0].slice(6)] }
+  //         ]
+  //       });
+  //     } else {
+  //       result.push({
+  //         content: temp[0],
+  //         effects: []
+  //       });
+  //     }
+  //   }
+  // }
+  // else {
+  //   result.push(...parseRubyText(rawText));
+  // }
+  //
+  // return result
+}
+
+// [FF6666]……我々は望む、七つの[-][ruby=なげ][FF6666]嘆[-][/ruby][FF6666]きを。[-]
+function splitStScript(rawText: string): string[] {
+  const res: string[] = [];
+  let leftCount = 0;
+  let closeTag = false;
+  let tagCount = 0;
+  let startIndex = 0;
+  let tagActive = rawText[0] === "[";
+  rawText.split("").forEach((ch, index) => {
+    if (ch === "[") {
+      leftCount++;
+      if (!tagActive) {
+        res.push(rawText.substring(startIndex, index));
+        startIndex = index;
       }
-      else if (textUnit.startsWith('[ruby')) {
-        result.push({
-          content: temp[2],
-          effects: [
-            { name: 'color', value: ['#' + temp[1].slice(1)] },
-            { name: 'ruby', value: [temp[0].slice(6)] }
-          ]
-        });
-      } else {
-        result.push({
-          content: temp[0],
-          effects: []
-        });
-      }
+    } else if (ch === "]") {
+      leftCount--;
+    } else if (ch === "/" || ch === "-") {
+      closeTag = true;
+    } else {
+      return;
     }
+    if (leftCount === 0) {
+      tagCount += closeTag ? -1 : 1;
+      closeTag = false;
+      tagActive = true;
+      if (tagCount === 0) {
+        res.push(rawText.substring(startIndex, index + 1));
+        startIndex = index + 1;
+        tagActive = false;
+      }}
+  });
+  if (res.length === 0) {
+    return [rawText];
   }
-  else {
-    result.push(...parseRubyText(rawText));
-  }
-
-  return result
+  return res;
 }
 
-function parseCustomTag(rawText: string) {
-
-}
-
-function parseOneCustomTag(rawText: string): { effect: TextEffect, remain: string } {
+function parseCustomTag(rawText: string): Text {
   let raw = rawText;
-  Object.keys(ICustomTagParserMap).map(key => {
+  const effects = Object.keys(ICustomTagParserMap).map(key => {
     const fn = Reflect.get(ICustomTagParserMap, key) as CustomTagParserFn;
     const res = fn(raw);
-  })
-}
-
-type CustomTagParser = {
-  regex: string;
-  groups: number;
+    if (res) {
+      raw = res.remain;
+    }
+    return res?.effect;
+  }).filter(it => it) as TextEffect[];
+  return {
+    content: raw,
+    effects: effects
+  }
 }
 
 type CustomTagParserFn = (rawText: string) => { effect: TextEffect, remain: string } | undefined;
@@ -120,14 +161,36 @@ type CustomTagParserMap = {
 }
 
 const ICustomTagParserMap: CustomTagParserMap = {
-  ruby() {
-    return { effect: { name: "ruby", value: [] }, remain: "" }
+  ruby(rawText) {
+    const exec = /\[ruby=(.+?)](.+)\[\/ruby]/.exec(rawText);
+    if (!exec) {
+      return undefined;
+    }
+    const effect: TextEffect = {
+      name: "ruby",
+      value: [ exec[1] ]
+    }
+    return {
+      effect: effect,
+      remain: rawText.replace(`[ruby=${exec[1]}]`, "").replace("[/ruby]", ""),
+    };
   },
-  color() {
-    return { effect: { name: "color", value: [] }, remain: "" }
+  color(rawText) {
+    const exec = /\[([A-Fa-f0-9]{6})](.+?)\[-]/.exec(rawText);
+    if (!exec) {
+      return undefined;
+    }
+    const effect: TextEffect = {
+      name: "color",
+      value: [ `#${exec[1]}` ]
+    }
+    return {
+      effect: effect,
+      remain: rawText.replace(`[${exec[1]}]`, "").replace("[-]", ""),
+    };
   },
   fontsize() {
-    return { effect: { name: "fontsize", value: [] }, remain: "" }
+    return undefined;
   }
 }
 
@@ -247,12 +310,7 @@ export function getCharacterName(krName: string) {
  */
 export function getText(rawStoryUnit: StoryRawUnit, language: Language): string {
   let textProperty = `Text${language}` as const
-  if (textProperty in rawStoryUnit) {
-    return String(Reflect.get(rawStoryUnit, textProperty))
-  }
-  else {
-    return String(rawStoryUnit.TextJp)
-  }
+  return String(Reflect.get(rawStoryUnit, textProperty)) || String(rawStoryUnit.TextJp)
 }
 
 export function generateTitleInfo(rawStoryUnit: StoryRawUnit, language: Language): ShowTitleOption {
