@@ -238,6 +238,9 @@ export const CharacterLayerInstance: CharacterLayer = {
     filterHide.forEach(chara => {
       chara.instance.visible = false;
       chara.instance.alpha = 0;
+      // 清除closeup特效
+      const { scale } = calcCharacterYAndScale(chara.instance);
+      chara.instance.scale.set(scale);
     });
 
 
