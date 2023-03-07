@@ -281,12 +281,12 @@ export const CharacterLayerInstance: CharacterLayer = {
     return true;
   },
   showOneCharacter(data: CharacterEffectInstance): Promise<void> {
-    // 当人物没有closeup时取消closeup
-    if (Math.abs(CharacterLayerInstance.characterScale! - data.instance.scale.x) > 0.05) {
-      if (!data.effects.some(effect => effect.effect === 'closeup')) {
-        data.instance.scale.set(CharacterLayerInstance.characterScale)
-      }
-    }
+    // // 当人物没有closeup时取消closeup
+    // if (Math.abs(CharacterLayerInstance.characterScale! - data.instance.scale.x) > 0.05) {
+    //   if (!data.effects.some(effect => effect.effect === 'closeup')) {
+    //     data.instance.scale.set(CharacterLayerInstance.characterScale)
+    //   }
+    // }
 
     // 表情
     if (data.instance.state.hasAnimation(data.face))
