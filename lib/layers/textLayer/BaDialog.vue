@@ -46,7 +46,7 @@
             <div class="sub-title" v-if="subTitleContent">
               <span class="sub-title-inner">{{ subTitleContent }}</span>
             </div>
-            <div class="main-title">{{ titleContent }}</div>
+            <div class="main-title" v-html="titleContent" />
           </div>
         </div>
       </div>
@@ -76,7 +76,7 @@ import { onMounted, ref, computed, Ref, nextTick, onUnmounted, reactive } from '
 import eventBus from "@/eventBus";
 import Typed, { TypedExtend, TypedOptions } from "typed.js";
 import {ResourceLoadState, ShowText, ShowTitleOption, StArgs, StText} from "@/types/events";
-import { Text, TextEffectName } from "@/types/common";
+import {Text, TextEffect, TextEffectName} from "@/types/common";
 import { deepCopyObject } from "@/utils";
 import { usePlayerStore } from '@/stores';
 import gsap from "gsap";
@@ -154,10 +154,13 @@ function moveToNext() {
  */
 function handleShowTitle(e: ShowTitleOption) {
   subTitleContent.value = e.subtitle || "";
-  proxyShowCoverTitle(titleEL, titleContent, e.title).then(() => {
+  proxyShowCoverTitle(titleEL, titleContent, parseTitle(e.title)).then(() => {
     subTitleContent.value = "";
     eventBus.emit("titleDone");
   })
+}
+function parseTitle(item: Text[]): string {
+  return item.map(it => parseTextEffect(it).content).join("");
 }
 /**
  * 展示左上角位置标题
@@ -353,7 +356,7 @@ function parseTextEffect(text: Text, extendStyle = "", tag = "span"): Text {
   }).join(";");
   // 如果有注解就用ruby标签实现
   if (rt) {
-    text.content = `<ruby style="${style};${extendStyle}">${text.content}<rt>${rt}</rt><rp>烫</rp></ruby>`
+    text.content = `<ruby style="${style};${extendStyle};ruby-align: center;">${text.content}<rt>${rt}</rt><rp>烫</rp></ruby>`
   } else {
     text.content = `<${tag} style="${style};${extendStyle}">${text.content}</${tag}>`
   }
@@ -526,7 +529,7 @@ function handleNextEpisode(e: ShowTitleOption) {
           const matrix = getComputedStyle(bottomChild).transform;
           if (Number(matrix.substring(matrix.lastIndexOf(",") + 2).replace(")", "")) > 100) {
             subTitleContent.value = e.subtitle || "";
-            proxyShowCoverTitle(titleEL, titleContent, e.title, (el) => {
+            proxyShowCoverTitle(titleEL, titleContent, parseTitle(e.title), (el) => {
               const tl = gsap.timeline();
               tl.fromTo(el, {
                 scaleY: 0.8
