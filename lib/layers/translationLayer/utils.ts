@@ -113,6 +113,10 @@ export function splitStScript(rawText: string): string[] {
   if (res.length === 0) {
     return [rawText];
   }
+  // 处理尾巴情况
+  if (startIndex !== rawText.length) {
+    res.push(rawText.substring(startIndex, rawText.length + 1))
+  }
   return res;
 }
 
