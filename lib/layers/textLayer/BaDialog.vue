@@ -889,7 +889,7 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
     :deep(.ruby) {
       position: relative;
       .rt {
-        top: calc(-1 * var(--font-size) * 0.3 - 6px);
+        top: calc(-1 * var(--font-size) * 0.45);
       }
     }
   }

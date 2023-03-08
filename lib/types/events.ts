@@ -272,7 +272,7 @@ export interface ShowOption {
   /**
    * 选项文本
    */
-  text: string
+  text: Text[]
 }
 
 export interface PlayEffect {
