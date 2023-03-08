@@ -59,49 +59,26 @@ export function generateText(rawStoryUnit: StoryRawUnit, stm?: boolean) {
     }
     return result;
   }
-  return splitStScript(rawText).map(it => parseCustomTag(it));
-  // else if (stm) {
-  //   debugger
-  //   //例子[FF6666]……我々は望む、七つの[-][ruby=なげ][FF6666]嘆[-][/ruby][FF6666]きを。[-]
-  //
-  //   rawText = rawText.replace('[/ruby]', '')
-  //   let textUnits = rawText.split('[-]')
-  //   debugger
-  //   for (let [index, textUnit] of textUnits.entries()) {
-  //     let temp = textUnit.split(']')
-  //     if (/^[\[A-Fa-f0-9]{6}/.test(textUnit)) {
-  //       result.push({
-  //         content: temp[1],
-  //         effects: [
-  //           { name: 'color', value: ['#' + temp[0].slice(1)] }
-  //         ]
-  //       });
-  //     }
-  //     else if (textUnit.startsWith('[ruby')) {
-  //       result.push({
-  //         content: temp[2],
-  //         effects: [
-  //           { name: 'color', value: ['#' + temp[1].slice(1)] },
-  //           { name: 'ruby', value: [temp[0].slice(6)] }
-  //         ]
-  //       });
-  //     } else {
-  //       result.push({
-  //         content: temp[0],
-  //         effects: []
-  //       });
-  //     }
-  //   }
-  // }
-  // else {
-  //   result.push(...parseRubyText(rawText));
-  // }
-  //
-  // return result
+  return splitStScriptAndParseTag(rawText);
 }
 
-// [FF6666]……我々は望む、七つの[-][ruby=なげ][FF6666]嘆[-][/ruby][FF6666]きを。[-]
-function splitStScript(rawText: string): string[] {
+/**
+ * 将ScriptKr文本结构解析成Text[]
+ * @param rawText
+ */
+export function splitStScriptAndParseTag(rawText: string): Text[] {
+  return splitStScript(rawText).map(it => parseCustomTag(it));
+}
+
+/**
+ * 将嵌套tag结构分割
+ *
+ * [FF6666]……我々は望む、七つの[-][ruby=なげ][FF6666]嘆[-][/ruby][FF6666]きを。[-]
+ *
+ * [FF6666]……我々は望む、七つの[-],[ruby=なげ][FF6666]嘆[-][/ruby],[FF6666]きを。[-]
+ * @param rawText 原始结构
+ */
+export function splitStScript(rawText: string): string[] {
   const res: string[] = [];
   let leftCount = 0;
   let closeTag = false;
@@ -139,7 +116,15 @@ function splitStScript(rawText: string): string[] {
   return res;
 }
 
-function parseCustomTag(rawText: string): Text {
+/**
+ * 解析tag
+ *
+ * [ruby=なげ][FF6666]嘆[-][/ruby]
+ *
+ * [{ name: "ruby", values: ["なげ"] }, { name: "color", values: ["#FF6666"] }]
+ * @param rawText 原初文本
+ */
+export function parseCustomTag(rawText: string): Text {
   let raw = rawText;
   const effects = Object.keys(ICustomTagParserMap).map(key => {
     const fn = Reflect.get(ICustomTagParserMap, key) as CustomTagParserFn;

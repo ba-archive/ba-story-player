@@ -252,41 +252,23 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
           }
           else if (utils.isOption(scriptType)) {
             unit.type = 'option'
-            let text = String(Reflect.get(rawStoryUnit, `Text${playerStore.language}`)).split('\n')[optionIndex]
-
-            //[s]
-            if (scriptType[2] === ']') {
-              text = text.slice(3)
-              if (unit.textAbout.options) {
-                unit.textAbout.options.push({ SelectionGroup: 0, text })
-              }
-              else {
-                unit.textAbout.options = [{ SelectionGroup: 0, text }]
-              }
+            const rawText = String(Reflect.get(rawStoryUnit, `Text${playerStore.language}`)).split('\n')[optionIndex]
+            const parseResult = /\[n?s(\d)?](.+)/.exec(rawText);
+            if (!parseResult) {
+              console.error("在处理选项文本时遇到严重错误");
+              break;
             }
-            //[ns]
-            else if (scriptType[2] === 's') {
-              text = text.slice(4)
-              if (unit.textAbout.options) {
-                unit.textAbout.options.push({ SelectionGroup: 0, text })
-              }
-              else {
-                unit.textAbout.options = [{ SelectionGroup: 0, text }]
-              }
+            const text = utils.splitStScriptAndParseTag(parseResult[2]);
+            const selectGroup = Number(parseResult[1] || 0)
+            if (unit.textAbout.options) {
+              unit.textAbout.options.push({ SelectionGroup: selectGroup, text })
             }
-            //[s1]
             else {
-              text = text.slice(4)
-              if (unit.textAbout.options) {
-                unit.textAbout.options.push({ SelectionGroup: Number(scriptType[2]), text })
-              }
-              else {
-                unit.textAbout.options = [{ SelectionGroup: Number(scriptType[2]), text }]
-              }
+              unit.textAbout.options = [{ SelectionGroup: selectGroup, text }]
             }
-            optionIndex++
+            optionIndex++;
           }
-          break
+          break;
       }
     }
     //没人highlight则默认所有人highlight
