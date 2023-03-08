@@ -57,12 +57,6 @@ export async function init(elementID: string, props: PlayerConfigs, endCallback:
     console.error(err);
     eventBus.emit("oneResourceLoaded", { type: "fail", resourceName: resource.name });
   });
-  // 记录加载开始时间 优化光速加载的体验
-  let startLoadTime = 0;
-  app.loader.onStart.add(() => {
-    startLoadTime = Date.now();
-    eventBus.emit("startLoading", props.dataUrl);
-  });
   //加载初始化资源以便翻译层进行翻译
   await resourcesLoader.init(app.loader)
   privateState.allStoryUnit = translate(props.story)
@@ -73,6 +67,9 @@ export async function init(elementID: string, props: PlayerConfigs, endCallback:
   effectInit()
   L2DInit()
 
+  // 记录加载开始时间 优化光速加载的体验
+  const startLoadTime = Date.now();
+  eventBus.emit("startLoading", props.dataUrl);
   //加载剩余资源
   await resourcesLoader.addLoadResources()
   resourcesLoader.load(() => {
