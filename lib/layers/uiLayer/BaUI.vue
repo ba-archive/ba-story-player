@@ -13,7 +13,7 @@ import { usePlayerStore } from "@/stores";
 let hiddenSummary = ref(true);
 let hiddenStoryLog = ref(true);
 let autoMode = ref(false);
-let hiddenMenu = ref(false);
+let hiddenMenu = ref(true);
 let hiddenSubMenu = ref(true);
 
 // 计时器：当这个计时器到时间时 -- 回调函数会把 hiddenMenu 设置成 true 来影藏菜单
