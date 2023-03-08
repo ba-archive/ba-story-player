@@ -152,7 +152,9 @@ let getterFunctions: GetterFunctions = {
   },
 
   l2dSpineData() {
-    return privateState.app?.loader.resources[privateState.l2dSpineUrl].spineData
+    const resource = privateState.app?.loader.resources[privateState.l2dSpineUrl]
+    if (resource)
+      return resource.spineData
   },
 
 }
