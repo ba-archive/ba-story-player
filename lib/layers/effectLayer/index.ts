@@ -91,7 +91,7 @@ async function playTransition(color: 'black' | 'white', durationMs: number, mode
   let playerMain = document.querySelector('#player__main')
   switch (mode) {
     case 'in':
-      await gsap.fromTo(playerMain, { alpha: 1 }, { alpha: 0, duration: 100 })
+      await gsap.fromTo(playerMain, { alpha: 1 }, { alpha: 0, duration: durationMs / 1000 })
       break
     case 'out':
       await gsap.fromTo(playerMain, { alpha: 0 }, { alpha: 1, duration: durationMs / 1000 })
