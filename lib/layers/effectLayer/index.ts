@@ -22,6 +22,11 @@ export function effectInit() {
       case 'fade_white':
         await playTransition('white', duration, 'in')
         break
+      default: {
+        if (transition.TransitionInResource === "Effect/UI/BGFX/UI_FX_HorSwipe_RtoL_Out") {
+          await playHorSwipeTransition(duration);
+        }
+      }
     }
     eventBus.emit('transitionInDone')
   })
@@ -34,7 +39,7 @@ export function effectInit() {
       case 'fade_white':
         await playTransition('white', duration, 'out')
         break
-    }
+   }
     eventBus.emit('transitionOutDone')
   })
   eventBus.on('playEffect', async effects => {
@@ -86,12 +91,39 @@ async function playTransition(color: 'black' | 'white', durationMs: number, mode
   let playerMain = document.querySelector('#player__main')
   switch (mode) {
     case 'in':
-      await gsap.fromTo(playerMain, { alpha: 1 }, { alpha: 0, duration: durationMs / 1000 })
+      await gsap.fromTo(playerMain, { alpha: 1 }, { alpha: 0, duration: 100 })
       break
     case 'out':
       await gsap.fromTo(playerMain, { alpha: 0 }, { alpha: 1, duration: durationMs / 1000 })
       break
   }
+}
+
+function playHorSwipeTransition(duration: number): Promise<void> {
+  return new Promise<void>((resolve) => {
+    const background = document.querySelector('#player__background') as HTMLDivElement;
+    const cover = document.createElement("div");
+    const obj = { a: 0 };
+    cover.classList.add("transition-cover");
+    const style = getComputedStyle(background);
+    cover.style.backgroundPositionX = style.width;
+    background.appendChild(cover);
+    let resolved = false;
+    const timeline = gsap.timeline();
+    timeline.to(cover, {
+      backgroundPositionX: "0",
+      duration: duration / 1000,
+    }).to(obj, {
+      a: 1,
+      duration: 0.1,
+      onStart() {
+        resolve();
+      }
+    }).then(() => {
+      background.removeChild(cover);
+    });
+  });
+
 }
 
 /**

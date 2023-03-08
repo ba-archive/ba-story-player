@@ -590,11 +590,11 @@ export let eventEmitter = {
   async transitionIn() {
     if (storyHandler.currentStoryUnit.transition) {
       await new Promise<void>(resolve => {
-        let resolveFun = () => {
-          eventBus.off('transitionInDone', resolveFun);
+        function complete() {
+          eventBus.off('transitionInDone', complete);
           resolve()
         }
-        eventBus.on('transitionInDone', resolveFun);
+        eventBus.on('transitionInDone', complete);
         eventBus.emit('transitionIn', storyHandler.currentStoryUnit.transition!);
       })
     }
