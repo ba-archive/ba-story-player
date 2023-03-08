@@ -281,7 +281,7 @@ export interface PlayEffect {
 }
 
 export interface ShowTitleOption {
-  title: string;
+  title: Text[];
   subtitle?: string;
 }
 

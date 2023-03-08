@@ -12,6 +12,7 @@ import axios from 'axios';
 import { SpineParser, IEventData } from 'pixi-spine';
 import { Application, Loader, settings, utils as pixiUtils } from "pixi.js";
 import { L2DInit } from "./layers/l2dLayer/L2D";
+import * as process from "process";
 
 let playerStore: ReturnType<typeof usePlayerStore>
 let privateState: ReturnType<typeof initPrivateState>
@@ -358,8 +359,11 @@ export let eventEmitter = {
     eventBus.on('toBeContinueDone', () => this.toBeContinueDone = true)
 
     storyHandler.currentStoryIndex = 0
+    if (import.meta.env.DEV) {
+      storyHandler.currentStoryIndex = Number(localStorage.getItem("storyIndex") || 0)
+    }
     storyHandler.isEnd = false
-    storyHandler.storyPlay()
+    storyHandler.storyPlay().then();
   },
 
   /**

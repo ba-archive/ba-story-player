@@ -1,4 +1,4 @@
-import { Speaker, StoryRawUnit, StoryUnit, Text, TextEffect } from "@/types/common"
+import { Speaker, StoryRawUnit, StoryUnit, Text, TextEffect, TextEffectName } from "@/types/common"
 import { usePlayerStore } from '@/stores/index'
 import { Language } from "@/types/store"
 import { PlayAudio, ShowTitleOption } from "@/types/events"
@@ -57,37 +57,142 @@ export function generateText(rawStoryUnit: StoryRawUnit, stm?: boolean) {
       let textUnit = str.slice(spiltIndex + 1)
       result.push({ content: textUnit, waitTime, effects: [] })
     }
+    return result;
   }
-  else if (stm) {
-    //例子[FF6666]……我々は望む、七つの[-][ruby=なげ][FF6666]嘆[-][/ruby][FF6666]きを。[-]
-    rawText = rawText.replace('[/ruby]', '')
-    let textUnits = rawText.split('[-]')
-    for (let [index, textUnit] of textUnits.entries()) {
-      let temp = textUnit.split(']')
-      if (/^[\[A-F0-9]{6}/.test(textUnit)) {
-        result.push({
-          content: temp[1],
-          effects: [
-            { name: 'color', value: ['#' + temp[0].slice(1)] }
-          ]
-        })
+  return splitStScript(rawText).map(it => parseCustomTag(it));
+  // else if (stm) {
+  //   debugger
+  //   //例子[FF6666]……我々は望む、七つの[-][ruby=なげ][FF6666]嘆[-][/ruby][FF6666]きを。[-]
+  //
+  //   rawText = rawText.replace('[/ruby]', '')
+  //   let textUnits = rawText.split('[-]')
+  //   debugger
+  //   for (let [index, textUnit] of textUnits.entries()) {
+  //     let temp = textUnit.split(']')
+  //     if (/^[\[A-Fa-f0-9]{6}/.test(textUnit)) {
+  //       result.push({
+  //         content: temp[1],
+  //         effects: [
+  //           { name: 'color', value: ['#' + temp[0].slice(1)] }
+  //         ]
+  //       });
+  //     }
+  //     else if (textUnit.startsWith('[ruby')) {
+  //       result.push({
+  //         content: temp[2],
+  //         effects: [
+  //           { name: 'color', value: ['#' + temp[1].slice(1)] },
+  //           { name: 'ruby', value: [temp[0].slice(6)] }
+  //         ]
+  //       });
+  //     } else {
+  //       result.push({
+  //         content: temp[0],
+  //         effects: []
+  //       });
+  //     }
+  //   }
+  // }
+  // else {
+  //   result.push(...parseRubyText(rawText));
+  // }
+  //
+  // return result
+}
+
+// [FF6666]……我々は望む、七つの[-][ruby=なげ][FF6666]嘆[-][/ruby][FF6666]きを。[-]
+function splitStScript(rawText: string): string[] {
+  const res: string[] = [];
+  let leftCount = 0;
+  let closeTag = false;
+  let tagCount = 0;
+  let startIndex = 0;
+  let tagActive = rawText[0] === "[";
+  rawText.split("").forEach((ch, index) => {
+    if (ch === "[") {
+      leftCount++;
+      if (!tagActive) {
+        res.push(rawText.substring(startIndex, index));
+        startIndex = index;
       }
-      else if (textUnit.startsWith('[ruby')) {
-        result.push({
-          content: temp[2],
-          effects: [
-            { name: 'color', value: ['#' + temp[1].slice(1)] },
-            { name: 'ruby', value: [temp[0].slice(6)] }
-          ]
-        })
+    } else if (ch === "]") {
+      leftCount--;
+    } else if (ch === "/" || ch === "-") {
+      closeTag = true;
+    } else {
+      return;
+    }
+    if (leftCount === 0) {
+      tagCount += closeTag ? -1 : 1;
+      closeTag = false;
+      tagActive = true;
+      if (tagCount === 0) {
+        res.push(rawText.substring(startIndex, index + 1));
+        startIndex = index + 1;
+        tagActive = false;
       }
     }
+  });
+  if (res.length === 0) {
+    return [rawText];
   }
-  else {
-    result.push({ content: rawText, effects: [] })
-  }
+  return res;
+}
 
-  return result
+function parseCustomTag(rawText: string): Text {
+  let raw = rawText;
+  const effects = Object.keys(ICustomTagParserMap).map(key => {
+    const fn = Reflect.get(ICustomTagParserMap, key) as CustomTagParserFn;
+    const res = fn(raw);
+    if (res) {
+      raw = res.remain;
+    }
+    return res?.effect;
+  }).filter(it => it) as TextEffect[];
+  return {
+    content: raw,
+    effects: effects
+  }
+}
+
+type CustomTagParserFn = (rawText: string) => { effect: TextEffect, remain: string } | undefined;
+
+type CustomTagParserMap = {
+  [key in TextEffectName]: CustomTagParserFn;
+}
+
+const ICustomTagParserMap: CustomTagParserMap = {
+  ruby(rawText) {
+    const exec = /\[ruby=(.+?)](.+)\[\/ruby]/.exec(rawText);
+    if (!exec) {
+      return undefined;
+    }
+    const effect: TextEffect = {
+      name: "ruby",
+      value: [exec[1]]
+    }
+    return {
+      effect: effect,
+      remain: rawText.replace(`[ruby=${exec[1]}]`, "").replace("[/ruby]", ""),
+    };
+  },
+  color(rawText) {
+    const exec = /\[([A-Fa-f0-9]{6})](.+?)\[-]/.exec(rawText);
+    if (!exec) {
+      return undefined;
+    }
+    const effect: TextEffect = {
+      name: "color",
+      value: [`#${exec[1]}`]
+    }
+    return {
+      effect: effect,
+      remain: rawText.replace(`[${exec[1]}]`, "").replace("[-]", ""),
+    };
+  },
+  fontsize() {
+    return undefined;
+  }
 }
 
 /**
@@ -195,7 +300,7 @@ export function getSpeaker(characterInfo: CharacterNameExcelTableItem): Speaker 
 
 /**
  * 根据角色韩文名获取CharacterName
- * @param krName 
+ * @param krName
  */
 export function getCharacterName(krName: string) {
   return xxhash.h32(krName, 0).toNumber()
@@ -206,27 +311,61 @@ export function getCharacterName(krName: string) {
  */
 export function getText(rawStoryUnit: StoryRawUnit, language: Language): string {
   let textProperty = `Text${language}` as const
-  if (textProperty in rawStoryUnit) {
-    return String(Reflect.get(rawStoryUnit, textProperty))
-  }
-  else {
-    return String(rawStoryUnit.TextJp)
-  }
+  return String(Reflect.get(rawStoryUnit, textProperty)) || String(rawStoryUnit.TextJp)
 }
 
 export function generateTitleInfo(rawStoryUnit: StoryRawUnit, language: Language): ShowTitleOption {
   const text = getText(rawStoryUnit, language)
-  const spiltedText = text.split(';')
-  if (spiltedText.length === 1) {
-    return {
-      title: text
-    }
-  } else {
-    return {
-      title: spiltedText[1],
-      subtitle: spiltedText[0]
-    }
+  // 第114话;这是514个主标题
+  // [这是514个主标题, 第114话]
+  const spiltText = text.split(';').reverse();
+  const rawTitle = spiltText[0];
+  const title = parseRubyText(rawTitle);
+  return {
+    title: title,
+    subtitle: spiltText[1]
   }
+}
+
+function parseRubyText(raw: string): Text[] {
+  // etc.
+  // [ruby=Hod]ホド[/ruby]……その[ruby=Path]パス[/ruby]は名誉を通じた完成。
+  // [ruby=Hod]ホド ……その[ruby=Path]パス は名誉を通じた完成。
+  const a = raw
+    .split("[/ruby]")
+    .filter(s => s);
+  return a.map(it => {
+    const rubyIndex = it.indexOf("[ruby=");
+    // は名誉を通じた完成。
+    if (rubyIndex === -1) {
+      return {
+        content: it,
+        effects: []
+      };
+    }
+    // Hod]ホド
+    // ……その Path]パス
+    const b = it
+      .split("[ruby=")
+      .filter(s => s);
+    return b.map(item => {
+      // ……その
+      // パス Path
+      const split = item.split("]").reverse();
+      const content = split[0];
+      const ruby = split[1];
+      const effects: TextEffect[] = [];
+      if (ruby) {
+        effects.push({
+          name: "ruby", value: [ruby]
+        })
+      }
+      return {
+        content: content,
+        effects: effects
+      }
+    });
+  }).flat(1);
 }
 
 export function getEmotionName(rawName: string): string | undefined {

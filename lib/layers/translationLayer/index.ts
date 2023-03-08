@@ -73,7 +73,6 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
     if (rawStoryUnit.TextJp === '' || rawStoryUnit.TextJp === null) {
       unit.type = 'effectOnly'
     }
-
     //解析scriptkr
     let ScriptKr = String(rawStoryUnit.ScriptKr)
     let scripts = ScriptKr.split('\n')

@@ -46,7 +46,7 @@
             <div class="sub-title" v-if="subTitleContent">
               <span class="sub-title-inner">{{ subTitleContent }}</span>
             </div>
-            <div class="main-title">{{ titleContent }}</div>
+            <div class="main-title" v-html="titleContent" />
           </div>
         </div>
       </div>
@@ -76,7 +76,7 @@ import { onMounted, ref, computed, Ref, nextTick, onUnmounted, reactive } from '
 import eventBus from "@/eventBus";
 import Typed, { TypedExtend, TypedOptions } from "typed.js";
 import {ResourceLoadState, ShowText, ShowTitleOption, StArgs, StText} from "@/types/events";
-import { Text, TextEffectName } from "@/types/common";
+import {Text, TextEffectName} from "@/types/common";
 import { deepCopyObject } from "@/utils";
 import { usePlayerStore } from '@/stores';
 import gsap from "gsap";
@@ -154,10 +154,13 @@ function moveToNext() {
  */
 function handleShowTitle(e: ShowTitleOption) {
   subTitleContent.value = e.subtitle || "";
-  proxyShowCoverTitle(titleEL, titleContent, e.title).then(() => {
+  proxyShowCoverTitle(titleEL, titleContent, parseTitle(e.title)).then(() => {
     subTitleContent.value = "";
     eventBus.emit("titleDone");
   })
+}
+function parseTitle(item: Text[]): string {
+  return item.map(it => parseTextEffect(it).content).join("");
 }
 /**
  * 展示左上角位置标题
@@ -353,7 +356,7 @@ function parseTextEffect(text: Text, extendStyle = "", tag = "span"): Text {
   }).join(";");
   // 如果有注解就用ruby标签实现
   if (rt) {
-    text.content = `<ruby style="${style};${extendStyle}">${text.content}<rt>${rt}</rt><rp>烫</rp></ruby>`
+    text.content = `<${tag} style="${style};${extendStyle}" class="ruby" data-content="${rt}"><span class="rb">${text.content}</span><span class="rt">${rt}</span></${tag}>`
   } else {
     text.content = `<${tag} style="${style};${extendStyle}">${text.content}</${tag}>`
   }
@@ -415,7 +418,7 @@ function showTextDialog(text: Text[], output: HTMLElement, onParseContent?: (sou
       index++;
     }
     // st的续约, 因为不能两个Typed同时持有一个对象, 所以采用将之前的内容作为已打印内容拼接的形式
-    if (typingInstance && typingInstance.isSt) {
+    function continueSt() {
       lastStOutput = stOutput.value!.innerHTML;
       setTypingComplete(false, typingInstance);
       typingInstance.pause.status = true;
@@ -423,21 +426,38 @@ function showTextDialog(text: Text[], output: HTMLElement, onParseContent?: (sou
       typingInstance.pause.curString = lastStOutput + firstContent;
       typingInstance.pause.curStrPos = lastStOutput.length;
       typingInstance.options.onComplete = onComplete;
+      typingInstance.startDelay = 0;
+      debugger
       setTimeout(() => {
         typingInstance.start();
-      }, text[0].waitTime || 0)
+      }, text[0].waitTime || 0);
+    }
+    if (typingInstance && typingInstance.isSt) {
+      continueSt();
     } else {
-      // 全新清空
-      typingInstance?.stop();
-      typingInstance?.destroy();
-      output.innerHTML = "";
-      typingInstance = new Typed(output, {
-        ...DefaultTypedOptions,
-        ...override,
-        startDelay: text[0].waitTime || 0,
-        strings: [lastStOutput + firstContent],
-        onComplete: onComplete
-      }) as TypedExtend;
+      // 如果之前st是instant也会走到这里, 因此判断代理的el是不是st的container
+      if (output === stOutput.value) {
+        typingInstance = new Typed(output, {
+          ...DefaultTypedOptions,
+          ...override,
+          startDelay: 99999,
+          strings: [""],
+        }) as TypedExtend;
+        typingInstance.isSt = true;
+        typingInstance.stop();
+        continueSt();
+      } else {
+        // 全新清空
+        typingInstance?.stop && typingInstance?.stop();
+        typingInstance?.destroy && typingInstance?.destroy();output.innerHTML = "";
+        typingInstance = new Typed(output, {
+          ...DefaultTypedOptions,
+          ...override,
+          startDelay: text[0].waitTime || 0,
+          strings: [lastStOutput + firstContent],
+          onComplete: onComplete,
+        }) as TypedExtend;
+      }
     }
   })
 }
@@ -526,7 +546,7 @@ function handleNextEpisode(e: ShowTitleOption) {
           const matrix = getComputedStyle(bottomChild).transform;
           if (Number(matrix.substring(matrix.lastIndexOf(",") + 2).replace(")", "")) > 100) {
             subTitleContent.value = e.subtitle || "";
-            proxyShowCoverTitle(titleEL, titleContent, e.title, (el) => {
+            proxyShowCoverTitle(titleEL, titleContent, parseTitle(e.title), (el) => {
               const tl = gsap.timeline();
               tl.fromTo(el, {
                 scaleY: 0.8
@@ -853,7 +873,7 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
 
         .sub-title {
           font-size: calc(var(--font-size) * 0.6);
-          margin-bottom: calc(var(--font-size) * 0.5);
+          margin-bottom: calc(var(--font-size) * 0.52);
 
           .sub-title-inner {
             padding: 0 5px;
@@ -864,6 +884,12 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
         .main-title {
           color: #4a609a;
         }
+      }
+    }
+    :deep(.ruby) {
+      position: relative;
+      .rt {
+        top: calc(-1 * var(--font-size) * 0.3 - 6px);
       }
     }
   }
@@ -923,6 +949,28 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
   .fade-in-out {
     animation: fade-in-out 3s;
   }
+
+  :deep(.ruby) {
+    position: relative;
+    display: inline-block;
+    line-height: var(--font-size);
+    height: var(--font-size);
+    .rb {
+      display: inline-block;
+      line-height: var(--font-size);
+      height: var(--font-size);
+    }
+    .rt {
+      position: absolute;
+      left: 0;
+      top: calc(-1 * var(--font-size) * 0.5 - 6px);
+      font-size: calc(var(--font-size) * 0.5);
+      width: 100%;
+      text-align: center;
+      line-height: 1;
+    }
+  }
+
 }
 
 @keyframes fade-in-out {
