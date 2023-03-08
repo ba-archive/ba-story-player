@@ -688,7 +688,7 @@ export let resourcesLoader = {
       //添加l2d spine资源
       this.checkAndAdd(unit.l2d, 'spineUrl')
       if (unit.l2d) {
-        playerStore.curL2dConfig?.otherSpine.forEach(i => this.checkAndAdd(utils.getResourcesUrl('otherL2dSpine', i)))
+        playerStore.curL2dConfig?.otherSpine?.forEach(i => this.checkAndAdd(utils.getResourcesUrl('otherL2dSpine', i)))
         playerStore.setL2DSpineUrl(unit.l2d.spineUrl)
       }
     }
