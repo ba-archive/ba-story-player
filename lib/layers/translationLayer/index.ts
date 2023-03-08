@@ -254,7 +254,7 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
           else if (utils.isOption(scriptType)) {
             unit.type = 'option'
             const rawText = String(getText(rawStoryUnit, playerStore.language)).split('\n')[optionIndex]
-            const parseResult = /\[n?s(\d)?](.+)/.exec(rawText);
+            const parseResult = /\[n?s(\d{0,2})?](.+)/.exec(rawText);
             if (!parseResult) {
               console.error("在处理选项文本时遇到严重错误");
               break;

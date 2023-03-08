@@ -32,7 +32,7 @@ export function isCharacterEffect(s: string) {
 export function isOption(s: string) {
   // 选项字符串示例: '[s1] \"我正想着稍微散散步来着。\"\n[s2] \"优香在做什么？\"'
   //除此之外还有[ns], [s], [ns1]等情况
-  return /\[n?s(\d)?](.+)/.test(s)
+  return /\[n?s(\d{0,2})?](.+)/.test(s)
 }
 
 
