@@ -1,7 +1,7 @@
-import {Speaker, StoryRawUnit, StoryUnit, Text, TextEffect, TextEffectName} from "@/types/common"
+import { Speaker, StoryRawUnit, StoryUnit, Text, TextEffect, TextEffectName } from "@/types/common"
 import { usePlayerStore } from '@/stores/index'
 import { Language } from "@/types/store"
-import {PlayAudio, ShowTitleOption} from "@/types/events"
+import { PlayAudio, ShowTitleOption } from "@/types/events"
 import { getResourcesUrl } from '@/utils'
 import xxhash from 'xxhashjs'
 import { CharacterNameExcelTableItem } from "@/types/excels"
@@ -130,7 +130,8 @@ function splitStScript(rawText: string): string[] {
         res.push(rawText.substring(startIndex, index + 1));
         startIndex = index + 1;
         tagActive = false;
-      }}
+      }
+    }
   });
   if (res.length === 0) {
     return [rawText];
@@ -168,7 +169,7 @@ const ICustomTagParserMap: CustomTagParserMap = {
     }
     const effect: TextEffect = {
       name: "ruby",
-      value: [ exec[1] ]
+      value: [exec[1]]
     }
     return {
       effect: effect,
@@ -182,7 +183,7 @@ const ICustomTagParserMap: CustomTagParserMap = {
     }
     const effect: TextEffect = {
       name: "color",
-      value: [ `#${exec[1]}` ]
+      value: [`#${exec[1]}`]
     }
     return {
       effect: effect,
@@ -334,35 +335,39 @@ function parseRubyText(raw: string): Text[] {
     .split("[/ruby]")
     .filter(s => s);
   return a.map(it => {
-      const rubyIndex = it.indexOf("[ruby=");
-      // は名誉を通じた完成。
-      if (rubyIndex === -1) {
-        return {
-          content: it,
-          effects: []
-        };
-      }
-      // Hod]ホド
-      // ……その Path]パス
+    const rubyIndex = it.indexOf("[ruby=");
+    // は名誉を通じた完成。
+    if (rubyIndex === -1) {
+      return {
+        content: it,
+        effects: []
+      };
+    }
+    // Hod]ホド
+    // ……その Path]パス
     const b = it
       .split("[ruby=")
       .filter(s => s);
-      return b.map(item => {
-          // ……その
-          // パス Path
-          const split = item.split("]").reverse();
-          const content = split[0];
-          const ruby = split[1];
-          const effects: TextEffect[] = [];
-          if (ruby) {
-            effects.push({
-              name: "ruby", value: [ruby]
-            })
-          }
-          return {
-            content: content,
-            effects: effects
-          }
-        });
-    }).flat(1);
+    return b.map(item => {
+      // ……その
+      // パス Path
+      const split = item.split("]").reverse();
+      const content = split[0];
+      const ruby = split[1];
+      const effects: TextEffect[] = [];
+      if (ruby) {
+        effects.push({
+          name: "ruby", value: [ruby]
+        })
+      }
+      return {
+        content: content,
+        effects: effects
+      }
+    });
+  }).flat(1);
+}
+export function getEmotionName(rawName: string): string | undefined {
+  const name = xxhash.h32(rawName, 0).toNumber()
+  return usePlayerStore().EmotionExcelTable.get(name)
 }

@@ -59,7 +59,7 @@ const CharacterEffectPlayerInstance: CharacterEffectPlayer = {
     let tl = gsap.timeline()
     let initX = app.screen.width + instance.instance.width
     let distance = initX - instance.instance.x
-    let duration = distance / (instance.instance.width * options.speed)
+    let duration = distance / moveSpeedPx()
     tl.fromTo(instance.instance, { pixi: { x: initX } },
       { pixi: { x: instance.instance.x }, duration })
     return timeLinePromise(tl)
@@ -69,13 +69,13 @@ const CharacterEffectPlayerInstance: CharacterEffectPlayer = {
 
     let tl = gsap.timeline()
     let distance = instance.instance.x + instance.instance.width
-    let duration = distance / (instance.instance.width * option.speed)
+    let duration = distance / moveSpeedPx()
     tl.fromTo(instance.instance, { pixi: { x: -instance.instance.width } },
       { pixi: { x: instance.instance.x }, duration })
     return timeLinePromise(tl)
 
   }, closeup(instance: CharacterEffectInstance, options): Promise<void> {
-    if (Math.abs(CharacterLayerInstance.characterScale! - instance.instance.scale.x) <= 0.05) {
+    if (!instance.isCloseUp()) {
       let scale = instance.instance.scale.x * options.scale
       instance.instance.scale.set(scale)
     }
@@ -90,7 +90,7 @@ const CharacterEffectPlayerInstance: CharacterEffectPlayer = {
   }, dl(instance: CharacterEffectInstance, options): Promise<void> {
     let tl = gsap.timeline()
     let distance = instance.instance.x + instance.instance.width
-    let duration = distance / (instance.instance.width * options.speed)
+    let duration = distance / moveSpeedPx()
     tl.to(instance.instance,
       { pixi: { x: -instance.instance.width }, duration })
     return timeLinePromise(tl, () => instance.instance.visible = false)
@@ -101,7 +101,7 @@ const CharacterEffectPlayerInstance: CharacterEffectPlayer = {
     let tl = gsap.timeline()
     let finalX = app.screen.width + instance.instance.width
     let distance = finalX - instance.instance.x
-    let duration = distance / (instance.instance.width * options.speed)
+    let duration = distance / moveSpeedPx()
     tl.to(instance.instance, { pixi: { x: finalX }, duration },
     )
     return timeLinePromise(tl, () => instance.instance.visible = false)
@@ -288,9 +288,16 @@ function moveTo(instance: CharacterEffectInstance, position: number) {
   let movePos = calcSpineStagePosition(instance.instance, position)
   let tl = gsap.timeline()
   let distance = Math.abs(instance.instance.x - movePos.x)
-  let duration = distance / (moveSpeed * instance.instance.width)
+  let duration = distance / moveSpeedPx()
   instance.position = position;
   return tl.to(instance.instance, { pixi: { x: movePos.x }, duration })
+}
+
+/**
+ * 以px计算的移动速度
+ */
+export function moveSpeedPx() {
+  return 5 * usePlayerStore().app.screen.width * 1 / 5
 }
 
 export default CharacterEffectPlayerInstance
