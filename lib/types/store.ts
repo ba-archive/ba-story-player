@@ -77,6 +77,10 @@ export interface PrivateStates {
    */
   TransitionExcelTable: Map<number, TransitionTableItem>
   /**
+   * 根据emotionName获取对于英文名
+   */
+  EmotionExcelTable: Map<number, string>
+  /**
    * 根据emotion名获取emotion图片信息
    */
   emotionResourcesTable: Map<string, string[]>,

@@ -10,7 +10,7 @@ import {
   FXEffectWord,
   ILoopAnimationStateListener
 } from "@/types/characterLayer";
-import {Character, CharacterEffectType, CharacterInstance, WinkAnimationObject, WinkObject} from "@/types/common";
+import { Character, CharacterEffectType, CharacterInstance, WinkAnimationObject, WinkObject } from "@/types/common";
 import { ShowCharacter } from "@/types/events";
 import { AdjustmentFilter } from '@pixi/filter-adjustment';
 import { ColorOverlayFilter } from '@pixi/filter-color-overlay';
@@ -144,7 +144,7 @@ export const CharacterLayerInstance: CharacterLayer = {
       },
       isHeightLight() {
         return this.isOnStage() && instance.alpha != 0;
-      }
+      },
     }
     currentCharacterMap.set(character.CharacterName, characterInstance)
     this.characterSpineCache.set(character.CharacterName, characterInstance)
@@ -164,8 +164,8 @@ export const CharacterLayerInstance: CharacterLayer = {
     if (spine.position.y === 0) {
       // 供特效使用
       const { scale, y } = calcCharacterYAndScale(spine);
-      // 设置缩放比列
-      this.characterScale = scale;
+      //设置x轴初始位置
+      const { x } = calcSpineStagePosition(spine, character.position)
 
       // 设置锚点到左上角
       spine.pivot = {
@@ -174,7 +174,7 @@ export const CharacterLayerInstance: CharacterLayer = {
       };
       spine.scale.set(scale);
       // 设置spine在播放器的y轴坐标
-      spine.position.set(spine.position.x, y);
+      spine.position.set(x, y);
     }
     // 不显示
     spine.alpha = 0
@@ -187,7 +187,12 @@ export const CharacterLayerInstance: CharacterLayer = {
     return row.characters.map(item => {
       return {
         ...item,
-        instance: this.getCharacterSpineInstance(item.CharacterName)!
+        instance: this.getCharacterSpineInstance(item.CharacterName)!,
+        isCloseUp() {
+          // 供特效使用
+          const { scale } = calcCharacterYAndScale(this.instance);
+          return Math.abs(scale - this.instance.scale.x) >= 0.05
+        }
       };
     })
   },
@@ -202,7 +207,8 @@ export const CharacterLayerInstance: CharacterLayer = {
         y: Character_Initial_Pivot_Proportion.y * character.instance.height,
       };
       // 设置缩放比列
-      character.instance.scale.set(this.characterScale);
+      const { scale: defaultScale } = calcCharacterYAndScale(character.instance);
+      character.instance.scale.set(defaultScale);
     })
   },
   showCharacter(data: ShowCharacter): boolean {
@@ -236,6 +242,9 @@ export const CharacterLayerInstance: CharacterLayer = {
     filterHide.forEach(chara => {
       chara.instance.visible = false;
       chara.instance.alpha = 0;
+      // 清除closeup特效
+      const { scale } = calcCharacterYAndScale(chara.instance);
+      chara.instance.scale.set(scale);
     });
 
 
@@ -261,14 +270,24 @@ export const CharacterLayerInstance: CharacterLayer = {
 
     // 处理sync情况
     Promise
-      .allSettled(
+      .all(
         mapList.map(character => this.showOneCharacter(character))
       )
       .then(this.characterDone)
-      .catch(this.characterDone);
+      .catch(reason => {
+        console.log(reason)
+        this.characterDone()
+      });
     return true;
   },
   showOneCharacter(data: CharacterEffectInstance): Promise<void> {
+    // // 当人物没有closeup时取消closeup
+    // if (Math.abs(CharacterLayerInstance.characterScale! - data.instance.scale.x) > 0.05) {
+    //   if (!data.effects.some(effect => effect.effect === 'closeup')) {
+    //     data.instance.scale.set(CharacterLayerInstance.characterScale)
+    //   }
+    // }
+
     // 表情
     if (data.instance.state.hasAnimation(data.face))
       data.instance.state.setAnimation(AnimationFaceTrack, data.face, true);
@@ -375,7 +394,6 @@ export const CharacterLayerInstance: CharacterLayer = {
   },
   //TODO 根据角色是否已经缩放(靠近老师)分类更新
   onWindowResize() { },
-  characterScale: undefined,
   characterSpineCache: new Map<number, CharacterInstance>(),
 }
 

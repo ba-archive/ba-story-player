@@ -27,7 +27,11 @@ export const emotionDescriptions: OptionDescriptions['emotion'] = {
     "flashAnimation": "闪烁动画设置, 包括放大缩小倍数-动画时长",
     "fadeInDuration": "出现动画时长"
   },
-  "Sad": {},
+  "Sad": {
+    "moveYDistance": "在y轴移动的距离",
+    "imageGap": "个图片的间距",
+    "imgInitYPosition": "各图片开始时y轴位置"
+  },
   "Sweat": {
     "smallImg": "较小的图片相较于较大图片的设置, 包括缩放和相对位置",
     "dropAnimation": "下落动画的参数",
@@ -70,6 +74,27 @@ export const emotionDescriptions: OptionDescriptions['emotion'] = {
     "rotateAnimation": "线条图片左右选择的动画参数, 包括选择角度和时间",
     "yScaleAnimation": "线条图片上下压缩的动画参数, 包括压缩的比例和动画时间",
     "animationTotalDuration": "动画持续时间"
+  },
+  "Steam": {
+    "imgAngles": "各图片选择角度",
+    "imgPivot": "图片原点",
+    "imgScaleAnimation": "图片放大动画参数"
+  },
+  "Sigh": {
+    "scaleAnimation": "图片缩放动画",
+    "angle": "图片选择角度",
+    "anchor": "缩放的起始点"
+  },
+  "Bulb": {
+    "bulbYPosition": "灯泡在y轴的位置",
+    "dialogScaleAnimation": "对话框缩放动画",
+    "lightScale": "光线图片的缩放",
+    "lightYPosition": "光线图片y轴位置"
+  },
+  "Tear": {
+    "positions": "图片位置",
+    "anchors": "图片anchor",
+    "scaleAnimations": "图片缩放动画"
   }
 }
 
@@ -203,13 +228,19 @@ const emotionOptions: EmotionOptions = {
     "fadeInDuration": 0.2
   },
   "Sad": {
-
     "startPositionOffset": {
-      "x": 50,
+      "x": 0.4,
       "y": 0
     },
     "scale": 0.3,
-    "fadeOutDuration": 0.1
+    "fadeOutDuration": 0.1,
+    "imageGap": 30,
+    "moveYDistance": 35,
+    "imgInitYPosition": [
+      0,
+      30,
+      -30
+    ]
   },
   "Sweat": {
 
@@ -396,7 +427,6 @@ const emotionOptions: EmotionOptions = {
     }
   },
   "Upset": {
-
     "startPositionOffset": {
       "x": 0,
       "y": -0.1
@@ -417,6 +447,102 @@ const emotionOptions: EmotionOptions = {
       "duration": 0.43
     },
     "animationTotalDuration": 1
+  },
+  "Steam": {
+    "startPositionOffset": {
+      "x": 0.5,
+      "y": 0.1
+    },
+    "scale": 0.27,
+    "fadeOutDuration": 0.3,
+    "imgPivot": {
+      "x": 1.4,
+      "y": 1.5
+    },
+    "imgScaleAnimation": [
+      {
+        "start": 0.1,
+        "end": 0.7
+      },
+      {
+        "start": 0.6,
+        "end": 0.9
+      }
+    ],
+    "imgAngles": [
+      -30,
+      0
+    ]
+  },
+  "Sigh": {
+    "startPositionOffset": {
+      "x": 0.4,
+      "y": 0.15
+    },
+    "scale": 0.27,
+    "fadeOutDuration": 0.3,
+    "angle": 0,
+    "scaleAnimation": {
+      "start": 0.3,
+      "end": 0.9
+    },
+    "anchor": {
+      "x": 1,
+      "y": -0.2
+    }
+  },
+  "Bulb": {
+    "startPositionOffset": {
+      "x": 0.1,
+      "y": -0.1
+    },
+    "scale": 0.27,
+    "fadeOutDuration": 0.3,
+    "dialogScaleAnimation": {
+      "start": 0.7,
+      "end": 1
+    },
+    "bulbYPosition": 100,
+    "lightScale": 1.13,
+    "lightYPosition": 82
+  },
+  "Tear": {
+    "startPositionOffset": {
+      "x": 0.45,
+      "y": 0.15
+    },
+    "scale": 0.27,
+    "fadeOutDuration": 0.3,
+    "positions": [
+      {
+        "x": 0,
+        "y": 30
+      },
+      {
+        "x": 0,
+        "y": 0
+      }
+    ],
+    "scaleAnimations": [
+      {
+        "start": 0.5,
+        "end": 1
+      },
+      {
+        "start": 0.6,
+        "end": 1
+      }
+    ],
+    "anchors": [
+      {
+        "x": 1,
+        "y": 0
+      },
+      {
+        "x": 1,
+        "y": 0
+      }
+    ]
   }
 }
 

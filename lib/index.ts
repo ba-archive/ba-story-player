@@ -857,6 +857,13 @@ export let resourcesLoader = {
         }
       })
     )
+    excelPromiseArray.push(
+      axios.get(utils.getResourcesUrl('excel', 'ScenarioCharacterEmotionExcelTable.json')).then(res => {
+        for (let i of res.data['DataList']) {
+          privateState.EmotionExcelTable.set(i['Name'], i['EmoticonName'])
+        }
+      })
+    )
 
     const results = await Promise.allSettled(excelPromiseArray)
     let reasons = []

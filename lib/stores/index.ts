@@ -27,7 +27,12 @@ let emotionResourcesTable = {
   'Question': ['Emoticon_QuestionMark.png'],
   'Shy': ['Emoticon_Balloon_N.png', 'Emoticon_Shy.png'],
   'Angry': ['Emoticon_Aggro.png'],
-  'Chat': ['Emoticon_Chat.png']
+  'Chat': ['Emoticon_Chat.png'],
+  'Sad': ['Emoji_Sad.png'],
+  'Steam': ['Emoji_Steam.png'],
+  "Sigh": ['Emoji_Sigh.png'],
+  'Bulb': ['Emoticon_Balloon_N.png', 'Emoji_Bulb_1.png', 'Emoji_Bulb_2.png'],
+  "Tear": ['Emoji_Tear_1.png', 'Emoji_Tear_2.png']
   // TODO: Upset, Music, Think, Bulb, Sigh, Steam, Zzz, Tear
 }
 
@@ -103,6 +108,7 @@ let privateState: PrivateStates = {
   BGMExcelTable: new Map(),
   BGEffectExcelTable: new Map(),
   TransitionExcelTable: new Map(),
+  EmotionExcelTable: new Map(),
   emotionResourcesTable: new Map(Object.entries(emotionResourcesTable)),
   fxImageTable: new Map(Object.entries(fxImageTable)),
   bgEffectImgMap: new Map(Object.entries(bgEffectImgTable))

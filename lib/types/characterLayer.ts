@@ -89,10 +89,7 @@ export interface CharacterLayer {
    * document resize事件监听器, 在大小变换时同时修改所有spine/sprite的缩放比列
    */
   onWindowResize(): void;
-  /**
-   * 当前角色spine的缩放比例
-   */
-  characterScale: number | undefined;
+
   /**
    * 保存所有创建好的角色spine对象
    * @key number 角色唯一key
@@ -163,6 +160,7 @@ export interface CharacterFXPlayer extends BaseCharacterEffectPlayer<FXEffectWor
  */
 export interface CharacterEffectInstance extends Character {
   instance: Spine;
+  isCloseUp: () => boolean;
 }
 
 export type EffectsWord = EmotionWord | CharacterEffectWord | FXEffectWord
@@ -205,7 +203,8 @@ export interface PositionOffset {
 export type EmotionWord =
   "Heart" | "Respond" | "Music" | "Twinkle" |
   "Sad" | "Sweat" | "Dot" | "Chat" | "Exclaim" |
-  "Angry" | "Surprise" | "Question" | "Shy" | "Upset";
+  "Angry" | "Surprise" | "Question" | "Shy" | "Upset" | "Steam" |
+  "Sigh" | 'Bulb' | 'Tear';
 
 /**
  * 人物特效定义
@@ -282,7 +281,11 @@ export interface BasicEmotionOptions extends BaseOptions<EmotionWord> {
       totalDuration: number
     }
   },
-  Sad: {},
+  Sad: {
+    imageGap: number
+    moveYDistance: number
+    imgInitYPosition: [number, number, number]
+  },
   Sweat: {
     smallImg: {
       scale: number
@@ -392,6 +395,30 @@ export interface BasicEmotionOptions extends BaseOptions<EmotionWord> {
       duration: number
     }
     animationTotalDuration: number
+  },
+  Steam: {
+    imgAngles: [number, number]
+    imgPivot: PositionOffset
+    imgScaleAnimation: {
+      start: number
+      end: number
+    }[]
+  },
+  Sigh: {
+    angle: number
+    scaleAnimation: { start: number, end: number },
+    anchor: PositionOffset
+  },
+  Bulb: {
+    dialogScaleAnimation: ScaleAnimation
+    bulbYPosition: number
+    lightYPosition: number
+    lightScale: number
+  },
+  Tear: {
+    positions: PositionOffset[]
+    scaleAnimations: ScaleAnimation[]
+    anchors: PositionOffset[]
   }
 }
 
@@ -495,4 +522,9 @@ export interface ILoopAnimationStateListener extends IAnimationStateListener {
 
 export interface SignalOptions extends BaseOptions<SignalEffectWord> {
 
+}
+
+export type ScaleAnimation = {
+  start: number
+  end: number
 }
