@@ -367,6 +367,7 @@ function parseRubyText(raw: string): Text[] {
     });
   }).flat(1);
 }
+
 export function getEmotionName(rawName: string): string | undefined {
   const name = xxhash.h32(rawName, 0).toNumber()
   return usePlayerStore().EmotionExcelTable.get(name)
