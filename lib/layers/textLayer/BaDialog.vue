@@ -427,7 +427,6 @@ function showTextDialog(text: Text[], output: HTMLElement, onParseContent?: (sou
       typingInstance.pause.curStrPos = lastStOutput.length;
       typingInstance.options.onComplete = onComplete;
       typingInstance.startDelay = 0;
-      debugger
       setTimeout(() => {
         typingInstance.start();
       }, text[0].waitTime || 0);

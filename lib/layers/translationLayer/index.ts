@@ -4,6 +4,7 @@ import { StArgs } from '@/types/events';
 import { getResourcesUrl } from '@/utils';
 import { l2dConfig } from '../l2dLayer/l2dConfig';
 import * as utils from "./utils";
+import {getText} from "./utils";
 
 /**
  * 将原始剧情结构翻译成标准剧情结构
@@ -252,7 +253,7 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
           }
           else if (utils.isOption(scriptType)) {
             unit.type = 'option'
-            const rawText = String(Reflect.get(rawStoryUnit, `Text${playerStore.language}`)).split('\n')[optionIndex]
+            const rawText = String(getText(rawStoryUnit, playerStore.language)).split('\n')[optionIndex]
             const parseResult = /\[n?s(\d)?](.+)/.exec(rawText);
             if (!parseResult) {
               console.error("在处理选项文本时遇到严重错误");
