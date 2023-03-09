@@ -3,6 +3,7 @@ import vue from '@vitejs/plugin-vue'
 import { resolve } from 'path'
 import type { Plugin } from 'vite'
 import { externals, ExternalsOptions } from 'rollup-plugin-node-externals'
+import clearConsole from 'vite-plugin-clear-console'
 
 function nodeExternals(options?: ExternalsOptions): Plugin {
   return {
@@ -20,7 +21,12 @@ export default defineConfig({
       '@': resolve(__dirname, './lib')
     },
   },
-  plugins: [nodeExternals(), vue()],
+  plugins: [nodeExternals(), vue(),
+  {
+    ...clearConsole(),
+    apply: 'build' // build environment
+  }
+  ],
   build: {
     lib: {
       entry: resolve(__dirname, 'lib/main.ts'),

@@ -45,7 +45,7 @@ export async function init(elementID: string, props: PlayerConfigs, endCallback:
   // TODO debug用 线上环境删掉 而且会导致HMR出问题 慎用
   // https://chrome.google.com/webstore/detail/pixijs-devtools/aamddddknhcagpehecnhphigffljadon/related?hl=en
   // (window as any).__PIXI_INSPECTOR_GLOBAL_HOOK__ && (window as any).__PIXI_INSPECTOR_GLOBAL_HOOK__.register({ PIXI: PIXI })
-  globalThis.__PIXI_APP__ = privateState.app;
+  // globalThis.__PIXI_APP__ = privateState.app;
 
   let app = playerStore.app
   document.querySelector(`#${elementID}`)?.appendChild(app.view)

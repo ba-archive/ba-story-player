@@ -1,6 +1,6 @@
 {
   "name": "ba-story-player",
-  "version": "0.2.6",
+  "version": "0.3.0",
   "license": "MIT",
   "type": "module",
   "files": [
@@ -38,6 +38,7 @@
     "pixi-spine": "^3.1.0",
     "pixi.js": "^6.0.0",
     "typed.js": "^2.0.12",
+    "vite-plugin-clear-console": "^0.2.2",
     "vue-responsive-video-background-player": "^2.3.1",
     "xxhashjs": "^0.2.2"
   },
