@@ -3,27 +3,28 @@ import eventBus from "@/eventBus";
 import { usePlayerStore } from "@/stores";
 import { getResourcesUrl } from "@/utils";
 import gsap from "gsap";
+import { IL2dPlayQue } from "@/types/l2d";
 
-let disposed = true
+let disposed = true;
 
 export function L2DInit() {
-  disposed = false
+  disposed = false;
   const { app } = usePlayerStore();
   // 主要播放 spine
   let mainItem: Spine;
   // 背景混合或者其他播放 spine, 如普通星野和运动邮箱
-  let otherItems: Spine[];
+  let otherItems: Spine[] = [];
   // 当前顶层的spine index
   let currentIndex: number = 0;
-  let startAnimations: { animation: string; spine: Spine; fade?: boolean }[];
-  let timeOutArray: NodeJS.Timeout[] = []
-  eventBus.on('dispose', () => {
+  let startAnimations: ({ animation: string; spine: Spine; } & Partial<IL2dPlayQue>)[];
+  let timeOutArray: NodeJS.Timeout[] = [];
+  eventBus.on("dispose", () => {
     for (const timeout of timeOutArray) {
-      clearInterval(timeout)
+      clearInterval(timeout);
     }
-    timeOutArray = []
-    disposed = true
-  })
+    timeOutArray = [];
+    disposed = true;
+  });
   // 接收动画消息
   eventBus.on("changeAnimation", (e) => {
     const temAnimation = e.replace(/_(A|M)/, "");
@@ -55,6 +56,7 @@ export function L2DInit() {
       item: Spine;
       zIndex: number;
     }) {
+      const { scale = 1 } = curL2dConfig?.spineSettings?.[item.name] || {};
       const { width, height } = calcL2DSize(
         item.width,
         item.height,
@@ -65,8 +67,8 @@ export function L2DInit() {
       item = Object.assign(item, {
         x: app.renderer.width / 2,
         y: app.renderer.height,
-        width,
-        height,
+        width: width * scale,
+        height: height * scale,
       });
       item.zIndex = zIndex;
       item.state.addListener({
@@ -74,11 +76,10 @@ export function L2DInit() {
         start: function (entry: any) {
           const entryAnimationName = entry.animation.name + item.name;
           const duration = entry.animation.duration;
-          if (startAnimations[currentIndex - 1]?.fade) {
+          const { fade, fadeTime = 0.8 } = startAnimations[currentIndex - 1] || {}
+          if (fade) {
             // 在快结束的时候触发 fade
-            timeOutArray.push(
-              setTimeout(fadeEffect, (duration - 0.8) * 1000)
-            );
+            timeOutArray.push(setTimeout(fadeEffect, (duration - fadeTime) * 1000));
           }
           // 如果没有播放过的话就设置播放状态为播放
           if (!hasPlayedAnimation[entryAnimationName]) {
@@ -148,12 +149,12 @@ export function L2DInit() {
     mainItem = new Spine(l2dSpineData!);
     mainItem.state.addListener({
       event(entry, event) {
-        if (event.data.name !== 'Talk')
-          eventBus.emit('playAudio', {
-            voiceJPUrl: getResourcesUrl('l2dVoice', event.data.name)
-          })
-      }
-    })
+        if (event.data.name !== "Talk")
+          eventBus.emit("playAudio", {
+            voiceJPUrl: getResourcesUrl("l2dVoice", event.data.name),
+          });
+      },
+    });
 
     // 设置名字区分
     mainItem.name = curL2dConfig?.name || "";
@@ -206,7 +207,7 @@ export function L2DInit() {
         curStartAnimations.animation,
         false
       );
-    } catch { }
+    } catch {}
   });
 }
 /**
@@ -234,6 +235,6 @@ function fadeEffect() {
       if (!disposed) {
         gsap.to(playerCanvas, { alpha: 1, duration: 0.8 });
       }
-    }, 1000);
+    }, 1300);
   }
 }

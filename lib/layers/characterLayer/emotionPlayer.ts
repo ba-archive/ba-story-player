@@ -151,21 +151,17 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
     const note = sprites[0];
     const scale = getRelativeScale(note, options)
     const { container } = prepareEmotionContainer(instance.instance, options);
-
     note.scale.set(scale * 0.7);
-    const x = instance.instance.width * options.startPositionOffset.x;
-    const y = instance.instance.width * options.startPositionOffset.y;
     note.visible = true;
-    note.position.set(x, y);
     container.addChild(note);
     const tl = gsap.timeline();
     tl.to(note.scale, { x: scale, y: scale, duration: 0.1 })
-      .to(note, { x: x + note.width * options.animation.offset.x, duration: options.animation.duration })
+      .to(note, { x: note.width * options.animation.offset.x, duration: options.animation.duration })
       .add('start', '<')
-      .to(note, { y: y + note.width * options.animation.offset.y, angle: options.rotateAngle, duration: options.animation.duration * 0.3 }, 'start')
-      .to(note, { y: y, angle: 0, duration: options.animation.duration * 0.3 }, '>')
-      .to(note, { y: y + note.width * options.animation.offset.y, angle: options.rotateAngle, duration: options.animation.duration * 0.4 }, '>')
-      .to(note, { y: y, angle: 0, duration: options.animation.duration * 0.4 }, '>')
+      .to(note, { y: note.width * options.animation.offset.y, angle: options.rotateAngle, duration: options.animation.duration * 0.3 }, 'start')
+      .to(note, { y: 0, angle: 0, duration: options.animation.duration * 0.3 }, '>')
+      .to(note, { y: note.width * options.animation.offset.y, angle: options.rotateAngle, duration: options.animation.duration * 0.4 }, '>')
+      .to(note, { y: 0, angle: 0, duration: options.animation.duration * 0.4 }, '>')
       .to(note, { alpha: 0, duration: options.fadeOutDuration }, '>')
 
 
@@ -237,12 +233,8 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
   }, Shy(instance: CharacterEffectInstance, options: EmotionOptions['Shy'], sprites: Sprite[]): Promise<void> {
     const dialogImg = sprites[0]
     const shyImg = sprites[1]
-    const { container, offsetX, offsetY } = prepareEmotionContainer(instance.instance, options);
+    const { container } = prepareEmotionContainer(instance.instance, options);
     const scale = getRelativeScale(dialogImg, options)
-    container.position.set(
-      offsetX + instance.instance.width * options.startPositionOffset.x,
-      offsetY + instance.instance.width * options.startPositionOffset.y
-    );
     dialogImg.scale.set(scale * options.scaleAnamation.startScale)
     dialogImg.anchor.set(options.scaleAnamation.anchor.x, options.scaleAnamation.anchor.y)
     const shyImgPos = calcRelativePosition(dialogImg, options.shyImg.position)
@@ -304,8 +296,6 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
     const scale = getRelativeScale(dropImg, options)
     dropImg.scale.set(scale);
     smallDropImg.scale.set(scale);
-    dropImg.x = instance.instance.width * options.startPositionOffset.x;
-    dropImg.y = instance.instance.width * options.startPositionOffset.y;
     const smallPosition = calcRelativePosition(dropImg, options.smallImg.offset);
     smallDropImg.x = smallPosition.x;
     smallDropImg.y = smallPosition.y;

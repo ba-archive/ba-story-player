@@ -1,15 +1,14 @@
 <script lang="ts" setup>
-import { computed, PropType, ref } from "vue";
+import { computed, withDefaults, ref } from "vue";
 import { ShowOption } from "@/types/events";
 import { useElementSize } from "@vueuse/core";
+import {Text} from "@/types/common";
+import {deepCopyObject} from "@/utils";
 
 // 选项
 // const selection = ref<ShowOption[]>([]);
-const props = defineProps({
-  selection: {
-    type: Array as PropType<ShowOption[]>,
-    default: [],
-  },
+const props = withDefaults(defineProps<{ selection: ShowOption[] }>(), {
+  selection: () => []
 });
 const emit = defineEmits<{
   (ev: "select", value: number): void;
@@ -75,6 +74,35 @@ function handleSelect(select: number) {
     emit("select", select);
   }, 400);
 }
+
+const mapSelection = computed(() => props.selection.map(it => ({
+  SelectionGroup: it.SelectionGroup,
+  text: it.text.map(text => parseTextEffect(text).content).join("")
+})))
+
+/**
+ * 处理选项的文字特效
+ */
+function parseTextEffect(_text: Text) {
+  const text = deepCopyObject(_text);
+  const effects = text.effects;
+  // 注解
+  const rt = (effects.filter(effect => effect.name === "ruby")[0] || { value: [] }).value.join("")
+  const style = effects.filter(effect => effect.name !== "ruby").map(effect => {
+    const value = effect.value.join("");
+    const name = effect.name;
+    if (name === "color") {
+      return `color: ${value}`;
+    }
+    return "";
+  }).join(";");
+  if (rt) {
+    text.content = `<span style="${style};" class="ruby" data-content="${rt}"><span class="rb">${text.content}</span><span class="rt">${rt}</span></span>`
+  } else {
+    text.content = `<span style="${style};">${text.content}</span>`
+  }
+  return text;
+}
 </script>
 
 <template>
@@ -82,13 +110,13 @@ function handleSelect(select: number) {
     <div class="ba-selector" ref="selectorElement" :style="{ marginTop: selectorMarginTop }">
       <!-- 没有发生 DOM 顺序的移动，让 vue 使用就地复用策略提高效率，不需要 key -->
       <!-- eslint-disable vue/require-v-for-key -->
-      <div v-for="(option, index) in selection" @mousedown="handleSelectMouseDown(index)" 
+      <div v-for="(option, index) in mapSelection" @mousedown="handleSelectMouseDown(index)"
         @touchstart="handleSelectMouseDown(index)" @touchend="handleSelectMouseLeave"
         @mouseenter="handleSelectMouseEnter(index)" @mouseleave="handleSelectMouseLeave" @click="handleSelect(index)"
         role="button" tabindex="-1" class="ba-selector-list"
         :class="{ activated: index === selectionCandidate, selected: index === selectedOption }">
         <div class="ba-selector-item">
-          <div>{{ option.text }}</div>
+          <div v-html="option.text"></div>
         </div>
       </div>
       <!--eslint-enable vue/require-v-for-key-->
@@ -113,11 +141,11 @@ function handleSelect(select: number) {
     width: 100%;
     max-width: 80%;
 
-
+    $font-size: 1.5rem;
     .ba-selector-item {
       text-align: center;
-      padding: 0.4rem 1rem;
-      font-size: 1.5rem;
+      padding: 0.5rem 1rem;
+      font-size: $font-size;
       color: #344a6e;
       cursor: pointer;
       border: 1px solid white;
@@ -130,11 +158,28 @@ function handleSelect(select: number) {
         url("../assets/UITex_BGPoliLight_1.png") rgb(164 216 237) no-repeat 0 30%;
       transition: all .175s ease-in-out;
       -webkit-tap-highlight-color: transparent;
-
-
-
       div {
         transform: skewX(10deg);
+      }
+      :deep(.ruby) {
+        position: relative;
+        display: inline-block;
+        line-height: $font-size;
+        height: $font-size;
+        .rb {
+          display: inline-block;
+          line-height: $font-size;
+          height: $font-size;
+        }
+        .rt {
+          position: absolute;
+          left: 0;
+          top: calc(-1 * #{$font-size} * 0.5);
+          font-size: calc(#{$font-size} * 0.5);
+          width: 100%;
+          text-align: center;
+          line-height: 1;
+        }
       }
     }
   }

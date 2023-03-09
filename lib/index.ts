@@ -45,6 +45,7 @@ export async function init(elementID: string, props: PlayerConfigs, endCallback:
   // TODO debug用 线上环境删掉 而且会导致HMR出问题 慎用
   // https://chrome.google.com/webstore/detail/pixijs-devtools/aamddddknhcagpehecnhphigffljadon/related?hl=en
   // (window as any).__PIXI_INSPECTOR_GLOBAL_HOOK__ && (window as any).__PIXI_INSPECTOR_GLOBAL_HOOK__.register({ PIXI: PIXI })
+  globalThis.__PIXI_APP__ = privateState.app;
 
   let app = playerStore.app
   document.querySelector(`#${elementID}`)?.appendChild(app.view)
@@ -588,13 +589,13 @@ export let eventEmitter = {
 
   async transitionIn() {
     if (storyHandler.currentStoryUnit.transition) {
-      eventBus.emit('transitionIn', storyHandler.currentStoryUnit.transition)
       await new Promise<void>(resolve => {
-        let resolveFun = () => {
-          eventBus.off('transitionInDone', resolveFun)
+        function complete() {
+          eventBus.off('transitionInDone', complete);
           resolve()
         }
-        eventBus.on('transitionInDone', resolveFun)
+        eventBus.on('transitionInDone', complete);
+        eventBus.emit('transitionIn', storyHandler.currentStoryUnit.transition!);
       })
     }
   },
@@ -602,13 +603,13 @@ export let eventEmitter = {
   async transitionOut() {
     if (storyHandler.currentStoryUnit.transition) {
       if (storyHandler.currentStoryUnit.transition) {
-        eventBus.emit('transitionOut', storyHandler.currentStoryUnit.transition)
         await new Promise<void>(resolve => {
           let resolveFun = () => {
-            eventBus.off('transitionOutDone', resolveFun)
+            eventBus.off('transitionOutDone', resolveFun);
             resolve()
           }
-          eventBus.on('transitionOutDone', resolveFun)
+          eventBus.on('transitionOutDone', resolveFun);
+          eventBus.emit('transitionOut', storyHandler.currentStoryUnit.transition!);
         })
       }
     }
@@ -688,7 +689,7 @@ export let resourcesLoader = {
       //添加l2d spine资源
       this.checkAndAdd(unit.l2d, 'spineUrl')
       if (unit.l2d) {
-        playerStore.curL2dConfig?.otherSpine.forEach(i => this.checkAndAdd(utils.getResourcesUrl('otherL2dSpine', i)))
+        playerStore.curL2dConfig?.otherSpine?.forEach(i => this.checkAndAdd(utils.getResourcesUrl('otherL2dSpine', i)))
         playerStore.setL2DSpineUrl(unit.l2d.spineUrl)
       }
     }

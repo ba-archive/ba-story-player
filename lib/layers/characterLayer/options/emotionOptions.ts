@@ -245,7 +245,7 @@ const emotionOptions: EmotionOptions = {
   "Sweat": {
 
     "startPositionOffset": {
-      "x": 0.2,
+      "x": 0.4,
       "y": 0
     },
     "scale": 0.12,
@@ -395,7 +395,7 @@ const emotionOptions: EmotionOptions = {
   "Shy": {
 
     "startPositionOffset": {
-      "x": 0.26,
+      "x": 0.5,
       "y": 0.06
     },
     "scale": 0.46,

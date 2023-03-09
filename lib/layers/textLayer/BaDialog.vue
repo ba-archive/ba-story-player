@@ -289,7 +289,9 @@ const StMap: StMap = {
     stOutput.value!.innerHTML = stOutput.value!.innerHTML + parseStInnerHtml(e, parsedStyle).content;
     const el = stOutput.value!.children.item(stOutput.value!.children.length - 1);
     const timeline = gsap.timeline();
-    timeline.to(el, {
+    timeline.fromTo(el, {
+      opacity: 0,
+    }, {
       opacity: 1,
       duration: 1.5
     }).then(() => {
@@ -427,7 +429,6 @@ function showTextDialog(text: Text[], output: HTMLElement, onParseContent?: (sou
       typingInstance.pause.curStrPos = lastStOutput.length;
       typingInstance.options.onComplete = onComplete;
       typingInstance.startDelay = 0;
-      debugger
       setTimeout(() => {
         typingInstance.start();
       }, text[0].waitTime || 0);
@@ -889,7 +890,7 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
     :deep(.ruby) {
       position: relative;
       .rt {
-        top: calc(-1 * var(--font-size) * 0.3 - 6px);
+        top: calc(-1 * var(--font-size) * 0.45);
       }
     }
   }

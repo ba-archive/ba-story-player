@@ -1,7 +1,7 @@
 /**
  * 初始化背景层, 订阅player的剧情信息.
  */
-import { Sprite, LoaderResource } from "pixi.js";
+import {Sprite, LoaderResource, Application} from "pixi.js";
 import gsap from "gsap";
 
 import { BgLayer } from "@/types/bgLayer";
@@ -59,15 +59,12 @@ const BgLayerInstance: BgLayer = {
   handleResize() {
     const { bgInstance, app } = usePlayerStore()
     if (bgInstance) {
-      const { x, y, width, height } = calcImageCoverSize(
-        bgInstance.width,
-        bgInstance.height,
-        app.renderer.width,
-        app.renderer.height
+      const { x, y, scale } = calcBackgroundImageSize(
+        bgInstance,
+        app
       );
       bgInstance.position.set(x, y)
-      bgInstance.width = width
-      bgInstance.height = height
+      bgInstance.scale.set(scale);
     }
   },
 
@@ -85,14 +82,12 @@ const BgLayerInstance: BgLayer = {
 
     sprite = new Sprite(resources[name].texture);
 
-    const { x, y, width, height } = calcImageCoverSize(
-      sprite.width,
-      sprite.height,
-      app.renderer.width,
-      app.renderer.height
+    const { x, y, scale } = calcBackgroundImageSize(
+      sprite,
+      app
     );
-    sprite = Object.assign(sprite, { x, y, width, height });
-
+    sprite.position.set(x, y);
+    sprite.scale.set(scale);
     return sprite;
   },
   loadBg(instance: Sprite) {
@@ -120,24 +115,29 @@ const BgLayerInstance: BgLayer = {
   },
 };
 
+const StandardWith = 1902;
+const StandardWithPadding = 64;
 /**
  * 计算图片 cover 样式尺寸 - utils
  */
-function calcImageCoverSize(
-  rawWidth: number,
-  rawHeight: number,
-  viewportWidth: number,
-  viewportHeight: number
+export function calcBackgroundImageSize(
+  background: Sprite,
+  app: Application
 ) {
-  // 整体 scale 1.02 倍 (bgshake)
-  const ratio = Math.min(
-    rawWidth / (viewportWidth * 1.15),
-    rawHeight / (viewportHeight * 1.15)
-  );
-  const width = rawWidth / ratio;
-  const height = rawHeight / ratio;
-  const x = (viewportWidth - width) / 2;
-  const y = (viewportHeight - height) / 2;
+  // 计算规则
+  // 1.优先满足纵向宽度
+  // 2.带上padding, 大小为1920px: 64px
+  // **不能用stage的height和width** 他们可以超出视口
+  const viewportWidth = app.screen.width;
+  const viewportHeight = app.screen.height;
+  const rawWidth = background.width / background.scale.x;
+  const rawHeight = background.height / background.scale.y;
+  const padding = (rawWidth / StandardWith) * StandardWithPadding;
+  const finalWidth = viewportWidth + padding * 2;
+  const scale = finalWidth / rawWidth;
+  const finalHeight = rawHeight * scale;
+  const x = -((finalWidth - viewportWidth) / 2);
+  const y = -((finalHeight - viewportHeight) / 2);
 
-  return { x, y, width, height, ratio };
+  return { x, y, scale };
 }

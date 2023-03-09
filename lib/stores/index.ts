@@ -167,7 +167,7 @@ let actions: Actions = {
     if ('SelectionGroup' in newLog) {
       privateState.logText.value.push({
         type: 'user',
-        text: newLog.text,
+        text: newLog.text.map(it => it.content).join(""),
         name: privateState.userName
       })
     }

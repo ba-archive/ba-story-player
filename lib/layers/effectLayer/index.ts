@@ -6,6 +6,7 @@ import gsap from 'gsap'
 import { Application, Sprite } from 'pixi.js'
 import { playBGEffect, removeBGEffect } from './bgEffectHandlers'
 import { emitterContainer } from './emitterUtils'
+import {calcBackgroundImageSize} from "@/layers/bgLayer";
 
 /**
  * 初始化特效层, 订阅player的剧情信息.
@@ -22,6 +23,11 @@ export function effectInit() {
       case 'fade_white':
         await playTransition('white', duration, 'in')
         break
+      default: {
+        if (transition.TransitionInResource === "Effect/UI/BGFX/UI_FX_HorSwipe_RtoL_Out") {
+          await playHorSwipeTransition(duration);
+        }
+      }
     }
     eventBus.emit('transitionInDone')
   })
@@ -34,7 +40,7 @@ export function effectInit() {
       case 'fade_white':
         await playTransition('white', duration, 'out')
         break
-    }
+   }
     eventBus.emit('transitionOutDone')
   })
   eventBus.on('playEffect', async effects => {
@@ -94,6 +100,33 @@ async function playTransition(color: 'black' | 'white', durationMs: number, mode
   }
 }
 
+function playHorSwipeTransition(duration: number): Promise<void> {
+  return new Promise<void>((resolve) => {
+    const background = document.querySelector('#player__background') as HTMLDivElement;
+    const cover = document.createElement("div");
+    const obj = { a: 0 };
+    cover.classList.add("transition-cover");
+    const style = getComputedStyle(background);
+    cover.style.backgroundPositionX = style.width;
+    background.appendChild(cover);
+    let resolved = false;
+    const timeline = gsap.timeline();
+    timeline.to(cover, {
+      backgroundPositionX: "0",
+      duration: duration / 1000,
+    }).to(obj, {
+      a: 1,
+      duration: 0.1,
+      onStart() {
+        resolve();
+      }
+    }).then(() => {
+      background.removeChild(cover);
+    });
+  });
+
+}
+
 /**
  * 背景摇晃
  * @param bgInstance 背景图片实例
@@ -142,35 +175,49 @@ let zmcPlayer = {
       this.bgInstanceOriginScale = bgInstance.scale.x
       this.bgInstanceOriginPosition = bgInstance.position.clone()
     }
-    bgInstance.scale.set(1)
-    bgInstance.anchor.set(0.5, 0.5)
-    //大小算法尚不明确, 先用一个魔法数代替
-    bgInstance.scale.set(args.size / bgInstance.width * (7 / 8) * this.bgInstanceOriginScale)
+    const scaleArg = args.size;
+    const offsetX = args.position[0];
+    const offsetY = args.position[1];
+    const { scale: rawScale } = calcBackgroundImageSize(bgInstance, app);
+    const scale = 3150 / scaleArg;
+    const finalScale = scale * rawScale;
+
+    const viewHalfWidth = app.screen.width / 2;
+    const viewHalfHeight = app.screen.height / 2;
+    const finalOffsetX = offsetX / scale;
+    const finalOffsetY = offsetY / scale;
+    const afterScaleWidth = bgInstance.width / bgInstance.scale.x * finalScale;
+    const afterScaleHalfWidth = afterScaleWidth / 2;
+    const afterScaleHeight = bgInstance.height / bgInstance.scale.y * finalScale;
+    const afterScaleHalfHeight = afterScaleHeight / 2;
+    const finalX = -(afterScaleHalfWidth - ((viewHalfWidth - finalOffsetX)));
+    const finalY = -(afterScaleHalfHeight - ((viewHalfHeight + finalOffsetY)));
 
     switch (args.type) {
       case 'instant':
-        bgInstance.pivot = { x: 0, y: 0 }
-        bgInstance.pivot.x += args.position[0]
-        //y轴方向与pixi默认方向相反
-        bgInstance.pivot.y += -args.position[1]
-        bgInstance.position.set(app.screen.width / 2, app.screen.height / 2)
-        console.log(bgInstance.scale.x)
+        bgInstance.scale.set(finalScale);
+        bgInstance.position.set(finalX, finalY);
         break
       case 'move':
         if (args.duration !== 10) {
-          //不清楚具体如何作用, 经测试大概需要乘以原来缩放的1.5倍
-          let positionProportion = this.bgInstanceOriginScale * 1.5
-          await gsap.to(bgInstance, {
-            pixi: { x: `+=${args.position[0] * positionProportion}`, y: `+=${args.position[1] * positionProportion}` },
-            duration: args.duration / 1000
-          })
+          const timeline = gsap.timeline({
+            defaults: {
+              duration: args.duration / 1000
+            }
+          });
+          await timeline.to(bgInstance, {
+            x: finalX,
+          }).to(bgInstance, {
+            y: finalY,
+          }, "<").to(bgInstance.scale, {
+            x: finalScale,
+          }, "<").to(bgInstance.scale, {
+            y: finalScale,
+          }, "<")
         }
         else {
-          bgInstance.pivot = { x: 0, y: 0 }
-          bgInstance.pivot.x += args.position[0]
-          bgInstance.pivot.y += -args.position[1]
-          bgInstance.position.set(app.screen.width / 2, app.screen.height / 2)
-          console.log(bgInstance.scale.x)
+          bgInstance.scale.set(finalScale);
+          bgInstance.position.set(finalX, finalY);
         }
     }
   },
