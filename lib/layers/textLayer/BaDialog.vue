@@ -289,7 +289,9 @@ const StMap: StMap = {
     stOutput.value!.innerHTML = stOutput.value!.innerHTML + parseStInnerHtml(e, parsedStyle).content;
     const el = stOutput.value!.children.item(stOutput.value!.children.length - 1);
     const timeline = gsap.timeline();
-    timeline.to(el, {
+    timeline.fromTo(el, {
+      opacity: 0,
+    }, {
       opacity: 1,
       duration: 1.5
     }).then(() => {
