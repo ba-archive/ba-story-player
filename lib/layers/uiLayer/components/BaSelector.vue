@@ -3,6 +3,7 @@ import { computed, withDefaults, ref } from "vue";
 import { ShowOption } from "@/types/events";
 import { useElementSize } from "@vueuse/core";
 import {Text} from "@/types/common";
+import {deepCopyObject} from "@/utils";
 
 // 选项
 // const selection = ref<ShowOption[]>([]);
@@ -82,7 +83,8 @@ const mapSelection = computed(() => props.selection.map(it => ({
 /**
  * 处理选项的文字特效
  */
-function parseTextEffect(text: Text) {
+function parseTextEffect(_text: Text) {
+  const text = deepCopyObject(_text);
   const effects = text.effects;
   // 注解
   const rt = (effects.filter(effect => effect.name === "ruby")[0] || { value: [] }).value.join("")
