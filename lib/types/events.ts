@@ -97,7 +97,8 @@ export type Events = {
   hideDialog: undefined
   hidemenu: undefined
   showmenu: undefined
-
+  // 显示历史
+  showStoryLog: undefined
   //文字层
   /**
    * 展示标题
@@ -245,6 +246,8 @@ export interface ShowText {
    * 人物头像, 填logText时使用
    */
   avatarUrl?: string
+  /** storyUnit 位置 */
+  index?: number
 }
 
 /**

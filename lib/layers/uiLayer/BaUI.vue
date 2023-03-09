@@ -9,7 +9,7 @@ import { StorySummary } from "@/types/store";
 import { effectBtnMouseDown, effectBtnMouseUp } from "./utils";
 import { ShowOption } from "@/types/events";
 import { usePlayerStore } from "@/stores";
-
+import './userInteract.ts'
 let hiddenSummary = ref(true);
 let hiddenStoryLog = ref(true);
 let autoMode = ref(false);
@@ -28,6 +28,9 @@ eventBus.on("hide", () => {
   hiddenSummary.value = true
   hiddenStoryLog.value = true
   hiddenMenu.value = true
+})
+eventBus.on("showStoryLog", () => {
+  hiddenStoryLog.value = false
 })
 eventBus.on("hidemenu", () => {
   hiddenMenu.value = true

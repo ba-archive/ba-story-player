@@ -2,7 +2,7 @@
 import { LogText } from "@/types/store";
 import { PropType, ref } from "vue";
 import avatarBG from "../../assets/Deco_GachaItemBg.png"
-
+import { changeStoryIndex } from "../../userInteract";
 const props = defineProps({
   chatMessage: Object as PropType<LogText>,
 });
@@ -26,7 +26,7 @@ switch (props.chatMessage?.type) {
 </script>
 
 <template>
-  <div :class="['ba-chat-message', bubbleType]">
+  <div :class="['ba-chat-message', bubbleType]" @click="changeStoryIndex(chatMessage?.index)">
     <!-- 设置透明度为0如果没有图片需要显示 -->
     <div class="ba-chat-message-avatar-border" :style="{ opacity: props.chatMessage?.avatarUrl ? 1 : 0 }">
       <div

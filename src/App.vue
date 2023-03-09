@@ -10,7 +10,7 @@ import { ref, watch } from 'vue'
 import * as PIXI from 'pixi.js'
 import { usePlayerStore } from '../lib/stores'
 import axios from 'axios'
-
+import {changeStoryIndex} from '../lib/layers/uiLayer/userInteract'
 console.log('资源加载: ', resourcesLoader)
 console.log('资源调用: ', usePlayerStore())
 console.log('剧情进度: ', storyHandler)
@@ -61,13 +61,7 @@ if (cacheIndex) {
 function setStartIndex() {
   localStorage.setItem(indexCacheKey, currentStoryIndex.value.toString())
 }
-/**
- * 切换到对应故事节点
- */
-function changeStoryIndex() {
-  storyHandler.currentStoryIndex = currentStoryIndex.value
-  eventBus.emit('next')
-}
+
 
 const story = ref(yuuka)
 const showPlayer = ref(false)
@@ -147,7 +141,7 @@ function changeJSON() {
       <label>storyIndex</label>
       <input v-model="currentStoryIndex" />
       <button @click="setStartIndex">设为故事初始index</button>
-      <button @click="changeStoryIndex">更换故事index</button>
+      <button @click="changeStoryIndex(currentStoryIndex)">更换故事index</button>
       <label>故事json</label>
       <input v-model="storyJsonName" />
       <button @click="changeJSON">更换故事json</button>

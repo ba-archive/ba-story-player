@@ -174,6 +174,8 @@ export interface LogText {
    * 头像地址
    */
   avatarUrl?: string
+  /** storyUnit 位置 */
+  index?: number
 }
 
 export interface StorySummary {

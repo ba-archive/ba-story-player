@@ -12,7 +12,6 @@ import axios from 'axios';
 import { SpineParser, IEventData } from 'pixi-spine';
 import { Application, Loader, settings, utils as pixiUtils } from "pixi.js";
 import { L2DInit } from "./layers/l2dLayer/L2D";
-import * as process from "process";
 
 let playerStore: ReturnType<typeof usePlayerStore>
 let privateState: ReturnType<typeof initPrivateState>
@@ -403,7 +402,7 @@ export let eventEmitter = {
         break
       case 'text':
         this.textDone = false
-        eventBus.emit('showText', currentStoryUnit.textAbout.showText)
+        eventBus.emit('showText', {...currentStoryUnit.textAbout.showText, index: storyHandler.currentStoryIndex})
         eventBus.emit('showmenu')
         break
       case 'option':
@@ -480,11 +479,12 @@ export let eventEmitter = {
   /**
    * 显示背景
    */
-  async showBg() {
-    if (storyHandler.currentStoryUnit.bg) {
-      const bgOverLap = storyHandler.currentStoryUnit.bg.overlap
+  async showBg(currentStoryUnit?:StoryUnit) {
+    currentStoryUnit = currentStoryUnit || storyHandler.currentStoryUnit
+    if (currentStoryUnit.bg) {
+      const bgOverLap = currentStoryUnit.bg.overlap
       eventBus.emit("showBg", {
-        url: storyHandler.currentStoryUnit.bg?.url,
+        url: currentStoryUnit.bg?.url,
         overlap: bgOverLap
       });
       if (this.l2dPlaying) {
@@ -519,10 +519,11 @@ export let eventEmitter = {
   /**
    * 播放声音
    */
-  playAudio() {
-    if (storyHandler.currentStoryUnit.audio) {
-      eventBus.emit('playAudio', storyHandler.currentStoryUnit.audio)
-      if (storyHandler.currentStoryUnit.audio.voiceJPUrl) {
+  playAudio(currentStoryUnit?:StoryUnit) {
+    currentStoryUnit = currentStoryUnit || storyHandler.currentStoryUnit
+    if (currentStoryUnit.audio) {
+      eventBus.emit('playAudio', currentStoryUnit.audio)
+      if (currentStoryUnit.audio.voiceJPUrl) {
         this.VoiceJpDone = false
       }
     }

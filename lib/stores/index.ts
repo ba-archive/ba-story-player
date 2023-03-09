@@ -181,7 +181,8 @@ let actions: Actions = {
           type: 'character',
           text,
           avatarUrl: newLog.avatarUrl,
-          name: newLog.speaker.name
+          name: newLog.speaker.name,
+          index: newLog.index
         })
       }
       else {
