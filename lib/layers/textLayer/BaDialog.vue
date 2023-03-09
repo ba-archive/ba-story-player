@@ -343,6 +343,8 @@ function handleShowTextEvent(e: ShowText) {
  */
 function parseTextEffect(text: Text, extendStyle = "", tag = "span"): Text {
   const effects = text.effects;
+  // 解决typedjs对&的特殊处理
+  text.content = text.content.replace("&", "&amp;");
   // 注解
   const rt = (effects.filter(effect => effect.name === "ruby")[0] || { value: [] }).value.join("")
   const style = effects.filter(effect => effect.name !== "ruby").map(effect => {
