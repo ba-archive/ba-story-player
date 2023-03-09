@@ -178,7 +178,6 @@ let zmcPlayer = {
     const scaleArg = args.size;
     const offsetX = args.position[0];
     const offsetY = args.position[1];
-    debugger;
     const { scale: rawScale } = calcBackgroundImageSize(bgInstance, app);
     const scale = 3150 / scaleArg;
     const finalScale = scale * rawScale;
