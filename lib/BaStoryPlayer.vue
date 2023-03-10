@@ -194,15 +194,10 @@ onDeactivated(() => {
   })
 })
 
-// #86 全屏时 UI 层鼠标不可见, 交给BaStoryPlayer处理
-const cursorStyle = ref("auto")
-eventBus.on("showCursor", () => cursorStyle.value = "auto")
-eventBus.on("hideCursor", () => cursorStyle.value = "none")
-
 </script>
 
 <template>
-  <div id="player" :style="{height: `${playerHeight}px`, width: `${playerWidth}px`, cursor: cursorStyle}" ref="player" >
+  <div id="player" :style="{height: `${playerHeight}px`, width: `${playerWidth}px` }" ref="player" >
     <div id="player__background" :style="playerStyle">
       <div id="player__main" :style="playerStyle">
         <div id="player__main__canvas" :style="{ transform: `scale(${pixiScale})` }"></div>
@@ -228,10 +223,6 @@ eventBus.on("hideCursor", () => cursorStyle.value = "none")
   }
 }
 
-// #86 全部元素继承 cursor 属性
-* {
-  cursor: inherit;
-}
 
 //noinspection CssOverwrittenProperties
 #player {

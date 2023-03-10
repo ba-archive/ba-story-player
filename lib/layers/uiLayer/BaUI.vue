@@ -55,8 +55,6 @@ function handleBtnSkipSummary() {
 
 // 处理选项
 function handleBaSelector(selectionGroup: number) {
-  console.log("selectGroup: ", selectionGroup)
-  console.log("select: ", selectOptions.value[selectionGroup])
   eventBus.emit('select', selectOptions.value[selectionGroup].SelectionGroup)
   usePlayerStore().updateLogText(selectOptions.value[selectionGroup])
 
@@ -112,26 +110,31 @@ const bauiem = computed(() => {
 })
 
 // #86 全屏时 UI 层鼠标不可见, UI层无法实现，UI层发送事件hidecursor和showcursor，交给BaStoryPlayer处理
+const cursorStyle = ref("auto")
 const hideCursorDelay = 3000
-eventBus.emit("showCursor")
 let cursorTimer: NodeJS.Timeout = setTimeout(() => {
-  eventBus.emit("hideCursor")
+  cursorStyle.value = 'none'
 }, hideCursorDelay);
 
 document.addEventListener("mousemove", (ev)=>{
-  eventBus.emit("showCursor")
+  cursorStyle.value = 'auto'
   clearTimeout(cursorTimer)
   if (hiddenSummary.value && hiddenStoryLog.value && props.fullScreen) {
     cursorTimer = setTimeout(() => {
-      eventBus.emit("hideCursor")
+      cursorStyle.value = 'none'
     }, hideCursorDelay);
   }
 })
 
+function handleBaUIClick() {
+  eventBus.emit("playOtherSounds", "select")
+  eventBus.emit('click')
+}
+
 </script>
 
 <template>
-  <div class="baui" @click.self="eventBus.emit('click')" :style="{'font-size': `${bauiem}px`}">
+  <div class="baui" @click.self="handleBaUIClick" :style="{'font-size': `${bauiem}px`, 'cursor': cursorStyle}">
     <div class="right-top" v-show="!hiddenMenu">
       <div class="baui-button-group">
         <BaButton @click="handleBtnAutoMode" :class="{ 'ba-button-auto': true, activated: autoMode }">
@@ -189,6 +192,13 @@ document.addEventListener("mousemove", (ev)=>{
 </template>
 
 <style lang="scss" scoped>
+
+// #86 全部元素继承 cursor 属性
+* {
+  cursor: inherit;
+}
+
+
 .lean-rect {
   transform: skew(-10deg);
 }
