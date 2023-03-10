@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import BaButton from "@/layers/uiLayer/components/BaButton.vue";
-import { computed, onMounted, ref } from "vue";
+import { computed, ref, watchEffect } from "vue";
 import BaDialog from "./components/BaDialog.vue";
 import BaChatLog from "./components/BaChatLog/BaChatLog.vue";
 import BaSelector from "./components/BaSelector.vue";
@@ -9,7 +9,7 @@ import { StorySummary } from "@/types/store";
 import { effectBtnMouseDown, effectBtnMouseUp } from "./utils";
 import { ShowOption } from "@/types/events";
 import { usePlayerStore } from "@/stores";
-import { useThrottleFn, useResizeObserver } from '@vueuse/core'
+import { useMouse, useThrottleFn } from '@vueuse/core'
 
 let hiddenSummary = ref(true);
 let hiddenStoryLog = ref(true);
@@ -17,10 +17,10 @@ let autoMode = ref(false);
 let hiddenMenu = ref(true);
 let hiddenSubMenu = ref(true);
 
-let props = defineProps<{ storySummary: StorySummary, height: number, width: number }>()
+let props = defineProps<{ storySummary: StorySummary, height: number, width: number, fullScreen: Boolean }>()
 
 const selectOptions = ref<ShowOption[]>([]);
-const emitter = defineEmits(['fullscreenChange'])
+const emitter = defineEmits(['update:fullScreen'])
 
 eventBus.on("hide", () => {
   hiddenSummary.value = true
@@ -36,7 +36,7 @@ eventBus.on("showmenu", () => {
 eventBus.on("option", (e) => (selectOptions.value = [...e]));
 
 function handleBtnFullScreen() {
-  emitter('fullscreenChange')
+  emitter('update:fullScreen', !props.fullScreen)
 }
 function handleBtnChatLog() {
   eventBus.emit("playOtherSounds", "select")
@@ -111,11 +111,27 @@ const bauiem = computed(() => {
   return newVal
 })
 
+// #86 全屏时 UI 层鼠标不可见, UI层无法实现，UI层发送事件hidecursor和showcursor，交给BaStoryPlayer处理
+const hideCursorDelay = 3000
+eventBus.emit("showCursor")
+let cursorTimer: NodeJS.Timeout = setTimeout(() => {
+  eventBus.emit("hideCursor")
+}, hideCursorDelay);
+
+document.addEventListener("mousemove", (ev)=>{
+  eventBus.emit("showCursor")
+  clearTimeout(cursorTimer)
+  if (hiddenSummary.value && hiddenStoryLog.value && props.fullScreen) {
+    cursorTimer = setTimeout(() => {
+      eventBus.emit("hideCursor")
+    }, hideCursorDelay);
+  }
+})
 
 </script>
 
 <template>
-  <div class="baui" @click.self="eventBus.emit('click')" :style="{'font-size': `${bauiem}px`}" ref="baui">
+  <div class="baui" @click.self="eventBus.emit('click')" :style="{'font-size': `${bauiem}px`}">
     <div class="right-top" v-show="!hiddenMenu">
       <div class="baui-button-group">
         <BaButton @click="handleBtnAutoMode" :class="{ 'ba-button-auto': true, activated: autoMode }">

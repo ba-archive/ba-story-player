@@ -98,6 +98,12 @@ export type Events = {
   hidemenu: undefined
   showmenu: undefined
 
+  /**
+   * 鼠标事件 #86 全屏时 UI 层鼠标不可见
+   */
+  hideCursor: undefined
+  showCursor: undefined
+
   //文字层
   /**
    * 展示标题
