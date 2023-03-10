@@ -55,6 +55,7 @@ function handleBtnSkipSummary() {
 
 // 处理选项
 function handleBaSelector(selectionGroup: number) {
+  hiddenSubMenu.value = true
   eventBus.emit('select', selectOptions.value[selectionGroup].SelectionGroup)
   usePlayerStore().updateLogText(selectOptions.value[selectionGroup])
 
@@ -127,7 +128,6 @@ document.addEventListener("mousemove", (ev)=>{
 })
 
 function handleBaUIClick() {
-  hiddenSubMenu.value = true
   hiddenSubMenu.value = true
   eventBus.emit("playOtherSounds", "select")
   eventBus.emit('click')
