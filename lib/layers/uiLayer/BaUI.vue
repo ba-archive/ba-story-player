@@ -17,7 +17,7 @@ let hiddenMenu = ref(true);
 let hiddenSubMenu = ref(true);
 
 // 计时器：当这个计时器到时间时 -- 回调函数会把 hiddenMenu 设置成 true 来影藏菜单
-let btnMenuTimmer: any
+let btnMenuTimer: any
 
 let { storySummary } = defineProps<{ storySummary: StorySummary }>()
 const selectOptions = ref<ShowOption[]>([]);
@@ -39,7 +39,7 @@ eventBus.on("option", (e) => (selectOptions.value = [...e]));
 
 function handleBtnHiddenUi() {
   eventBus.emit("playOtherSounds", "select")
-  refreshBtnMenuTimmer()
+  refreshBtnMenuTimer()
   eventBus.emit("hideDialog");
 }
 function handleBtnFullScreen() {
@@ -47,14 +47,14 @@ function handleBtnFullScreen() {
 }
 function handleBtnChatLog() {
   eventBus.emit("playOtherSounds", "select")
-  refreshBtnMenuTimmer()
+  refreshBtnMenuTimer()
   hiddenStoryLog.value = false
   autoMode.value = false
   eventBus.emit("stopAuto")
 }
 function handleBtnSkipSummary() {
   eventBus.emit("playOtherSounds", "select")
-  refreshBtnMenuTimmer()
+  refreshBtnMenuTimer()
   autoMode.value = false
   hiddenSummary.value = false;
   eventBus.emit("stopAuto")
@@ -96,8 +96,8 @@ function handleBtnMenu() {
   if (hiddenSubMenu.value) {
     hiddenSubMenu.value = false;
     // 一段时间后自动影藏
-    clearInterval(btnMenuTimmer)
-    btnMenuTimmer = setTimeout(() => {
+    clearInterval(btnMenuTimer)
+    btnMenuTimer = setTimeout(() => {
       hiddenSubMenu.value = true;
     }, 5555);
   } else {
@@ -105,10 +105,10 @@ function handleBtnMenu() {
   }
 }
 
-function refreshBtnMenuTimmer() {
+function refreshBtnMenuTimer() {
   if (!hiddenSubMenu.value) {
-    clearTimeout(btnMenuTimmer)
-    btnMenuTimmer = setTimeout(() => {
+    clearTimeout(btnMenuTimer)
+    btnMenuTimer = setTimeout(() => {
       hiddenSubMenu.value = true;
     }, 5555);
   }
