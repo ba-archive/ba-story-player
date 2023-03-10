@@ -36,7 +36,7 @@ watch(
     if (newValue === true) {
       gsap.from(dialogContainer.value, {
         opacity: 0,
-        y: 100,
+        y: "30%",
         duration: 0.3,
         ease: "power1.out",
       });
