@@ -10,6 +10,8 @@ import { ref, watch } from 'vue'
 import * as PIXI from 'pixi.js'
 import { usePlayerStore } from '../lib/stores'
 import axios from 'axios'
+import { useResizeObserver } from '@vueuse/core'
+import { useThrottleFn } from '@vueuse/core'
 
 console.log('资源加载: ', resourcesLoader)
 console.log('资源调用: ', usePlayerStore())
@@ -96,7 +98,7 @@ function changeJSON() {
 }
 
 
-// //字体适配
+//字体适配
 // void function(win) {
 // 	const doc = win.document;
 // 	const docEl = doc.documentElement;
@@ -128,13 +130,24 @@ function changeJSON() {
 // 	refreshRem();
 // }(window);
 
+// 让播放器可变，方便调试，可以节流但是不流畅
+const player = ref<HTMLElement | null>(null)
+useResizeObserver(player, useThrottleFn((entries) => {
+  const entry = entries[0];
+  ({width: width.value, height: height.value} = entry.contentRect);
+  console.log(width, height)
+  console.log(entries)
+}, 1))
+
 </script>
 
 <template>
   <div style="display:flex;justify-content: center;">
     <div v-if="showPlayer">
       <BaStoryPlayer :story="story" data-url="https://yuuka.cdn.diyigemt.com/image/ba-all-data" :width="width"
-        :height="height" language="Cn" userName="testUser" :story-summary="storySummary" />
+        :height="height" language="Cn" userName="testUser" :story-summary="storySummary" 
+        style="resize: both; overflow: hidden;" ref="player"
+      />
       <!--其实在左边的剧情json里填入11000就能测试序章, 不需要改动这里-->
     </div>
     <div style="position: absolute;left: 0;display: flex;flex-direction: column;width: 20vh;z-index: 100;">
