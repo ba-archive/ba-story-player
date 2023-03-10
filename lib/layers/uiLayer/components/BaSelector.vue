@@ -138,7 +138,7 @@ function parseTextEffect(_text: Text) {
     display: flex;
     gap: 1em;
     flex-direction: column;
-    width: min(80%, 960px);
+    width: 80%;
 
     $font-size: 1.5em;
     .ba-selector-item {
