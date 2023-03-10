@@ -26,7 +26,7 @@ import CharacterFXPlayerInstance from "./fxPlayer";
 
 const AnimationIdleTrack = 0; // 光环动画track index
 const AnimationFaceTrack = 1; // 差分切换
-const AnimationWinkTrack = 2; // TODO 眨眼动画
+const AnimationWinkTrack = 1; // TODO 眨眼动画
 
 type ICharacterEffectPlayerInterface = CharacterEffectPlayerInterface<EmotionWord | CharacterEffectWord | FXEffectWord>;
 type IEffectPlayerMap = {
@@ -423,7 +423,6 @@ function wink(instance: CharacterInstance, first = true) {
   const spine = instance.instance;
   clearWinkHandler(instance.winkObject);
   if (face !== "01") {
-    spine.state.clearTrack(AnimationWinkTrack);
     return;
   }
   const winkTimeout = Math.floor(Math.random() * 1000) + 3500;
