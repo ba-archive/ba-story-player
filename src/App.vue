@@ -135,8 +135,8 @@ const player = ref<HTMLElement | null>(null)
 useResizeObserver(player, useThrottleFn((entries) => {
   const entry = entries[0];
   ({width: width.value, height: height.value} = entry.contentRect);
-  console.log(width, height)
-  console.log(entries)
+  // console.log(width, height)
+  // console.log(entries)
 }, 1))
 
 </script>

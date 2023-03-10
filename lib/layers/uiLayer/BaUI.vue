@@ -9,6 +9,7 @@ import { StorySummary } from "@/types/store";
 import { effectBtnMouseDown, effectBtnMouseUp } from "./utils";
 import { ShowOption } from "@/types/events";
 import { usePlayerStore } from "@/stores";
+import { useThrottleFn } from '@vueuse/core'
 
 let hiddenSummary = ref(true);
 let hiddenStoryLog = ref(true);
@@ -16,15 +17,11 @@ let autoMode = ref(false);
 let hiddenMenu = ref(true);
 let hiddenSubMenu = ref(true);
 
-// 计时器：当这个计时器到时间时 -- 回调函数会把 hiddenMenu 设置成 true 来影藏菜单
-let btnMenuTimer: any
-
 let { storySummary } = defineProps<{ storySummary: StorySummary }>()
 const selectOptions = ref<ShowOption[]>([]);
 const emitter = defineEmits(['fullscreenChange'])
 
 eventBus.on("hide", () => {
-  // console.log("UI hide")
   hiddenSummary.value = true
   hiddenStoryLog.value = true
   hiddenMenu.value = true
@@ -37,11 +34,6 @@ eventBus.on("showmenu", () => {
 })
 eventBus.on("option", (e) => (selectOptions.value = [...e]));
 
-function handleBtnHiddenUi() {
-  eventBus.emit("playOtherSounds", "select")
-  refreshBtnMenuTimer()
-  eventBus.emit("hideDialog");
-}
 function handleBtnFullScreen() {
   emitter('fullscreenChange')
 }
@@ -70,18 +62,6 @@ function handleBaSelector(selectionGroup: number) {
   selectOptions.value.length = 0;
 }
 
-// modi https://gist.github.com/ca0v/73a31f57b397606c9813472f7493a940
-function debounce<T extends Function>(cb: T, wait = 20) {
-  let h = 0;
-  let callable = (...args: any) => {
-    if (!h) {
-      cb(...args);
-      clearTimeout(h);
-      h = setTimeout(() => (h = 0), wait) as unknown as number;
-    }
-  };
-  return <T>(<any>callable);
-}
 
 function handleBtnAutoMode() {
   autoMode.value = !autoMode.value;
@@ -91,6 +71,9 @@ function handleBtnAutoMode() {
     eventBus.emit("stopAuto");
   }
 }
+
+// 计时器：当这个计时器到时间时 -- 回调函数会把 hiddenMenu 设置成 true 来影藏菜单
+let btnMenuTimer: NodeJS.Timeout
 
 function handleBtnMenu() {
   if (hiddenSubMenu.value) {
@@ -105,6 +88,8 @@ function handleBtnMenu() {
   }
 }
 
+const handleBtnMenuDebounced = useThrottleFn(handleBtnMenu, 200);
+
 function refreshBtnMenuTimer() {
   if (!hiddenSubMenu.value) {
     clearTimeout(btnMenuTimer)
@@ -117,8 +102,6 @@ function refreshBtnMenuTimer() {
 // 子菜单按钮动画
 let handleBtnMouseDown = effectBtnMouseDown()
 let handleBtnMouseUp = effectBtnMouseUp()
-
-const handleBtnMenuDebounced = debounce(handleBtnMenu, 200);
 
 </script>
 
@@ -136,19 +119,19 @@ const handleBtnMenuDebounced = debounce(handleBtnMenu, 200);
 
       <Transition>
         <div class="baui-menu-options lean-rect" v-if="!hiddenSubMenu">
-          <button class="button-nostyle ba-menu-option" @click="handleBtnFullScreen"
-            @mousedown="handleBtnMouseDown" @touchstart="handleBtnMouseDown" @touchend="handleBtnMouseUp"
-            @mouseup="handleBtnMouseUp" @mouseleave="handleBtnMouseUp">
+          <button class="button-nostyle ba-menu-option" @click="handleBtnFullScreen" @mousedown="handleBtnMouseDown"
+            @touchstart="handleBtnMouseDown" @touchend="handleBtnMouseUp" @mouseup="handleBtnMouseUp"
+            @mouseleave="handleBtnMouseUp">
             <img draggable="false" src="./assets/pan-arrow.svg" />
           </button>
-          <button class="button-nostyle ba-menu-option" @click="handleBtnChatLog"
-            @mousedown="handleBtnMouseDown" @touchstart="handleBtnMouseDown" @touchend="handleBtnMouseUp"
-            @mouseup="handleBtnMouseUp" @mouseleave="handleBtnMouseUp">
+          <button class="button-nostyle ba-menu-option" @click="handleBtnChatLog" @mousedown="handleBtnMouseDown"
+            @touchstart="handleBtnMouseDown" @touchend="handleBtnMouseUp" @mouseup="handleBtnMouseUp"
+            @mouseleave="handleBtnMouseUp">
             <img draggable="false" src="./assets/menu.svg" />
           </button>
-          <button class="button-nostyle ba-menu-option" @click="handleBtnSkipSummary"
-            @mousedown="handleBtnMouseDown" @touchstart="handleBtnMouseDown" @touchend="handleBtnMouseUp"
-            @mouseup="handleBtnMouseUp" @mouseleave="handleBtnMouseUp">
+          <button class="button-nostyle ba-menu-option" @click="handleBtnSkipSummary" @mousedown="handleBtnMouseDown"
+            @touchstart="handleBtnMouseDown" @touchend="handleBtnMouseUp" @mouseup="handleBtnMouseUp"
+            @mouseleave="handleBtnMouseUp">
             <img draggable="false" src="./assets/fast-forward.svg" />
           </button>
         </div>
@@ -167,8 +150,9 @@ const handleBtnMenuDebounced = debounce(handleBtnMenu, 200);
         </p>
         <!-- <p class="ba-story-summary-tip">※ 是否略过此剧情？</p> -->
         <div class="ba-story-summary-button-group">
-           <BaButton size="middle" class="polylight button-close-summary" @click="hiddenSummary = true">关闭</BaButton>
-<!--          <BaButton size="large" class="polydark" @click="eventBus.emit('skip'); hiddenSummary = true">确认</BaButton>-->
+          <BaButton size="middle" class="polylight button-close-summary" @click="hiddenSummary = true" style="width: 96%">
+            关闭
+          </BaButton>
         </div>
       </div>
     </BaDialog>
@@ -181,7 +165,6 @@ const handleBtnMenuDebounced = debounce(handleBtnMenu, 200);
 </template>
 
 <style lang="scss" scoped>
-
 .lean-rect {
   transform: skew(-10deg);
 }

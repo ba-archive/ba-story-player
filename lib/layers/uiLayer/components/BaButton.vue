@@ -10,6 +10,7 @@ const props = defineProps({
     default: "small",
   },
 });
+
 const emit = defineEmits<{
   (ev: "click", event: Event): void;
 }>()
@@ -24,8 +25,6 @@ function handleClick(ev: Event) {
 onMounted(()=>{
   buttonAnimation({elem: button.value})
 })
-
-
 
 
 </script>
@@ -53,6 +52,12 @@ onMounted(()=>{
 
   &.large {
     padding: 0.5rem 4.25rem;
+    font-size: 1.5625rem;
+    border-radius: 0.625rem;
+  }
+
+  &.middle {
+    padding: 0.35rem 4.25rem;
     font-size: 1.5625rem;
     border-radius: 0.625rem;
   }
