@@ -59,7 +59,7 @@ onMounted(()=>{
   &.middle {
     padding: 0.32em 4em;
     font-size: 1.3em;
-    border-radius: 0.625em;
+    border-radius: 0.3em;
   }
 
   &.polylight {

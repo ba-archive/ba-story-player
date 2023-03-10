@@ -167,13 +167,12 @@ document.addEventListener("mousemove", (ev)=>{
       v-if="selectOptions.length !== 0" />
 
     <BaDialog id="ba-story-summary" :title="'概要'" :show="!hiddenSummary" @close="hiddenSummary = true"
-      width="min(520px, 70%)" height="min(400px,85%)">
+      width="min(720px, 70%)" height="min(600px, 85%)">
       <div class="ba-story-summary-container">
         <h4 class="ba-story-summary-title">{{ storySummary.chapterName }}</h4>
         <p class="ba-story-summary-text">
           {{ storySummary.summary }}
         </p>
-        <!-- <p class="ba-story-summary-tip">※ 是否略过此剧情？</p> -->
         <div class="ba-story-summary-button-group">
           <BaButton size="middle" class="polylight button-close-summary" @click="hiddenSummary = true" style="width: 96%">
             关闭
