@@ -44,8 +44,8 @@ export function isOption(s: string) {
  */
 export function generateText(rawStoryUnit: StoryRawUnit, stm?: boolean) {
   let rawText = getText(rawStoryUnit, playerStore.language)
-  rawText = rawText.replace('[USERNAME]', playerStore.userName)
-  rawText = rawText.replace('#n', '\n')
+  rawText = rawText.replaceAll('[USERNAME]', playerStore.userName)
+  rawText = rawText.replaceAll('#n', '\n')
   let result: Text[] = []
   if (rawText.includes('[wa')) {
     //原始文字示例: "― （いや[wa:200]いや、[wa:900]いくら[wa:300]そういう[wa:300]状況だからって"
