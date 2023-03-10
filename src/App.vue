@@ -97,46 +97,11 @@ function changeJSON() {
   location.reload()
 }
 
-
-//字体适配
-// void function(win) {
-// 	const doc = win.document;
-// 	const docEl = doc.documentElement;
-// 	let tid: NodeJS.Timeout;
-
-// 	function refreshRem() {
-// 		var width = docEl.getBoundingClientRect().width;
-// 		if (width >= 1600) { // 最大宽度
-//       docEl.style.fontSize = 16 + 'px';
-// 		} else if (width < 1600 && width >= 1400) {
-//       docEl.style.fontSize = 14 + 'px';
-//     } else if (width < 1400 && width >= 1200) {
-//       docEl.style.fontSize = 12 + 'px';
-//     } else if (width < 1200 && width >= 1000) {
-//       docEl.style.fontSize = 10 + 'px';
-//     } else if (width < 1000 && width >= 800) {
-//       docEl.style.fontSize = 8 + 'px';
-//     } else if (width < 800 && width >= 600) {
-//       docEl.style.fontSize = 6 + 'px';
-//     } else {
-//       docEl.style.fontSize = 6 + 'px';
-//     }
-// 	}
-
-// 	win.addEventListener('resize', function() {
-// 		clearTimeout(tid);
-// 		tid = setTimeout(refreshRem, 10);
-// 	}, false);
-// 	refreshRem();
-// }(window);
-
 // 让播放器可变，方便调试，可以节流但是不流畅
 const player = ref<HTMLElement | null>(null)
 useResizeObserver(player, useThrottleFn((entries) => {
   const entry = entries[0];
   ({width: width.value, height: height.value} = entry.contentRect);
-  // console.log(width, height)
-  // console.log(entries)
 }, 1))
 
 </script>

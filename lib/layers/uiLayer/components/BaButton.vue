@@ -38,11 +38,11 @@ onMounted(()=>{
 <style lang="scss" scoped>
 .ba-button {
   position: relative;
-  padding: 0.375rem 1rem;
-  margin: 0.125rem 0.4rem 0 0.4rem;
-  border-radius: 0.3125rem;
+  padding: 0.375em 1em;
+  margin: 0 0.4em 0 0.4em;
+  border-radius: 0.3125em;
   border: none;
-  font-size: 1.125rem;
+  font-size: 1.2em;
   font-weight: bold;
   color: #2d4665;
   background-color: #f3f5f6;
@@ -51,15 +51,15 @@ onMounted(()=>{
   transition: background-color .3s;
 
   &.large {
-    padding: 0.5rem 4.25rem;
-    font-size: 1.5625rem;
-    border-radius: 0.625rem;
+    padding: 0.5em 4.25em;
+    font-size: 1.5625em;
+    border-radius: 0.625em;
   }
 
   &.middle {
-    padding: 0.35rem 4.25rem;
-    font-size: 1.5625rem;
-    border-radius: 0.625rem;
+    padding: 0.32em 4em;
+    font-size: 1.3em;
+    border-radius: 0.625em;
   }
 
   &.polylight {

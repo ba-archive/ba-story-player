@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import BaButton from "@/layers/uiLayer/components/BaButton.vue";
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import BaDialog from "./components/BaDialog.vue";
 import BaChatLog from "./components/BaChatLog/BaChatLog.vue";
 import BaSelector from "./components/BaSelector.vue";
@@ -9,7 +9,7 @@ import { StorySummary } from "@/types/store";
 import { effectBtnMouseDown, effectBtnMouseUp } from "./utils";
 import { ShowOption } from "@/types/events";
 import { usePlayerStore } from "@/stores";
-import { useThrottleFn } from '@vueuse/core'
+import { useThrottleFn, useResizeObserver } from '@vueuse/core'
 
 let hiddenSummary = ref(true);
 let hiddenStoryLog = ref(true);
@@ -17,7 +17,8 @@ let autoMode = ref(false);
 let hiddenMenu = ref(true);
 let hiddenSubMenu = ref(true);
 
-let { storySummary } = defineProps<{ storySummary: StorySummary }>()
+let props = defineProps<{ storySummary: StorySummary, height: number, width: number }>()
+
 const selectOptions = ref<ShowOption[]>([]);
 const emitter = defineEmits(['fullscreenChange'])
 
@@ -103,10 +104,18 @@ function refreshBtnMenuTimer() {
 let handleBtnMouseDown = effectBtnMouseDown()
 let handleBtnMouseUp = effectBtnMouseUp()
 
+// baui em value, 根据height width计算
+const bauiem = computed(() => {
+  let minVal = Math.min(props.width, props.height)
+  let newVal = Math.round(minVal / 35.125)
+  return newVal
+})
+
+
 </script>
 
 <template>
-  <div class="baui" @click.self="eventBus.emit('click')">
+  <div class="baui" @click.self="eventBus.emit('click')" :style="{'font-size': `${bauiem}px`}" ref="baui">
     <div class="right-top" v-show="!hiddenMenu">
       <div class="baui-button-group">
         <BaButton @click="handleBtnAutoMode" :class="{ 'ba-button-auto': true, activated: autoMode }">
@@ -157,7 +166,7 @@ let handleBtnMouseUp = effectBtnMouseUp()
       </div>
     </BaDialog>
 
-    <BaDialog id="ba-story-log" :title="'对话记录'" width="80%" height="90%" :show="!hiddenStoryLog"
+    <BaDialog id="ba-story-log" :title="'对话记录'" width="min(1080px, 80%)" height="min(650px, 86%)" :show="!hiddenStoryLog"
       @close="hiddenStoryLog = !hiddenStoryLog">
       <BaChatLog :show="!hiddenStoryLog" />
     </BaDialog>
@@ -209,7 +218,6 @@ let handleBtnMouseUp = effectBtnMouseUp()
   .baui-button-group {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    grid-gap: 0.5rem;
 
     .ba-button {
       &:hover {
@@ -229,20 +237,21 @@ let handleBtnMouseUp = effectBtnMouseUp()
 
   .baui-menu-options {
     display: grid;
-    grid-gap: 0.5rem;
+    grid-gap: 0.5em;
     grid-template-columns: repeat(3, 1fr);
-    margin-top: 0.56rem;
-    padding: 0.75rem 0.75rem;
-    border-radius: 0.375rem;
+    margin-top: 0.56em;
+    padding: 0.6em 0.6em;
+    margin: 0.5em 0.5em;
+    border-radius: 0.375em;
     background-color: rgba(244, 244, 244, 0.6);
     overflow: hidden;
 
     .ba-menu-option {
       display: block;
-      font-size: 1.5rem;
+      font-size: 1.5em;
       background-color: #2c4565;
-      border-radius: 0.1875rem;
-      padding: 0.25rem 0.5rem;
+      border-radius: 0.1875em;
+      padding: 0.25em 0.5em;
       transition: background-color 0.3s ease-out;
 
       &:hover {
@@ -277,35 +286,35 @@ let handleBtnMouseUp = effectBtnMouseUp()
     }
 
     .ba-story-summary-title {
-      margin: 0.75rem 0;
+      margin: 0.75em 0;
       text-align: center;
       color: #32363c;
-      font-size: 1.125rem;
+      font-size: 1.125em;
       font-weight: bold;
     }
 
     .ba-story-summary-text {
       flex: 1;
       border: solid #d1d7dc 2px;
-      margin: 0 1rem;
-      border-radius: 0.25rem;
+      margin: 0 1em;
+      border-radius: 0.25em;
       overflow-y: auto;
-      padding: 0.3125rem 0.4375rem;
+      padding: 0.3125em 0.4375em;
       background-color: #f0f0f0;
     }
 
     .ba-story-summary-tip {
       color: #32363c;
-      font-size: 1.125rem;
+      font-size: 1.125em;
       font-weight: bold;
       text-align: center;
-      margin: 0.75rem auto 0;
+      margin: 0.75em auto 0;
       user-select: none;
     }
 
     .ba-story-summary-button-group {
       display: flex;
-      margin: 0.75rem 1rem 1.5rem;
+      margin: 1em 1em 1em;
       justify-content: center;
       align-items: center;
 
