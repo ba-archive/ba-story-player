@@ -275,7 +275,9 @@ export interface ShowOption {
   /**
    * 选项文本
    */
-  text: Text[]
+  text: Text[],
+  /** 当前剧情进度 */
+  index: number
 }
 
 export interface PlayEffect {

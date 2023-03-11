@@ -116,6 +116,7 @@ export let storyHandler = {
   unitPlaying: false,
   auto: false,
   isEnd: false,
+  isSkip: false,
 
   get currentStoryUnit(): StoryUnit {
     if (playerStore && playerStore.allStoryUnit.length > this.currentStoryIndex) {
@@ -179,7 +180,10 @@ export let storyHandler = {
   },
 
   next() {
-    if (eventEmitter.unitDone && !this.unitPlaying && !this.auto) {
+    if ((eventEmitter.unitDone && !this.unitPlaying && !this.auto) || this.isSkip) {
+      if(this.isSkip){
+        this.unitPlaying = false
+      }
       storyHandler.storyIndexIncrement()
       storyHandler.storyPlay()
     }
@@ -372,7 +376,7 @@ export let eventEmitter = {
   async emitEvents() {
     // TODO: 上线注释, 也可以不注释
     console.log('剧情进度: ' + storyHandler.currentStoryIndex, storyHandler.currentStoryUnit)
-    await this.transitionIn()
+    !storyHandler.isSkip && await this.transitionIn()
     this.hide()
     await this.showBg()
     this.showPopup()
@@ -380,7 +384,7 @@ export let eventEmitter = {
     this.playL2d()
     this.playAudio()
     this.clearSt()
-    await this.transitionOut()
+    !storyHandler.isSkip && await this.transitionOut()
     this.showCharacter()
     this.show()
 
@@ -407,7 +411,9 @@ export let eventEmitter = {
         break
       case 'option':
         if (currentStoryUnit.textAbout.options) {
-          eventBus.emit('option', currentStoryUnit.textAbout.options)
+          eventBus.emit('option', currentStoryUnit.textAbout.options.map(i=>{
+            return {...i, index: storyHandler.currentStoryIndex}
+          }))
         }
         break
       case 'st':
