@@ -1,10 +1,10 @@
-import {EffectRemoveFunction} from "@/types/effectLayer";
+import { EffectRemoveFunction } from "@/types/effectLayer";
 import {
   Emitter,
   EmitterConfigV2,
   EmitterConfigV3,
 } from "@pixi/particle-emitter";
-import {Container} from "pixi.js";
+import { Container } from "pixi.js";
 
 /**
  * 获取emitter config
@@ -24,7 +24,7 @@ export function emitterConfigs(filename: string) {
 
 const emitterConfigsRaw = import.meta.glob<EmitterConfigV2 | EmitterConfigV3>(
   "./emitterConfigs/*.json",
-  {eager: true}
+  { eager: true }
 );
 
 /**
@@ -47,7 +47,7 @@ export function emitterStarter(
   let elapsed = Date.now();
   let stopFlag = false;
   // Update function every frame
-  const update = function() {
+  const update = function () {
     if (stopFlag) {
       return;
     }
@@ -61,7 +61,7 @@ export function emitterStarter(
     elapsed = now;
   };
 
-  const stop = async function() {
+  const stop = async function () {
     stopFlag = true;
     emitter.emit = false;
     emitter.destroy();

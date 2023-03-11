@@ -1,15 +1,15 @@
-import {usePlayerStore} from "@/stores";
+import { usePlayerStore } from "@/stores";
 import {
   BGEffectHandlerFunction,
   BGEffectHandlerOptions,
   CurrentBGEffect,
 } from "@/types/effectLayer";
-import {BGEffectExcelTableItem, BGEffectType} from "@/types/excels";
-import {Sprite} from "pixi.js";
+import { BGEffectExcelTableItem, BGEffectType } from "@/types/excels";
+import { Sprite } from "pixi.js";
 
 const effectFunctionsRaw = import.meta.glob<{
   default: BGEffectHandlerFunction<BGEffectType>;
-}>("./effectFunctions/*", {eager: true});
+}>("./effectFunctions/*", { eager: true });
 function getEffectFunctions(functionName: string) {
   const effectFunction = Reflect.get(
     effectFunctionsRaw,

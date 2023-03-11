@@ -1,14 +1,14 @@
 <script lang="ts" setup>
 import BaButton from "@/layers/uiLayer/components/BaButton.vue";
-import {onMounted, ref} from "vue";
+import { onMounted, ref } from "vue";
 import BaDialog from "./components/BaDialog.vue";
 import BaChatLog from "./components/BaChatLog/BaChatLog.vue";
 import BaSelector from "./components/BaSelector.vue";
 import eventBus from "@/eventBus";
-import {StorySummary} from "@/types/store";
-import {effectBtnMouseDown, effectBtnMouseUp} from "./utils";
-import {ShowOption} from "@/types/events";
-import {usePlayerStore} from "@/stores";
+import { StorySummary } from "@/types/store";
+import { effectBtnMouseDown, effectBtnMouseUp } from "./utils";
+import { ShowOption } from "@/types/events";
+import { usePlayerStore } from "@/stores";
 
 let hiddenSummary = ref(true);
 let hiddenStoryLog = ref(true);
@@ -19,7 +19,7 @@ let hiddenSubMenu = ref(true);
 // 计时器：当这个计时器到时间时 -- 回调函数会把 hiddenMenu 设置成 true 来影藏菜单
 let btnMenuTimmer: any;
 
-let {storySummary} = defineProps<{storySummary: StorySummary}>();
+let { storySummary } = defineProps<{ storySummary: StorySummary }>();
 const selectOptions = ref<ShowOption[]>([]);
 const emitter = defineEmits(["fullscreenChange"]);
 
@@ -127,13 +127,13 @@ const handleBtnMenuDebounced = debounce(handleBtnMenu, 200);
       <div class="baui-button-group">
         <BaButton
           @click="handleBtnAutoMode"
-          :class="{'ba-button-auto': true, activated: autoMode}"
+          :class="{ 'ba-button-auto': true, activated: autoMode }"
         >
           AUTO
         </BaButton>
         <BaButton
           @click="handleBtnMenuDebounced"
-          :class="{'ba-button-menu': true, activated: !hiddenSubMenu}"
+          :class="{ 'ba-button-menu': true, activated: !hiddenSubMenu }"
         >
           MENU
         </BaButton>

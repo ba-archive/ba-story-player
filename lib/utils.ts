@@ -1,4 +1,4 @@
-import {OtherSoundsUrls, ResourcesTypes} from "@/types/resources";
+import { OtherSoundsUrls, ResourcesTypes } from "@/types/resources";
 
 let dataUrl = "";
 let otherSoundMap: OtherSoundsUrls;

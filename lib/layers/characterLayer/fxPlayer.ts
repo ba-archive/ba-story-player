@@ -1,14 +1,14 @@
-import {getStandardWidth} from ".";
+import { getStandardWidth } from ".";
 import fxOptions from "./options/fxOptions";
-import {usePlayerStore} from "@/stores";
+import { usePlayerStore } from "@/stores";
 import {
   CharacterEffectInstance,
   CharacterFXPlayer,
   PositionOffset,
 } from "@/types/characterLayer";
-import {AdjustmentFilter} from "@pixi/filter-adjustment";
+import { AdjustmentFilter } from "@pixi/filter-adjustment";
 import gsap from "gsap";
-import {Sprite} from "pixi.js";
+import { Sprite } from "pixi.js";
 
 const CharacterFXPlayerInstance: CharacterFXPlayer = {
   init() {
@@ -23,7 +23,7 @@ const CharacterFXPlayerInstance: CharacterFXPlayer = {
     if (!fn) {
       return Promise.reject("该effect不存在或未实现");
     }
-    const {fxImages, app} = usePlayerStore();
+    const { fxImages, app } = usePlayerStore();
     const fxImageSprites: Sprite[] = [];
     const currentFxImgs = fxImages(type);
     if (!currentFxImgs) {

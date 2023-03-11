@@ -5,10 +5,7 @@ import CharacterEffectPlayerInstance, {
 import CharacterEmotionPlayerInstance from "./emotionPlayer";
 import CharacterFXPlayerInstance from "./fxPlayer";
 import eventBus from "@/eventBus";
-import { storyHandler } from "@/index";
 import { usePlayerStore } from "@/stores";
-import gsap, { Power0 } from "gsap";
-import { IAnimationState, ISkeletonData, Spine } from "pixi-spine";
 import {
   CharacterEffectInstance,
   CharacterEffectPlayerInterface,
@@ -26,14 +23,14 @@ import {
   WinkAnimationObject,
   WinkObject,
 } from "@/types/common";
-import {ShowCharacter} from "@/types/events";
-import {AdjustmentFilter} from "@pixi/filter-adjustment";
-import {ColorOverlayFilter} from "@pixi/filter-color-overlay";
-import {CRTFilter} from "@pixi/filter-crt";
-import {MotionBlurFilter} from "@pixi/filter-motion-blur";
-import gsap, {Power0} from "gsap";
-import {PixiPlugin} from "gsap/PixiPlugin";
-import {IAnimationState, ISkeletonData, Spine} from "pixi-spine";
+import { ShowCharacter } from "@/types/events";
+import { AdjustmentFilter } from "@pixi/filter-adjustment";
+import { ColorOverlayFilter } from "@pixi/filter-color-overlay";
+import { CRTFilter } from "@pixi/filter-crt";
+import { MotionBlurFilter } from "@pixi/filter-motion-blur";
+import gsap, { Power0 } from "gsap";
+import { PixiPlugin } from "gsap/PixiPlugin";
+import { IAnimationState, ISkeletonData, Spine } from "pixi-spine";
 import * as PIXI from "pixi.js";
 
 const AnimationIdleTrack = 0; // 光环动画track index
@@ -54,7 +51,7 @@ const EffectPlayerMap: IEffectPlayerMap = {
 
 export const CharacterLayerInstance: CharacterLayer = {
   init() {
-    const {app} = usePlayerStore();
+    const { app } = usePlayerStore();
     // 将stage的sort设置为true,此时sprite将按照zIndex属性进行显示的排序,而是不按照children array的顺序
     app.stage.sortableChildren = true;
     document.addEventListener("resize", this.onWindowResize);
@@ -89,14 +86,14 @@ export const CharacterLayerInstance: CharacterLayer = {
     return true;
   },
   hasCharacterInstance(characterNumber: number): boolean {
-    const {currentCharacterMap} = usePlayerStore();
+    const { currentCharacterMap } = usePlayerStore();
     return Boolean(currentCharacterMap.get(characterNumber));
   },
   hasCharacterInstanceCache(characterNumber: number): boolean {
     return Boolean(this.characterSpineCache.get(characterNumber));
   },
   getCharacterInstance(characterNumber: number): CharacterInstance | undefined {
-    const {currentCharacterMap} = usePlayerStore();
+    const { currentCharacterMap } = usePlayerStore();
     return (
       currentCharacterMap.get(characterNumber) ??
       this.characterSpineCache.get(characterNumber)
@@ -109,7 +106,7 @@ export const CharacterLayerInstance: CharacterLayer = {
     );
   },
   beforeProcessShowCharacterAction(characterMap: Character[]): boolean {
-    const {characterSpineData} = usePlayerStore();
+    const { characterSpineData } = usePlayerStore();
     for (const item of characterMap) {
       const characterName = item.CharacterName;
       if (!this.hasCharacterInstanceCache(characterName)) {
@@ -129,7 +126,7 @@ export const CharacterLayerInstance: CharacterLayer = {
   ): Spine {
     const instance = new Spine(spineData);
     instance.sortableChildren = true;
-    const {currentCharacterMap} = usePlayerStore();
+    const { currentCharacterMap } = usePlayerStore();
     const characterInstance: CharacterInstance = {
       CharacterName: character.CharacterName,
       position: character.position,
@@ -150,7 +147,7 @@ export const CharacterLayerInstance: CharacterLayer = {
     return instance;
   },
   putCharacterOnStage(character: Character): boolean {
-    const {app} = usePlayerStore();
+    const { app } = usePlayerStore();
     const instance = this.getCharacterInstance(character.CharacterName)!;
     instance.position = character.position;
     instance.currentFace = character.face;
@@ -162,9 +159,9 @@ export const CharacterLayerInstance: CharacterLayer = {
     // spine如果是新建的, 初始化数据
     if (spine.position.y === 0) {
       // 供特效使用
-      const {scale, y} = calcCharacterYAndScale(spine);
+      const { scale, y } = calcCharacterYAndScale(spine);
       //设置x轴初始位置
-      const {x} = calcSpineStagePosition(spine, character.position);
+      const { x } = calcSpineStagePosition(spine, character.position);
 
       // 设置锚点到左上角
       spine.pivot = {
@@ -174,12 +171,6 @@ export const CharacterLayerInstance: CharacterLayer = {
       spine.scale.set(scale);
       // 设置spine在播放器的y轴坐标
       spine.position.set(x, y);
-    }
-    // 跳过时设置为初始的高度, 可以优化为跳过时缩短 duration 为 200 以下,
-    // 但是现在看起来没啥问题先不改了, action那边 duration 有点多
-    if(storyHandler.isSkip){
-      const { y } = calcCharacterYAndScale(spine);
-      spine.position.y = y
     }
     // 不显示
     spine.alpha = 0;
@@ -195,14 +186,14 @@ export const CharacterLayerInstance: CharacterLayer = {
         instance: this.getCharacterSpineInstance(item.CharacterName)!,
         isCloseUp() {
           // 供特效使用
-          const {scale} = calcCharacterYAndScale(this.instance);
+          const { scale } = calcCharacterYAndScale(this.instance);
           return Math.abs(scale - this.instance.scale.x) >= 0.05;
         },
       };
     });
   },
   hideCharacter() {
-    const {currentCharacterMap} = usePlayerStore();
+    const { currentCharacterMap } = usePlayerStore();
     currentCharacterMap.forEach(character => {
       character.instance.visible = false;
       character.instance.scale.set(1);
@@ -212,7 +203,9 @@ export const CharacterLayerInstance: CharacterLayer = {
         y: Character_Initial_Pivot_Proportion.y * character.instance.height,
       };
       // 设置缩放比列
-      const {scale: defaultScale} = calcCharacterYAndScale(character.instance);
+      const { scale: defaultScale } = calcCharacterYAndScale(
+        character.instance
+      );
       character.instance.scale.set(defaultScale);
     });
   },
@@ -254,7 +247,7 @@ export const CharacterLayerInstance: CharacterLayer = {
       chara.instance.visible = false;
       chara.instance.alpha = 0;
       // 清除closeup特效
-      const {scale} = calcCharacterYAndScale(chara.instance);
+      const { scale } = calcCharacterYAndScale(chara.instance);
       chara.instance.scale.set(scale);
     });
 
@@ -293,7 +286,7 @@ export const CharacterLayerInstance: CharacterLayer = {
     // 当人物没有closeup时取消closeup
     if (data.isCloseUp()) {
       if (!data.effects.some(effect => effect.effect === "closeup")) {
-        const {scale} = calcCharacterYAndScale(data.instance);
+        const { scale } = calcCharacterYAndScale(data.instance);
         data.instance.scale.set(scale);
       }
     }
@@ -352,7 +345,7 @@ export const CharacterLayerInstance: CharacterLayer = {
       const chara = data.instance;
       //当人物被移出画面时重设为初始位置
       if (!chara.visible) {
-        const {x} = calcSpineStagePosition(chara, data.position);
+        const { x } = calcSpineStagePosition(chara, data.position);
         chara.x = x;
         chara.zIndex = Reflect.get(POS_INDEX_MAP, data.position);
         chara.state.setAnimation(AnimationIdleTrack, "Idle_01", true);
@@ -425,13 +418,13 @@ const Standard_Width_Relative = 0.3;
 /**
  * 角色初始的pivot相对与长宽的比例, 当前值代表左上角
  */
-export const Character_Initial_Pivot_Proportion = {x: 0, y: -1 / 2};
+export const Character_Initial_Pivot_Proportion = { x: 0, y: -1 / 2 };
 
 PixiPlugin.registerPIXI(PIXI);
 gsap.registerPlugin(PixiPlugin);
 
 export function calcCharacterYAndScale(spine: Spine) {
-  const {screenHeight} = getStageSize();
+  const { screenHeight } = getStageSize();
   const scale = (screenHeight / PlayerHeight) * CharacterScale;
   const spineHeight = (spine.height / spine.scale.y) * scale;
   return {
@@ -450,7 +443,7 @@ export function characterInit(): boolean {
 
 function loopCRtAnimation(crtFilter: CRTFilter) {
   gsap
-    .to(crtFilter, {time: "+=10", duration: 1, ease: Power0.easeNone})
+    .to(crtFilter, { time: "+=10", duration: 1, ease: Power0.easeNone })
     .then(() => loopCRtAnimation(crtFilter));
 }
 
@@ -568,7 +561,7 @@ const spineHideRate = 0.49;
  * @return screenWidth 容器的宽 screenHeight 容器的高
  */
 export function getStageSize() {
-  const {app} = usePlayerStore();
+  const { app } = usePlayerStore();
   const screen = app.screen;
   const screenWidth = screen.width;
   const screenHeight = screen.height;

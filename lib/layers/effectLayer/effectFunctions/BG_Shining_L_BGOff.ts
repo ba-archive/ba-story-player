@@ -1,12 +1,12 @@
-import {emitterConfigs, emitterStarter} from "../emitterUtils";
-import {getEmitterType, sprite2TransParent} from "../resourcesUtils";
-import {usePlayerStore} from "@/stores";
-import {Emitter, EmitterConfigV3} from "@pixi/particle-emitter";
-import {Container, Rectangle, Sprite, Texture, filters} from "pixi.js";
+import { emitterConfigs, emitterStarter } from "../emitterUtils";
+import { getEmitterType, sprite2TransParent } from "../resourcesUtils";
+import { usePlayerStore } from "@/stores";
+import { Emitter, EmitterConfigV3 } from "@pixi/particle-emitter";
+import { Container, Rectangle, Sprite, Texture, filters } from "pixi.js";
 
 export default async function BG_Shining_L_BGOff(resources: Sprite[]) {
   // 原理是波纹
-  const {app} = usePlayerStore();
+  const { app } = usePlayerStore();
   const appWidth = app.view.width;
   const appHeight = app.view.height;
   // 波纹特效

@@ -1,8 +1,8 @@
 <script lang="ts" setup>
 import BaChatMessage from "./BaChatMessage.vue";
-import {checkBgOverlap} from "@/layers/translationLayer/utils";
-import {usePlayerStore} from "@/stores";
-import {Ref, ref, watch} from "vue";
+import { checkBgOverlap } from "@/layers/translationLayer/utils";
+import { usePlayerStore } from "@/stores";
+import { Ref, ref, watch } from "vue";
 
 const props = defineProps({
   show: Boolean,

@@ -1,13 +1,13 @@
 <script lang="ts" setup>
-import {Text} from "@/types/common";
-import {ShowOption} from "@/types/events";
-import {deepCopyObject} from "@/utils";
-import {useElementSize} from "@vueuse/core";
-import {computed, ref, withDefaults} from "vue";
+import { Text } from "@/types/common";
+import { ShowOption } from "@/types/events";
+import { deepCopyObject } from "@/utils";
+import { useElementSize } from "@vueuse/core";
+import { computed, ref, withDefaults } from "vue";
 
 // 选项
 // const selection = ref<ShowOption[]>([]);
-const props = withDefaults(defineProps<{selection: ShowOption[]}>(), {
+const props = withDefaults(defineProps<{ selection: ShowOption[] }>(), {
   selection: () => [],
 });
 const emit = defineEmits<{
@@ -20,11 +20,11 @@ const isMouseDown = ref(false);
 const selectorContainerElement = ref<HTMLElement | null>(null);
 const selectorElement = ref<HTMLElement | null>(null);
 
-const {height: selectorContainerHeight} = useElementSize(
+const { height: selectorContainerHeight } = useElementSize(
   selectorContainerElement
 );
 
-const {height: selectorElementHeight} = useElementSize(selectorElement);
+const { height: selectorElementHeight } = useElementSize(selectorElement);
 
 const selectorMarginTop = computed(
   () =>
@@ -96,7 +96,7 @@ function parseTextEffect(_text: Text) {
   const effects = text.effects;
   // 注解
   const rt = (
-    effects.filter(effect => effect.name === "ruby")[0] || {value: []}
+    effects.filter(effect => effect.name === "ruby")[0] || { value: [] }
   ).value.join("");
   const style = effects
     .filter(effect => effect.name !== "ruby")
@@ -127,7 +127,7 @@ function parseTextEffect(_text: Text) {
     <div
       class="ba-selector"
       ref="selectorElement"
-      :style="{marginTop: selectorMarginTop}"
+      :style="{ marginTop: selectorMarginTop }"
     >
       <!-- 没有发生 DOM 顺序的移动，让 vue 使用就地复用策略提高效率，不需要 key -->
       <!-- eslint-disable vue/require-v-for-key -->

@@ -1,4 +1,4 @@
-import {IL2dConfig} from "@/types/l2d";
+import { IL2dConfig } from "@/types/l2d";
 
 export const l2dConfig: IL2dConfig = {
   CH0184_home: {

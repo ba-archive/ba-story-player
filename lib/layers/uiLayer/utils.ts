@@ -44,7 +44,7 @@ function buttonAnimation(
     durationDown: number;
     scaleUp: number;
     durationUp: number;
-  } = {durationDown: 0.15, scaleDown: 0.95, durationUp: 0.3, scaleUp: 1}
+  } = { durationDown: 0.15, scaleDown: 0.95, durationUp: 0.3, scaleUp: 1 }
 ) {
   let elems;
   if (elem.cssSelector) {
@@ -81,4 +81,4 @@ function buttonAnimation(
   });
 }
 
-export {buttonAnimation, effectBtnMouseDown, effectBtnMouseUp};
+export { buttonAnimation, effectBtnMouseDown, effectBtnMouseUp };

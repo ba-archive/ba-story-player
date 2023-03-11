@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import avatarBG from "../../assets/Deco_GachaItemBg.png";
-import {LogText} from "@/types/store";
-import {PropType, ref} from "vue";
+import { LogText } from "@/types/store";
+import { PropType, ref } from "vue";
 
 const props = defineProps({
   chatMessage: Object as PropType<LogText>,
@@ -30,7 +30,7 @@ switch (props.chatMessage?.type) {
     <!-- 设置透明度为0如果没有图片需要显示 -->
     <div
       class="ba-chat-message-avatar-border"
-      :style="{opacity: props.chatMessage?.avatarUrl ? 1 : 0}"
+      :style="{ opacity: props.chatMessage?.avatarUrl ? 1 : 0 }"
     >
       <div
         class="ba-chat-message-avatar"

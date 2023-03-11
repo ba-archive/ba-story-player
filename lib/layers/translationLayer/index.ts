@@ -1,10 +1,10 @@
-import {l2dConfig} from "../l2dLayer/l2dConfig";
+import { l2dConfig } from "../l2dLayer/l2dConfig";
 import * as utils from "./utils";
-import {getText} from "./utils";
-import {usePlayerStore} from "@/stores";
-import {StoryRawUnit, StoryUnit, ZmcArgs} from "@/types/common";
-import {StArgs} from "@/types/events";
-import {getResourcesUrl} from "@/utils";
+import { getText } from "./utils";
+import { usePlayerStore } from "@/stores";
+import { StoryRawUnit, StoryUnit, ZmcArgs } from "@/types/common";
+import { StArgs } from "@/types/events";
+import { getResourcesUrl } from "@/utils";
 
 /**
  * 将原始剧情结构翻译成标准剧情结构
@@ -15,7 +15,7 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
   const playerStore = usePlayerStore();
   for (const [rawIndex, rawStoryUnit] of rawStory.entries()) {
     //初始化unit, 将需要的原始属性填入unit, 同时查表填入其他属性
-    const {GroupId, SelectionGroup, PopupFileName} = rawStoryUnit;
+    const { GroupId, SelectionGroup, PopupFileName } = rawStoryUnit;
     const unit: StoryUnit = {
       GroupId,
       SelectionGroup,
@@ -126,7 +126,7 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
           break;
         case "#st":
           unit.type = "st";
-          unit.textAbout.st = {middle: false};
+          unit.textAbout.st = { middle: false };
           unit.textAbout.st.stArgs = [
             JSON.parse(scriptUnits[1]) as number[],
             scriptUnits[2] as StArgs[1],
@@ -143,7 +143,7 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
         case "#stm":
           //有特效的st
           unit.type = "st";
-          unit.textAbout.st = {middle: true};
+          unit.textAbout.st = { middle: true };
           unit.textAbout.st.stArgs = [
             JSON.parse(scriptUnits[1]) as number[],
             scriptUnits[2] as StArgs[1],
@@ -202,10 +202,10 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
               size: Number(scriptUnits[3]),
             };
           }
-          unit.effect.otherEffect.push({type: "zmc", args});
+          unit.effect.otherEffect.push({ type: "zmc", args });
           break;
         case "#bgshake":
-          unit.effect.otherEffect.push({type: "bgshake"});
+          unit.effect.otherEffect.push({ type: "bgshake" });
           break;
         case "#video":
           //处理情况为 #video;Scenario/Main/22000_MV_Video;Scenario/Main/22000_MV_Sound
@@ -322,7 +322,7 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
                 text,
               });
             } else {
-              unit.textAbout.options = [{SelectionGroup: selectGroup, text}];
+              unit.textAbout.options = [{ SelectionGroup: selectGroup, text }];
             }
             optionIndex++;
           }

@@ -1,5 +1,5 @@
 <template>
-  <div class="container" :style="{height: `${playerHeight}px`}">
+  <div class="container" :style="{ height: `${playerHeight}px` }">
     <div class="container-inner">
       <div class="loading-container absolute-container" v-if="showLoading">
         <img
@@ -40,7 +40,7 @@
         <div
           ref="toBeContinuedText"
           class="to-be-continued"
-          :style="{fontSize: `${standardFontSize}rem`}"
+          :style="{ fontSize: `${standardFontSize}rem` }"
         >
           To Be Continued...
         </div>
@@ -52,7 +52,7 @@
         <div class="image-video-container-inner">
           <div
             class="image-container absolute-container"
-            :style="{height: `${playerHeight - dialogHeight}px`}"
+            :style="{ height: `${playerHeight - dialogHeight}px` }"
             v-if="popupSrc.image"
           >
             <img :src="popupSrc.image" alt="完了加载失败了" class="image" />
@@ -70,7 +70,7 @@
       <div
         class="st-container absolute-container"
         ref="stOutput"
-        :style="{fontSize: `${standardFontSize}rem`}"
+        :style="{ fontSize: `${standardFontSize}rem` }"
       />
       <div
         ref="titleEL"
@@ -80,13 +80,13 @@
       >
         <div
           class="title-border"
-          :style="{'--side-padding': `${titleBorderPadding}px`}"
+          :style="{ '--side-padding': `${titleBorderPadding}px` }"
         >
           <img src="./assets/title-border.png" />
           <div
             ref="titleContain"
             class="title-contain"
-            :style="{'--font-size': `${fontSize(4)}rem`}"
+            :style="{ '--font-size': `${fontSize(4)}rem` }"
           >
             <div class="sub-title" v-if="subTitleContent">
               <span class="sub-title-inner">{{ subTitleContent }}</span>
@@ -98,7 +98,7 @@
       <div
         ref="placeEL"
         class="place-container"
-        :style="{'--font-size': `${fontSize(2)}rem`}"
+        :style="{ '--font-size': `${fontSize(2)}rem` }"
         v-if="placeContent"
       >
         <div class="round-place">
@@ -115,17 +115,17 @@
       >
         <div class="inner-dialog">
           <div class="title">
-            <div :style="{fontSize: `${fontSize(3.5)}rem`}" class="name">
+            <div :style="{ fontSize: `${fontSize(3.5)}rem` }" class="name">
               {{ name ? name : "&emsp;" }}
             </div>
-            <div :style="{fontSize: `${fontSize(2)}rem`}" class="department">
+            <div :style="{ fontSize: `${fontSize(2)}rem` }" class="department">
               {{ nickName }}
             </div>
           </div>
           <hr />
           <div
             ref="typewriterOutput"
-            :style="{'--font-size': `${standardFontSize}rem`}"
+            :style="{ '--font-size': `${standardFontSize}rem` }"
             class="content"
           />
           <div class="next-image-btn" v-if="typingComplete">&zwj;</div>
@@ -137,8 +137,8 @@
 
 <script setup lang="ts">
 import eventBus from "@/eventBus";
-import {usePlayerStore} from "@/stores";
-import {Text, TextEffectName} from "@/types/common";
+import { usePlayerStore } from "@/stores";
+import { Text, TextEffectName } from "@/types/common";
 import {
   ResourceLoadState,
   ShowText,
@@ -146,9 +146,9 @@ import {
   StArgs,
   StText,
 } from "@/types/events";
-import {deepCopyObject} from "@/utils";
+import { deepCopyObject } from "@/utils";
 import gsap from "gsap";
-import Typed, {TypedExtend, TypedOptions} from "typed.js";
+import Typed, { TypedExtend, TypedOptions } from "typed.js";
 import {
   Ref,
   computed,
@@ -469,7 +469,7 @@ function parseTextEffect(text: Text, extendStyle = "", tag = "span"): Text {
     .replace(/{{escape-(\w{3,4};)}}/g, "&$1");
   // 注解
   const rt = (
-    effects.filter(effect => effect.name === "ruby")[0] || {value: []}
+    effects.filter(effect => effect.name === "ruby")[0] || { value: [] }
   ).value.join("");
   const style = effects
     .filter(effect => effect.name !== "ruby")
@@ -857,7 +857,7 @@ const mapLoadLog = computed(() =>
   deepCopyObject(loadLog.value)
     .reverse()
     .slice(0, 4)
-    .map(it => it || {type: "success", resourceName: ""})
+    .map(it => it || { type: "success", resourceName: "" })
 );
 onMounted(() => {
   eventBus.on("showTitle", handleShowTitle);

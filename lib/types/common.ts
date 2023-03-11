@@ -6,9 +6,9 @@ import {
   ShowTitleOption,
   StArgs,
 } from "./events";
-import {TransitionTableItem} from "./excels";
-import {PlayerProps} from "@/BaStoryPlayer.vue";
-import type {Spine} from "pixi-spine";
+import { TransitionTableItem } from "./excels";
+import { PlayerProps } from "@/BaStoryPlayer.vue";
+import type { Spine } from "pixi-spine";
 
 export interface Character {
   /**
@@ -104,7 +104,7 @@ export interface Option {
   };
 }
 
-export type PlayerConfigs = PlayerProps & {height: number};
+export type PlayerConfigs = PlayerProps & { height: number };
 
 export interface Speaker {
   /**

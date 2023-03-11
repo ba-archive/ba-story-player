@@ -2,11 +2,11 @@
  * 初始化背景层, 订阅player的剧情信息.
  */
 import eventBus from "@/eventBus";
-import {usePlayerStore} from "@/stores";
-import {BgLayer} from "@/types/bgLayer";
-import {Dict} from "@/types/common";
+import { usePlayerStore } from "@/stores";
+import { BgLayer } from "@/types/bgLayer";
+import { Dict } from "@/types/common";
 import gsap from "gsap";
-import {Application, LoaderResource, Sprite} from "pixi.js";
+import { Application, LoaderResource, Sprite } from "pixi.js";
 
 export function bgInit() {
   return BgLayerInstance.init();
@@ -39,9 +39,9 @@ const BgLayerInstance: BgLayer = {
   /**
    * 事件监听处理函数
    */
-  handleShowBg({url, overlap}) {
+  handleShowBg({ url, overlap }) {
     const {
-      app: {loader},
+      app: { loader },
     } = usePlayerStore();
 
     loader.load((loader, resources) => {
@@ -58,9 +58,9 @@ const BgLayerInstance: BgLayer = {
   },
 
   handleResize() {
-    const {bgInstance, app} = usePlayerStore();
+    const { bgInstance, app } = usePlayerStore();
     if (bgInstance) {
-      const {x, y, scale} = calcBackgroundImageSize(bgInstance, app);
+      const { x, y, scale } = calcBackgroundImageSize(bgInstance, app);
       bgInstance.position.set(x, y);
       bgInstance.scale.set(scale);
     }
@@ -70,7 +70,7 @@ const BgLayerInstance: BgLayer = {
    * 方法
    */
   getBgSpriteFromResource(resources: Dict<LoaderResource>, name: string) {
-    const {app} = usePlayerStore();
+    const { app } = usePlayerStore();
     let sprite: Sprite | null = null;
 
     if (!resources[name]) {
@@ -80,13 +80,13 @@ const BgLayerInstance: BgLayer = {
 
     sprite = new Sprite(resources[name].texture);
 
-    const {x, y, scale} = calcBackgroundImageSize(sprite, app);
+    const { x, y, scale } = calcBackgroundImageSize(sprite, app);
     sprite.position.set(x, y);
     sprite.scale.set(scale);
     return sprite;
   },
   loadBg(instance: Sprite) {
-    const {app, bgInstance: oldInstance, setBgInstance} = usePlayerStore();
+    const { app, bgInstance: oldInstance, setBgInstance } = usePlayerStore();
 
     instance.zIndex = -100; // 背景层应该在特效, 人物层之下
     app.stage.addChild(instance);
@@ -95,14 +95,18 @@ const BgLayerInstance: BgLayer = {
     oldInstance && app.stage.removeChild(oldInstance);
   },
   async loadBgOverlap(instance: Sprite, overlap: number) {
-    const {app, bgInstance: oldInstance, setBgInstance} = usePlayerStore();
+    const { app, bgInstance: oldInstance, setBgInstance } = usePlayerStore();
     const tl = gsap.timeline();
     instance.zIndex = -99;
 
     app.stage.addChild(instance);
     setBgInstance(instance);
 
-    await tl.fromTo(instance, {alpha: 0}, {alpha: 1, duration: overlap / 1000});
+    await tl.fromTo(
+      instance,
+      { alpha: 0 },
+      { alpha: 1, duration: overlap / 1000 }
+    );
     eventBus.emit("bgOverLapDone");
 
     oldInstance && app.stage.removeChild(oldInstance);
@@ -130,5 +134,5 @@ export function calcBackgroundImageSize(background: Sprite, app: Application) {
   const x = -((finalWidth - viewportWidth) / 2);
   const y = -((finalHeight - viewportHeight) / 2);
 
-  return {x, y, scale};
+  return { x, y, scale };
 }

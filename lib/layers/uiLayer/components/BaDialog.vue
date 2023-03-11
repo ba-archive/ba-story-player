@@ -1,8 +1,8 @@
 <script lang="ts" setup>
 import eventBus from "@/eventBus";
 import gsap from "gsap";
-import {watch} from "vue";
-import {onMounted, ref} from "vue";
+import { watch } from "vue";
+import { onMounted, ref } from "vue";
 
 const props = defineProps({
   width: {
@@ -48,12 +48,12 @@ watch(
 <template>
   <div
     class="ba-dialog"
-    :style="{display: show === true ? '' : 'none'}"
+    :style="{ display: show === true ? '' : 'none' }"
     @click.self="handleClose"
   >
     <div
       class="ba-dialog-container"
-      :style="{width: props.width, height: props.height}"
+      :style="{ width: props.width, height: props.height }"
       ref="dialogContainer"
     >
       <div class="ba-dialog-header">

@@ -1,4 +1,4 @@
-import {usePlayerStore} from "@/stores/index";
+import { usePlayerStore } from "@/stores/index";
 import {
   Speaker,
   StoryRawUnit,
@@ -7,10 +7,10 @@ import {
   TextEffect,
   TextEffectName,
 } from "@/types/common";
-import {PlayAudio, ShowTitleOption} from "@/types/events";
-import {CharacterNameExcelTableItem} from "@/types/excels";
-import {Language} from "@/types/store";
-import {getResourcesUrl} from "@/utils";
+import { PlayAudio, ShowTitleOption } from "@/types/events";
+import { CharacterNameExcelTableItem } from "@/types/excels";
+import { Language } from "@/types/store";
+import { getResourcesUrl } from "@/utils";
 import xxhash from "xxhashjs";
 
 const playerStore = usePlayerStore();
@@ -33,7 +33,7 @@ export function checkBgOverlap(unit: StoryUnit) {
  * 在大小写不敏感的情况下比较字符串
  */
 export function compareCaseInsensive(s1: string, s2: string) {
-  return s1.localeCompare(s2, undefined, {sensitivity: "accent"}) === 0;
+  return s1.localeCompare(s2, undefined, { sensitivity: "accent" }) === 0;
 }
 
 /**
@@ -55,7 +55,7 @@ export function generateText(rawStoryUnit: StoryRawUnit, stm?: boolean) {
       const spiltIndex = str.indexOf("]");
       const waitTime = Number(str.slice(0, spiltIndex));
       const textUnit = str.slice(spiltIndex + 1);
-      result.push({content: textUnit, waitTime, effects: []});
+      result.push({ content: textUnit, waitTime, effects: [] });
     }
     return result;
   }
@@ -81,7 +81,7 @@ export function generateTitleInfo(
 export function getBgm(BGMId: number): PlayAudio["bgm"] | undefined {
   const item = playerStore.BGMExcelTable.get(BGMId);
   if (item) {
-    return {url: getResourcesUrl("bgm", item.Path), bgmArgs: item};
+    return { url: getResourcesUrl("bgm", item.Path), bgmArgs: item };
   }
 }
 
@@ -104,7 +104,7 @@ export function getCharacterIndex(
       value => value.position === initPosition
     );
     if (characterIndex !== -1) {
-      const preCharacter = {...result[tempIndex].characters[characterIndex]};
+      const preCharacter = { ...result[tempIndex].characters[characterIndex] };
       preCharacter.effects = [];
       unit.characters.push(preCharacter);
       characterIndex = unit.characters.length - 1;
@@ -134,7 +134,7 @@ export function getCharacterInfo(krName: string) {
 
 type CustomTagParserFn = (
   rawText: string
-) => {effect: TextEffect; remain: string} | undefined;
+) => { effect: TextEffect; remain: string } | undefined;
 
 type CustomTagParserMap = {
   [key in TextEffectName]: CustomTagParserFn;
@@ -193,7 +193,7 @@ export function getL2DUrlAndName(BGFileName: string) {
     .pop()
     ?.replace("SpineBG_Lobby", "");
   filename = `${filename}_home`;
-  return {url: getResourcesUrl("l2dSpine", filename), name: filename};
+  return { url: getResourcesUrl("l2dSpine", filename), name: filename };
 }
 
 export function getSoundUrl(Sound: string) {

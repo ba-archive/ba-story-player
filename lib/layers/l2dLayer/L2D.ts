@@ -1,15 +1,15 @@
 import eventBus from "@/eventBus";
-import {usePlayerStore} from "@/stores";
-import {IL2dPlayQue} from "@/types/l2d";
-import {getResourcesUrl} from "@/utils";
+import { usePlayerStore } from "@/stores";
+import { IL2dPlayQue } from "@/types/l2d";
+import { getResourcesUrl } from "@/utils";
 import gsap from "gsap";
-import {Spine} from "pixi-spine";
+import { Spine } from "pixi-spine";
 
 let disposed = true;
 
 export function L2DInit() {
   disposed = false;
-  const {app} = usePlayerStore();
+  const { app } = usePlayerStore();
   // 主要播放 spine
   let mainItem: Spine;
   // 背景混合或者其他播放 spine, 如普通星野和运动邮箱
@@ -47,14 +47,20 @@ export function L2DInit() {
   });
   // 播放live2D
   eventBus.on("playL2D", () => {
-    const {l2dSpineData, curL2dConfig} = usePlayerStore();
+    const { l2dSpineData, curL2dConfig } = usePlayerStore();
     // 动画是否已经播放, true 代表播放完成
-    const hasPlayedAnimation = {} as {[key: string]: boolean};
+    const hasPlayedAnimation = {} as { [key: string]: boolean };
     currentIndex = 0;
     // 设置 spine 播放信息
-    function setSpinePlayInfo({item, zIndex}: {item: Spine; zIndex: number}) {
-      const {scale = 1} = curL2dConfig?.spineSettings?.[item.name] || {};
-      const {width, height} = calcL2DSize(
+    function setSpinePlayInfo({
+      item,
+      zIndex,
+    }: {
+      item: Spine;
+      zIndex: number;
+    }) {
+      const { scale = 1 } = curL2dConfig?.spineSettings?.[item.name] || {};
+      const { width, height } = calcL2DSize(
         item.width,
         item.height,
         app.renderer.width,
@@ -70,10 +76,10 @@ export function L2DInit() {
       item.zIndex = zIndex;
       item.state.addListener({
         // spine中事件回调
-        start: function(entry: any) {
+        start: function (entry: any) {
           const entryAnimationName = entry.animation.name + item.name;
           const duration = entry.animation.duration;
-          const {fade, fadeTime = 0.8} =
+          const { fade, fadeTime = 0.8 } =
             startAnimations[currentIndex - 1] || {};
           if (fade) {
             // 在快结束的时候触发 fade
@@ -90,7 +96,7 @@ export function L2DInit() {
             hasPlayedAnimation[entryAnimationName] = true;
           }
         },
-        complete: function(entry: any) {
+        complete: function (entry: any) {
           // 如果不是有待机动作的主 spine 就去掉
           if (item !== mainItem) {
             timeOutArray.push(
@@ -168,11 +174,11 @@ export function L2DInit() {
           app.loader.resources[getResourcesUrl("otherL2dSpine", i)].spineData!
         );
         temItem.name = i;
-        setSpinePlayInfo({item: temItem, zIndex: 100 + idx + 1});
+        setSpinePlayInfo({ item: temItem, zIndex: 100 + idx + 1 });
         return temItem;
       });
     }
-    setSpinePlayInfo({item: mainItem, zIndex: 100});
+    setSpinePlayInfo({ item: mainItem, zIndex: 100 });
     // 注意!!! 起始动画中最后一个动作是塞入的待机动作
     startAnimations = mainItem.spineData.animations
       .map(i => i.name)
@@ -227,17 +233,17 @@ function calcL2DSize(
   // 稍微放大点完全遮住
   const width = (rawWidth / ratio) * 1.1; // 是根据spine呼吸时最小和正常的比例推测得到的, 不同的spine可能会有不同的最小比例...
   const height = (rawHeight / ratio) * 1.1;
-  return {width, height, ratio};
+  return { width, height, ratio };
 }
 function fadeEffect() {
   if (!disposed) {
     const player = document.querySelector("#player__main") as HTMLDivElement;
     player.style.backgroundColor = "white";
     const playerCanvas = document.querySelector("#player canvas");
-    gsap.to(playerCanvas, {alpha: 0, duration: 1});
+    gsap.to(playerCanvas, { alpha: 0, duration: 1 });
     setTimeout(() => {
       if (!disposed) {
-        gsap.to(playerCanvas, {alpha: 1, duration: 0.8});
+        gsap.to(playerCanvas, { alpha: 1, duration: 0.8 });
       }
     }, 1300);
   }

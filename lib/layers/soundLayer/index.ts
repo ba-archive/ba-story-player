@@ -1,7 +1,7 @@
 import eventBus from "@/eventBus";
-import {usePlayerStore} from "@/stores";
-import {PlayAudio} from "@/types/events";
-import {Sound} from "@pixi/sound";
+import { usePlayerStore } from "@/stores";
+import { PlayAudio } from "@/types/events";
+import { Sound } from "@pixi/sound";
 
 const audioMap = new Map<string, Sound>();
 /**
@@ -92,7 +92,7 @@ export function soundInit() {
         loop: false,
         start: 0,
         end: playAudioInfo.bgm?.bgmArgs.LoopEndTime,
-        complete: function() {
+        complete: function () {
           // 第一次播放结束后进入loop
           bgm?.play({
             loop: true,
@@ -155,7 +155,7 @@ export function soundInit() {
 
   eventBus.on("playOtherSounds", sound => {
     console.log("Play Select Sound!");
-    playAudio({soundUrl: usePlayerStore().otherSoundUrl(sound)});
+    playAudio({ soundUrl: usePlayerStore().otherSoundUrl(sound) });
   });
 
   eventBus.on("dispose", () => soundDispose());

@@ -8,20 +8,20 @@ import {
   loadSpriteSheet,
   sprite2TransParent,
 } from "../resourcesUtils";
-import {usePlayerStore} from "@/stores";
-import {Emitter, EmitterConfigV3} from "@pixi/particle-emitter";
-import {Container, Sprite, TilingSprite} from "pixi.js";
+import { usePlayerStore } from "@/stores";
+import { Emitter, EmitterConfigV3 } from "@pixi/particle-emitter";
+import { Container, Sprite, TilingSprite } from "pixi.js";
 
 export default async function BG_Dust_L(resources: Sprite[]) {
   // 原理是三个平铺图片不断移动, 加上火光粒子效果
-  const {app} = usePlayerStore();
+  const { app } = usePlayerStore();
   const appWidth = app.view.width;
   const appHeight = app.view.height;
   const smokeAnimationsName = "dust_smoke";
 
   const smokeSpritesheet = await loadSpriteSheet(
     resources[0],
-    {x: 1, y: 2},
+    { x: 1, y: 2 },
     smokeAnimationsName
   );
   const smokeTexture = Reflect.get(
@@ -90,7 +90,7 @@ export default async function BG_Dust_L(resources: Sprite[]) {
   const fireAnimationsName = "dust_fire";
   const fireSpritesheet = await loadSpriteSheet(
     transParentSprite,
-    {x: 1, y: 3},
+    { x: 1, y: 3 },
     fireAnimationsName
   );
   const fireTextures = Reflect.get(

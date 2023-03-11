@@ -1,4 +1,4 @@
-import {FXOptions, OptionDescriptions} from "@/types/characterLayer";
+import { FXOptions, OptionDescriptions } from "@/types/characterLayer";
 
 export const fxOptionsDescriptions: OptionDescriptions["fx"] = {
   shot: {

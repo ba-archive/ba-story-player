@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import {buttonAnimation} from "../utils";
+import { buttonAnimation } from "../utils";
 import eventBus from "@/eventBus";
-import {PropType, Ref, onMounted, ref} from "vue";
+import { PropType, Ref, onMounted, ref } from "vue";
 
 const props = defineProps({
   bgcolor: String,
@@ -22,7 +22,7 @@ function handleClick(ev: Event) {
 }
 
 onMounted(() => {
-  buttonAnimation({elem: button.value});
+  buttonAnimation({ elem: button.value });
 });
 </script>
 

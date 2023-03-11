@@ -1,8 +1,8 @@
-import {Character, CharacterInstance} from "@/types/common";
-import {ShowCharacter} from "@/types/events";
-import {IAnimationStateListener} from "@pixi-spine/base";
-import type {ISkeletonData, Spine} from "pixi-spine";
-import {Sprite} from "pixi.js";
+import { Character, CharacterInstance } from "@/types/common";
+import { ShowCharacter } from "@/types/events";
+import { IAnimationStateListener } from "@pixi-spine/base";
+import type { ISkeletonData, Spine } from "pixi-spine";
+import { Sprite } from "pixi.js";
 
 export interface ActionOptions extends BaseOptions<CharacterEffectWord> {
   a: unknown;
@@ -250,7 +250,7 @@ export interface BasicEmotionOptions extends BaseOptions<EmotionWord> {
   };
   Sigh: {
     angle: number;
-    scaleAnimation: {start: number; end: number};
+    scaleAnimation: { start: number; end: number };
     anchor: PositionOffset;
   };
   Bulb: {
@@ -527,7 +527,7 @@ export interface FXOptions extends BaseOptions<FXEffectWord> {
  * emotion情绪动画共有的参数
  */
 export interface GlobalEmotionOptions {
-  startPositionOffset: {x: number; y: number};
+  startPositionOffset: { x: number; y: number };
   scale: number;
   fadeOutPreDuration?: number;
   fadeOutDuration: number;
