@@ -344,7 +344,10 @@ function handleShowTextEvent(e: ShowText) {
 function parseTextEffect(text: Text, extendStyle = "", tag = "span"): Text {
   const effects = text.effects;
   // 解决typedjs对&的特殊处理
-  text.content = text.content.replace("&", "&amp;");
+  text.content = text.content
+    .replace(/&(\w{3,4};)/g, "{{escape-$1}}")
+    .replace("&", "&amp;")
+    .replace(/{{escape-(\w{3,4};)}}/g, "&$1");
   // 注解
   const rt = (effects.filter(effect => effect.name === "ruby")[0] || { value: [] }).value.join("")
   const style = effects.filter(effect => effect.name !== "ruby").map(effect => {
