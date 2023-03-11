@@ -59,8 +59,8 @@
         class="dialog">
         <div class="inner-dialog">
           <div class="title">
-            <div :style="{ fontSize: `${fontSize(3.5)}rem` }" class="name">{{ name ? name : '&emsp;' }}</div>
-            <div :style="{ fontSize: `${fontSize(2)}rem` }" class="department">{{ nickName }}</div>
+            <span :style="{ fontSize: `${fontSize(3.5)}rem` }" class="name">{{ name ? name : '&emsp;' }}</span>
+            <span :style="{ fontSize: `${fontSize(2)}rem` }" class="department">{{ nickName }}</span>
           </div>
           <hr>
           <div ref="typewriterOutput" :style="{ '--font-size': `${standardFontSize}rem` }" class="content" />
@@ -759,11 +759,6 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
   margin-left: 1rem;
   font-size: 2.5rem;
   color: rgb(156, 218, 240);
-}
-
-.title {
-  display: flex;
-  align-items: flex-end;
 }
 
 .dialog {
