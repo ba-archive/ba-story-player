@@ -39,11 +39,11 @@ jobs:
           check_output="${check_output//$'\r'/'%0D'}"
           echo check_output="$check_output" >> $GITHUB_OUTPUT
           echo check_failed="$check_failed" >> $GITHUB_OUTPUT
-      - name: Comment if check failed
-        uses: peter-evans/commit-comment@v2
-        if: ${{ 'true' == steps.check-code.outputs.check_failed }}
-        with:
-          body: ${{ steps.check-code.outputs.check_output }}
+#      - name: Comment if check failed
+#        uses: peter-evans/commit-comment@v2
+#        if: ${{ 'true' == steps.check-code.outputs.check_failed }}
+#        with:
+#          body: ${{ steps.check-code.outputs.check_output }}
       - name: Error if check failed
         if: ${{ 'true' == steps.check-code.outputs.check_failed }}
         run: exit -1
