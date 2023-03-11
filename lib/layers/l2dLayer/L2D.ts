@@ -1,8 +1,8 @@
-import { Spine } from "pixi-spine";
 import eventBus from "@/eventBus";
 import { usePlayerStore } from "@/stores";
 import { getResourcesUrl } from "@/utils";
 import gsap from "gsap";
+import { Spine } from "pixi-spine";
 import { IL2dPlayQue } from "@/types/l2d";
 
 let disposed = true;
@@ -15,8 +15,11 @@ export function L2DInit() {
   // 背景混合或者其他播放 spine, 如普通星野和运动邮箱
   let otherItems: Spine[] = [];
   // 当前顶层的spine index
-  let currentIndex: number = 0;
-  let startAnimations: ({ animation: string; spine: Spine; } & Partial<IL2dPlayQue>)[];
+  let currentIndex = 0;
+  let startAnimations: ({
+    animation: string;
+    spine: Spine;
+  } & Partial<IL2dPlayQue>)[];
   let timeOutArray: NodeJS.Timeout[] = [];
   eventBus.on("dispose", () => {
     for (const timeout of timeOutArray) {
@@ -26,9 +29,9 @@ export function L2DInit() {
     disposed = true;
   });
   // 接收动画消息
-  eventBus.on("changeAnimation", (e) => {
+  eventBus.on("changeAnimation", e => {
     const temAnimation = e.replace(/_(A|M)/, "");
-    const devAnimation = mainItem.spineData.animations.find((i) =>
+    const devAnimation = mainItem.spineData.animations.find(i =>
       i.name.includes(temAnimation)
     );
     if (devAnimation) {
@@ -40,7 +43,7 @@ export function L2DInit() {
   });
   // 停止
   eventBus.on("endL2D", () => {
-    [mainItem, ...otherItems].forEach((i) => app.stage.removeChild(i));
+    [mainItem, ...otherItems].forEach(i => app.stage.removeChild(i));
   });
   // 播放live2D
   eventBus.on("playL2D", () => {
@@ -76,10 +79,13 @@ export function L2DInit() {
         start: function (entry: any) {
           const entryAnimationName = entry.animation.name + item.name;
           const duration = entry.animation.duration;
-          const { fade, fadeTime = 0.8 } = startAnimations[currentIndex - 1] || {}
+          const { fade, fadeTime = 0.8 } =
+            startAnimations[currentIndex - 1] || {};
           if (fade) {
             // 在快结束的时候触发 fade
-            timeOutArray.push(setTimeout(fadeEffect, (duration - fadeTime) * 1000));
+            timeOutArray.push(
+              setTimeout(fadeEffect, (duration - fadeTime) * 1000)
+            );
           }
           // 如果没有播放过的话就设置播放状态为播放
           if (!hasPlayedAnimation[entryAnimationName]) {
@@ -111,7 +117,7 @@ export function L2DInit() {
             // 必须要先加入 app 才能播放
             timeOutArray.push(
               setTimeout(() => {
-                let e = curStartAnimations.spine.state.setAnimation(
+                const e = curStartAnimations.spine.state.setAnimation(
                   0,
                   curStartAnimations.animation,
                   !startAnimations[currentIndex] // 最后一个待机动作循环
@@ -136,7 +142,7 @@ export function L2DInit() {
 
           if (entryAnimationName.indexOf("_Talk_") >= 0) {
             // 说话动作结束后设为待机
-            let e = item.state.setAnimation(entry.trackIndex, "Idle_01", true);
+            const e = item.state.setAnimation(entry.trackIndex, "Idle_01", true);
             // 跳转到下一个动画的过场
             e!.mixDuration = 0.8;
           } else {
@@ -171,24 +177,24 @@ export function L2DInit() {
     setSpinePlayInfo({ item: mainItem, zIndex: 100 });
     // 注意!!! 起始动画中最后一个动作是塞入的待机动作
     startAnimations = mainItem.spineData.animations
-      .map((i) => i.name)
-      .filter((i) => i.startsWith("Start_Idle"))
+      .map(i => i.name)
+      .filter(i => i.startsWith("Start_Idle"))
       .sort()
-      .map((i) => {
+      .map(i => {
         return {
           animation: i,
           spine: mainItem,
         };
       });
     if (curL2dConfig?.playQue) {
-      startAnimations = curL2dConfig.playQue.map((i) => {
+      startAnimations = curL2dConfig.playQue.map(i => {
         return {
           ...i,
           // playQue 中的name和otherSpine中的一致
           spine:
             i.name === curL2dConfig.name
               ? mainItem
-              : otherItems.find((j) => j.name === i.name)!,
+              : otherItems.find(j => j.name === i.name)!,
         };
       });
     }
@@ -227,9 +233,9 @@ function calcL2DSize(
 }
 function fadeEffect() {
   if (!disposed) {
-    let player = document.querySelector("#player__main") as HTMLDivElement;
+    const player = document.querySelector("#player__main") as HTMLDivElement;
     player.style.backgroundColor = "white";
-    let playerCanvas = document.querySelector("#player canvas");
+    const playerCanvas = document.querySelector("#player canvas");
     gsap.to(playerCanvas, { alpha: 0, duration: 1 });
     setTimeout(() => {
       if (!disposed) {

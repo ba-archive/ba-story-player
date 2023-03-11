@@ -1,6 +1,9 @@
+import * as PIXI from "pixi.js";
 import eventBus from "@/eventBus";
 import { storyHandler } from "@/index";
 import { usePlayerStore } from "@/stores";
+import gsap, { Power0 } from "gsap";
+import { IAnimationState, ISkeletonData, Spine } from "pixi-spine";
 import {
   CharacterEffectInstance,
   CharacterEffectPlayerInterface,
@@ -9,64 +12,44 @@ import {
   EffectsWord,
   EmotionWord,
   FXEffectWord,
-  ILoopAnimationStateListener
+  ILoopAnimationStateListener,
 } from "@/types/characterLayer";
-import { Character, CharacterEffectType, CharacterInstance, WinkAnimationObject, WinkObject } from "@/types/common";
+import {
+  Character,
+  CharacterEffectType,
+  CharacterInstance,
+  WinkAnimationObject,
+  WinkObject,
+} from "@/types/common";
 import { ShowCharacter } from "@/types/events";
-import { AdjustmentFilter } from '@pixi/filter-adjustment';
-import { ColorOverlayFilter } from '@pixi/filter-color-overlay';
-import { CRTFilter } from '@pixi/filter-crt';
-import { MotionBlurFilter } from '@pixi/filter-motion-blur';
-import gsap, { Power0 } from "gsap";
-import { PixiPlugin } from 'gsap/PixiPlugin';
-import { IAnimationState, ISkeletonData, Spine } from "pixi-spine";
-import * as PIXI from 'pixi.js';
-import CharacterEffectPlayerInstance, { calcSpineStagePosition, POS_INDEX_MAP } from "./actionPlayer";
-import CharacterEmotionPlayerInstance from './emotionPlayer';
+import { AdjustmentFilter } from "@pixi/filter-adjustment";
+import { ColorOverlayFilter } from "@pixi/filter-color-overlay";
+import { CRTFilter } from "@pixi/filter-crt";
+import { MotionBlurFilter } from "@pixi/filter-motion-blur";
+import { PixiPlugin } from "gsap/PixiPlugin";
+import CharacterEffectPlayerInstance, {
+  POS_INDEX_MAP,
+  calcSpineStagePosition,
+} from "./actionPlayer";
+import CharacterEmotionPlayerInstance from "./emotionPlayer";
 import CharacterFXPlayerInstance from "./fxPlayer";
 
 const AnimationIdleTrack = 0; // 光环动画track index
 const AnimationFaceTrack = 1; // 差分切换
 const AnimationWinkTrack = 1; // TODO 眨眼动画
 
-type ICharacterEffectPlayerInterface = CharacterEffectPlayerInterface<EmotionWord | CharacterEffectWord | FXEffectWord>;
+type ICharacterEffectPlayerInterface = CharacterEffectPlayerInterface<
+  EmotionWord | CharacterEffectWord | FXEffectWord
+>;
 type IEffectPlayerMap = {
   [key in CharacterEffectType]: ICharacterEffectPlayerInterface;
-}
+};
 const EffectPlayerMap: IEffectPlayerMap = {
-  "action": CharacterEffectPlayerInstance,
-  "emotion": CharacterEmotionPlayerInstance,
-  "fx": CharacterFXPlayerInstance,
-}
+  action: CharacterEffectPlayerInstance,
+  emotion: CharacterEmotionPlayerInstance,
+  fx: CharacterFXPlayerInstance,
+};
 
-/**
- * 角色初始的pivot相对与长宽的比例, 当前值代表左上角
- */
-export const Character_Initial_Pivot_Proportion = { x: 0, y: -1 / 2 }
-/**
- * 标准宽度基于的播放器宽度的相对值
- * 标准宽度用于计算图片缩放比例
- */
-const Standard_Width_Relative = 0.3
-
-/**
- * 获取用于计算图片缩放比例的标准宽度
- */
-export function getStandardWidth() {
-  return usePlayerStore().app.screen.width * Standard_Width_Relative
-}
-
-
-PixiPlugin.registerPIXI(PIXI)
-gsap.registerPlugin(PixiPlugin)
-
-export function characterInit(): boolean {
-  return CharacterLayerInstance.init();
-}
-
-function showCharacter(data: ShowCharacter) {
-  CharacterLayerInstance.showCharacter(data);
-}
 
 export const CharacterLayerInstance: CharacterLayer = {
   init() {
@@ -75,27 +58,32 @@ export const CharacterLayerInstance: CharacterLayer = {
     app.stage.sortableChildren = true;
     document.addEventListener("resize", this.onWindowResize);
     eventBus.on("showCharacter", showCharacter);
-    eventBus.on("hide", () => Reflect.apply(this.hideCharacter, this, []))
-    eventBus.on("hideCharacter", () => Reflect.apply(this.hideCharacter, this, []))
+    eventBus.on("hide", () => Reflect.apply(this.hideCharacter, this, []));
+    eventBus.on("hideCharacter", () =>
+      Reflect.apply(this.hideCharacter, this, [])
+    );
     eventBus.on("resize", originWidth => {
       this.characterSpineCache.forEach(character => {
-        const instance = character.instance
+        const instance = character.instance;
         if (instance.visible) {
-          instance.x *= app.screen.width / originWidth
+          instance.x *= app.screen.width / originWidth;
         }
-      })
-    })
-    Object.keys(EffectPlayerMap).forEach((key) => {
-      const player = Reflect.get(EffectPlayerMap, key) as ICharacterEffectPlayerInterface;
+      });
+    });
+    Object.keys(EffectPlayerMap).forEach(key => {
+      const player = Reflect.get(
+        EffectPlayerMap,
+        key
+      ) as ICharacterEffectPlayerInterface;
       player && player.init();
-    })
+    });
     return true;
   },
   dispose(): boolean {
     document.removeEventListener("resize", this.onWindowResize);
     eventBus.off("showCharacter", showCharacter);
     // 删除眨眼的handler
-    this.characterSpineCache.forEach((it) => clearWinkHandler(it.winkObject));
+    this.characterSpineCache.forEach(it => clearWinkHandler(it.winkObject));
     //TODO 销毁各种sprite,spine实体
     return true;
   },
@@ -108,10 +96,16 @@ export const CharacterLayerInstance: CharacterLayer = {
   },
   getCharacterInstance(characterNumber: number): CharacterInstance | undefined {
     const { currentCharacterMap } = usePlayerStore();
-    return currentCharacterMap.get(characterNumber) ?? this.characterSpineCache.get(characterNumber);
+    return (
+      currentCharacterMap.get(characterNumber) ??
+      this.characterSpineCache.get(characterNumber)
+    );
   },
   getCharacterSpineInstance(characterNumber: number): Spine | undefined {
-    return this.getCharacterInstance(characterNumber)?.instance ?? this.characterSpineCache.get(characterNumber)?.instance;
+    return (
+      this.getCharacterInstance(characterNumber)?.instance ??
+      this.characterSpineCache.get(characterNumber)?.instance
+    );
   },
   beforeProcessShowCharacterAction(characterMap: Character[]): boolean {
     const { characterSpineData } = usePlayerStore();
@@ -128,7 +122,10 @@ export const CharacterLayerInstance: CharacterLayer = {
     }
     return true;
   },
-  createSpineFromSpineData(character: Character, spineData: ISkeletonData): Spine {
+  createSpineFromSpineData(
+    character: Character,
+    spineData: ISkeletonData
+  ): Spine {
     const instance = new Spine(spineData);
     instance.sortableChildren = true;
     const { currentCharacterMap } = usePlayerStore();
@@ -146,18 +143,18 @@ export const CharacterLayerInstance: CharacterLayer = {
       isHeightLight() {
         return this.isOnStage() && instance.alpha != 0;
       },
-    }
-    currentCharacterMap.set(character.CharacterName, characterInstance)
-    this.characterSpineCache.set(character.CharacterName, characterInstance)
+    };
+    currentCharacterMap.set(character.CharacterName, characterInstance);
+    this.characterSpineCache.set(character.CharacterName, characterInstance);
     return instance;
   },
   putCharacterOnStage(character: Character): boolean {
-    const { app } = usePlayerStore()
+    const { app } = usePlayerStore();
     const instance = this.getCharacterInstance(character.CharacterName)!;
     instance.position = character.position;
     instance.currentFace = character.face;
     wink(instance);
-    const spine = instance.instance
+    const spine = instance.instance;
     if (!spine) {
       return false;
     }
@@ -166,7 +163,7 @@ export const CharacterLayerInstance: CharacterLayer = {
       // 供特效使用
       const { scale, y } = calcCharacterYAndScale(spine);
       //设置x轴初始位置
-      const { x } = calcSpineStagePosition(spine, character.position)
+      const { x } = calcSpineStagePosition(spine, character.position);
 
       // 设置锚点到左上角
       spine.pivot = {
@@ -184,7 +181,7 @@ export const CharacterLayerInstance: CharacterLayer = {
       spine.position.y = y
     }
     // 不显示
-    spine.alpha = 0
+    spine.alpha = 0;
     //这样会导致基于visible的判断失效
     // spine.visible = false;
     app.stage.addChild(spine);
@@ -198,25 +195,27 @@ export const CharacterLayerInstance: CharacterLayer = {
         isCloseUp() {
           // 供特效使用
           const { scale } = calcCharacterYAndScale(this.instance);
-          return Math.abs(scale - this.instance.scale.x) >= 0.05
-        }
+          return Math.abs(scale - this.instance.scale.x) >= 0.05;
+        },
       };
-    })
+    });
   },
   hideCharacter() {
-    const { currentCharacterMap } = usePlayerStore()
+    const { currentCharacterMap } = usePlayerStore();
     currentCharacterMap.forEach(character => {
-      character.instance.visible = false
-      character.instance.scale.set(1)
+      character.instance.visible = false;
+      character.instance.scale.set(1);
       // 设置锚点到左上角
       character.instance.pivot = {
         x: Character_Initial_Pivot_Proportion.x * character.instance.width,
         y: Character_Initial_Pivot_Proportion.y * character.instance.height,
       };
       // 设置缩放比列
-      const { scale: defaultScale } = calcCharacterYAndScale(character.instance);
+      const { scale: defaultScale } = calcCharacterYAndScale(
+        character.instance
+      );
       character.instance.scale.set(defaultScale);
-    })
+    });
   },
   showCharacter(data: ShowCharacter): boolean {
     if (!this.beforeProcessShowCharacterAction(data.characters)) {
@@ -225,27 +224,33 @@ export const CharacterLayerInstance: CharacterLayer = {
     let mapList = this.buildCharacterEffectInstance(data);
     //将data没有但显示着的角色取消highlight
     this.characterSpineCache.forEach(character => {
-      if (character.instance.visible
-        && !data.characters.some(value => value.CharacterName === character.CharacterName)) {
-        let colorFilter = character.instance.filters![character.instance.filters!.length - 1] as ColorOverlayFilter
-        colorFilter.alpha = 0.3
+      if (
+        character.instance.visible &&
+        !data.characters.some(
+          value => value.CharacterName === character.CharacterName
+        )
+      ) {
+        const colorFilter = character.instance.filters![
+          character.instance.filters!.length - 1
+        ] as ColorOverlayFilter;
+        colorFilter.alpha = 0.3;
       }
-    })
+    });
 
     // 当目前显示的角色没有新的表情动作且和现有角色的position冲突时隐藏
-    const filterEmotion = data.characters
-      .filter(it => it.effects.some(ef => ef.type === "emotion"));
+    const filterEmotion = data.characters.filter(it =>
+      it.effects.some(ef => ef.type === "emotion")
+    );
     const showName = filterEmotion.map(it => it.CharacterName);
     const showPosition = data.characters.map(it => it.position);
-    const filterHide = [...this.characterSpineCache.values()]
-      .filter(it => {
-        return it.isOnStage() &&
-          it.isShow() &&
-          (
-            !showName.includes(it.CharacterName) && showPosition.includes(it.position)
-          )
-      }
-      )
+    const filterHide = [...this.characterSpineCache.values()].filter(it => {
+      return (
+        it.isOnStage() &&
+        it.isShow() &&
+        !showName.includes(it.CharacterName) &&
+        showPosition.includes(it.position)
+      );
+    });
     filterHide.forEach(chara => {
       chara.instance.visible = false;
       chara.instance.alpha = 0;
@@ -254,7 +259,6 @@ export const CharacterLayerInstance: CharacterLayer = {
       chara.instance.scale.set(scale);
     });
 
-
     //处理角色替换了初始位置的情况, 移除掉hide放置角色错误隐藏
     const groupBy = <T, K extends keyof any>(arr: T[], key: (i: T) => K) =>
       arr.reduce((groups, item) => {
@@ -262,35 +266,34 @@ export const CharacterLayerInstance: CharacterLayer = {
         return groups;
       }, {} as Record<K, T[]>);
     //将角色按CharacterName分组
-    let CharacterNameGroup = groupBy(mapList, value => value.CharacterName)
-    for (let [key, group] of Object.entries(CharacterNameGroup)) {
+    const CharacterNameGroup = groupBy(mapList, value => value.CharacterName);
+    for (const [key, group] of Object.entries(CharacterNameGroup)) {
       if (group.length !== 1) {
         //通过CharacterName出现两次则移除掉hide effect
         mapList = mapList.map(value => {
           if (value.CharacterName === Number(key)) {
-            value.effects = value.effects.filter(effect => effect.effect !== 'hide')
+            value.effects = value.effects.filter(
+              effect => effect.effect !== "hide"
+            );
           }
-          return value
-        })
+          return value;
+        });
       }
     }
 
     // 处理sync情况
-    Promise
-      .all(
-        mapList.map(character => this.showOneCharacter(character))
-      )
+    Promise.all(mapList.map(character => this.showOneCharacter(character)))
       .then(this.characterDone)
       .catch(reason => {
-        console.log(reason)
-        this.characterDone()
+        console.log(reason);
+        this.characterDone();
       });
     return true;
   },
   showOneCharacter(data: CharacterEffectInstance): Promise<void> {
     // 当人物没有closeup时取消closeup
     if (data.isCloseUp()) {
-      if (!data.effects.some(effect => effect.effect === 'closeup')) {
+      if (!data.effects.some(effect => effect.effect === "closeup")) {
         const { scale } = calcCharacterYAndScale(data.instance);
         data.instance.scale.set(scale);
       }
@@ -299,41 +302,50 @@ export const CharacterLayerInstance: CharacterLayer = {
     // 表情
     if (data.instance.state.hasAnimation(data.face))
       data.instance.state.setAnimation(AnimationFaceTrack, data.face, true);
-    data.instance.filters = []
+    data.instance.filters = [];
 
     //处理全息状态
     if (data.signal) {
-      let crtFilter = new CRTFilter({
+      const crtFilter = new CRTFilter({
         lineWidth: data.instance.width * 0.005,
-        time: 0
-      })
-      let adjustmentFilter = new AdjustmentFilter({
+        time: 0,
+      });
+      const adjustmentFilter = new AdjustmentFilter({
         gamma: 1.3,
         red: 1,
         green: 1.1,
         blue: 1.15,
-      })
-      let motionBlurFilter = new MotionBlurFilter()
-      data.instance.filters.push(
-        crtFilter,
-        adjustmentFilter,
-        motionBlurFilter
-      )
-      loopCRtAnimation(crtFilter)
-      let tl = gsap.timeline()
-      tl.to(motionBlurFilter.velocity, { x: 5, duration: 0.1, repeat: 1, yoyo: true })
-        .to(motionBlurFilter.velocity, { x: -5, duration: 0.1, repeat: 1, yoyo: true })
-      tl.repeat(-1)
-      tl.repeatDelay(3)
+      });
+      const motionBlurFilter = new MotionBlurFilter();
+      data.instance.filters.push(crtFilter, adjustmentFilter, motionBlurFilter);
+      loopCRtAnimation(crtFilter);
+      const tl = gsap.timeline();
+      tl.to(motionBlurFilter.velocity, {
+        x: 5,
+        duration: 0.1,
+        repeat: 1,
+        yoyo: true,
+      }).to(motionBlurFilter.velocity, {
+        x: -5,
+        duration: 0.1,
+        repeat: 1,
+        yoyo: true,
+      });
+      tl.repeat(-1);
+      tl.repeatDelay(3);
     }
 
-    const colorFilter = new ColorOverlayFilter([0, 0, 0], 0)
+    const colorFilter = new ColorOverlayFilter([0, 0, 0], 0);
     // TODO highlight
     //处理人物高光
     if (!data.highlight) {
-      colorFilter.alpha = 0.3
+      colorFilter.alpha = 0.3;
     }
-    if (data.effects.some(it => it.type === "action" && ['a', 'al', 'ar'].includes(it.effect))) {
+    if (
+      data.effects.some(
+        it => it.type === "action" && ["a", "al", "ar"].includes(it.effect)
+      )
+    ) {
       // 有淡入效果, 交给特效控制器
       //不要改变color filter的alpha, 会导致a最后的alpha出错
     } else {
@@ -344,9 +356,9 @@ export const CharacterLayerInstance: CharacterLayer = {
         const { x } = calcSpineStagePosition(chara, data.position);
         chara.x = x;
         chara.zIndex = Reflect.get(POS_INDEX_MAP, data.position);
-        chara.state.setAnimation(AnimationIdleTrack, 'Idle_01', true);
+        chara.state.setAnimation(AnimationIdleTrack, "Idle_01", true);
       }
-      chara.alpha = 1
+      chara.alpha = 1;
       chara.visible = true;
     }
     data.instance.filters.push(colorFilter);
@@ -354,11 +366,11 @@ export const CharacterLayerInstance: CharacterLayer = {
     return new Promise<void>(async (resolve, reject) => {
       const effectListLength = data.effects.length;
       if (effectListLength === 0) {
-        resolve()
+        resolve();
       }
 
       const reasons: any[] = [];
-      let effectPromise: Array<Promise<void>> = []
+      const effectPromise: Array<Promise<void>> = [];
       for (const index in data.effects) {
         const effect = data.effects[index];
         const effectPlayer = getEffectPlayer(effect.type);
@@ -368,14 +380,16 @@ export const CharacterLayerInstance: CharacterLayer = {
           return;
         }
         if (effect.async) {
-          await effectPlayer.processEffect(effect.effect as EffectsWord, data)
+          await effectPlayer.processEffect(effect.effect as EffectsWord, data);
           // .then(resolveHandler)
           // .catch((err) => {
           //   reason.push(err);
           //   resolveHandler();
           // })
         } else {
-          effectPromise.push(effectPlayer.processEffect(effect.effect as EffectsWord, data))
+          effectPromise.push(
+            effectPlayer.processEffect(effect.effect as EffectsWord, data)
+          );
           // .then(resolveHandler)
           // .catch((err) => {
           //   reason.push(err);
@@ -383,34 +397,69 @@ export const CharacterLayerInstance: CharacterLayer = {
           // })
         }
       }
-      const results = await Promise.allSettled(effectPromise)
-      for (let result of results) {
-        if (result.status === 'rejected') {
-          reasons.push(result.reason)
+      const results = await Promise.allSettled(effectPromise);
+      for (const result of results) {
+        if (result.status === "rejected") {
+          reasons.push(result.reason);
         }
       }
       if (reasons.length !== 0) {
-        reject(reasons)
+        reject(reasons);
+      } else {
+        resolve();
       }
-      else {
-        resolve()
-      }
-    })
+    });
   },
   characterDone() {
     eventBus.emit("characterDone");
   },
   //TODO 根据角色是否已经缩放(靠近老师)分类更新
-  onWindowResize() { },
+  onWindowResize() {},
   characterSpineCache: new Map<number, CharacterInstance>(),
+};
+/**
+ * 标准宽度基于的播放器宽度的相对值
+ * 标准宽度用于计算图片缩放比例
+ */
+const Standard_Width_Relative = 0.3;
+
+
+/**
+ * 角色初始的pivot相对与长宽的比例, 当前值代表左上角
+ */
+export const Character_Initial_Pivot_Proportion = { x: 0, y: -1 / 2 };
+
+PixiPlugin.registerPIXI(PIXI);
+gsap.registerPlugin(PixiPlugin);
+
+
+export function calcCharacterYAndScale(spine: Spine) {
+  const { screenHeight } = getStageSize();
+  const scale = (screenHeight / PlayerHeight) * CharacterScale;
+  const spineHeight = (spine.height / spine.scale.y) * scale;
+  return {
+    scale,
+    y: screenHeight - spineHeight * (1 - spineHideRate),
+  };
+}
+
+function showCharacter(data: ShowCharacter) {
+  CharacterLayerInstance.showCharacter(data);
+}
+
+
+export function characterInit(): boolean {
+  return CharacterLayerInstance.init();
 }
 
 function loopCRtAnimation(crtFilter: CRTFilter) {
-  gsap.to(crtFilter, { time: "+=10", duration: 1, ease: Power0.easeNone }).then(() => loopCRtAnimation(crtFilter))
+  gsap
+    .to(crtFilter, { time: "+=10", duration: 1, ease: Power0.easeNone })
+    .then(() => loopCRtAnimation(crtFilter));
 }
 
 function getEffectPlayer(type: CharacterEffectType) {
-  return Reflect.get(EffectPlayerMap, type) as ICharacterEffectPlayerInterface
+  return Reflect.get(EffectPlayerMap, type) as ICharacterEffectPlayerInterface;
 }
 /**
  * 眨眼
@@ -423,8 +472,8 @@ function getEffectPlayer(type: CharacterEffectType) {
  */
 function wink(instance: CharacterInstance, first = true) {
   //只在有眨眼动画时起作用
-  if (!instance.instance.state.hasAnimation('Eye_Close_01')) {
-    return
+  if (!instance.instance.state.hasAnimation("Eye_Close_01")) {
+    return;
   }
   const face = instance.currentFace;
   const spine = instance.instance;
@@ -434,13 +483,19 @@ function wink(instance: CharacterInstance, first = true) {
   }
   const winkTimeout = Math.floor(Math.random() * 1000) + 3500;
   instance.winkObject = {
-    handler: window.setTimeout(wink, winkTimeout, instance, false)
-  }
+    handler: window.setTimeout(wink, winkTimeout, instance, false),
+  };
   if (first) {
     return;
   }
-  const loopTime = Math.floor(Math.random() * 2) + 1
-  const winkAnimationObject = loopAnimationTime(spine.state, AnimationWinkTrack, "Eye_Close_01", "eye", loopTime);
+  const loopTime = Math.floor(Math.random() * 2) + 1;
+  const winkAnimationObject = loopAnimationTime(
+    spine.state,
+    AnimationWinkTrack,
+    "Eye_Close_01",
+    "eye",
+    loopTime
+  );
   instance.winkObject.animationObject = winkAnimationObject;
   winkAnimationObject.start();
 }
@@ -457,17 +512,25 @@ function wink(instance: CharacterInstance, first = true) {
  * @param id 用于标识loop handler的key
  * @param loop 循环次数
  */
-function loopAnimationTime<AnimationState extends IAnimationState>(state: AnimationState, trackIndex: number, animationName: string, id: string, loop: number): WinkAnimationObject {
+function loopAnimationTime<AnimationState extends IAnimationState>(
+  state: AnimationState,
+  trackIndex: number,
+  animationName: string,
+  id: string,
+  loop: number
+): WinkAnimationObject {
   return {
     _pause: false,
     start() {
-      const controller = state.listeners.filter(it => Reflect.get(it, "complete") && Reflect.get(it, "key") === id)
+      const controller = state.listeners.filter(
+        it => Reflect.get(it, "complete") && Reflect.get(it, "key") === id
+      );
       if (controller.length !== 0) {
         state.removeListener(controller[0]);
       }
       let loopCount = 1;
       const listener: ILoopAnimationStateListener = {
-        complete: (entry) => {
+        complete: entry => {
           if (entry.trackIndex !== trackIndex) {
             return;
           }
@@ -476,20 +539,20 @@ function loopAnimationTime<AnimationState extends IAnimationState>(state: Animat
             state.setAnimation(trackIndex, animationName, false);
           }
         },
-        key: id
+        key: id,
       };
       state.addListener(listener);
       state.setAnimation(trackIndex, animationName, false);
     },
     pause() {
       this._pause = true;
-    }
-  }
+    },
+  };
 }
 
 function clearWinkHandler(winkObject?: WinkObject) {
   if (!winkObject) {
-    return
+    return;
   }
   if (winkObject.handler) {
     window.clearTimeout(winkObject.handler);
@@ -503,15 +566,6 @@ const PlayerHeight = 550;
 const CharacterScale = 0.34;
 // spine在播放器之下的部分;
 const spineHideRate = 0.49;
-export function calcCharacterYAndScale(spine: Spine) {
-  const { screenHeight } = getStageSize();
-  const scale = screenHeight / PlayerHeight * CharacterScale;
-  const spineHeight = spine.height / spine.scale.y * scale;
-  return {
-    scale,
-    y: screenHeight - spineHeight * (1 - spineHideRate)
-  }
-}
 
 /**
  * 获取显示区域的大小
@@ -524,6 +578,14 @@ export function getStageSize() {
   const screenHeight = screen.height;
   return {
     screenWidth,
-    screenHeight
+    screenHeight,
   };
+}
+
+
+/**
+ * 获取用于计算图片缩放比例的标准宽度
+ */
+export function getStandardWidth() {
+  return usePlayerStore().app.screen.width * Standard_Width_Relative;
 }

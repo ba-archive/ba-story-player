@@ -1,5 +1,4 @@
 import { LoaderResource, Sprite } from "pixi.js";
-
 import { Dict } from "@/types/common";
 import { BgParams } from "@/types/events";
 

@@ -1,8 +1,8 @@
 import { usePlayerStore } from "@/stores";
-import { Emitter, EmitterConfigV3 } from "@pixi/particle-emitter";
-import { Container, filters, Rectangle, Sprite, Texture } from "pixi.js";
+import { Container, Rectangle, Sprite, Texture, filters } from "pixi.js";
 import { emitterConfigs, emitterStarter } from "../emitterUtils";
 import { getEmitterType, sprite2TransParent } from "../resourcesUtils";
+import { Emitter, EmitterConfigV3 } from "@pixi/particle-emitter";
 
 export default async function BG_Love_L_BGOff(resources: Sprite[]) {
   // 原理是波纹, 粉红爱心, 渐变背景
@@ -10,17 +10,17 @@ export default async function BG_Love_L_BGOff(resources: Sprite[]) {
   const appWidth = app.view.width;
   const appHeight = app.view.height;
   const backSprite = resources[2];
-  backSprite.x = -0.2* appWidth
-  backSprite.y = -0.2* appHeight
+  backSprite.x = -0.2 * appWidth;
+  backSprite.y = -0.2 * appHeight;
   backSprite.width = appWidth * 1.4;
   backSprite.height = appHeight * 1.4;
   backSprite.zIndex = -1;
   app.stage.addChild(backSprite);
   // 心心特效
-  let emitterContainer = new Container();
+  const emitterContainer = new Container();
   app.stage.addChild(emitterContainer);
   emitterContainer.zIndex = -1;
-  let heartConfig: EmitterConfigV3 = {
+  const heartConfig: EmitterConfigV3 = {
     ...(emitterConfigs("love_heart") as EmitterConfigV3),
   };
   heartConfig.pos = {
@@ -39,7 +39,7 @@ export default async function BG_Love_L_BGOff(resources: Sprite[]) {
   scaleConfig.scale.list[2].value = heartBaseRatio * 0.95;
   const curEmitter = new Emitter(emitterContainer, heartConfig);
   const heartRemover = emitterStarter(curEmitter);
-  let ringConfig: EmitterConfigV3 = {
+  const ringConfig: EmitterConfigV3 = {
     ...(emitterConfigs("love_ring") as EmitterConfigV3),
   };
   const ringSprite = sprite2TransParent(resources[1]);
