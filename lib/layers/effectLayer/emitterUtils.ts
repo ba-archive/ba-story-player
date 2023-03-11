@@ -47,7 +47,7 @@ export function emitterStarter(
   let elapsed = Date.now();
   let stopFlag = false;
   // Update function every frame
-  const update = function () {
+  const update = function() {
     if (stopFlag) {
       return;
     }
@@ -61,7 +61,7 @@ export function emitterStarter(
     elapsed = now;
   };
 
-  const stop = async function () {
+  const stop = async function() {
     stopFlag = true;
     emitter.emit = false;
     emitter.destroy();

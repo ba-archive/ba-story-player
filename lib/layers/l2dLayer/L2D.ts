@@ -70,7 +70,7 @@ export function L2DInit() {
       item.zIndex = zIndex;
       item.state.addListener({
         // spine中事件回调
-        start: function (entry: any) {
+        start: function(entry: any) {
           const entryAnimationName = entry.animation.name + item.name;
           const duration = entry.animation.duration;
           const {fade, fadeTime = 0.8} =
@@ -90,7 +90,7 @@ export function L2DInit() {
             hasPlayedAnimation[entryAnimationName] = true;
           }
         },
-        complete: function (entry: any) {
+        complete: function(entry: any) {
           // 如果不是有待机动作的主 spine 就去掉
           if (item !== mainItem) {
             timeOutArray.push(

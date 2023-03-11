@@ -10,7 +10,7 @@ import {BGEffectHandlerFunction} from "@/types/effectLayer";
 import {Emitter, EmitterConfigV3} from "@pixi/particle-emitter";
 import {Container} from "pixi.js";
 
-const handler: BGEffectHandlerFunction<"BG_UnderFire"> = async function (
+const handler: BGEffectHandlerFunction<"BG_UnderFire"> = async function(
   resources,
   setting,
   options
