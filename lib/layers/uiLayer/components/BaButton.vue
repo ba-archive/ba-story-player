@@ -1,7 +1,7 @@
 <script setup lang="ts">
+import {buttonAnimation} from "../utils";
 import eventBus from "@/eventBus";
-import { onMounted, PropType, Ref, ref } from "vue";
-import { buttonAnimation } from "../utils";
+import {PropType, Ref, onMounted, ref} from "vue";
 
 const props = defineProps({
   bgcolor: String,
@@ -10,27 +10,29 @@ const props = defineProps({
     default: "small",
   },
 });
-
 const emit = defineEmits<{
   (ev: "click", event: Event): void;
-}>()
+}>();
 
-const button = ref(null) as unknown as Ref<Element>
+const button = ref(null) as unknown as Ref<Element>;
 
 function handleClick(ev: Event) {
-  emit("click", ev)
-  eventBus.emit("playOtherSounds", "select")
+  emit("click", ev);
+  eventBus.emit("playOtherSounds", "select");
 }
 
-onMounted(()=>{
-  buttonAnimation({elem: button.value})
-})
-
-
+onMounted(() => {
+  buttonAnimation({elem: button.value});
+});
 </script>
 
 <template>
-  <button :class="['ba-button', size]" ref="button" @click="handleClick" tabindex="-1">
+  <button
+    :class="['ba-button', size]"
+    ref="button"
+    @click="handleClick"
+    tabindex="-1"
+  >
     <slot></slot>
   </button>
 </template>
@@ -38,28 +40,22 @@ onMounted(()=>{
 <style lang="scss" scoped>
 .ba-button {
   position: relative;
-  padding: 0.375em 1em;
-  margin: 0 0.4em 0 0.4em;
-  border-radius: 0.3125em;
+  padding: 0.375rem 1rem;
+  margin: 0.125rem 0.4rem 0 0.4rem;
+  border-radius: 0.3125rem;
   border: none;
-  font-size: 1.2em;
+  font-size: 1.125rem;
   font-weight: bold;
   color: #2d4665;
   background-color: #f3f5f6;
   transform: skew(-10deg);
   box-shadow: #2c3f4a 0 1px 2px;
-  transition: background-color .3s;
+  transition: background-color 0.3s;
 
   &.large {
-    padding: 0.5em 4.25em;
-    font-size: 1.5625em;
-    border-radius: 0.625em;
-  }
-
-  &.middle {
-    padding: 0.32em 4em;
-    font-size: 1.3em;
-    border-radius: 0.3em;
+    padding: 0.5rem 4.25rem;
+    font-size: 1.5625rem;
+    border-radius: 0.625rem;
   }
 
   &.polylight {
@@ -88,7 +84,7 @@ onMounted(()=>{
   &[class*="poly"] {
     background-size: 140%;
     background-position: -15px 72%;
-    box-shadow: #98C0D7 0 1px 2px;
+    box-shadow: #98c0d7 0 1px 2px;
   }
 }
 </style>

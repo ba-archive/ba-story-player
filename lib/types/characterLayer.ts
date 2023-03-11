@@ -1,11 +1,8 @@
-import { Sprite } from "pixi.js";
-import type { ISkeletonData, Spine } from "pixi-spine";
-import { Character, CharacterInstance } from "@/types/common";
-import { ShowCharacter } from "@/types/events";
-import { IAnimationStateListener } from "@pixi-spine/base";
-
-
-
+import {Character, CharacterInstance} from "@/types/common";
+import {ShowCharacter} from "@/types/events";
+import {IAnimationStateListener} from "@pixi-spine/base";
+import type {ISkeletonData, Spine} from "pixi-spine";
+import {Sprite} from "pixi.js";
 
 export interface ActionOptions extends BaseOptions<CharacterEffectWord> {
   a: unknown;
@@ -72,35 +69,16 @@ export interface ActionOptions extends BaseOptions<CharacterEffectWord> {
   hide: unknown;
 }
 
-
-
-
-
-
-
 /**
  * 所有角色特效统一接口
  */
 export type BaseCharacterEffectPlayer<T extends EffectsWord> =
   CharacterEffectPlayerInterface<T> & EffectFunction<T>;
 
-
-
-
-
-
-
-
-
-export type BaseOptions<T extends string> = Record<T, Record<string, any> | unknown>;
-
-
-
-
-
-
-
-
+export type BaseOptions<T extends string> = Record<
+  T,
+  Record<string, any> | unknown
+>;
 
 /**
  * 情绪动作的具体参数
@@ -272,7 +250,7 @@ export interface BasicEmotionOptions extends BaseOptions<EmotionWord> {
   };
   Sigh: {
     angle: number;
-    scaleAnimation: { start: number; end: number };
+    scaleAnimation: {start: number; end: number};
     anchor: PositionOffset;
   };
   Bulb: {
@@ -288,15 +266,6 @@ export interface BasicEmotionOptions extends BaseOptions<EmotionWord> {
   };
 }
 
-
-
-
-
-
-
-
-
-
 /**
  * CharacterEmotionPlayer使用, 提供角色spine与施加在其身上的所有特效
  */
@@ -304,16 +273,6 @@ export interface CharacterEffectInstance extends Character {
   instance: Spine;
   isCloseUp: () => boolean;
 }
-
-
-
-
-
-
-
-
-
-
 
 /**
  * 人物特效处理
@@ -326,14 +285,6 @@ export interface CharacterEffectPlayer
    */
   getHandlerFunction(type: CharacterEffectWord): EffectFunctionUnit;
 }
-
-
-
-
-
-
-
-
 
 /**
  * 所有角色特效基础接口
@@ -354,11 +305,6 @@ export interface CharacterEffectPlayerInterface<
    */
   dispose(): void;
 }
-
-
-
-
-
 
 /**
  * 人物特效定义
@@ -392,10 +338,6 @@ type EffectFunctionUnit = (
   sprites: Sprite[]
 ) => Promise<void> | undefined;
 
-
-
-
-
 /**
  * 对话特效处理
  */
@@ -414,10 +356,6 @@ type DescriptionUnit<T> = {
   };
 };
 
-
-
-
-
 /**
  * 人物fx特效处理
  */
@@ -429,11 +367,6 @@ export interface CharacterFXPlayer
    */
   getHandlerFunction(type: FXEffectWord): EffectFunctionUnit;
 }
-
-
-
-
-
 
 /**
  * 角色层定义
@@ -532,12 +465,6 @@ export interface CharacterLayer {
   characterSpineCache: Map<number, CharacterInstance>;
 }
 
-
-
-
-
-
-
 export type EffectFunction<T extends EffectsWord> = {
   [key in T]: (
     instance: CharacterEffectInstance,
@@ -546,28 +473,12 @@ export type EffectFunction<T extends EffectsWord> = {
   ) => Promise<void>;
 };
 
-
-
-
-
-
-
 export type EffectsWord = EmotionWord | CharacterEffectWord | FXEffectWord;
-
-
-
-
-
 
 export type EmotionOptions = {
   [Option in keyof BasicEmotionOptions]: BasicEmotionOptions[Option] &
-  GlobalEmotionOptions;
+    GlobalEmotionOptions;
 };
-
-
-
-
-
 
 /**
  * 对话特效定义
@@ -592,19 +503,10 @@ export type EmotionWord =
   | "Bulb"
   | "Tear";
 
-
-
-
-
-
 /**
  * fx特效定义
  */
 export type FXEffectWord = "shot";
-
-
-
-
 
 export interface FXOptions extends BaseOptions<FXEffectWord> {
   shot: {
@@ -621,32 +523,19 @@ export interface FXOptions extends BaseOptions<FXEffectWord> {
   };
 }
 
-
-
-
 /**
  * emotion情绪动画共有的参数
  */
 export interface GlobalEmotionOptions {
-  startPositionOffset: { x: number; y: number };
+  startPositionOffset: {x: number; y: number};
   scale: number;
   fadeOutPreDuration?: number;
   fadeOutDuration: number;
 }
 
-
-
-
-
-
 export interface ILoopAnimationStateListener extends IAnimationStateListener {
   key: string;
 }
-
-
-
-
-
 
 export type OptionDescriptions = {
   emotion: {
@@ -658,10 +547,6 @@ export type OptionDescriptions = {
   fx: DescriptionUnit<FXOptions>;
 };
 
-
-
-
-
 /**
  * 位置标识
  */
@@ -670,8 +555,6 @@ export interface PositionOffset {
   y: number;
 }
 
-
-
 /**
  * 在x, y方向各自的缩放
  */
@@ -679,7 +562,6 @@ export interface Scale {
   x: number;
   y: number;
 }
-
 
 export type ScaleAnimation = {
   start: number;
@@ -691,4 +573,4 @@ export type ScaleAnimation = {
  */
 export type SignalEffectWord = "signal";
 
-export type SignalOptions = BaseOptions<SignalEffectWord>
+export type SignalOptions = BaseOptions<SignalEffectWord>;

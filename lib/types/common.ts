@@ -1,5 +1,3 @@
-import { PlayerProps } from "@/BaStoryPlayer.vue";
-import type { Spine } from "pixi-spine";
 import {
   PlayAudio,
   PlayEffect,
@@ -8,7 +6,9 @@ import {
   ShowTitleOption,
   StArgs,
 } from "./events";
-import { TransitionTableItem } from "./excels";
+import {TransitionTableItem} from "./excels";
+import {PlayerProps} from "@/BaStoryPlayer.vue";
+import type {Spine} from "pixi-spine";
 
 export interface Character {
   /**
@@ -104,8 +104,7 @@ export interface Option {
   };
 }
 
-export type PlayerConfigs = PlayerProps & { height: number };
-
+export type PlayerConfigs = PlayerProps & {height: number};
 
 export interface Speaker {
   /**
@@ -117,7 +116,6 @@ export interface Speaker {
    */
   nickName: string;
 }
-
 
 export interface StoryRawUnit {
   GroupId: number;
@@ -136,8 +134,6 @@ export interface StoryRawUnit {
   VoiceJp: string;
 }
 
-
-
 export type StoryType =
   | "title"
   | "place"
@@ -147,8 +143,6 @@ export type StoryType =
   | "effectOnly"
   | "continue"
   | "nextEpisode";
-
-
 
 export interface StoryUnit {
   //rawUnit中的属性
@@ -207,8 +201,6 @@ export interface StoryUnit {
   };
 }
 
-
-
 export interface Text {
   /**
    * 文本
@@ -224,8 +216,6 @@ export interface Text {
   effects: TextEffect[];
 }
 
-
-
 export interface TextEffect {
   name: TextEffectName;
   /**
@@ -233,7 +223,6 @@ export interface TextEffect {
    */
   value: string[];
 }
-
 
 /**
  * 文字特效类型,
@@ -243,13 +232,11 @@ export interface TextEffect {
  */
 export type TextEffectName = "color" | "fontsize" | "ruby";
 
-
 export interface WinkAnimationObject {
   _pause: boolean;
   start(): void;
   pause(): void;
 }
-
 
 export interface WinkObject {
   handler: number;

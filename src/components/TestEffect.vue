@@ -76,17 +76,17 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, nextTick, onMounted, ref, watch } from "vue";
 import eventBus from "../../lib/eventBus";
-import { resourcesLoader } from "../../lib/index";
-import { removeEffect } from "../../lib/layers/effectLayer";
-import { bgEffectHandlerOptions } from "../../lib/layers/effectLayer/bgEffectHandlers";
-import { usePlayerStore } from "../../lib/stores/index";
-import { Effect, ZmcArgs } from "../../lib/types/common";
-import { BGEffectType } from "../../lib/types/excels";
-import { wait } from "../../lib/utils";
-import { setDataUrl } from "../../lib/utils";
-import { resizeTextareas } from "../utils";
+import {resourcesLoader} from "../../lib/index";
+import {removeEffect} from "../../lib/layers/effectLayer";
+import {bgEffectHandlerOptions} from "../../lib/layers/effectLayer/bgEffectHandlers";
+import {usePlayerStore} from "../../lib/stores/index";
+import {Effect, ZmcArgs} from "../../lib/types/common";
+import {BGEffectType} from "../../lib/types/excels";
+import {wait} from "../../lib/utils";
+import {setDataUrl} from "../../lib/utils";
+import {resizeTextareas} from "../utils";
+import {computed, nextTick, onMounted, ref, watch} from "vue";
 
 setDataUrl("https://yuuka.cdn.diyigemt.com/image/ba-all-data");
 await resourcesLoader.loadExcels();

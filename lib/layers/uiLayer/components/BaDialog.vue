@@ -1,8 +1,8 @@
 <script lang="ts" setup>
-import { watch } from "vue";
-import { onMounted, ref } from "vue";
-import gsap from "gsap";
 import eventBus from "@/eventBus";
+import gsap from "gsap";
+import {watch} from "vue";
+import {onMounted, ref} from "vue";
 
 const props = defineProps({
   width: {
@@ -23,8 +23,8 @@ const emit = defineEmits<{
 }>();
 
 function handleClose(ev: Event) {
-  emit('close', ev as PointerEvent)
-  eventBus.emit("playOtherSounds", "back")
+  emit("close", ev as PointerEvent);
+  eventBus.emit("playOtherSounds", "back");
 }
 
 const dialogContainer = ref(null);
@@ -32,7 +32,7 @@ const dialogContainer = ref(null);
 // 对话框缓入动画
 watch(
   () => props.show,
-  (newValue) => {
+  newValue => {
     if (newValue === true) {
       gsap.from(dialogContainer.value, {
         opacity: 0,
@@ -48,22 +48,19 @@ watch(
 <template>
   <div
     class="ba-dialog"
-    :style="{ display: show === true ? '' : 'none' }"
+    :style="{display: show === true ? '' : 'none'}"
     @click.self="handleClose"
   >
     <div
       class="ba-dialog-container"
-      :style="{ width: props.width, height: props.height }"
+      :style="{width: props.width, height: props.height}"
       ref="dialogContainer"
     >
       <div class="ba-dialog-header">
         <h3 class="ba-dialog-title">
           <span>{{ title }}</span>
         </h3>
-        <button
-          class="ba-dialog-close button-nostyle"
-          @click="handleClose"
-        >
+        <button class="ba-dialog-close button-nostyle" @click="handleClose">
           <i style="user-select: none">
             <img
               src="../assets/close.svg"

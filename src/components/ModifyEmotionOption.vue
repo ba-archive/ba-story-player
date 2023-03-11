@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref } from "vue";
 import eventBus from "../../lib/eventBus";
 import actionOptions, {
   actionDescriptions,
@@ -10,14 +9,15 @@ import emotionOptions, {
 import fxOptions, {
   fxOptionsDescriptions,
 } from "../../lib/layers/characterLayer/options/fxOptions";
-import { EffectsWord } from "../../lib/types/characterLayer";
-import { resizeTextareas } from "../utils";
+import {EffectsWord} from "../../lib/types/characterLayer";
+import {resizeTextareas} from "../utils";
+import {computed, nextTick, onMounted, ref} from "vue";
 
 let effectType = ref<"action" | "emotion" | "fx">("emotion");
 let current = ref("Music");
 let signal = ref(false);
 let highlight = ref(true);
-let selectCache: { effectType: "action" | "emotion" | "fx"; current: string };
+let selectCache: {effectType: "action" | "emotion" | "fx"; current: string};
 if (localStorage.getItem("selectCache")) {
   selectCache = JSON.parse(localStorage.getItem("selectCache")!);
   effectType.value = selectCache["effectType"];

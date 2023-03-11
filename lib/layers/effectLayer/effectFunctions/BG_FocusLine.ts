@@ -1,13 +1,13 @@
-import { usePlayerStore } from "@/stores";
-import { Container, Sprite } from "pixi.js";
-import { emitterConfigs, emitterStarter } from "../emitterUtils";
-import { getEmitterType, sprite2TransParent } from "../resourcesUtils";
-import { Emitter, EmitterConfigV3, Particle } from "@pixi/particle-emitter";
-import { BehaviorOrder } from "@pixi/particle-emitter/lib/behaviors";
+import {emitterConfigs, emitterStarter} from "../emitterUtils";
+import {getEmitterType, sprite2TransParent} from "../resourcesUtils";
+import {usePlayerStore} from "@/stores";
+import {Emitter, EmitterConfigV3, Particle} from "@pixi/particle-emitter";
+import {BehaviorOrder} from "@pixi/particle-emitter/lib/behaviors";
+import {Container, Sprite} from "pixi.js";
 
 export default async function BG_FocusLine(resources: Sprite[]) {
   // 原理是线条 emitter
-  const { app } = usePlayerStore();
+  const {app} = usePlayerStore();
   const appWidth = app.view.width;
   const appHeight = app.view.height;
   const emitterContainer = new Container();
@@ -18,7 +18,7 @@ export default async function BG_FocusLine(resources: Sprite[]) {
     public static type = "focusLine";
     public order = 5; // 代表延迟执行, 可能是 emitter 包的问题, 引入定义报错
     /** 第一个点是两条线段的连接点 */
-    getAngle = (pointArr: { x: number; y: number }[]) => {
+    getAngle = (pointArr: {x: number; y: number}[]) => {
       const [p1, p2, p3] = pointArr;
       const x1 = p2.x - p1.x;
       const x2 = p3.x - p1.x;
@@ -32,11 +32,11 @@ export default async function BG_FocusLine(resources: Sprite[]) {
     initParticles(first: Particle): void {
       let next = first;
       while (next) {
-        const { x, y } = next;
+        const {x, y} = next;
         const angle = this.getAngle([
-          { x, y },
-          { x: 1, y },
-          { x: centerPoint[0], y: centerPoint[1] },
+          {x, y},
+          {x: 1, y},
+          {x: centerPoint[0], y: centerPoint[1]},
         ]);
         let transAngle = 0; // 最左边不用转
         if (x > 0 && y === 0) {

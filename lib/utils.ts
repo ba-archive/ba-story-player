@@ -1,4 +1,4 @@
-import { OtherSoundsUrls, ResourcesTypes } from "@/types/resources";
+import {OtherSoundsUrls, ResourcesTypes} from "@/types/resources";
 
 let dataUrl = "";
 let otherSoundMap: OtherSoundsUrls;
@@ -7,18 +7,12 @@ let otherSoundMap: OtherSoundsUrls;
  */
 let oggAudioType = "ogg";
 
-
-
 /**
  * 字面意思, 深拷贝json
  */
 export function deepCopyObject<T>(object: T): T {
   return JSON.parse(JSON.stringify(object));
 }
-
-
-
-
 
 /**
  * 获取其他特效音资源, 用于本体资源加载
@@ -27,10 +21,6 @@ export function deepCopyObject<T>(object: T): T {
 export function getOtherSoundUrls(): string[] {
   return Object.values(otherSoundMap);
 }
-
-
-
-
 
 /**
  * 根据资源类型和参数获取资源地址, 可根据服务器实际情况修改
@@ -46,8 +36,7 @@ export function getResourcesUrl(type: ResourcesTypes, arg: string): string {
       return `${dataUrl}/Audio/Sound/${arg}.wav`;
     case "fx":
       return `${dataUrl}/effectTexture/${arg}`;
-    case "l2dVoice":
-    {
+    case "l2dVoice": {
       //arg "sound/CH0184_MemorialLobby_1_1"
       const voiceDirectory = arg.replace(
         /sound\/([A-Z0-9]*)_MemorialLobby.*/,
@@ -68,9 +57,8 @@ export function getResourcesUrl(type: ResourcesTypes, arg: string): string {
       return `${dataUrl}/Audio/Sound/${arg}.wav`;
     case "voiceJp":
       return `${dataUrl}/Audio/VoiceJp/${arg}.${oggAudioType}`;
-    case "characterSpine":
-    //arg UIs/03_Scenario/02_Character/CharacterSpine_hasumi
-    {
+    case "characterSpine": {
+      //arg UIs/03_Scenario/02_Character/CharacterSpine_hasumi
       const temp = String(arg).split("/");
       let id = temp.pop();
       id = id?.replace("CharacterSpine_", "");
@@ -93,10 +81,6 @@ export function getResourcesUrl(type: ResourcesTypes, arg: string): string {
   }
 }
 
-
-
-
-
 /**
  * 设置数据站点
  * @param url
@@ -109,8 +93,6 @@ export function setDataUrl(url: string): void {
     back: `${dataUrl}/Audio/Sound/UI_Button_Back.wav`,
   };
 }
-
-
 
 /**
  * 设置ogg类型音频的替代音频类型

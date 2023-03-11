@@ -1,12 +1,12 @@
 <script lang="ts" setup>
-import { LogText } from "@/types/store";
-import { PropType, ref } from "vue";
-import avatarBG from "../../assets/Deco_GachaItemBg.png"
-import { changeStoryIndex } from "../../userInteract";
+import avatarBG from "../../assets/Deco_GachaItemBg.png";
+import {LogText} from "@/types/store";
+import {PropType, ref} from "vue";
+
 const props = defineProps({
   chatMessage: Object as PropType<LogText>,
 });
-const avatarBGRef = ref<string>(avatarBG)
+const avatarBGRef = ref<string>(avatarBG);
 
 const bubbleType = ref<"student" | "teacher" | "narration">("student");
 switch (props.chatMessage?.type) {
@@ -26,13 +26,24 @@ switch (props.chatMessage?.type) {
 </script>
 
 <template>
-  <div :class="['ba-chat-message', bubbleType]" @click="changeStoryIndex(chatMessage?.index)">
+  <div :class="['ba-chat-message', bubbleType]">
     <!-- 设置透明度为0如果没有图片需要显示 -->
-    <div class="ba-chat-message-avatar-border" :style="{ opacity: props.chatMessage?.avatarUrl ? 1 : 0 }">
+    <div
+      class="ba-chat-message-avatar-border"
+      :style="{opacity: props.chatMessage?.avatarUrl ? 1 : 0}"
+    >
       <div
         class="ba-chat-message-avatar"
         role="img"
-        :style="{ 'background-image': 'url(' + props.chatMessage?.avatarUrl + ')' + ', url(' + avatarBGRef + ')' }"
+        :style="{
+          'background-image':
+            'url(' +
+            props.chatMessage?.avatarUrl +
+            ')' +
+            ', url(' +
+            avatarBGRef +
+            ')',
+        }"
       />
     </div>
     <div class="ba-chat-message-bubble">
@@ -89,11 +100,11 @@ switch (props.chatMessage?.type) {
   // 旁白样式
   &.narration {
     filter: drop-shadow(0 1px 2px #2c3f4a);
-    .ba-chat-message-avatar-border{
+    .ba-chat-message-avatar-border {
       height: 0;
     }
     .ba-chat-message-bubble {
-      margin: 0.5em 1.75em 0.25em 0;
+      margin: 0.5rem 1.75rem 0.25rem 0;
       .ba-chat-message-bubble-name-bg {
         background-color: #426487;
         visibility: hidden;
@@ -121,11 +132,11 @@ switch (props.chatMessage?.type) {
   }
   .ba-chat-message-avatar-border {
     position: relative;
-    height: 4.6875em;
-    width: 5em;
-    margin: 1em 1em;
+    height: 4.6875rem;
+    width: 5rem;
+    margin: 1rem 1rem;
     border: solid #fff 1.3px;
-    border-radius: 1em;
+    border-radius: 1rem;
     overflow: hidden;
     transform: skewX(-10deg);
     transform-origin: center;
@@ -145,7 +156,7 @@ switch (props.chatMessage?.type) {
   }
   .ba-chat-message-bubble {
     position: relative;
-    margin: 0.5em 1.5em 0.25em 0;
+    margin: 0.5rem 1.5rem 0.25rem 0;
     flex: 1;
 
     .ba-chat-message-bubble-name-bg {
@@ -156,16 +167,16 @@ switch (props.chatMessage?.type) {
       bottom: 0;
       transform: skewX(-10deg);
       z-index: -2;
-      border-radius: 0.3125em;
+      border-radius: 0.3125rem;
 
       .ba-chat-message-bubble-text-bg {
         position: absolute;
-        top: 1.95em;
+        top: 1.95rem;
         left: 0;
         right: 0;
         bottom: 0;
         z-index: -1;
-        border-radius: 0.3125em;
+        border-radius: 0.3125rem;
       }
     }
     // 小箭头
@@ -179,19 +190,19 @@ switch (props.chatMessage?.type) {
 
       border-color: transparent #f5f5f5 transparent transparent;
       z-index: -3;
-      top: 1.95em;
+      top: 1.95rem;
       left: 0;
     }
 
     .ba-chat-message-name {
-      min-height: 1.6em;
-      margin: 0.25em 1.5em;
+      min-height: 1.4625rem;
+      margin: 0.25rem 1.25rem;
     }
 
     .ba-chat-message-text {
-      font-size: 1.2em;
-      margin: 0.5em 1.5em;
-      min-height: 5em;
+      font-size: 0.9375rem;
+      margin: 0.5rem 1.5rem;
+      min-height: 5rem;
     }
   }
 }

@@ -1,17 +1,17 @@
-import { usePlayerStore } from "@/stores";
-import { Sprite, TilingSprite, filters } from "pixi.js";
-import { emitterStarter } from "../emitterUtils";
-import { loadSpriteSheet } from "../resourcesUtils";
+import {emitterStarter} from "../emitterUtils";
+import {loadSpriteSheet} from "../resourcesUtils";
+import {usePlayerStore} from "@/stores";
+import {Sprite, TilingSprite, filters} from "pixi.js";
 
 export default async function BG_SandStorm_L(resources: Sprite[]) {
   // 原理是两个平铺图片不断移动
-  const { app } = usePlayerStore();
+  const {app} = usePlayerStore();
   const appWidth = app.view.width;
   const appHeight = app.view.height;
   const animationsName = "sandStorm";
   const spritesheet = await loadSpriteSheet(
     resources[0],
-    { x: 1, y: 4 },
+    {x: 1, y: 4},
     animationsName
   );
   const texture = Reflect.get(spritesheet.animations, animationsName)[3];

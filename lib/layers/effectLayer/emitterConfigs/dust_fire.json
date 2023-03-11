@@ -73,9 +73,9 @@
       "config": {
         "alpha": {
           "list": [
-            { "value": 1, "time": 0 },
-            { "value": 1, "time": 0.9 },
-            { "value": 0, "time": 1 }
+            {"value": 1, "time": 0},
+            {"value": 1, "time": 0.9},
+            {"value": 0, "time": 1}
           ]
         }
       }

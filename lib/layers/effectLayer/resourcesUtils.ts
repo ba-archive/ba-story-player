@@ -1,7 +1,5 @@
-import { BaseTexture, ImageResource, Sprite, Spritesheet } from "pixi.js";
-import { EmitterConfigV3 } from "@pixi/particle-emitter";
-
-
+import {EmitterConfigV3} from "@pixi/particle-emitter";
+import {BaseTexture, ImageResource, Sprite, Spritesheet} from "pixi.js";
 
 /**
  * 获取 emitter config behaviors 中的配置
@@ -20,9 +18,6 @@ function download(b64: string) {
   a.dispatchEvent(evt);
 }
 
-
-
-
 /**
  * 根据给定的信息, 加载spriteSheet
  * @param img spriteSheet原图片Sprite
@@ -31,7 +26,7 @@ function download(b64: string) {
  */
 export async function loadSpriteSheet(
   img: Sprite,
-  quantity: { x: number; y: number },
+  quantity: {x: number; y: number},
   animationsName: string
 ): Promise<Spritesheet> {
   // Create object to store sprite sheet data
@@ -57,8 +52,8 @@ export async function loadSpriteSheet(
         w: width,
         h: height,
       },
-      sourceSize: { w: width, h: height },
-      spriteSourceSize: { x: 0, y: 0, w: width, h: height },
+      sourceSize: {w: width, h: height},
+      spriteSourceSize: {x: 0, y: 0, w: width, h: height},
     });
     atlasData.animations[animationsName].push(`${animationsName}${i}`);
   }
@@ -81,7 +76,7 @@ export async function loadSpriteSheet(
 export function sprite2TransParent(img: Sprite) {
   // 这里的 source 代表着dom中的image节点, 所以图片加载类型不是通过url的话就不行
   const texture = img.texture.baseTexture as BaseTexture<ImageResource>;
-  const { realWidth, realHeight } = img.texture.baseTexture;
+  const {realWidth, realHeight} = img.texture.baseTexture;
   const imgSource = texture.resource.source;
   const canvas = document.createElement("canvas");
   // document.body.appendChild(canvas)

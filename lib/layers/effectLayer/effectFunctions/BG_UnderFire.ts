@@ -1,21 +1,21 @@
-import eventBus from "@/eventBus";
-import { usePlayerStore } from "@/stores";
-import { Container } from "pixi.js";
 import {
   emitterConfigs,
   emitterContainer,
   emitterStarter,
 } from "../emitterUtils";
-import { loadSpriteSheet } from "../resourcesUtils";
-import { BGEffectHandlerFunction } from "@/types/effectLayer";
-import { Emitter, EmitterConfigV3 } from "@pixi/particle-emitter";
+import {loadSpriteSheet} from "../resourcesUtils";
+import eventBus from "@/eventBus";
+import {usePlayerStore} from "@/stores";
+import {BGEffectHandlerFunction} from "@/types/effectLayer";
+import {Emitter, EmitterConfigV3} from "@pixi/particle-emitter";
+import {Container} from "pixi.js";
 
 const handler: BGEffectHandlerFunction<"BG_UnderFire"> = async function (
   resources,
   setting,
   options
 ) {
-  const { height: appHeight, width: appWidth } = usePlayerStore().app.screen;
+  const {height: appHeight, width: appWidth} = usePlayerStore().app.screen;
   const ininX = (appWidth * 7) / 8;
   const ininY = (appHeight * 7) / 8;
   eventBus.emit("playOtherSounds", "bg_underfire");
@@ -34,7 +34,7 @@ const handler: BGEffectHandlerFunction<"BG_UnderFire"> = async function (
   const smokeAnimationsName = "smoke";
   const smokeSpritesheet = await loadSpriteSheet(
     resources[0],
-    { x: 3, y: 3 },
+    {x: 3, y: 3},
     smokeAnimationsName
   );
   smokeConifg.behaviors[0].config.anim.textures = Reflect.get(

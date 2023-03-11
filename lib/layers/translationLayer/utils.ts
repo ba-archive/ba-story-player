@@ -1,6 +1,4 @@
-import { getResourcesUrl } from "@/utils";
-import xxhash from "xxhashjs";
-import { usePlayerStore } from "@/stores/index";
+import {usePlayerStore} from "@/stores/index";
 import {
   Speaker,
   StoryRawUnit,
@@ -9,14 +7,13 @@ import {
   TextEffect,
   TextEffectName,
 } from "@/types/common";
-import { PlayAudio, ShowTitleOption } from "@/types/events";
-import { CharacterNameExcelTableItem } from "@/types/excels";
-import { Language } from "@/types/store";
+import {PlayAudio, ShowTitleOption} from "@/types/events";
+import {CharacterNameExcelTableItem} from "@/types/excels";
+import {Language} from "@/types/store";
+import {getResourcesUrl} from "@/utils";
+import xxhash from "xxhashjs";
 
 const playerStore = usePlayerStore();
-
-
-
 
 /**
  * 检查当前单元是否有背景覆盖变换, 有则删除该变换并返回变换的参数
@@ -32,24 +29,12 @@ export function checkBgOverlap(unit: StoryUnit) {
   }
 }
 
-
-
-
-
-
-
 /**
  * 在大小写不敏感的情况下比较字符串
  */
 export function compareCaseInsensive(s1: string, s2: string) {
-  return s1.localeCompare(s2, undefined, { sensitivity: "accent" }) === 0;
+  return s1.localeCompare(s2, undefined, {sensitivity: "accent"}) === 0;
 }
-
-
-
-
-
-
 
 /**
  * 从原始文字生成Text[], 即带特效参数字符串
@@ -70,19 +55,12 @@ export function generateText(rawStoryUnit: StoryRawUnit, stm?: boolean) {
       const spiltIndex = str.indexOf("]");
       const waitTime = Number(str.slice(0, spiltIndex));
       const textUnit = str.slice(spiltIndex + 1);
-      result.push({ content: textUnit, waitTime, effects: [] });
+      result.push({content: textUnit, waitTime, effects: []});
     }
     return result;
   }
   return splitStScriptAndParseTag(rawText);
 }
-
-
-
-
-
-
-
 
 export function generateTitleInfo(
   rawStoryUnit: StoryRawUnit,
@@ -100,31 +78,12 @@ export function generateTitleInfo(
   };
 }
 
-
-
-
-
-
-
-
-
-
 export function getBgm(BGMId: number): PlayAudio["bgm"] | undefined {
   const item = playerStore.BGMExcelTable.get(BGMId);
   if (item) {
-    return { url: getResourcesUrl("bgm", item.Path), bgmArgs: item };
+    return {url: getResourcesUrl("bgm", item.Path), bgmArgs: item};
   }
 }
-
-
-
-
-
-
-
-
-
-
 
 /**
  * 获取角色在unit的characters里的index, 当不存在时会自动往unit的character里加入该角色
@@ -145,7 +104,7 @@ export function getCharacterIndex(
       value => value.position === initPosition
     );
     if (characterIndex !== -1) {
-      const preCharacter = { ...result[tempIndex].characters[characterIndex] };
+      const preCharacter = {...result[tempIndex].characters[characterIndex]};
       preCharacter.effects = [];
       unit.characters.push(preCharacter);
       characterIndex = unit.characters.length - 1;
@@ -154,17 +113,6 @@ export function getCharacterIndex(
 
   return characterIndex;
 }
-
-
-
-
-
-
-
-
-
-
-
 
 /**
  * 根据韩文名获取名字和头像
@@ -186,7 +134,7 @@ export function getCharacterInfo(krName: string) {
 
 type CustomTagParserFn = (
   rawText: string
-) => { effect: TextEffect; remain: string } | undefined;
+) => {effect: TextEffect; remain: string} | undefined;
 
 type CustomTagParserMap = {
   [key in TextEffectName]: CustomTagParserFn;
@@ -226,17 +174,6 @@ const ICustomTagParserMap: CustomTagParserMap = {
   },
 };
 
-
-
-
-
-
-
-
-
-
-
-
 /**
  * 根据角色韩文名获取CharacterName
  * @param krName
@@ -245,31 +182,10 @@ export function getCharacterName(krName: string) {
   return xxhash.h32(krName, 0).toNumber();
 }
 
-
-
-
-
-
-
-
-
-
-
-
 export function getEmotionName(rawName: string): string | undefined {
   const name = xxhash.h32(rawName, 0).toNumber();
   return usePlayerStore().EmotionExcelTable.get(name);
 }
-
-
-
-
-
-
-
-
-
-
 
 export function getL2DUrlAndName(BGFileName: string) {
   let filename = String(BGFileName)
@@ -277,32 +193,14 @@ export function getL2DUrlAndName(BGFileName: string) {
     .pop()
     ?.replace("SpineBG_Lobby", "");
   filename = `${filename}_home`;
-  return { url: getResourcesUrl("l2dSpine", filename), name: filename };
+  return {url: getResourcesUrl("l2dSpine", filename), name: filename};
 }
-
-
-
-
-
-
-
-
-
 
 export function getSoundUrl(Sound: string) {
   if (Sound) {
     return getResourcesUrl("sound", Sound);
   }
 }
-
-
-
-
-
-
-
-
-
 
 /**
  * 在CharacterNameExcelTableItem中获取到speaker信息
@@ -324,16 +222,6 @@ export function getSpeaker(
   }
 }
 
-
-
-
-
-
-
-
-
-
-
 /**
  * 选择文字, 当没有当前语言文字时返回日文
  */
@@ -348,30 +236,11 @@ export function getText(
   );
 }
 
-
-
-
-
-
-
-
-
-
-
 export function getVoiceJPUrl(VoiceJp: string) {
   if (VoiceJp) {
     return getResourcesUrl("voiceJp", VoiceJp);
   }
 }
-
-
-
-
-
-
-
-
-
 
 /**
  * 判断是否是角色
@@ -382,14 +251,6 @@ export function isCharacter(s: string) {
   return /^\d+$/.test(s);
 }
 
-
-
-
-
-
-
-
-
 /**
  * 判断是否角色特效
  * @param s
@@ -397,13 +258,6 @@ export function isCharacter(s: string) {
 export function isCharacterEffect(s: string) {
   return /#\d/.test(s);
 }
-
-
-
-
-
-
-
 
 /**
  * 判断当前字符串是否是选项
@@ -414,13 +268,6 @@ export function isOption(s: string) {
   //除此之外还有[ns], [s], [ns1]等情况
   return /\[n?s(\d{0,2})?](.+)/.test(s);
 }
-
-
-
-
-
-
-
 
 /**
  * 解析tag
@@ -447,12 +294,6 @@ export function parseCustomTag(rawText: string): Text {
     effects: effects,
   };
 }
-
-
-
-
-
-
 
 /**
  * 将嵌套tag结构分割
@@ -540,8 +381,6 @@ function parseRubyText(raw: string): Text[] {
     })
     .flat(1);
 }
-
-
 
 /**
  * 将ScriptKr文本结构解析成Text[]

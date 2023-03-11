@@ -1,7 +1,6 @@
 // select：按钮点击音效，back：返回音效
 export type OtherSounds = "select" | "bg_underfire" | "back";
 
-
 export type OtherSoundsUrls = {
   [key in OtherSounds]: string;
 };

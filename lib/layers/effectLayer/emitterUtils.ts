@@ -1,11 +1,10 @@
-import { Container } from "pixi.js";
-import { EffectRemoveFunction } from "@/types/effectLayer";
+import {EffectRemoveFunction} from "@/types/effectLayer";
 import {
   Emitter,
   EmitterConfigV2,
   EmitterConfigV3,
 } from "@pixi/particle-emitter";
-
+import {Container} from "pixi.js";
 
 /**
  * 获取emitter config
@@ -25,7 +24,7 @@ export function emitterConfigs(filename: string) {
 
 const emitterConfigsRaw = import.meta.glob<EmitterConfigV2 | EmitterConfigV3>(
   "./emitterConfigs/*.json",
-  { eager: true }
+  {eager: true}
 );
 
 /**
