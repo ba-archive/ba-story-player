@@ -3,26 +3,30 @@ import { eventEmitter, storyHandler } from "@/index";
 import { usePlayerStore } from "@/stores";
 import { useThrottleFn } from "@vueuse/core";
 
-function interactNext(){
+function interactNext() {
   const currentStoryUnit = storyHandler.currentStoryUnit;
-  if (currentStoryUnit?.textAbout?.options || currentStoryUnit?.textAbout?.titleInfo || eventEmitter.l2dPlaying) {
-    console.log(storyHandler.currentStoryUnit)
+  if (
+    currentStoryUnit?.textAbout?.options ||
+    currentStoryUnit?.textAbout?.titleInfo ||
+    eventEmitter.l2dPlaying
+  ) {
+    console.log("不允许下一步", storyHandler.currentStoryUnit);
     return;
   }
   eventBus.emit("next");
 }
 const throttledSkip = useThrottleFn(() => {
-  interactNext()
+  interactNext();
 }, 200);
 const throttledNext = useThrottleFn(() => {
-  interactNext()
+  interactNext();
 }, 1000);
 
 const keyEvent = (e: KeyboardEvent) => {
   switch (e.key) {
     case "Enter":
     case " ":
-      throttledNext()
+      throttledNext();
       break;
     case "ArrowUp":
       eventBus.emit("showStoryLog");
@@ -39,16 +43,28 @@ const keyUpEvent = (e: KeyboardEvent) => {
       storyHandler.isSkip = false;
   }
 };
+
+const wheelEvent = (e: WheelEvent & { [key: string]: any }) => {
+  const delta = e.wheelDelta ? e.wheelDelta : -e.detail;
+  if (delta < 0) {
+    interactNext();
+  } else {
+    eventBus.emit("showStoryLog");
+  }
+};
+
 document.addEventListener("keydown", keyEvent);
 document.addEventListener("keyup", keyUpEvent);
+document.addEventListener("wheel", wheelEvent);
 eventBus.on("dispose", () => {
   document.removeEventListener("keydown", keyEvent);
   document.removeEventListener("keyup", keyUpEvent);
+  document.removeEventListener("wheel", wheelEvent);
 });
 
 export const changeStoryIndex = (index?: number) => {
   if (typeof index !== "number") return;
-  index -= 1
+  index -= 1;
   const allStory = usePlayerStore().allStoryUnit;
   const recentStory = allStory.slice(0, index + 1).reverse();
   const lastBg = recentStory.find((currentStoryUnit) => {
