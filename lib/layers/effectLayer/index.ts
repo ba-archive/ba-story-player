@@ -184,8 +184,12 @@ let zmcPlayer = {
 
     const viewHalfWidth = app.screen.width / 2;
     const viewHalfHeight = app.screen.height / 2;
-    const finalOffsetX = offsetX / scale;
-    const finalOffsetY = offsetY / scale;
+    // const finalOffsetX = offsetX / scale;
+    // const finalOffsetY = offsetY / scale;
+
+    const finalOffsetX = offsetX * finalScale / 2;
+    const finalOffsetY = offsetY * finalScale / 2;
+
     const afterScaleWidth = bgInstance.width / bgInstance.scale.x * finalScale;
     const afterScaleHalfWidth = afterScaleWidth / 2;
     const afterScaleHeight = bgInstance.height / bgInstance.scale.y * finalScale;
