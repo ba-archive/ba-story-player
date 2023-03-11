@@ -756,7 +756,7 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
 }
 
 .department {
-  margin-left: 1rem;
+  margin-left: 10px;
   font-size: 2.5rem;
   color: rgb(156, 218, 240);
 }
