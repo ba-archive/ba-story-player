@@ -189,7 +189,7 @@ switch (props.chatMessage?.type) {
     }
 
     .ba-chat-message-text {
-      font-size: 0.9375em;
+      font-size: 1em;
       margin: 0.5em 1.5em;
       min-height: 5em;
     }

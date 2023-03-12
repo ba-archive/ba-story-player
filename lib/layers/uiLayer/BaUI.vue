@@ -105,8 +105,9 @@ let handleBtnMouseUp = effectBtnMouseUp()
 
 // baui em value, 根据height width计算
 const bauiem = computed(() => {
-  let minVal = Math.min(props.width, props.height)
-  let newVal = Math.round(minVal / 35.125)
+  // 1000 / 16 == 62.5, 562.5 / 16 == 1635.15625  开发时基准宽高
+  let minVal = Math.min(props.width / 62.5, props.height / 35.15625)
+  let newVal = Math.round(minVal)
   return newVal
 })
 
@@ -172,7 +173,7 @@ function handleBaUIClick() {
       v-if="selectOptions.length !== 0" />
 
     <BaDialog id="ba-story-summary" :title="'概要'" :show="!hiddenSummary" @close="hiddenSummary = true"
-      width="min(720px, 70%)" height="min(600px, 85%)">
+      width="70%" height="85%">
       <div class="ba-story-summary-container">
         <h4 class="ba-story-summary-title">{{ storySummary.chapterName }}</h4>
         <p class="ba-story-summary-text">
@@ -313,10 +314,10 @@ function handleBaUIClick() {
     }
 
     .ba-story-summary-title {
-      margin: 0.75em 0;
+      margin: 0.4em 0;
       text-align: center;
       color: #32363c;
-      font-size: 1.125em;
+      font-size: 1.3em;
       font-weight: bold;
     }
 
@@ -328,15 +329,7 @@ function handleBaUIClick() {
       overflow-y: auto;
       padding: 0.3125em 0.4375em;
       background-color: #f0f0f0;
-    }
-
-    .ba-story-summary-tip {
-      color: #32363c;
-      font-size: 1.125em;
-      font-weight: bold;
-      text-align: center;
-      margin: 0.75em auto 0;
-      user-select: none;
+      font-size: 1.3em;
     }
 
     .ba-story-summary-button-group {
