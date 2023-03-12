@@ -317,7 +317,7 @@ function handleBaUIClick() {
       margin: 0.4em 0;
       text-align: center;
       color: #32363c;
-      font-size: 1.3em;
+      font-size: 1.5em;
       font-weight: bold;
     }
 
@@ -329,7 +329,7 @@ function handleBaUIClick() {
       overflow-y: auto;
       padding: 0.3125em 0.4375em;
       background-color: #f0f0f0;
-      font-size: 1.3em;
+      font-size: 1.4em;
     }
 
     .ba-story-summary-button-group {
