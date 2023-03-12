@@ -129,7 +129,10 @@ document.addEventListener("mousemove", (ev)=>{
 })
 
 function handleBaUIClick() {
-  hiddenSubMenu.value = true
+  if (!hiddenSubMenu.value) {
+    hiddenSubMenu.value = true
+    return
+  }
   eventBus.emit("playOtherSounds", "select")
   eventBus.emit('click')
 }
