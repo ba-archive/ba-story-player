@@ -105,7 +105,7 @@ let handleBtnMouseUp = effectBtnMouseUp()
 
 // baui em value, 根据height width计算
 const bauiem = computed(() => {
-  // 1000 / 16 == 62.5, 562.5 / 16 == 1635.15625  开发时基准宽高
+  // 1000 / 16 == 62.5, 562.5 / 16 == 35.15625  开发时基准宽高
   let minVal = Math.min(props.width / 62.5, props.height / 35.15625)
   let newVal = Math.round(minVal)
   return newVal

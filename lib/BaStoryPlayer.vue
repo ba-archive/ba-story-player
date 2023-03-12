@@ -203,7 +203,7 @@ onDeactivated(() => {
         <div id="player__main__canvas" :style="{ transform: `scale(${pixiScale})` }"></div>
         <BaDialog :player-height="playerHeight" :player-width="playerWidth" :style="{ width: `${playerWidth}px` }">
         </BaDialog>
-        <BaUI :height="height" :width="width" :story-summary="storySummary"
+        <BaUI :height="playerHeight" :width="playerWidth" :story-summary="storySummary"
           v-model:full-screen="fullScreen" />
       </div>
     </div>
