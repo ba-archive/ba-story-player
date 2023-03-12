@@ -99,6 +99,8 @@ export type Events = {
   showmenu: undefined
   // 显示历史
   showStoryLog: undefined
+  // 当前历史log是否显示
+  isStoryLogShow: boolean
   //文字层
   /**
    * 展示标题

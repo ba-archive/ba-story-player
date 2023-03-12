@@ -180,10 +180,13 @@ export let storyHandler = {
   },
 
   next() {
-    if ((eventEmitter.unitDone && !this.unitPlaying && !this.auto) || this.isSkip) {
-      if(this.isSkip){
-        this.unitPlaying = false
-      }
+    if(this.isSkip){
+      storyHandler.storyIndexIncrement()
+      // 快进用 storyPlay 需要考虑 unitPlaying, 同时会有一个while循环在里边导致控制不符合预期
+      eventEmitter.emitEvents()
+      return;
+    }
+    if ((eventEmitter.unitDone && !this.unitPlaying && !this.auto)) {
       storyHandler.storyIndexIncrement()
       storyHandler.storyPlay()
     }
@@ -298,6 +301,8 @@ export let eventEmitter = {
   titleDone: true,
   textDone: true,
   stDone: true,
+  // 当前的历史消息 log 是否显示
+  isStoryLogShow: false,
   toBeContinueDone: true,
   nextEpisodeDone: true,
   /** 当前l2d动画是否播放完成 */
@@ -338,6 +343,7 @@ export let eventEmitter = {
         storyHandler.storyPlay()
       }
     })
+    eventBus.on('isStoryLogShow', (e) => eventEmitter.isStoryLogShow = e)
     eventBus.on('effectDone', () => eventEmitter.effectDone = true)
     eventBus.on('characterDone', () => eventEmitter.characterDone = true)
     eventBus.on('titleDone', () => this.titleDone = true)
@@ -513,7 +519,8 @@ export let eventEmitter = {
   /**
    * 显示角色
    */
-  showCharacter() {
+  showCharacter(currentStoryUnit?:StoryUnit) {
+    currentStoryUnit = currentStoryUnit || storyHandler.currentStoryUnit
     if (storyHandler.currentStoryUnit.characters.length != 0) {
       this.characterDone = false
       eventBus.emit('showCharacter', {

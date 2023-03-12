@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import BaButton from "@/layers/uiLayer/components/BaButton.vue";
-import { onMounted, ref } from "vue";
+import { onMounted, ref, watch } from "vue";
 import BaDialog from "./components/BaDialog.vue";
 import BaChatLog from "./components/BaChatLog/BaChatLog.vue";
 import BaSelector from "./components/BaSelector.vue";
@@ -31,6 +31,9 @@ eventBus.on("hide", () => {
 })
 eventBus.on("showStoryLog", () => {
   hiddenStoryLog.value = false
+})
+watch(hiddenStoryLog,() => {
+  eventBus.emit("isStoryLogShow", !hiddenStoryLog.value)
 })
 eventBus.on("hidemenu", () => {
   hiddenMenu.value = true
