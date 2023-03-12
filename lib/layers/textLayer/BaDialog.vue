@@ -237,13 +237,13 @@ function handleShowStEvent(e: StText) {
     const x = Math.floor(((stWidth / 2) + stPos[0]) * stPositionBounds.value.width);
     const y = Math.floor(((stHeight / 2) - stPos[1]) * stPositionBounds.value.height);
     // st样式
-    let extendStyle = `;position: absolute; top: ${y}px; width: auto;left: ${x}px;`;
+    let extendStyle = `;position: absolute; --top: ${y}px; width: auto;left: ${x}px;`;
     // 居中显示特殊样式
     if (e.middle) {
       extendStyle = extendStyle + `;text-align: center; left: 50%; transform: translateX(-50%)`;
     }
     const fontSize = e.stArgs[2]; // st的字号
-    extendStyle = extendStyle + `;font-size: ${unityFontSizeToHTMLSize(Number(fontSize))}rem`;
+    extendStyle = extendStyle + `;--font-size: ${unityFontSizeToHTMLSize(Number(fontSize))}rem`;
     // 立即显示, 跳过打字机
     const fn = Reflect.get(StMap, stType);
     if (fn) {
@@ -356,7 +356,8 @@ function parseTextEffect(text: Text, extendStyle = "", tag = "span"): Text {
     if (name === "color") {
       return `color: ${value}`;
     } else if (name === "fontsize") {
-      return `font-size: ${unityFontSizeToHTMLSize(Number(value))}rem`
+      return
+      `font-size: ${unityFontSizeToHTMLSize(Number(value))}rem;--font-size: ${unityFontSizeToHTMLSize(Number(value))}rem`
     }
     // 暂时废弃, 没办法处理字体自适应
     return (StyleEffectTemplate[effect.name] || "").replace("${value}", effect.value.join(""))
@@ -945,6 +946,12 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
     z-index: $text-layer-z-index + $st-z-index;
     color: white;
     text-shadow: $text-outline;
+    :deep(div) {
+      line-height: var(--font-size);
+      display: inline-block;
+      top: calc(var(--top) - var(--font-size) / 2);
+      font-size: var(--font-size);
+    }
   }
 
   .fade-in-out {
