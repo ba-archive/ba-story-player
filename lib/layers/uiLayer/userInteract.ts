@@ -1,7 +1,6 @@
 import eventBus from "@/eventBus";
 import { eventEmitter, storyHandler } from "@/index";
 import { usePlayerStore } from "@/stores";
-import { useThrottleFn } from "@vueuse/core";
 function interactNext() {
   const currentStoryUnit = storyHandler.currentStoryUnit;
   if (
@@ -14,13 +13,7 @@ function interactNext() {
   }
   eventBus.emit("next");
 }
-const throttledSkip = useThrottleFn(() => {
-  interactNext();
-}, 200);
-const throttledNext = useThrottleFn(() => {
-  interactNext();
-}, 1000);
-
+let nexting: any;
 const keyEvent = (e: KeyboardEvent) => {
   // 显示历史 log 不允许操作
   if (eventEmitter.isStoryLogShow) {
@@ -29,7 +22,12 @@ const keyEvent = (e: KeyboardEvent) => {
   switch (e.key) {
     case "Enter":
     case " ":
-      throttledNext();
+      if(!nexting){
+        interactNext()
+        nexting = setInterval(() => {
+          interactNext()
+        }, 1000)
+      }
       break;
     case "ArrowUp":
       eventBus.emit("showStoryLog");
@@ -37,10 +35,17 @@ const keyEvent = (e: KeyboardEvent) => {
     case "Control":
       // 限流
       storyHandler.isSkip = true;
-      throttledSkip();
+      if(!nexting){
+        interactNext()
+        nexting = setInterval(() => {
+          interactNext()
+        }, 200)
+      }
   }
 };
 const keyUpEvent = (e: KeyboardEvent) => {
+  clearInterval(nexting)
+  nexting = undefined
   switch (e.key) {
     case "Control":
       storyHandler.isSkip = false;
