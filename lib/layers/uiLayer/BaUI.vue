@@ -111,7 +111,7 @@ const bauiem = computed(() => {
   return newVal
 })
 
-// #86 全屏时 UI 层鼠标不可见, UI层无法实现，UI层发送事件hidecursor和showcursor，交给BaStoryPlayer处理
+// #86 全屏时 UI 层鼠标不可见
 const cursorStyle = ref("auto")
 const hideCursorDelay = 3000
 let cursorTimer: NodeJS.Timeout = setTimeout(() => {
