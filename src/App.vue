@@ -99,9 +99,10 @@ function changeJSON() {
 
 // 让播放器可变，方便调试，可以节流但是不流畅
 const player = ref<HTMLElement | null>(null)
-useResizeObserver(player, useThrottleFn((entries) => {
+useResizeObserver(player as any, useThrottleFn((entries) => {
   const entry = entries[0];
-  ({width: width.value, height: height.value} = entry.contentRect);
+  if(document.fullscreenElement===null)
+    ({width: width.value, height: height.value} = entry.contentRect);
 }, 1))
 
 </script>
