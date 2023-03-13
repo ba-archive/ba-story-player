@@ -36,7 +36,7 @@ watch(
     if (newValue === true) {
       gsap.from(dialogContainer.value, {
         opacity: 0,
-        y: 100,
+        y: "30%",
         duration: 0.3,
         ease: "power1.out",
       });
@@ -93,7 +93,7 @@ watch(
     display: flex;
     flex-flow: nowrap column;
     background-color: #f0f0f0;
-    border-radius: 0.625rem;
+    border-radius: 0.625em;
     position: absolute;
     left: 50%;
     top: 50%;
@@ -118,8 +118,8 @@ watch(
       flex: 0 0 auto;
 
       .ba-dialog-title {
-        margin: 0.5rem 1rem 0 0.5rem;
-        font-size: 1.5rem;
+        margin: 0.2em 0.5em 0 0.5em;
+        font-size: 1.6em;
         font-weight: bold;
         text-align: center;
         user-select: none;
@@ -130,9 +130,9 @@ watch(
             content: "";
             display: block;
             width: 100%;
-            height: 0.25rem;
+            height: 0.25em;
             background-color: #fbef62;
-            border-radius: 0.1875rem;
+            border-radius: 0.1875em;
           }
         }
       }
@@ -144,9 +144,9 @@ watch(
         padding: 0;
         border: none;
         position: absolute;
-        font-size: 1.5rem;
+        font-size: 1.5em;
         font-weight: bold;
-        margin-right: 1rem;
+        margin-right: 1em;
         right: 0;
         top: 50%;
         transform: translateY(-50%);

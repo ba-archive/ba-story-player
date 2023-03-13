@@ -10,6 +10,8 @@ import { ref, watch } from 'vue'
 import * as PIXI from 'pixi.js'
 import { usePlayerStore } from '../lib/stores'
 import axios from 'axios'
+import { useResizeObserver } from '@vueuse/core'
+import { useThrottleFn } from '@vueuse/core'
 
 console.log('资源加载: ', resourcesLoader)
 console.log('资源调用: ', usePlayerStore())
@@ -95,38 +97,13 @@ function changeJSON() {
   location.reload()
 }
 
-
-// //字体适配
-// void function(win) {
-// 	const doc = win.document;
-// 	const docEl = doc.documentElement;
-// 	let tid: NodeJS.Timeout;
-
-// 	function refreshRem() {
-// 		var width = docEl.getBoundingClientRect().width;
-// 		if (width >= 1600) { // 最大宽度
-//       docEl.style.fontSize = 16 + 'px';
-// 		} else if (width < 1600 && width >= 1400) {
-//       docEl.style.fontSize = 14 + 'px';
-//     } else if (width < 1400 && width >= 1200) {
-//       docEl.style.fontSize = 12 + 'px';
-//     } else if (width < 1200 && width >= 1000) {
-//       docEl.style.fontSize = 10 + 'px';
-//     } else if (width < 1000 && width >= 800) {
-//       docEl.style.fontSize = 8 + 'px';
-//     } else if (width < 800 && width >= 600) {
-//       docEl.style.fontSize = 6 + 'px';
-//     } else {
-//       docEl.style.fontSize = 6 + 'px';
-//     }
-// 	}
-
-// 	win.addEventListener('resize', function() {
-// 		clearTimeout(tid);
-// 		tid = setTimeout(refreshRem, 10);
-// 	}, false);
-// 	refreshRem();
-// }(window);
+// 让播放器可变，方便调试，可以节流但是不流畅
+const player = ref<HTMLElement | null>(null)
+useResizeObserver(player as any, useThrottleFn((entries) => {
+  const entry = entries[0];
+  if(document.fullscreenElement===null)
+    ({width: width.value, height: height.value} = entry.contentRect);
+}, 1))
 
 </script>
 
@@ -134,7 +111,9 @@ function changeJSON() {
   <div style="display:flex;justify-content: center;">
     <div v-if="showPlayer">
       <BaStoryPlayer :story="story" data-url="https://yuuka.cdn.diyigemt.com/image/ba-all-data" :width="width"
-        :height="height" language="Cn" userName="testUser" :story-summary="storySummary" />
+        :height="height" language="Cn" userName="testUser" :story-summary="storySummary" 
+        style="resize: both; overflow: hidden;" ref="player"
+      />
       <!--其实在左边的剧情json里填入11000就能测试序章, 不需要改动这里-->
     </div>
     <div style="position: absolute;left: 0;display: flex;flex-direction: column;width: 20vh;z-index: 100;">
