@@ -136,15 +136,14 @@ function parseTextEffect(_text: Text) {
 
   .ba-selector {
     display: flex;
-    gap: 1rem;
+    gap: 1em;
     flex-direction: column;
-    width: 100%;
-    max-width: 80%;
+    width: 80%;
 
-    $font-size: 1.5rem;
+    $font-size: 1.5em;
     .ba-selector-item {
       text-align: center;
-      padding: 0.5rem 1rem;
+      padding: 0.5em 1em;
       font-size: $font-size;
       color: #344a6e;
       cursor: pointer;

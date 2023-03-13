@@ -59,8 +59,8 @@
         class="dialog">
         <div class="inner-dialog">
           <div class="title">
-            <div :style="{ fontSize: `${fontSize(3.5)}rem` }" class="name">{{ name ? name : '&emsp;' }}</div>
-            <div :style="{ fontSize: `${fontSize(2)}rem` }" class="department">{{ nickName }}</div>
+            <span :style="{ fontSize: `${fontSize(3.5)}rem` }" class="name">{{ name ? name : '&emsp;' }}</span>
+            <span :style="{ fontSize: `${fontSize(2)}rem` }" class="department">{{ nickName }}</span>
           </div>
           <hr>
           <div ref="typewriterOutput" :style="{ '--font-size': `${standardFontSize}rem` }" class="content" />
@@ -237,13 +237,13 @@ function handleShowStEvent(e: StText) {
     const x = Math.floor(((stWidth / 2) + stPos[0]) * stPositionBounds.value.width);
     const y = Math.floor(((stHeight / 2) - stPos[1]) * stPositionBounds.value.height);
     // st样式
-    let extendStyle = `;position: absolute; top: ${y}px; width: auto;left: ${x}px;`;
+    let extendStyle = `;position: absolute; --top: ${y}px; width: auto;left: ${x}px;`;
     // 居中显示特殊样式
     if (e.middle) {
       extendStyle = extendStyle + `;text-align: center; left: 50%; transform: translateX(-50%)`;
     }
     const fontSize = e.stArgs[2]; // st的字号
-    extendStyle = extendStyle + `;font-size: ${unityFontSizeToHTMLSize(Number(fontSize))}rem`;
+    extendStyle = extendStyle + `;--font-size: ${unityFontSizeToHTMLSize(Number(fontSize))}rem`;
     // 立即显示, 跳过打字机
     const fn = Reflect.get(StMap, stType);
     if (fn) {
@@ -344,7 +344,10 @@ function handleShowTextEvent(e: ShowText) {
 function parseTextEffect(text: Text, extendStyle = "", tag = "span"): Text {
   const effects = text.effects;
   // 解决typedjs对&的特殊处理
-  text.content = text.content.replace("&", "&amp;");
+  text.content = text.content
+    .replace(/&(\w{3,4};)/g, "{{escape-$1}}")
+    .replace(/&/g, "&amp;")
+    .replace(/{{escape-(\w{3,4};)}}/g, "&$1");
   // 注解
   const rt = (effects.filter(effect => effect.name === "ruby")[0] || { value: [] }).value.join("")
   const style = effects.filter(effect => effect.name !== "ruby").map(effect => {
@@ -353,7 +356,8 @@ function parseTextEffect(text: Text, extendStyle = "", tag = "span"): Text {
     if (name === "color") {
       return `color: ${value}`;
     } else if (name === "fontsize") {
-      return `font-size: ${unityFontSizeToHTMLSize(Number(value))}rem`
+      return
+      `font-size: ${unityFontSizeToHTMLSize(Number(value))}rem;--font-size: ${unityFontSizeToHTMLSize(Number(value))}rem`
     }
     // 暂时废弃, 没办法处理字体自适应
     return (StyleEffectTemplate[effect.name] || "").replace("${value}", effect.value.join(""))
@@ -753,14 +757,9 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
 }
 
 .department {
-  margin-left: 1rem;
+  margin-left: 10px;
   font-size: 2.5rem;
   color: rgb(156, 218, 240);
-}
-
-.title {
-  display: flex;
-  align-items: flex-end;
 }
 
 .dialog {
@@ -947,6 +946,12 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
     z-index: $text-layer-z-index + $st-z-index;
     color: white;
     text-shadow: $text-outline;
+    :deep(div) {
+      line-height: var(--font-size);
+      display: inline-block;
+      top: calc(var(--top) - var(--font-size) / 2);
+      font-size: var(--font-size);
+    }
   }
 
   .fade-in-out {

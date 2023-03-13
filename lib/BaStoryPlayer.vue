@@ -193,16 +193,18 @@ onDeactivated(() => {
     player.value?.removeEventListener(`${prefix}fullscreenchange`, handleFullScreenChange)
   })
 })
+
 </script>
 
 <template>
-  <div id="player" :style="playerStyle" ref="player">
+  <div id="player" :style="{height: `${playerHeight}px`, width: `${playerWidth}px` }" ref="player" >
     <div id="player__background" :style="playerStyle">
       <div id="player__main" :style="playerStyle">
         <div id="player__main__canvas" :style="{ transform: `scale(${pixiScale})` }"></div>
         <BaDialog :player-height="playerHeight" :player-width="playerWidth" :style="{ width: `${playerWidth}px` }">
         </BaDialog>
-        <BaUI :story-summary="storySummary" @fullscreen-change="fullScreen = !fullScreen"/>
+        <BaUI :height="playerHeight" :width="playerWidth" :story-summary="storySummary"
+          v-model:full-screen="fullScreen" />
       </div>
     </div>
   </div>
@@ -219,8 +221,8 @@ onDeactivated(() => {
       left: 0;
     }
   }
-
 }
+
 
 //noinspection CssOverwrittenProperties
 #player {
