@@ -118,8 +118,8 @@ watch(
       flex: 0 0 auto;
 
       .ba-dialog-title {
-        margin: 0.5em 0.5em 0 0.5em;
-        font-size: 1.5em;
+        margin: 0.2em 0.5em 0 0.5em;
+        font-size: 1.6em;
         font-weight: bold;
         text-align: center;
         user-select: none;

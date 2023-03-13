@@ -184,12 +184,12 @@ switch (props.chatMessage?.type) {
     }
 
     .ba-chat-message-name {
-      min-height: 1.4625em;
-      margin: 0.25em 1.25em;
+      min-height: 1.6em;
+      margin: 0.25em 1.5em;
     }
 
     .ba-chat-message-text {
-      font-size: 1em;
+      font-size: 1.2em;
       margin: 0.5em 1.5em;
       min-height: 5em;
     }
