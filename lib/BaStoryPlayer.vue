@@ -6,6 +6,7 @@ import {StoryRawUnit} from '@/types/common';
 import {Language, StorySummary} from '@/types/store';
 import {computed, onActivated, onBeforeMount, onBeforeUnmount, onDeactivated, onUnmounted,onMounted, ref, watch} from 'vue';
 import eventBus from './eventBus';
+import { changeStoryIndex } from './layers/uiLayer/userInteract';
 import {usePlayerStore} from './stores';
 
 export type PlayerProps = {
@@ -19,6 +20,8 @@ export type PlayerProps = {
   startFullScreen?: boolean
   useMp3?: boolean
   useSuperSampling?: boolean
+  /** 跳转至传入的 index */
+  changeIndex?: number
 }
 const props = withDefaults(defineProps<PlayerProps>(), {
   startFullScreen: false,
@@ -38,6 +41,11 @@ watch([() => props.width, () => props.height], () => {
     playerHeight.value = props.height
   }
 })
+watch(() => props.changeIndex, () => {
+  if(props.changeIndex!==undefined){
+    changeStoryIndex(props.changeIndex)
+  }
+});
 const playerStyle = computed(() => {
   return {height: `${playerHeight.value}px`, width: `${playerWidth.value}px`}
 })
