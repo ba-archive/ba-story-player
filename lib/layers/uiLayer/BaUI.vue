@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import BaButton from "@/layers/uiLayer/components/BaButton.vue";
-import { computed, ref, watchEffect } from "vue";
+import { computed, ref } from "vue";
 import BaDialog from "./components/BaDialog.vue";
 import BaChatLog from "./components/BaChatLog/BaChatLog.vue";
 import BaSelector from "./components/BaSelector.vue";
@@ -9,7 +9,7 @@ import { StorySummary } from "@/types/store";
 import { effectBtnMouseDown, effectBtnMouseUp } from "./utils";
 import { ShowOption } from "@/types/events";
 import { usePlayerStore } from "@/stores";
-import { useMouse, useThrottleFn } from '@vueuse/core'
+import { useThrottleFn } from "@vueuse/core";
 
 let hiddenSummary = ref(true);
 let hiddenStoryLog = ref(true);
@@ -17,51 +17,55 @@ let autoMode = ref(false);
 let hiddenMenu = ref(true);
 let hiddenSubMenu = ref(true);
 
-let props = defineProps<{ storySummary: StorySummary, height: number, width: number, fullScreen: Boolean }>()
+let props = defineProps<{
+  storySummary: StorySummary;
+  height: number;
+  width: number;
+  fullScreen: Boolean;
+}>();
 
 const selectOptions = ref<ShowOption[]>([]);
-const emitter = defineEmits(['update:fullScreen'])
+const emitter = defineEmits(["update:fullScreen"]);
 
 eventBus.on("hide", () => {
-  hiddenSummary.value = true
-  hiddenStoryLog.value = true
-  hiddenMenu.value = true
-})
+  hiddenSummary.value = true;
+  hiddenStoryLog.value = true;
+  hiddenMenu.value = true;
+});
 eventBus.on("hidemenu", () => {
-  hiddenMenu.value = true
-})
+  hiddenMenu.value = true;
+});
 eventBus.on("showmenu", () => {
-  hiddenMenu.value = false
-})
+  hiddenMenu.value = false;
+});
 eventBus.on("option", (e) => (selectOptions.value = [...e]));
 
 function handleBtnFullScreen() {
-  emitter('update:fullScreen', !props.fullScreen)
+  emitter("update:fullScreen", !props.fullScreen);
 }
 function handleBtnChatLog() {
-  eventBus.emit("playOtherSounds", "select")
-  refreshBtnMenuTimer()
-  hiddenStoryLog.value = false
-  autoMode.value = false
-  eventBus.emit("stopAuto")
+  eventBus.emit("playOtherSounds", "select");
+  refreshBtnMenuTimer();
+  hiddenStoryLog.value = false;
+  autoMode.value = false;
+  eventBus.emit("stopAuto");
 }
 function handleBtnSkipSummary() {
-  eventBus.emit("playOtherSounds", "select")
-  refreshBtnMenuTimer()
-  autoMode.value = false
+  eventBus.emit("playOtherSounds", "select");
+  refreshBtnMenuTimer();
+  autoMode.value = false;
   hiddenSummary.value = false;
-  eventBus.emit("stopAuto")
+  eventBus.emit("stopAuto");
 }
 
 // 处理选项
 function handleBaSelector(selectionGroup: number) {
-  hiddenSubMenu.value = true
-  eventBus.emit('select', selectOptions.value[selectionGroup].SelectionGroup)
-  usePlayerStore().updateLogText(selectOptions.value[selectionGroup])
+  hiddenSubMenu.value = true;
+  eventBus.emit("select", selectOptions.value[selectionGroup].SelectionGroup);
+  usePlayerStore().updateLogText(selectOptions.value[selectionGroup]);
 
   selectOptions.value.length = 0;
 }
-
 
 function handleBtnAutoMode() {
   autoMode.value = !autoMode.value;
@@ -73,13 +77,13 @@ function handleBtnAutoMode() {
 }
 
 // 计时器：当这个计时器到时间时 -- 回调函数会把 hiddenMenu 设置成 true 来影藏菜单
-let btnMenuTimer: NodeJS.Timeout
+let btnMenuTimer: NodeJS.Timeout;
 
 function handleBtnMenu() {
   if (hiddenSubMenu.value) {
     hiddenSubMenu.value = false;
     // 一段时间后自动影藏
-    clearInterval(btnMenuTimer)
+    clearInterval(btnMenuTimer);
     btnMenuTimer = setTimeout(() => {
       hiddenSubMenu.value = true;
     }, 5555);
@@ -92,7 +96,7 @@ const handleBtnMenuDebounced = useThrottleFn(handleBtnMenu, 200);
 
 function refreshBtnMenuTimer() {
   if (!hiddenSubMenu.value) {
-    clearTimeout(btnMenuTimer)
+    clearTimeout(btnMenuTimer);
     btnMenuTimer = setTimeout(() => {
       hiddenSubMenu.value = true;
     }, 5555);
@@ -100,72 +104,100 @@ function refreshBtnMenuTimer() {
 }
 
 // 子菜单按钮动画
-let handleBtnMouseDown = effectBtnMouseDown()
-let handleBtnMouseUp = effectBtnMouseUp()
+let handleBtnMouseDown = effectBtnMouseDown();
+let handleBtnMouseUp = effectBtnMouseUp();
 
 // baui em value, 根据height width计算
 const bauiem = computed(() => {
   // 1000 / 16 == 62.5, 562.5 / 16 == 35.15625  开发时基准宽高
-  let minVal = Math.min(props.width / 62.5, props.height / 35.15625, 20)
-  let newVal = Math.round(minVal)
-  return newVal
-})
+  let minVal = Math.min(props.width / 62.5, props.height / 35.15625, 20);
+  let newVal = Math.round(minVal);
+  return newVal;
+});
 
 // #86 全屏时 UI 层鼠标不可见
-const cursorStyle = ref("auto")
-const hideCursorDelay = 3000
+const cursorStyle = ref("auto");
+const hideCursorDelay = 3000;
 let cursorTimer: NodeJS.Timeout = setTimeout(() => {
-  cursorStyle.value = 'none'
+  cursorStyle.value = "none";
 }, hideCursorDelay);
 
-document.addEventListener("mousemove", (ev)=>{
-  cursorStyle.value = 'auto'
-  clearTimeout(cursorTimer)
+document.addEventListener("mousemove", (ev) => {
+  cursorStyle.value = "auto";
+  clearTimeout(cursorTimer);
   if (hiddenSummary.value && hiddenStoryLog.value && props.fullScreen) {
     cursorTimer = setTimeout(() => {
-      cursorStyle.value = 'none'
+      cursorStyle.value = "none";
     }, hideCursorDelay);
   }
-})
+});
 
 function handleBaUIClick() {
   if (!hiddenSubMenu.value) {
-    hiddenSubMenu.value = true
-    return
+    hiddenSubMenu.value = true;
+    return;
   }
-  eventBus.emit("playOtherSounds", "select")
-  eventBus.emit('click')
+  eventBus.emit("playOtherSounds", "select");
+  eventBus.emit("click");
 }
 
 </script>
 
 <template>
-  <div class="baui" @click.self="handleBaUIClick" :style="{'font-size': `${bauiem}px`, 'cursor': cursorStyle}">
+  <div
+    class="baui"
+    @click.self="handleBaUIClick"
+    :style="{ 'font-size': `${bauiem}px`, cursor: cursorStyle }"
+  >
     <div class="right-top" v-show="!hiddenMenu">
       <div class="baui-button-group">
-        <BaButton @click="handleBtnAutoMode" :class="{ 'ba-button-auto': true, activated: autoMode }">
+        <BaButton
+          @click="handleBtnAutoMode"
+          :class="{ 'ba-button-auto': true, activated: autoMode }"
+        >
           AUTO
         </BaButton>
-        <BaButton @click="handleBtnMenuDebounced" :class="{ 'ba-button-menu': true, activated: !hiddenSubMenu }">
+        <BaButton
+          @click="handleBtnMenuDebounced"
+          :class="{ 'ba-button-menu': true, activated: !hiddenSubMenu }"
+        >
           MENU
         </BaButton>
       </div>
 
       <Transition>
         <div class="baui-menu-options lean-rect" v-if="!hiddenSubMenu">
-          <button class="button-nostyle ba-menu-option" @click="handleBtnFullScreen" @mousedown="handleBtnMouseDown"
-            @touchstart="handleBtnMouseDown" @touchend="handleBtnMouseUp" @mouseup="handleBtnMouseUp"
-            @mouseleave="handleBtnMouseUp">
+          <button
+            class="button-nostyle ba-menu-option"
+            @click="handleBtnFullScreen"
+            @mousedown="handleBtnMouseDown"
+            @touchstart="handleBtnMouseDown"
+            @touchend="handleBtnMouseUp"
+            @mouseup="handleBtnMouseUp"
+            @mouseleave="handleBtnMouseUp"
+          >
             <img draggable="false" src="./assets/pan-arrow.svg" />
           </button>
-          <button class="button-nostyle ba-menu-option" @click="handleBtnChatLog" @mousedown="handleBtnMouseDown"
-            @touchstart="handleBtnMouseDown" @touchend="handleBtnMouseUp" @mouseup="handleBtnMouseUp"
-            @mouseleave="handleBtnMouseUp">
+          <button
+            class="button-nostyle ba-menu-option"
+            @click="handleBtnChatLog"
+            @mousedown="handleBtnMouseDown"
+            @touchstart="handleBtnMouseDown"
+            @touchend="handleBtnMouseUp"
+            @mouseup="handleBtnMouseUp"
+            @mouseleave="handleBtnMouseUp"
+          >
             <img draggable="false" src="./assets/menu.svg" />
           </button>
-          <button class="button-nostyle ba-menu-option" @click="handleBtnSkipSummary" @mousedown="handleBtnMouseDown"
-            @touchstart="handleBtnMouseDown" @touchend="handleBtnMouseUp" @mouseup="handleBtnMouseUp"
-            @mouseleave="handleBtnMouseUp">
+          <button
+            class="button-nostyle ba-menu-option"
+            @click="handleBtnSkipSummary"
+            @mousedown="handleBtnMouseDown"
+            @touchstart="handleBtnMouseDown"
+            @touchend="handleBtnMouseUp"
+            @mouseup="handleBtnMouseUp"
+            @mouseleave="handleBtnMouseUp"
+          >
             <img draggable="false" src="./assets/fast-forward.svg" />
           </button>
         </div>
@@ -198,12 +230,10 @@ function handleBaUIClick() {
 </template>
 
 <style lang="scss" scoped>
-
 // #86 全部元素继承 cursor 属性
 * {
   cursor: inherit;
 }
-
 
 .lean-rect {
   transform: skew(-10deg);
@@ -232,13 +262,13 @@ function handleBaUIClick() {
   top: 0;
   z-index: 100;
   overflow: hidden;
-  font-family: 'TJL', 'Microsoft YaHei', 'PingFang SC', -apple-system, system-ui,
-    'Segoe UI', Roboto, Ubuntu, Cantarell, 'Noto Sans', BlinkMacSystemFont,
-    'Helvetica Neue', 'Hiragino Sans GB', Arial, sans-serif;
+  font-family: "TJL", "Microsoft YaHei", "PingFang SC", -apple-system, system-ui,
+    "Segoe UI", Roboto, Ubuntu, Cantarell, "Noto Sans", BlinkMacSystemFont,
+    "Helvetica Neue", "Hiragino Sans GB", Arial, sans-serif;
 
   .v-enter-active,
   .v-leave-active {
-    transition: opacity .2s;
+    transition: opacity 0.2s;
   }
 
   .v-enter-from,
@@ -257,7 +287,8 @@ function handleBaUIClick() {
     }
 
     .ba-button-auto.activated {
-      background: no-repeat right -17% bottom/contain url(./assets/Common_Btn_Normal_Y_S_Pt.png) #efe34b;
+      background: no-repeat right -17% bottom/contain url(./assets/Common_Btn_Normal_Y_S_Pt.png)
+        #efe34b;
     }
 
     .ba-button-menu.activated {
@@ -307,11 +338,14 @@ function handleBaUIClick() {
       height: 100%;
       display: flex;
       flex-flow: nowrap column;
-      background: center/contain linear-gradient(130deg,
-          rgba(240, 240, 240, 1) 0%,
-          rgba(240, 240, 240, 0.9) 65%,
-          rgba(240, 240, 240, 0.6) 70%,
-          rgba(240, 240, 240, 0) 100%),
+      background: center/contain
+          linear-gradient(
+            130deg,
+            rgba(240, 240, 240, 1) 0%,
+            rgba(240, 240, 240, 0.9) 65%,
+            rgba(240, 240, 240, 0.6) 70%,
+            rgba(240, 240, 240, 0) 100%
+          ),
         80px 45% url(./assets/UITex_BGPoliLight_1.png) rgb(164 216 237);
       background-size: 100%;
     }
