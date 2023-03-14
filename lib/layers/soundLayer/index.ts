@@ -140,6 +140,8 @@ export function soundInit() {
   })
 
   eventBus.on('dispose', () => soundDispose())
+  eventBus.on('stop',() => soundDispose())
+  eventBus.on('continue',() => bgm?.play())
 }
 
 
