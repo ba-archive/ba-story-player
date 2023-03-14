@@ -174,6 +174,7 @@ onMounted(() => {
 
 onUnmounted(()=>{
   dispose()
+  window.removeEventListener('resize',updateFullScreenState)
 })
 
 onActivated(() => {
