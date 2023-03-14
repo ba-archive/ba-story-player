@@ -1,12 +1,13 @@
 import eventBus from "@/eventBus";
 import { eventEmitter, storyHandler } from "@/index";
 import { usePlayerStore } from "@/stores";
+const keyStatus = {} as any;
 function interactNext() {
   const currentStoryUnit = storyHandler.currentStoryUnit;
   if (
     currentStoryUnit?.textAbout?.options ||
     currentStoryUnit?.textAbout?.titleInfo ||
-    eventEmitter.l2dPlaying
+    eventEmitter.l2dPlaying || currentStoryUnit.l2d
   ) {
     console.log("不允许下一步", storyHandler.currentStoryUnit);
     return;
@@ -15,6 +16,10 @@ function interactNext() {
 }
 let nexting: any;
 const keyEvent = (e: KeyboardEvent) => {
+  keyStatus[e.key] = true;
+  if (Object.values(keyStatus).filter((i) => i).length >= 2) {
+    return;
+  }
   // 显示历史 log 不允许操作
   if (eventEmitter.isStoryLogShow) {
     return;
@@ -22,11 +27,11 @@ const keyEvent = (e: KeyboardEvent) => {
   switch (e.key) {
     case "Enter":
     case " ":
-      if(!nexting){
-        interactNext()
+      if (!nexting) {
+        interactNext();
         nexting = setInterval(() => {
-          interactNext()
-        }, 1000)
+          interactNext();
+        }, 1000);
       }
       break;
     case "ArrowUp":
@@ -35,17 +40,18 @@ const keyEvent = (e: KeyboardEvent) => {
     case "Control":
       // 限流
       storyHandler.isSkip = true;
-      if(!nexting){
-        interactNext()
+      if (!nexting) {
+        interactNext();
         nexting = setInterval(() => {
-          interactNext()
-        }, 200)
+          interactNext();
+        }, 200);
       }
   }
 };
 const keyUpEvent = (e: KeyboardEvent) => {
-  clearInterval(nexting)
-  nexting = undefined
+  keyStatus[e.key] = false;
+  clearInterval(nexting);
+  nexting = undefined;
   switch (e.key) {
     case "Control":
       storyHandler.isSkip = false;

@@ -180,10 +180,15 @@ export let storyHandler = {
   },
 
   next() {
-    if(this.isSkip){
+    if(this.isSkip && !eventEmitter.l2dPlaying){
       storyHandler.storyIndexIncrement()
       // 快进用 storyPlay 需要考虑 unitPlaying, 同时会有一个while循环在里边导致控制不符合预期
-      eventEmitter.emitEvents()
+      eventEmitter.emitEvents().then(()=>{
+        // 注意这个函数是 异步的, 需要等待执行完再继续 l2d, 此时后续的skip会被拦住
+        if(this.currentStoryUnit.l2d){
+          this.next()
+        }
+      })
       return;
     }
     if ((eventEmitter.unitDone && !this.unitPlaying && !this.auto)) {
@@ -338,6 +343,12 @@ export let eventEmitter = {
       }
     })
     eventBus.on('select', e => {
+      // 选择完直接下一步, 避免卡在 l2dplaying 前
+      if(storyHandler.isSkip){
+        storyHandler.select(e)
+        this.emitEvents()
+        return;
+      }
       if (this.unitDone) {
         storyHandler.select(e)
         storyHandler.storyPlay()
@@ -382,7 +393,7 @@ export let eventEmitter = {
   async emitEvents() {
     // TODO: 上线注释, 也可以不注释
     console.log('剧情进度: ' + storyHandler.currentStoryIndex, storyHandler.currentStoryUnit)
-    !storyHandler.isSkip && await this.transitionIn()
+    await this.transitionIn()
     this.hide()
     await this.showBg()
     this.showPopup()
@@ -390,7 +401,7 @@ export let eventEmitter = {
     this.playL2d()
     this.playAudio()
     this.clearSt()
-    !storyHandler.isSkip && await this.transitionOut()
+    await this.transitionOut()
     this.showCharacter()
     this.show()
 
