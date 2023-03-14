@@ -16,6 +16,8 @@ let hiddenStoryLog = ref(true);
 let autoMode = ref(false);
 let hiddenMenu = ref(true);
 let hiddenSubMenu = ref(true);
+const playerStore = usePlayerStore();
+const userLanguage = computed(() => playerStore.language);
 
 let props = defineProps<{
   storySummary: StorySummary;
@@ -141,6 +143,45 @@ function handleBaUIClick() {
   eventBus.emit("click");
 }
 
+// i18n
+const dict = {
+  cn: {
+    log: "对话记录",
+    summary: "概要",
+    close: "关闭",
+  },
+  en: {
+    log: "LOG",
+    summary: "Summary",
+    close: "Close",
+  },
+  jp: {
+    log: "ログ",
+    summary: "あらすじ",
+    close: "閉じる",
+  },
+  kr: {
+    log: "로그",
+    summary: "요약",
+    close: "닫기",
+  },
+  tw: {
+    log: "對話記錄",
+    summary: "概要",
+    close: "關閉",
+  },
+  th: {
+    log: "บันทึกการสนทนา",
+    summary: "สรุป",
+    close: "ปิด",
+  },
+};
+
+function getI18n(key: string) {
+  return (
+    Reflect.get(Reflect.get(dict, userLanguage.value.toLowerCase()), key) || key
+  );
+}
 </script>
 
 <template>
@@ -204,26 +245,47 @@ function handleBaUIClick() {
       </Transition>
     </div>
 
-    <BaSelector id="ba-story-selector" :selection="selectOptions" @select="handleBaSelector"
-      v-if="selectOptions.length !== 0" />
+    <BaSelector
+      id="ba-story-selector"
+      :selection="selectOptions"
+      @select="handleBaSelector"
+      v-if="selectOptions.length !== 0"
+    />
 
-    <BaDialog id="ba-story-summary" :title="'概要'" :show="!hiddenSummary" @close="hiddenSummary = true"
-      width="70%" height="85%">
+    <BaDialog
+      id="ba-story-summary"
+      :title="getI18n('summary')"
+      :show="!hiddenSummary"
+      @close="hiddenSummary = true"
+      width="70%"
+      height="85%"
+    >
       <div class="ba-story-summary-container">
         <h4 class="ba-story-summary-title">{{ storySummary.chapterName }}</h4>
         <p class="ba-story-summary-text">
           {{ storySummary.summary }}
         </p>
         <div class="ba-story-summary-button-group">
-          <BaButton size="middle" class="polylight button-close-summary" @click="hiddenSummary = true" style="width: 96%">
-            关闭
+          <BaButton
+            size="middle"
+            class="polylight button-close-summary"
+            @click="hiddenSummary = true"
+            style="width: 96%"
+          >
+            {{ getI18n("close") }}
           </BaButton>
         </div>
       </div>
     </BaDialog>
 
-    <BaDialog id="ba-story-log" :title="'对话记录'" width="min(1080px, 80%)" height="min(650px, 86%)" :show="!hiddenStoryLog"
-      @close="hiddenStoryLog = !hiddenStoryLog">
+    <BaDialog
+      id="ba-story-log"
+      :title="getI18n('log')"
+      width="min(1080px, 80%)"
+      height="min(650px, 86%)"
+      :show="!hiddenStoryLog"
+      @close="hiddenStoryLog = !hiddenStoryLog"
+    >
       <BaChatLog :show="!hiddenStoryLog" />
     </BaDialog>
   </div>
