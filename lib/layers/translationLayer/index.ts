@@ -17,7 +17,117 @@ type IStoryRawUnitParserUnit = {
 // [\u2E80-\u9FFF]
 const StoryRawUnitParserUnit: IStoryRawUnitParserUnit = {
   title: {
-    reg: /#title;.+;.+;?/,
+    reg: /#title;(.+);(.+);?/,
+    fn(match: RegExpExecArray, unit: StoryUnit, rawUnit: StoryRawUnit) {
+      return unit;
+    }
+  },
+  place: {
+    reg: /#place;(.+);?/,
+    fn(match: RegExpExecArray, unit: StoryUnit, rawUnit: StoryRawUnit) {
+      return unit;
+    }
+  },
+  nextEpisode: {
+    reg: /#nextepisode;(.+);(.+);?/,
+    fn(match: RegExpExecArray, unit: StoryUnit, rawUnit: StoryRawUnit) {
+      return unit;
+    }
+  },
+  continued: {
+    reg: /#continued;?/,
+    fn(match: RegExpExecArray, unit: StoryUnit, rawUnit: StoryRawUnit) {
+      return unit;
+    }
+  },
+  na: {
+    reg: /#na;(.+);(.+);?/,
+    fn(match: RegExpExecArray, unit: StoryUnit, rawUnit: StoryRawUnit) {
+      return unit;
+    }
+  },
+  st: {
+    reg: /#st;(\[-?\d+,-?\d+]);(serial|instant|smooth);(\d+);?/,
+    fn(match: RegExpExecArray, unit: StoryUnit, rawUnit: StoryRawUnit) {
+      return unit;
+    }
+  },
+  stm: {
+    reg: /#stm;(\[0,-?\d+]);(serial|instant|smooth);(\d+);?/,
+    fn(match: RegExpExecArray, unit: StoryUnit, rawUnit: StoryRawUnit) {
+      return unit;
+    }
+  },
+  clearSt: {
+    reg: /#clearST;?/,
+    fn(match: RegExpExecArray, unit: StoryUnit, rawUnit: StoryRawUnit) {
+      return unit;
+    }
+  },
+  wait: {
+    reg: /#wait;(1000);?/,
+    fn(match: RegExpExecArray, unit: StoryUnit, rawUnit: StoryRawUnit) {
+      return unit;
+    }
+  },
+  fontsize: {
+    reg: /#fontsize;(80);?/,
+    fn(match: RegExpExecArray, unit: StoryUnit, rawUnit: StoryRawUnit) {
+      return unit;
+    }
+  },
+  all: {
+    // #all;dl
+    // #all;hide
+    reg: /#all;(.+);?/,
+    fn(match: RegExpExecArray, unit: StoryUnit, rawUnit: StoryRawUnit) {
+      return unit;
+    }
+  },
+  hideMenu: {
+    reg: /#hidemenu;?/,
+    fn(match: RegExpExecArray, unit: StoryUnit, rawUnit: StoryRawUnit) {
+      return unit;
+    }
+  },
+  showMenu: {
+    reg: /#showmenu;?/,
+    fn(match: RegExpExecArray, unit: StoryUnit, rawUnit: StoryRawUnit) {
+      return unit;
+    }
+  },
+  zmc: {
+    reg: /#zmc;(instant|move);(-?\d+,-?\d+);(\d+);?(\d+)?;?/,
+    fn(match: RegExpExecArray, unit: StoryUnit, rawUnit: StoryRawUnit) {
+      return unit;
+    }
+  },
+  bgShake: {
+    reg: /#bgshake;?/,
+    fn(match: RegExpExecArray, unit: StoryUnit, rawUnit: StoryRawUnit) {
+      return unit;
+    }
+  },
+  video: {
+    reg: /#video;(.+);(.+);?/,
+    fn(match: RegExpExecArray, unit: StoryUnit, rawUnit: StoryRawUnit) {
+      return unit;
+    }
+  },
+  character: {
+    reg: /([1-5]);(.+);(\d{1,3})/,
+    fn(match: RegExpExecArray, unit: StoryUnit, rawUnit: StoryRawUnit) {
+      return unit;
+    }
+  },
+  characterEffect: {
+    reg: /#([1-5]);(em;(.+)|\w+);?/,
+    fn(match: RegExpExecArray, unit: StoryUnit, rawUnit: StoryRawUnit) {
+      return unit;
+    }
+  },
+  option: {
+    reg: /\[n?s(\d{0,2})?](.+)/,
     fn(match: RegExpExecArray, unit: StoryUnit, rawUnit: StoryRawUnit) {
       return unit;
     }
