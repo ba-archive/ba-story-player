@@ -83,6 +83,8 @@ export type Events = {
    * 跳过剧情
    */
   skip: undefined
+  /** 按contrl时跳过剧情 */
+  skipping: undefined
   /**
    * 自动模式
    */

@@ -93,6 +93,13 @@ async function playTransition(color: 'black' | 'white', durationMs: number, mode
   let background = document.querySelector('#player__background') as HTMLDivElement
   background.style.backgroundColor = color
   let playerMain = document.querySelector('#player__main')
+  function killTransitionIn(){
+    // 避免在transitionIn 动画时快进导致一直黑屏或白屏
+    gsap.killTweensOf('#player__main')
+    gsap.to('#player__main', { alpha: 1 })
+    eventBus.off('skipping', killTransitionIn)
+  }
+  eventBus.on('skipping', killTransitionIn)
   switch (mode) {
     case 'in':
       await gsap.fromTo(playerMain, { alpha: 1 }, { alpha: 0, duration: durationMs / 1000 })

@@ -2,21 +2,7 @@ import eventBus from "@/eventBus";
 import { eventEmitter, storyHandler } from "@/index";
 import { usePlayerStore } from "@/stores";
 const keyStatus = {} as any;
-function interactNext() {
-  const currentStoryUnit = storyHandler.currentStoryUnit;
-  if (
-    currentStoryUnit?.textAbout?.options ||
-    currentStoryUnit?.textAbout?.titleInfo ||
-    eventEmitter.l2dPlaying || currentStoryUnit.l2d
-  ) {
-    console.log("不允许下一步", storyHandler.currentStoryUnit);
-    return;
-  }
-  eventBus.emit("next");
-}
-function isPlayerFocus(){
-  return document.activeElement?.className.includes("baui")
-}
+
 // 进行下一步的定时器
 let nexting: any;
 const keyEvent = (e: KeyboardEvent) => {
@@ -47,6 +33,7 @@ const keyEvent = (e: KeyboardEvent) => {
       if (!nexting) {
         interactNext();
         nexting = setInterval(() => {
+          eventBus.emit("skipping");
           interactNext();
         }, 200);
       }
@@ -127,3 +114,24 @@ export const changeStoryIndex = (index?: number) => {
   storyHandler.currentStoryIndex = index;
   eventBus.emit("next");
 };
+
+function interactNext() {
+  const currentStoryUnit = storyHandler.currentStoryUnit;
+  if (
+    currentStoryUnit?.textAbout?.options ||
+    currentStoryUnit?.textAbout?.titleInfo ||
+    eventEmitter.l2dPlaying ||
+    currentStoryUnit.l2d
+  ) {
+    console.log("不允许下一步", storyHandler.currentStoryUnit);
+    return;
+  }
+  eventBus.emit("next");
+}
+function isPlayerFocus() {
+  return document.activeElement?.className.includes("baui");
+}
+eventBus.on("select", () => {
+  // 选择后继续能跳过
+  (document.querySelector(".baui") as any).focus();
+});
