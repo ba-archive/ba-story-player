@@ -14,6 +14,10 @@ function interactNext() {
   }
   eventBus.emit("next");
 }
+function isPlayerFocus(){
+  return document.activeElement?.className.includes("baui")
+}
+// 进行下一步的定时器
 let nexting: any;
 const keyEvent = (e: KeyboardEvent) => {
   keyStatus[e.key] = true;
@@ -21,7 +25,7 @@ const keyEvent = (e: KeyboardEvent) => {
     return;
   }
   // 显示历史 log 不允许操作
-  if (eventEmitter.isStoryLogShow) {
+  if (eventEmitter.isStoryLogShow || !isPlayerFocus()) {
     return;
   }
   switch (e.key) {
@@ -59,7 +63,7 @@ const keyUpEvent = (e: KeyboardEvent) => {
 };
 
 const wheelEvent = (e: WheelEvent & { [key: string]: any }) => {
-  if (eventEmitter.isStoryLogShow) {
+  if (eventEmitter.isStoryLogShow || !isPlayerFocus()) {
     return;
   }
   const delta = e.wheelDelta ? e.wheelDelta : -e.detail;

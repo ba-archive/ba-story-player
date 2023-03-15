@@ -147,7 +147,7 @@ function handleBaUIClick() {
 </script>
 
 <template>
-  <div class="baui" @click.self="handleBaUIClick" :style="{'font-size': `${bauiem}px`, 'cursor': cursorStyle}">
+  <div class="baui" @click.self="handleBaUIClick" :style="{'font-size': `${bauiem}px`, 'cursor': cursorStyle}" tabindex="0">
     <div class="right-top" v-show="!hiddenMenu">
       <div class="baui-button-group">
         <BaButton @click="handleBtnAutoMode" :class="{ 'ba-button-auto': true, activated: autoMode }">
