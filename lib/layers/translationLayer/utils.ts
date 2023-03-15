@@ -127,9 +127,16 @@ export function splitStScript(rawText: string): string[] {
  */
 export function parseCustomTag(rawText: string): Text {
   let raw = rawText;
-  const effects = Object.keys(ICustomTagParserMap).map(key => {
-    const fn = Reflect.get(ICustomTagParserMap, key) as CustomTagParserFn;
-    const res = fn(raw);
+  const effects = Object.keys(CustomTagParserMap).map(key => {
+    const parseConfig = Reflect.get(CustomTagParserMap, key) as CustomTagParserFnConfig;
+    if (!parseConfig) {
+      return undefined;
+    }
+    const match = parseConfig.reg.exec(raw);
+    if (!match) {
+      return undefined;
+    }
+    const res = parseConfig.fn(raw, match);
     if (res) {
       raw = res.remain;
     }
@@ -141,44 +148,43 @@ export function parseCustomTag(rawText: string): Text {
   }
 }
 
-type CustomTagParserFn = (rawText: string) => { effect: TextEffect, remain: string } | undefined;
+type CustomTagParserFnConfig = {
+  reg: RegExp,
+  fn: (rawText: string, match: RegExpExecArray) => { effect: TextEffect, remain: string } | undefined
+} | null;
 
-type CustomTagParserMap = {
-  [key in TextEffectName]: CustomTagParserFn;
+type ICustomTagParserMap = {
+  [key in TextEffectName]: CustomTagParserFnConfig;
 }
 
-const ICustomTagParserMap: CustomTagParserMap = {
-  ruby(rawText) {
-    const exec = /\[ruby=(.+?)](.+)\[\/ruby]/.exec(rawText);
-    if (!exec) {
-      return undefined;
+const CustomTagParserMap: ICustomTagParserMap = {
+  ruby: {
+    reg: /\[ruby=(.+?)](.+)\[\/ruby]/,
+    fn(rawText: string, match: RegExpExecArray) {
+      const effect: TextEffect = {
+        name: "ruby",
+        value: [match[1]]
+      }
+      return {
+        effect: effect,
+        remain: rawText.replace(`[ruby=${match[1]}]`, "").replace("[/ruby]", ""),
+      };
     }
-    const effect: TextEffect = {
-      name: "ruby",
-      value: [exec[1]]
-    }
-    return {
-      effect: effect,
-      remain: rawText.replace(`[ruby=${exec[1]}]`, "").replace("[/ruby]", ""),
-    };
   },
-  color(rawText) {
-    const exec = /\[([A-Fa-f0-9]{6})](.+?)\[-]/.exec(rawText);
-    if (!exec) {
-      return undefined;
+  color: {
+    reg: /\[([A-Fa-f0-9]{6})](.+?)\[-]/,
+    fn(rawText: string, match: RegExpExecArray) {
+      const effect: TextEffect = {
+        name: "color",
+        value: [`#${match[1]}`]
+      }
+      return {
+        effect: effect,
+        remain: rawText.replace(`[${match[1]}]`, "").replace("[-]", ""),
+      };
     }
-    const effect: TextEffect = {
-      name: "color",
-      value: [`#${exec[1]}`]
-    }
-    return {
-      effect: effect,
-      remain: rawText.replace(`[${exec[1]}]`, "").replace("[-]", ""),
-    };
   },
-  fontsize() {
-    return undefined;
-  }
+  fontsize: null,
 }
 
 /**

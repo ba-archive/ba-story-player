@@ -1,19 +1,89 @@
-import { usePlayerStore } from '@/stores';
-import { StoryRawUnit, StoryUnit, ZmcArgs } from "@/types/common";
-import { StArgs } from '@/types/events';
-import { getResourcesUrl } from '@/utils';
-import { l2dConfig } from '../l2dLayer/l2dConfig';
+import {usePlayerStore} from '@/stores';
+import {StoryRawUnit, StoryUnit, TextEffect, ZmcArgs} from "@/types/common";
+import {StArgs} from '@/types/events';
+import {getResourcesUrl} from '@/utils';
+import {l2dConfig} from '../l2dLayer/l2dConfig';
 import * as utils from "./utils";
 import {getText} from "./utils";
+
+type IStoryRawUnitParserFn = {
+  reg: RegExp;
+  fn: (match: RegExpExecArray, unit: StoryUnit, rawUnit: StoryRawUnit) => StoryUnit;
+};
+
+type IStoryRawUnitParserUnit = {
+  [key: string]: IStoryRawUnitParserFn;
+}
+// [\u2E80-\u9FFF]
+const StoryRawUnitParserUnit: IStoryRawUnitParserUnit = {
+  title: {
+    reg: /#title;.+;.+;?/,
+    fn(match: RegExpExecArray, unit: StoryUnit, rawUnit: StoryRawUnit) {
+      return unit;
+    }
+  }
+}
 
 /**
  * 将原始剧情结构翻译成标准剧情结构
  * @param rawStory: 原始剧情
  */
 export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
+  const playerStore = usePlayerStore();
+  rawStory.map((rawStoryUnit, index) => {
+    const { GroupId, SelectionGroup, PopupFileName } = rawStoryUnit;
+    const unit: StoryUnit = {
+      GroupId, SelectionGroup,
+      PopupFileName: PopupFileName ? getResourcesUrl('popupImage', PopupFileName) : "",
+      type: 'text',
+      characters: [],
+      textAbout: {
+        showText: {
+          text: [],
+        },
+        st: {}
+      },
+      effect: {
+        otherEffect: []
+      },
+    };
+    unit.audio = {
+      bgm: utils.getBgm(rawStoryUnit.BGMId),
+      soundUrl: utils.getSoundUrl(rawStoryUnit.Sound),
+      voiceJPUrl: utils.getVoiceJPUrl(rawStoryUnit.VoiceJp)
+    };
+    unit.transition = playerStore.TransitionExcelTable.get(rawStoryUnit.Transition);
+    if (rawStoryUnit.BGName) {
+      const BGItem = playerStore.BGNameExcelTable.get(rawStoryUnit.BGName);
+      if (BGItem) {
+        if (BGItem.BGType === 'Image') {
+          unit.bg = {
+            url: getResourcesUrl('bg', BGItem.BGFileName),
+            overlap: utils.checkBgOverlap(unit)
+          };
+        }
+        else if (BGItem.BGType === 'Spine') {
+          // 取第一次出现的 l2d 作为配置
+          const l2dInfo = utils.getL2DUrlAndName(BGItem.BGFileName);
+          playerStore.setL2DConfig(playerStore.curL2dConfig || l2dConfig[l2dInfo.name]);
+          unit.l2d = {
+            spineUrl: l2dInfo.url,
+            animationName: BGItem.AnimationName
+          };
+        }
+      }
+    }
+    unit.effect.BGEffect = playerStore.BGEffectExcelTable.get(rawStoryUnit.BGEffect);
+    //当没有文字时初步判断为effectOnly类型
+    if (!rawStoryUnit.TextJp || !rawStoryUnit.TextJp) {
+      unit.type = 'effectOnly'
+    }
+    const ScriptKr = String(rawStoryUnit.ScriptKr);
+    const scripts = ScriptKr.split("\n");
 
+    return unit;
+  });
   let result: StoryUnit[] = []
-  let playerStore = usePlayerStore()
   for (let [rawIndex, rawStoryUnit] of rawStory.entries()) {
     //初始化unit, 将需要的原始属性填入unit, 同时查表填入其他属性
     let { GroupId, SelectionGroup, PopupFileName } = rawStoryUnit
