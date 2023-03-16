@@ -95,7 +95,7 @@ export async function init(elementID: string, props: PlayerConfigs, endCallback:
 }
 
 /**
- * 回收
+ * 回收播放器资源, 让播放器回到初始状态
  */
 export function dispose() {
   initPrivateState().app?.destroy()
@@ -105,6 +105,20 @@ export function dispose() {
   usePlayerStore().logText.value = []
   pixiUtils.clearTextureCache()
   storyHandler.isEnd = true
+}
+
+/**
+ * 暂停播放
+ */
+export function stop(){
+  eventBus.emit('stop')
+}
+
+/**
+ * 继续播放
+ */
+export function continuePlay(){
+  eventBus.emit('continue')
 }
 
 

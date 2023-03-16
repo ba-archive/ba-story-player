@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import {init,dispose} from '@/index';
+import {init,dispose,stop,continuePlay} from '@/index';
 import BaDialog from "@/layers/textLayer/BaDialog.vue";
 import BaUI from "@/layers/uiLayer/BaUI.vue"
 import {StoryRawUnit} from '@/types/common';
@@ -161,6 +161,10 @@ function handleFullScreenChange() {
     ![null, undefined].includes(document.mozFullScreenElement)
 }
 
+/**
+ * 是否经历过setup onMounted
+ */
+let firstMount=false
 onMounted(() => {
   init('player__main__canvas', pixiConfig, () => emit('end'))
   if (props.startFullScreen) {
@@ -170,16 +174,25 @@ onMounted(() => {
   prefixes.forEach(prefix => {
     player.value?.addEventListener(`${prefix}fullscreenchange`, handleFullScreenChange)
   })
+  firstMount=true
 })
 
 onUnmounted(()=>{
   dispose()
+  window.removeEventListener('resize',updateFullScreenState)
 })
 
 onActivated(() => {
-  prefixes.forEach(prefix => {
+  //目前请不要让此component keepAlive, 可能导致未知的问题
+  if(!firstMount){
+    continuePlay()
+    prefixes.forEach(prefix => {
     player.value?.addEventListener(`${prefix}fullscreenchange`, handleFullScreenChange)
   })
+  }
+  else{
+    firstMount=false 
+  }
 })
 
 onBeforeUnmount(() => {
@@ -192,6 +205,7 @@ onDeactivated(() => {
   prefixes.forEach(prefix => {
     player.value?.removeEventListener(`${prefix}fullscreenchange`, handleFullScreenChange)
   })
+  stop()
 })
 
 </script>

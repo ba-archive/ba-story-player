@@ -16,7 +16,15 @@ export type Events = {
    * 注销
    */
   dispose: undefined
-
+  /**
+   * 暂停
+   */
+  stop: undefined
+  /**
+   * 继续
+   */
+  continue: undefined
+  
   //特效层
 
   /**
