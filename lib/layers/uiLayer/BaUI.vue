@@ -5,7 +5,7 @@ import BaDialog from "./components/BaDialog.vue";
 import BaChatLog from "./components/BaChatLog/BaChatLog.vue";
 import BaSelector from "./components/BaSelector.vue";
 import eventBus from "@/eventBus";
-import { StorySummary } from "@/types/store";
+import {Language, StorySummary} from "@/types/store";
 import { effectBtnMouseDown, effectBtnMouseUp } from "./utils";
 import { ShowOption } from "@/types/events";
 import { usePlayerStore } from "@/stores";
@@ -17,13 +17,13 @@ let autoMode = ref(false);
 let hiddenMenu = ref(true);
 let hiddenSubMenu = ref(true);
 const playerStore = usePlayerStore();
-const userLanguage = computed(() => playerStore.language);
 
 let props = defineProps<{
   storySummary: StorySummary;
   height: number;
   width: number;
   fullScreen: Boolean;
+  language: Language;
 }>();
 
 const selectOptions = ref<ShowOption[]>([]);
@@ -179,7 +179,7 @@ const dict = {
 
 function getI18n(key: string) {
   return (
-    Reflect.get(Reflect.get(dict, userLanguage.value.toLowerCase()), key) || key
+    Reflect.get(Reflect.get(dict, props.language.toLowerCase()), key) || key
   );
 }
 </script>
