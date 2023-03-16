@@ -1,5 +1,9 @@
 <template>
-  <div class="container" :style="{ height: `${playerHeight}px` }">
+  <div class="container" :style="{
+    height: `${playerHeight}px`,
+    '--standard-font-size': standardFontSize,
+    '--standard-unity-font-size': standardUnityFontSize
+  }">
     <div class="container-inner">
       <div class="loading-container absolute-container" v-if="showLoading">
         <img class="loading-image" :src="loadingImageSrc" alt="本来应该是加载图片的">
@@ -38,7 +42,16 @@
             v-if="popupSrc.video" @ended="onPopupVideoEnd" />
         </div>
       </div>
-      <div class="st-container absolute-container" ref="stOutput" :style="{ fontSize: `${standardFontSize}rem` }" />
+      <div
+        class="st-container absolute-container"
+        ref="stOutput"
+        :style="{
+          '--st-width-half': `${stWidth / 2}`,
+          '--st-height-half': `${stHeight / 2}`,
+          '--st-pos-bounds-x': `${stPositionBounds.width}`,
+          '--st-pos-bounds-y': `${stPositionBounds.height}`,
+        }"
+      />
       <div ref="titleEL" class="title-container absolute-container" :style="overrideTitleStyle" v-if="titleContent">
         <div class="title-border" :style="{ '--side-padding': `${titleBorderPadding}px` }">
           <img src="./assets/title-border.png" />
@@ -237,13 +250,13 @@ function handleShowStEvent(e: StText) {
     const x = Math.floor(((stWidth / 2) + stPos[0]) * stPositionBounds.value.width);
     const y = Math.floor(((stHeight / 2) - stPos[1]) * stPositionBounds.value.height);
     // st样式
-    let extendStyle = `;position: absolute; --top: ${y}px; width: auto;left: ${x}px;`;
+    let extendStyle = `;position: absolute; --st-x: ${stPos[0]}; width: auto;--st-y: ${stPos[1]};`;
     // 居中显示特殊样式
     if (e.middle) {
       extendStyle = extendStyle + `;text-align: center; left: 50%; transform: translateX(-50%)`;
     }
     const fontSize = e.stArgs[2]; // st的字号
-    extendStyle = extendStyle + `;--font-size: ${unityFontSizeToHTMLSize(Number(fontSize))}rem`;
+    extendStyle = extendStyle + `;--param-font-size: ${fontSize}`;
     // 立即显示, 跳过打字机
     const fn = Reflect.get(StMap, stType);
     if (fn) {
@@ -356,8 +369,8 @@ function parseTextEffect(text: Text, extendStyle = "", tag = "span"): Text {
     if (name === "color") {
       return `color: ${value}`;
     } else if (name === "fontsize") {
-      return
-      `font-size: ${unityFontSizeToHTMLSize(Number(value))}rem;--font-size: ${unityFontSizeToHTMLSize(Number(value))}rem`
+      return `--param-font-size: ${value}`
+      // `font-size: ${unityFontSizeToHTMLSize(Number(value))}rem;--font-size: ${unityFontSizeToHTMLSize(Number(value))}rem`
     }
     // 暂时废弃, 没办法处理字体自适应
     return (StyleEffectTemplate[effect.name] || "").replace("${value}", effect.value.join(""))
@@ -806,10 +819,14 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
 }
 
 .content {
-  --font-size: 2rem;
+  //--font-size: 2rem;
+  --param-font-size: 64;
   margin-top: 1.5%;
   color: white;
-  font-size: var(--font-size);
+  :deep(span) {
+    --font-size: calc((var(--param-font-size) / var(--standard-unity-font-size) * var(--standard-font-size)) * 1rem);
+    font-size: var(--font-size);
+  }
   line-height: 1.5em;
 }
 
@@ -947,9 +964,13 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
     color: white;
     text-shadow: $text-outline;
     :deep(div) {
+      --font-size: calc((var(--param-font-size) / var(--standard-unity-font-size) * var(--standard-font-size)) * 1rem);
+      --left: calc((var(--st-width-half) + var(--st-x)) * var(--st-pos-bounds-x) * 1px);
+      --top: calc((var(--st-height-half) - var(--st-y)) * var(--st-pos-bounds-y) * 1px);
       line-height: var(--font-size);
       display: inline-block;
       top: calc(var(--top) - var(--font-size) / 2);
+      left: var(--left);
       font-size: var(--font-size);
     }
   }
