@@ -1,14 +1,14 @@
 <script lang="ts" setup>
-import { computed, withDefaults, ref } from "vue";
+import { computed, ref, withDefaults } from "vue";
 import { ShowOption } from "@/types/events";
 import { useElementSize } from "@vueuse/core";
-import {Text} from "@/types/common";
-import {deepCopyObject} from "@/utils";
+import { Text } from "@/types/common";
+import { deepCopyObject } from "@/utils";
 
 // 选项
 // const selection = ref<ShowOption[]>([]);
 const props = withDefaults(defineProps<{ selection: ShowOption[] }>(), {
-  selection: () => []
+  selection: () => [],
 });
 const emit = defineEmits<{
   (ev: "select", value: number): void;
@@ -20,12 +20,18 @@ const isMouseDown = ref(false);
 const selectorContainerElement = ref<HTMLElement | null>(null);
 const selectorElement = ref<HTMLElement | null>(null);
 
-const { height: selectorContainerHeight } = useElementSize(selectorContainerElement);
+const { height: selectorContainerHeight } = useElementSize(
+  selectorContainerElement
+);
 
 const { height: selectorElementHeight } = useElementSize(selectorElement);
 
-const selectorMarginTop = computed(() =>
-  `${Math.max(0, selectorContainerHeight.value - selectorElementHeight.value) / 3}px`
+const selectorMarginTop = computed(
+  () =>
+    `${
+      Math.max(0, selectorContainerHeight.value - selectorElementHeight.value) /
+      3
+    }px`
 );
 
 /**
@@ -75,10 +81,12 @@ function handleSelect(select: number) {
   }, 400);
 }
 
-const mapSelection = computed(() => props.selection.map(it => ({
-  SelectionGroup: it.SelectionGroup,
-  text: it.text.map(text => parseTextEffect(text).content).join("")
-})))
+const mapSelection = computed(() =>
+  props.selection.map(it => ({
+    SelectionGroup: it.SelectionGroup,
+    text: it.text.map(text => parseTextEffect(text).content).join(""),
+  }))
+);
 
 /**
  * 处理选项的文字特效
@@ -87,34 +95,58 @@ function parseTextEffect(_text: Text) {
   const text = deepCopyObject(_text);
   const effects = text.effects;
   // 注解
-  const rt = (effects.filter(effect => effect.name === "ruby")[0] || { value: [] }).value.join("")
-  const style = effects.filter(effect => effect.name !== "ruby").map(effect => {
-    const value = effect.value.join("");
-    const name = effect.name;
-    if (name === "color") {
-      return `color: ${value}`;
-    }
-    return "";
-  }).join(";");
+  const rt = (
+    effects.filter(effect => effect.name === "ruby")[0] || { value: [] }
+  ).value.join("");
+  const style = effects
+    .filter(effect => effect.name !== "ruby")
+    .map(effect => {
+      const value = effect.value.join("");
+      const name = effect.name;
+      if (name === "color") {
+        return `color: ${value}`;
+      }
+      return "";
+    })
+    .join(";");
   if (rt) {
-    text.content = `<span style="${style};" class="ruby" data-content="${rt}"><span class="rb">${text.content}</span><span class="rt">${rt}</span></span>`
+    text.content = `<span style="${style};" class="ruby" data-content="${rt}"><span class="rb">${text.content}</span><span class="rt">${rt}</span></span>`;
   } else {
-    text.content = `<span style="${style};">${text.content}</span>`
+    text.content = `<span style="${style};">${text.content}</span>`;
   }
   return text;
 }
 </script>
 
 <template>
-  <div class="ba-selector-container" ref="selectorContainerElement" @mouseup="handleMouseUp">
-    <div class="ba-selector" ref="selectorElement" :style="{ marginTop: selectorMarginTop }">
+  <div
+    class="ba-selector-container"
+    ref="selectorContainerElement"
+    @mouseup="handleMouseUp"
+  >
+    <div
+      class="ba-selector"
+      ref="selectorElement"
+      :style="{ marginTop: selectorMarginTop }"
+    >
       <!-- 没有发生 DOM 顺序的移动，让 vue 使用就地复用策略提高效率，不需要 key -->
       <!-- eslint-disable vue/require-v-for-key -->
-      <div v-for="(option, index) in mapSelection" @mousedown="handleSelectMouseDown(index)"
-        @touchstart="handleSelectMouseDown(index)" @touchend="handleSelectMouseLeave"
-        @mouseenter="handleSelectMouseEnter(index)" @mouseleave="handleSelectMouseLeave" @click="handleSelect(index)"
-        role="button" tabindex="-1" class="ba-selector-list"
-        :class="{ activated: index === selectionCandidate, selected: index === selectedOption }">
+      <div
+        v-for="(option, index) in mapSelection"
+        @mousedown="handleSelectMouseDown(index)"
+        @touchstart="handleSelectMouseDown(index)"
+        @touchend="handleSelectMouseLeave"
+        @mouseenter="handleSelectMouseEnter(index)"
+        @mouseleave="handleSelectMouseLeave"
+        @click="handleSelect(index)"
+        role="button"
+        tabindex="-1"
+        class="ba-selector-list"
+        :class="{
+          activated: index === selectionCandidate,
+          selected: index === selectedOption,
+        }"
+      >
         <div class="ba-selector-item">
           <div v-html="option.text"></div>
         </div>
@@ -150,12 +182,15 @@ function parseTextEffect(_text: Text) {
       border: 1px solid white;
       border-radius: 4px;
       transform: skewX(-10deg);
-      background: linear-gradient(58deg,
+      background: linear-gradient(
+          58deg,
           rgba(240, 240, 240, 0.1) 0%,
           rgba(240, 240, 240, 1) 38%,
-          rgba(240, 240, 240, 0.1) 100%),
-        url("../assets/UITex_BGPoliLight_1.png") rgb(164 216 237) no-repeat 0 30%;
-      transition: all .175s ease-in-out;
+          rgba(240, 240, 240, 0.1) 100%
+        ),
+        url("../assets/UITex_BGPoliLight_1.png") rgb(164 216 237) no-repeat 0
+          30%;
+      transition: all 0.175s ease-in-out;
       -webkit-tap-highlight-color: transparent;
       div {
         transform: skewX(10deg);
@@ -185,14 +220,12 @@ function parseTextEffect(_text: Text) {
 }
 
 .activated {
-
   .ba-selector-item {
     scale: 0.95;
   }
 }
 
 .selected {
-
   .ba-selector-item {
     scale: 1.1;
     opacity: 0;

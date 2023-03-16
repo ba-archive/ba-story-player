@@ -1,27 +1,38 @@
-import { EffectRemoveFunction } from "@/types/effectLayer"
-import { Emitter, EmitterConfigV2, EmitterConfigV3 } from "@pixi/particle-emitter"
-import { Container } from "pixi.js"
+import { EffectRemoveFunction } from "@/types/effectLayer";
+import {
+  Emitter,
+  EmitterConfigV2,
+  EmitterConfigV3,
+} from "@pixi/particle-emitter";
+import { Container } from "pixi.js";
 
-/**
- * 给emitter用的container
- */
-export const emitterContainer = new Container()
-emitterContainer.zIndex = 15
-emitterContainer.sortableChildren = true
-
-const emitterConfigsRaw = import.meta.glob<EmitterConfigV2 | EmitterConfigV3>('./emitterConfigs/*.json', { eager: true })
 /**
  * 获取emitter config
  * @param filename 文件名, 不需要加.json后缀
  * @returns
  */
 export function emitterConfigs(filename: string) {
-  let config = Reflect.get(emitterConfigsRaw, `./emitterConfigs/${filename}.json`)
+  const config = Reflect.get(
+    emitterConfigsRaw,
+    `./emitterConfigs/${filename}.json`
+  );
   if (!config) {
-    throw new Error('emitter参数获取失败, 文件名错误或文件不存在')
+    throw new Error("emitter参数获取失败, 文件名错误或文件不存在");
   }
-  return config
+  return config;
 }
+emitterContainer.zIndex = 15;
+emitterContainer.sortableChildren = true;
+
+const emitterConfigsRaw = import.meta.glob<EmitterConfigV2 | EmitterConfigV3>(
+  "./emitterConfigs/*.json",
+  { eager: true }
+);
+
+/**
+ * 给emitter用的container
+ */
+export const emitterContainer = new Container();
 
 /**
  * emitter工具函数, 会自动启动emitter并返回一个终止函数
@@ -29,32 +40,35 @@ export function emitterConfigs(filename: string) {
  * @param stopCallback 终止函数中调用的函数
  * @returns 终止函数, 功能是停止当前emitter并回收
  */
-export function emitterStarter(emitter: Emitter, stopCallback?: () => void): EffectRemoveFunction {
+export function emitterStarter(
+  emitter: Emitter,
+  stopCallback?: () => void
+): EffectRemoveFunction {
   let elapsed = Date.now();
-  let stopFlag = false
+  let stopFlag = false;
   // Update function every frame
-  let update = function () {
+  const update = function () {
     if (stopFlag) {
-      return
+      return;
     }
     // Update the next frame
     requestAnimationFrame(update);
 
-    var now = Date.now();
+    const now = Date.now();
     // The emitter requires the elapsed
     // number of seconds since the last update
     emitter.update((now - elapsed) * 0.001);
     elapsed = now;
   };
 
-  let stop = async function () {
-    stopFlag = true
-    emitter.emit = false
-    emitter.destroy()
+  const stop = async function () {
+    stopFlag = true;
+    emitter.emit = false;
+    emitter.destroy();
     if (stopCallback) {
-      stopCallback()
+      stopCallback();
     }
-  }
+  };
 
   // Start emitting
   emitter.emit = true;
@@ -62,6 +76,5 @@ export function emitterStarter(emitter: Emitter, stopCallback?: () => void): Eff
   // Start the update
   update();
 
-  return stop
+  return stop;
 }
-

@@ -23,7 +23,7 @@ let props = defineProps<{
   storySummary: StorySummary;
   height: number;
   width: number;
-  fullScreen: Boolean;
+  fullScreen: boolean;
   language: Language;
 }>();
 
@@ -47,7 +47,7 @@ eventBus.on("hidemenu", () => {
 eventBus.on("showmenu", () => {
   hiddenMenu.value = false;
 });
-eventBus.on("option", (e) => (selectOptions.value = [...e]));
+eventBus.on("option", e => (selectOptions.value = [...e]));
 
 function handleBtnFullScreen() {
   emitter("update:fullScreen", !props.fullScreen);
@@ -131,7 +131,7 @@ let cursorTimer: NodeJS.Timeout = setTimeout(() => {
   cursorStyle.value = "none";
 }, hideCursorDelay);
 
-document.addEventListener("mousemove", (ev) => {
+document.addEventListener("mousemove", ev => {
   cursorStyle.value = "auto";
   clearTimeout(cursorTimer);
   if (hiddenSummary.value && hiddenStoryLog.value && props.fullScreen) {

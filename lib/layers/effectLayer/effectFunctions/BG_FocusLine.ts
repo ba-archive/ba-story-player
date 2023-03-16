@@ -10,12 +10,10 @@ export default async function BG_FocusLine(resources: Sprite[]) {
   const { app } = usePlayerStore();
   const appWidth = app.view.width;
   const appHeight = app.view.height;
-  let emitterContainer = new Container();
+  const emitterContainer = new Container();
   app.stage.addChild(emitterContainer);
   emitterContainer.zIndex = -1;
-  const centerPoint = [appWidth / 2, appHeight / 2].map((i) =>
-    parseInt(i + "")
-  );
+  const centerPoint = [appWidth / 2, appHeight / 2].map(i => parseInt(i + ""));
   class FocusLine {
     public static type = "focusLine";
     public order = 5; // 代表延迟执行, 可能是 emitter 包的问题, 引入定义报错
@@ -58,7 +56,7 @@ export default async function BG_FocusLine(resources: Sprite[]) {
     }
   }
   Emitter.registerBehavior(FocusLine);
-  let emitterConfig: EmitterConfigV3 = {
+  const emitterConfig: EmitterConfigV3 = {
     ...(emitterConfigs("focusline") as EmitterConfigV3),
   };
   const sprite = sprite2TransParent(resources[0]);

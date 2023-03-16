@@ -7,12 +7,12 @@ export const l2dConfig: IL2dConfig = {
       {
         name: "CH0184_home",
         animation: "Start_Idle_01",
-        fade: true
+        fade: true,
       },
       {
         name: "CH0184_home/CH0184_00/CH0184_00",
         animation: "Start_Idle_01",
-        fade: true
+        fade: true,
       },
       {
         name: "CH0184_home",
@@ -28,7 +28,7 @@ export const l2dConfig: IL2dConfig = {
         name: "CH0198_home",
         animation: "Start_Idle_01",
         fadeTime: 4.8,
-        fade: true
+        fade: true,
       },
       {
         name: "CH0198_home",
@@ -36,9 +36,9 @@ export const l2dConfig: IL2dConfig = {
       },
     ],
     spineSettings: {
-      CH0198_home:{
-        scale: 1.5
-      }
-    }
+      CH0198_home: {
+        scale: 1.5,
+      },
+    },
   },
 };

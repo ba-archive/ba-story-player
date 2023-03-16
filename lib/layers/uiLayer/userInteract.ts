@@ -7,7 +7,7 @@ const keyStatus = {} as any;
 let nexting: any;
 const keyEvent = (e: KeyboardEvent) => {
   keyStatus[e.key] = true;
-  if (Object.values(keyStatus).filter((i) => i).length >= 2) {
+  if (Object.values(keyStatus).filter(i => i).length >= 2) {
     return;
   }
   // 显示历史 log 不允许操作
@@ -78,19 +78,19 @@ export const changeStoryIndex = (index?: number) => {
   const recentStory = allStory.slice(0, index + 1).reverse();
   eventBus.emit("hideCharacter");
   eventBus.emit("removeEffect");
-  const lastCharacterIdx = recentStory.findIndex((currentStoryUnit) => {
+  const lastCharacterIdx = recentStory.findIndex(currentStoryUnit => {
     return currentStoryUnit.characters?.length;
   });
   const lastCharacter = recentStory[lastCharacterIdx];
   const characters = lastCharacter?.characters || [];
   if (lastCharacter) {
     // 拼装人物层展示情况
-    recentStory.slice(lastCharacterIdx + 1).some((story) => {
+    recentStory.slice(lastCharacterIdx + 1).some(story => {
       if (story.characters?.length) {
-        const filterSamePosition = story.characters.filter((character) => {
-          return !characters.find((j) => j.position === character.position);
+        const filterSamePosition = story.characters.filter(character => {
+          return !characters.find(j => j.position === character.position);
         });
-        filterSamePosition.forEach((character) => {
+        filterSamePosition.forEach(character => {
           character.highlight = false;
           character.effects = [];
         });
@@ -103,10 +103,10 @@ export const changeStoryIndex = (index?: number) => {
       eventEmitter.showCharacter(lastCharacter);
     }, 4);
   }
-  const lastBg = recentStory.find((currentStoryUnit) => {
+  const lastBg = recentStory.find(currentStoryUnit => {
     return currentStoryUnit.bg;
   });
-  const lastBgm = recentStory.find((currentStoryUnit) => {
+  const lastBgm = recentStory.find(currentStoryUnit => {
     return currentStoryUnit.audio?.bgm;
   });
   lastBgm && eventEmitter.playAudio(lastBgm);

@@ -2,12 +2,17 @@
   <div class="container" :style="{ height: `${playerHeight}px` }">
     <div class="container-inner">
       <div class="loading-container absolute-container" v-if="showLoading">
-        <img class="loading-image" :src="loadingImageSrc" alt="本来应该是加载图片的">
+        <img
+          class="loading-image"
+          :src="loadingImageSrc"
+          alt="本来应该是加载图片的"
+        />
         <div class="loading-log">
           <div
             v-for="(e, index) in mapLoadLog"
             class="loading-log-item"
-            :key="index">
+            :key="index"
+          >
             <span v-if="e.type === 'success'" class="loading-log-item-success">
               加载资源:{{ e.resourceName }}
             </span>
@@ -17,32 +22,72 @@
           </div>
         </div>
       </div>
-      <div ref="nextEpisodeContainer" class="next-episode-container absolute-container" @click="endPlay"
-        v-if="showNextEpisode">
+      <div
+        ref="nextEpisodeContainer"
+        class="next-episode-container absolute-container"
+        @click="endPlay"
+        v-if="showNextEpisode"
+      >
         <div class="next-episode-cover" />
         <div class="next-episode-cover" />
       </div>
-      <div class="to-be-continued-container absolute-container" v-if="showToBeContinue">
+      <div
+        class="to-be-continued-container absolute-container"
+        v-if="showToBeContinue"
+      >
         <div ref="toBeContinuedBg0" class="to-be-continued-bg0" />
         <div ref="toBeContinuedBg1" class="to-be-continued-bg1" />
-        <div ref="toBeContinuedText" class="to-be-continued" :style="{ fontSize: `${standardFontSize}rem` }">To Be
-          Continued...</div>
-      </div>
-      <div class="image-video-container absolute-container" v-if="popupSrc.image || popupSrc.video">
-        <div class="image-video-container-inner">
-          <div class="image-container absolute-container" :style="{ height: `${playerHeight - dialogHeight}px` }"
-            v-if="popupSrc.image">
-            <img :src="popupSrc.image" alt="完了加载失败了" class="image" />
-          </div>
-          <VideoBackground ref="videoComponent" :src="popupSrc.video" objectFit="contain" style="width: 100%; height: 100%"
-            v-if="popupSrc.video" @ended="onPopupVideoEnd" />
+        <div
+          ref="toBeContinuedText"
+          class="to-be-continued"
+          :style="{ fontSize: `${standardFontSize}rem` }"
+        >
+          To Be Continued...
         </div>
       </div>
-      <div class="st-container absolute-container" ref="stOutput" :style="{ fontSize: `${standardFontSize}rem` }" />
-      <div ref="titleEL" class="title-container absolute-container" :style="overrideTitleStyle" v-if="titleContent">
-        <div class="title-border" :style="{ '--side-padding': `${titleBorderPadding}px` }">
+      <div
+        class="image-video-container absolute-container"
+        v-if="popupSrc.image || popupSrc.video"
+      >
+        <div class="image-video-container-inner">
+          <div
+            class="image-container absolute-container"
+            :style="{ height: `${playerHeight - dialogHeight}px` }"
+            v-if="popupSrc.image"
+          >
+            <img :src="popupSrc.image" alt="完了加载失败了" class="image" />
+          </div>
+          <VideoBackground
+            ref="videoComponent"
+            :src="popupSrc.video"
+            objectFit="contain"
+            style="width: 100%; height: 100%"
+            v-if="popupSrc.video"
+            @ended="onPopupVideoEnd"
+          />
+        </div>
+      </div>
+      <div
+        class="st-container absolute-container"
+        ref="stOutput"
+        :style="{ fontSize: `${standardFontSize}rem` }"
+      />
+      <div
+        ref="titleEL"
+        class="title-container absolute-container"
+        :style="overrideTitleStyle"
+        v-if="titleContent"
+      >
+        <div
+          class="title-border"
+          :style="{ '--side-padding': `${titleBorderPadding}px` }"
+        >
           <img src="./assets/title-border.png" />
-          <div ref="titleContain" class="title-contain" :style="{ '--font-size': `${fontSize(4)}rem` }">
+          <div
+            ref="titleContain"
+            class="title-contain"
+            :style="{ '--font-size': `${fontSize(4)}rem` }"
+          >
             <div class="sub-title" v-if="subTitleContent">
               <span class="sub-title-inner">{{ subTitleContent }}</span>
             </div>
@@ -50,20 +95,41 @@
           </div>
         </div>
       </div>
-      <div ref="placeEL" class="place-container" :style="{ '--font-size': `${fontSize(2)}rem` }" v-if="placeContent">
+      <div
+        ref="placeEL"
+        class="place-container"
+        :style="{ '--font-size': `${fontSize(2)}rem` }"
+        v-if="placeContent"
+      >
         <div class="round-place">
           <span class="place-content">{{ placeContent }}</span>
         </div>
       </div>
-      <div v-if="showDialog" :style="{ padding: `0 ${fontSize(8)}rem ${fontSize(3)}rem`, height: `${dialogHeight}px` }"
-        class="dialog">
+      <div
+        v-if="showDialog"
+        :style="{
+          padding: `0 ${fontSize(8)}rem ${fontSize(3)}rem`,
+          height: `${dialogHeight}px`,
+        }"
+        class="dialog"
+      >
         <div class="inner-dialog">
           <div class="title">
-            <span :style="{ fontSize: `${fontSize(3.5)}rem` }" class="name">{{ name ? name : '&emsp;' }}</span>
-            <span :style="{ fontSize: `${fontSize(2)}rem` }" class="department">{{ nickName }}</span>
+            <span :style="{ fontSize: `${fontSize(3.5)}rem` }" class="name">{{
+              name ? name : "&emsp;"
+            }}</span>
+            <span
+              :style="{ fontSize: `${fontSize(2)}rem` }"
+              class="department"
+              >{{ nickName }}</span
+            >
           </div>
-          <hr>
-          <div ref="typewriterOutput" :style="{ '--font-size': `${standardFontSize}rem` }" class="content" />
+          <hr />
+          <div
+            ref="typewriterOutput"
+            :style="{ '--font-size': `${standardFontSize}rem` }"
+            class="content"
+          />
           <div class="next-image-btn" v-if="typingComplete">&zwj;</div>
         </div>
       </div>
@@ -72,16 +138,29 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, computed, Ref, nextTick, onUnmounted, reactive } from 'vue'
+import {
+  Ref,
+  computed,
+  nextTick,
+  onMounted,
+  onUnmounted,
+  reactive,
+  ref,
+} from "vue";
 import eventBus from "@/eventBus";
 import Typed, { TypedExtend, TypedOptions } from "typed.js";
-import {ResourceLoadState, ShowText, ShowTitleOption, StArgs, StText} from "@/types/events";
-import {Text, TextEffectName} from "@/types/common";
+import {
+  ResourceLoadState,
+  ShowText,
+  ShowTitleOption,
+  StArgs,
+  StText,
+} from "@/types/events";
+import { Text, TextEffectName } from "@/types/common";
 import { deepCopyObject } from "@/utils";
-import { usePlayerStore } from '@/stores';
+import { usePlayerStore } from "@/stores";
 import gsap from "gsap";
 import VideoBackground from "vue-responsive-video-background-player";
-
 
 const typewriterOutput = ref<HTMLElement>(); // 对话框el
 const stOutput = ref<HTMLElement>(); // st特效字el
@@ -95,7 +174,10 @@ const titleContain = ref<HTMLElement>(); // 标题内容的el, 为了实现scale
 const overrideTitleZIndex = ref<number>();
 const videoComponent = ref();
 // 外部传入播放器高度,用于动态计算字体等数值
-const props = withDefaults(defineProps<TextLayerProps>(), { playerHeight: 0, playerWidth: 0 });
+const props = withDefaults(defineProps<TextLayerProps>(), {
+  playerHeight: 0,
+  playerWidth: 0,
+});
 // 标题
 const titleContent = ref<string>("");
 // 副标题
@@ -118,7 +200,7 @@ const popupSrc = reactive({
   // image: "https://yuuka.diyigemt.com/image/full-extra/output/media/UIs/03_Scenario/04_ScenarioImage/popup49.png",
   // video: "https://yuuka.diyigemt.com/image/full-extra/output/media/Video/pv-v.mp4"
   image: "",
-  video: ""
+  video: "",
 });
 const loadingImageSrc = ref<string>("");
 let showNextEpisodeLock = false;
@@ -135,17 +217,19 @@ function endPlay() {
  * 单击屏幕后触发效果 next或者立即显示当前对话
  */
 function moveToNext() {
-  if (!showDialog) return; // 显示st期间不允许跳过
+  if (!showDialog.value) return; // 显示st期间不允许跳过
   // 没打过任何一行字(初始化)或者对话已经显示完成, 点击屏幕代表继续
   if (!typingInstance || typingComplete.value) {
     eventBus.emit("next");
-  } else { // 否则立即显示所有对话
-    if (typewriterOutput.value) { // 过滤live2d播放
+  } else {
+    // 否则立即显示所有对话
+    if (typewriterOutput.value) {
+      // 过滤live2d播放
       typingInstance.stop();
       typingInstance.destroy();
       setTypingComplete(true, typingInstance);
-      typewriterOutput.value!.innerHTML = typingInstance.strings.pop() || ""
-      eventBus.emit('textDone')
+      typewriterOutput.value!.innerHTML = typingInstance.strings.pop() || "";
+      eventBus.emit("textDone");
     }
   }
 }
@@ -157,7 +241,7 @@ function handleShowTitle(e: ShowTitleOption) {
   proxyShowCoverTitle(titleEL, titleContent, parseTitle(e.title)).then(() => {
     subTitleContent.value = "";
     eventBus.emit("titleDone");
-  })
+  });
 }
 function parseTitle(item: Text[]): string {
   return item.map(it => parseTextEffect(it).content).join("");
@@ -176,21 +260,30 @@ function handleShowPlace(e: string) {
  * @param value 要显示的内容
  * @param onElUpdate 在el显示后的回调, 给next episode用的
  */
-function proxyShowCoverTitle(el: Ref<HTMLElement | undefined>, proxy: Ref<string>, value: string, onElUpdate?: (el: HTMLElement) => void) {
-  return new Promise<void>((resolve) => {
+function proxyShowCoverTitle(
+  el: Ref<HTMLElement | undefined>,
+  proxy: Ref<string>,
+  value: string,
+  onElUpdate?: (el: HTMLElement) => void
+) {
+  return new Promise<void>(resolve => {
     proxy.value = value;
     nextTick(() => {
       onElUpdate && onElUpdate(el.value!);
       const timeline = gsap.timeline();
       timeline.to(el.value!, {
         opacity: 1,
-        duration: 0.75
+        duration: 0.75,
       });
       if (!onElUpdate) {
-        timeline.to(el.value!, {
-          opacity: 0,
-          duration: 0.75
-        }, "+=1.5");
+        timeline.to(
+          el.value!,
+          {
+            opacity: 0,
+            duration: 0.75,
+          },
+          "+=1.5"
+        );
       }
       timeline.then(() => {
         if (!onElUpdate) {
@@ -234,16 +327,24 @@ function handleShowStEvent(e: StText) {
     // st显示类型
     const stType = e.stArgs[1];
     // st坐标系映射视口坐标系
-    const x = Math.floor(((stWidth / 2) + stPos[0]) * stPositionBounds.value.width);
-    const y = Math.floor(((stHeight / 2) - stPos[1]) * stPositionBounds.value.height);
+    const x = Math.floor(
+      (stWidth / 2 + stPos[0]) * stPositionBounds.value.width
+    );
+    const y = Math.floor(
+      (stHeight / 2 - stPos[1]) * stPositionBounds.value.height
+    );
     // st样式
     let extendStyle = `;position: absolute; --top: ${y}px; width: auto;left: ${x}px;`;
     // 居中显示特殊样式
     if (e.middle) {
-      extendStyle = extendStyle + `;text-align: center; left: 50%; transform: translateX(-50%)`;
+      extendStyle =
+        extendStyle +
+        ";text-align: center; left: 50%; transform: translateX(-50%)";
     }
     const fontSize = e.stArgs[2]; // st的字号
-    extendStyle = extendStyle + `;--font-size: ${unityFontSizeToHTMLSize(Number(fontSize))}rem`;
+    extendStyle =
+      extendStyle +
+      `;--font-size: ${unityFontSizeToHTMLSize(Number(fontSize))}rem`;
     // 立即显示, 跳过打字机
     const fn = Reflect.get(StMap, stType);
     if (fn) {
@@ -251,34 +352,38 @@ function handleShowStEvent(e: StText) {
     } else {
       console.error(`st type handler: ${stType} not found!`);
     }
-  })
+  });
 }
 
 /**
  * 處理三種st特效的fn
  */
-type StType = StArgs[1]
+type StType = StArgs[1];
 type StMap = {
-  [key in StType]: (e: StText, parsedStyle: string) => void
-}
+  [key in StType]: (e: StText, parsedStyle: string) => void;
+};
 const StMap: StMap = {
   instant(e: StText, parsedStyle: string): void {
-    stOutput.value!.innerHTML = stOutput.value!.innerHTML + parseStInnerHtml(e, parsedStyle).content;
+    stOutput.value!.innerHTML =
+      stOutput.value!.innerHTML + parseStInnerHtml(e, parsedStyle).content;
     eventBus.emit("stDone");
   },
   serial(e: StText, parsedStyle: string): void {
     showTextDialog(
-      e.text.map(text => {
-        // 为啥要这样, 因为这个库在空字符时会删除当前的内容重新打印, 导致一句话出现两次的bug
-        text.content = text.content || "&zwj;";
-        return text;
-      }).map(text => parseTextEffect(text)),
+      e.text
+        .map(text => {
+          // 为啥要这样, 因为这个库在空字符时会删除当前的内容重新打印, 导致一句话出现两次的bug
+          text.content = text.content || "&zwj;";
+          return text;
+        })
+        .map(text => parseTextEffect(text)),
       stOutput.value!,
-      (content) => {
-        return `<div style="${parsedStyle}">${content}</div>`
-      }, {
-      typeSpeed: 10
-    }
+      content => {
+        return `<div style="${parsedStyle}">${content}</div>`;
+      },
+      {
+        typeSpeed: 10,
+      }
     ).then(() => {
       eventBus.emit("stDone");
     });
@@ -286,19 +391,28 @@ const StMap: StMap = {
   },
   smooth(e: StText, parsedStyle: string): void {
     parsedStyle = parsedStyle + ";opacity: 0";
-    stOutput.value!.innerHTML = stOutput.value!.innerHTML + parseStInnerHtml(e, parsedStyle).content;
-    const el = stOutput.value!.children.item(stOutput.value!.children.length - 1);
+    stOutput.value!.innerHTML =
+      stOutput.value!.innerHTML + parseStInnerHtml(e, parsedStyle).content;
+    const el = stOutput.value!.children.item(
+      stOutput.value!.children.length - 1
+    );
     const timeline = gsap.timeline();
-    timeline.fromTo(el, {
-      opacity: 0,
-    }, {
-      opacity: 1,
-      duration: 1.5
-    }).then(() => {
-      eventBus.emit("stDone");
-    })
-  }
-}
+    timeline
+      .fromTo(
+        el,
+        {
+          opacity: 0,
+        },
+        {
+          opacity: 1,
+          duration: 1.5,
+        }
+      )
+      .then(() => {
+        eventBus.emit("stDone");
+      });
+  },
+};
 
 /**
  * 處理st特效 instant和smooth
@@ -306,16 +420,20 @@ const StMap: StMap = {
  * 將e.text全部包裹在div中
  */
 function parseStInnerHtml(e: StText, parsedStyle: string) {
-  return parseTextEffect({
-    content: e.text.map(text => parseTextEffect(text).content).join(""),
-    effects: []
-  }, parsedStyle, "div");
+  return parseTextEffect(
+    {
+      content: e.text.map(text => parseTextEffect(text).content).join(""),
+      effects: [],
+    },
+    parsedStyle,
+    "div"
+  );
 }
 /**
  * 处理dialog对话事件
  */
 function handleShowTextEvent(e: ShowText) {
-  usePlayerStore().updateLogText(e)
+  usePlayerStore().updateLogText(e);
   showDialog.value = true;
   e = deepCopyObject(e);
   nextTick(() => {
@@ -328,11 +446,14 @@ function handleShowTextEvent(e: ShowText) {
     typingInstance?.destroy();
     typingInstance && (typingInstance.isSt = false);
     // 显示
-    showTextDialog(e.text.map(text => parseTextEffect(text)), typewriterOutput.value!).then(() => {
+    showTextDialog(
+      e.text.map(text => parseTextEffect(text)),
+      typewriterOutput.value!
+    ).then(() => {
       eventBus.emit("textDone");
-    })
+    });
     typingInstance && (typingInstance.isSt = false);
-  })
+  });
 }
 
 /**
@@ -349,24 +470,34 @@ function parseTextEffect(text: Text, extendStyle = "", tag = "span"): Text {
     .replace(/&/g, "&amp;")
     .replace(/{{escape-(\w{3,4};)}}/g, "&$1");
   // 注解
-  const rt = (effects.filter(effect => effect.name === "ruby")[0] || { value: [] }).value.join("")
-  const style = effects.filter(effect => effect.name !== "ruby").map(effect => {
-    const value = effect.value.join("");
-    const name = effect.name;
-    if (name === "color") {
-      return `color: ${value}`;
-    } else if (name === "fontsize") {
-      return
-      `font-size: ${unityFontSizeToHTMLSize(Number(value))}rem;--font-size: ${unityFontSizeToHTMLSize(Number(value))}rem`
-    }
-    // 暂时废弃, 没办法处理字体自适应
-    return (StyleEffectTemplate[effect.name] || "").replace("${value}", effect.value.join(""))
-  }).join(";");
+  const rt = (
+    effects.filter(effect => effect.name === "ruby")[0] || { value: [] }
+  ).value.join("");
+  const style = effects
+    .filter(effect => effect.name !== "ruby")
+    .map(effect => {
+      const value = effect.value.join("");
+      const name = effect.name;
+      if (name === "color") {
+        return `color: ${value}`;
+      } else if (name === "fontsize") {
+        return;
+        `font-size: ${unityFontSizeToHTMLSize(
+          Number(value)
+        )}rem;--font-size: ${unityFontSizeToHTMLSize(Number(value))}rem`;
+      }
+      // 暂时废弃, 没办法处理字体自适应
+      return (StyleEffectTemplate[effect.name] || "").replace(
+        "${value}",
+        effect.value.join("")
+      );
+    })
+    .join(";");
   // 如果有注解就用ruby标签实现
   if (rt) {
-    text.content = `<${tag} style="${style};${extendStyle}" class="ruby" data-content="${rt}"><span class="rb">${text.content}</span><span class="rt">${rt}</span></${tag}>`
+    text.content = `<${tag} style="${style};${extendStyle}" class="ruby" data-content="${rt}"><span class="rb">${text.content}</span><span class="rt">${rt}</span></${tag}>`;
   } else {
-    text.content = `<${tag} style="${style};${extendStyle}">${text.content}</${tag}>`
+    text.content = `<${tag} style="${style};${extendStyle}">${text.content}</${tag}>`;
   }
   return text;
 }
@@ -377,8 +508,13 @@ function parseTextEffect(text: Text, extendStyle = "", tag = "span"): Text {
  * @param onParseContent 二次处理内容, 目前用于将st用div整体包裹实现定位
  * @param override 覆蓋默認typing配置内容
  */
-function showTextDialog(text: Text[], output: HTMLElement, onParseContent?: (source: string) => string, override?: TypedOptions) {
-  return new Promise<void>((resolve) => {
+function showTextDialog(
+  text: Text[],
+  output: HTMLElement,
+  onParseContent?: (source: string) => string,
+  override?: TypedOptions
+) {
+  return new Promise<void>(resolve => {
     if (text.length === 0) {
       setTypingComplete(true);
       resolve();
@@ -404,7 +540,7 @@ function showTextDialog(text: Text[], output: HTMLElement, onParseContent?: (sou
         setTimeout(() => {
           setTypingComplete(true);
           resolve();
-        }, 100)
+        }, 100);
         return;
       }
       self.pause.status = true;
@@ -456,7 +592,8 @@ function showTextDialog(text: Text[], output: HTMLElement, onParseContent?: (sou
       } else {
         // 全新清空
         typingInstance?.stop && typingInstance?.stop();
-        typingInstance?.destroy && typingInstance?.destroy();output.innerHTML = "";
+        typingInstance?.destroy && typingInstance?.destroy();
+        output.innerHTML = "";
         typingInstance = new Typed(output, {
           ...DefaultTypedOptions,
           ...override,
@@ -466,7 +603,7 @@ function showTextDialog(text: Text[], output: HTMLElement, onParseContent?: (sou
         }) as TypedExtend;
       }
     }
-  })
+  });
 }
 
 /**
@@ -493,21 +630,34 @@ function handleToBeContinued() {
         opacity: 1,
         duration: 0.3,
       })
-      .to(toBeContinuedBg1.value!, {
-        opacity: 1,
-        duration: 0.4,
-      }, "-=0.15")
-      .to(toBeContinuedText.value!, {
-        right: 20,
-        duration: 0.3,
-      }, "<")
-      .to(toBeContinuedText.value!, {
-        opacity: 0,
-        duration: 0.6
-      }, "+=1.2").then(() => eventBus.emit('toBeContinueDone'))
-    .then(() => {
-      eventBus.emit("toBeContinueDone");
-    })
+      .to(
+        toBeContinuedBg1.value!,
+        {
+          opacity: 1,
+          duration: 0.4,
+        },
+        "-=0.15"
+      )
+      .to(
+        toBeContinuedText.value!,
+        {
+          right: 20,
+          duration: 0.3,
+        },
+        "<"
+      )
+      .to(
+        toBeContinuedText.value!,
+        {
+          opacity: 0,
+          duration: 0.6,
+        },
+        "+=1.2"
+      )
+      .then(() => eventBus.emit("toBeContinueDone"))
+      .then(() => {
+        eventBus.emit("toBeContinueDone");
+      });
   });
 }
 
@@ -524,48 +674,73 @@ function handleNextEpisode(e: ShowTitleOption) {
     const bottomChild = container.children[1];
     let flag = false;
     const timeline = gsap.timeline();
-    timeline.to(topChild, {
-      translateY: 0,
-      duration: 0.5,
-      ease: "power4.out"
-    })
-      .to(bottomChild, {
+    timeline
+      .to(topChild, {
         translateY: 0,
         duration: 0.5,
         ease: "power4.out",
-        onComplete() {
-          showToBeContinue.value = false;
-        }
-      }, "<")
+      })
+      .to(
+        bottomChild,
+        {
+          translateY: 0,
+          duration: 0.5,
+          ease: "power4.out",
+          onComplete() {
+            showToBeContinue.value = false;
+          },
+        },
+        "<"
+      )
       .to(topChild, {
         translateY: "-100%",
         duration: 0.5,
-        ease: "power4.in"
-      })
-      .to(bottomChild, {
-        translateY: "100%",
-        duration: 0.5,
         ease: "power4.in",
-        onUpdate() {
-          if (flag) {
-            return;
-          }
-          const matrix = getComputedStyle(bottomChild).transform;
-          if (Number(matrix.substring(matrix.lastIndexOf(",") + 2).replace(")", "")) > 100) {
-            subTitleContent.value = e.subtitle || "";
-            proxyShowCoverTitle(titleEL, titleContent, parseTitle(e.title), (el) => {
-              const tl = gsap.timeline();
-              tl.fromTo(el, {
-                scaleY: 0.8
-              }, {
-                scaleY: 1,
-                duration: 0.2
-              })
-            });
-            flag = true;
-          }
-        }
-      }, "<").then(() => { eventBus.emit("nextEpisodeDone") });
+      })
+      .to(
+        bottomChild,
+        {
+          translateY: "100%",
+          duration: 0.5,
+          ease: "power4.in",
+          onUpdate() {
+            if (flag) {
+              return;
+            }
+            const matrix = getComputedStyle(bottomChild).transform;
+            if (
+              Number(
+                matrix.substring(matrix.lastIndexOf(",") + 2).replace(")", "")
+              ) > 100
+            ) {
+              subTitleContent.value = e.subtitle || "";
+              proxyShowCoverTitle(
+                titleEL,
+                titleContent,
+                parseTitle(e.title),
+                el => {
+                  const tl = gsap.timeline();
+                  tl.fromTo(
+                    el,
+                    {
+                      scaleY: 0.8,
+                    },
+                    {
+                      scaleY: 1,
+                      duration: 0.2,
+                    }
+                  );
+                }
+              );
+              flag = true;
+            }
+          },
+        },
+        "<"
+      )
+      .then(() => {
+        eventBus.emit("nextEpisodeDone");
+      });
   });
 }
 function handlePopupImage(url: string) {
@@ -589,7 +764,7 @@ function handlePopupClose() {
   videoComponent.value?.pause();
   nextTick(() => {
     popupSrc.video = "";
-  })
+  });
 }
 /**
  * 播放加载动画
@@ -611,10 +786,13 @@ function handleStartLoading(dataUrl: string) {
 function handleOneResourceLoaded(state: ResourceLoadState) {
   showLoading.value = true;
   const lastUrlPathIndex = state.resourceName.lastIndexOf("/") + 1;
-  const resourceName = state.resourceName.substring(lastUrlPathIndex === -1 ? 0 : lastUrlPathIndex, state.resourceName.length);
+  const resourceName = state.resourceName.substring(
+    lastUrlPathIndex === -1 ? 0 : lastUrlPathIndex,
+    state.resourceName.length
+  );
   loadLog.value.push({
     type: state.type,
-    resourceName: resourceName
+    resourceName: resourceName,
   });
 }
 
@@ -624,11 +802,14 @@ function handleOneResourceLoaded(state: ResourceLoadState) {
 function handleEndLoading() {
   showLoading.value = false;
 }
-const fontSizeBounds = computed(() => (props.playerHeight / 1080));
+const fontSizeBounds = computed(() => props.playerHeight / 1080);
 const stWidth = 3000;
 const stHeight = 1600;
 // st坐标系映射视口坐标系
-const stPositionBounds = computed(() => ({ width: props.playerWidth / stWidth, height: props.playerHeight / stHeight }))
+const stPositionBounds = computed(() => ({
+  width: props.playerWidth / stWidth,
+  height: props.playerHeight / stHeight,
+}));
 // 按比例缩放文字
 function fontSize(multi: number) {
   return fontSizeBounds.value * multi;
@@ -661,8 +842,8 @@ const overrideTitleStyle = computed(() => {
     };
   }
   return {
-      //当为nexetEpisode时取消背景模糊
-      "backdrop-filter": showNextEpisode.value? 'none' : 'blur(7px)'
+    //当为nexetEpisode时取消背景模糊
+    "backdrop-filter": showNextEpisode.value ? "none" : "blur(7px)",
   };
 });
 // 文本框总高度
@@ -673,15 +854,22 @@ const standardDialogTopOffset = 100;
 // 计算title的padding以让其符合边框第二边线
 const titleBorderWidth = 2280;
 const standardBorderWidth = 26;
-const titleBorderPadding = computed(() => props.playerWidth / titleBorderWidth * standardBorderWidth);
+const titleBorderPadding = computed(
+  () => (props.playerWidth / titleBorderWidth) * standardBorderWidth
+);
 const loadLog = ref<ResourceLoadState[]>([]);
-const mapLoadLog = computed(() => deepCopyObject(loadLog.value).reverse().slice(0, 4).map(it => it || { type: "success", resourceName: "" }));
+const mapLoadLog = computed(() =>
+  deepCopyObject(loadLog.value)
+    .reverse()
+    .slice(0, 4)
+    .map(it => it || { type: "success", resourceName: "" })
+);
 onMounted(() => {
   eventBus.on("showTitle", handleShowTitle);
   eventBus.on("showPlace", handleShowPlace);
-  eventBus.on('showText', handleShowTextEvent);
-  eventBus.on('st', handleShowStEvent);
-  eventBus.on('clearSt', handleClearSt);
+  eventBus.on("showText", handleShowTextEvent);
+  eventBus.on("st", handleShowStEvent);
+  eventBus.on("clearSt", handleClearSt);
   eventBus.on("hide", handleHideDialog);
   eventBus.on("hideDialog", handleHideDialog);
   eventBus.on("click", moveToNext);
@@ -697,9 +885,9 @@ onMounted(() => {
 onUnmounted(() => {
   eventBus.off("showTitle", handleShowTitle);
   eventBus.off("showPlace", handleShowPlace);
-  eventBus.off('showText', handleShowTextEvent);
-  eventBus.off('st', handleShowStEvent);
-  eventBus.off('clearSt', handleClearSt);
+  eventBus.off("showText", handleShowTextEvent);
+  eventBus.off("st", handleShowStEvent);
+  eventBus.off("clearSt", handleClearSt);
   eventBus.off("hide", handleHideDialog);
   eventBus.off("hideDialog", handleHideDialog);
   eventBus.off("click", moveToNext);
@@ -714,27 +902,27 @@ onUnmounted(() => {
 });
 // 暂时用不上了, 比如font-size还需要根据屏幕进行适配
 type StyleEffectTemplateMap = {
-  [key in TextEffectName]: string
-}
+  [key in TextEffectName]: string;
+};
 const StyleEffectTemplate: StyleEffectTemplateMap = {
   color: "color: ${value}",
   fontsize: "font-size: ${value}px",
-  ruby: ''
-}
+  ruby: "",
+};
 // 默认的打字机效果
 const DefaultTypedOptions: TypedOptions = {
   typeSpeed: 20, // 每个字速度 单位是ms
   showCursor: false, // 是否显示虚拟光标
   fadeOut: true,
-  contentType: "html" // 内容类型 显然是html
-}
+  contentType: "html", // 内容类型 显然是html
+};
 /**
  * 用来算比例的
  */
 type TextLayerProps = {
   playerHeight: number; // 整块视口的高
   playerWidth: number; // 整块视口的宽
-}
+};
 </script>
 
 <style scoped lang="scss">
@@ -766,7 +954,11 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
   width: 100%;
   padding: 3rem 8rem;
   box-sizing: border-box;
-  background-image: linear-gradient(to bottom, rgba(255, 0, 0, 0), rgba(19, 32, 45, 0.9) 30%);
+  background-image: linear-gradient(
+    to bottom,
+    rgba(255, 0, 0, 0),
+    rgba(19, 32, 45, 0.9) 30%
+  );
   position: absolute;
   bottom: 0;
   z-index: $text-layer-z-index + $dialog-z-index;
@@ -787,20 +979,20 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
     height: 10px;
     background: url("./assets/text-next.png");
     background-size: $size $size;
-    animation: next-btn .6s linear alternate infinite;
+    animation: next-btn 0.6s linear alternate infinite;
   }
 
   @keyframes next-btn {
     0% {
-      transform: translateY(0)
+      transform: translateY(0);
     }
 
     40% {
-      transform: translateY(10%)
+      transform: translateY(10%);
     }
 
     100% {
-      transform: translateY(50%)
+      transform: translateY(50%);
     }
   }
 }
@@ -814,9 +1006,9 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
 }
 
 .container {
-  font-family: 'TJL', 'Microsoft YaHei', 'PingFang SC', -apple-system, system-ui,
-    'Segoe UI', Roboto, Ubuntu, Cantarell, 'Noto Sans', BlinkMacSystemFont,
-    'Helvetica Neue', 'Hiragino Sans GB', Arial, sans-serif;
+  font-family: "TJL", "Microsoft YaHei", "PingFang SC", -apple-system, system-ui,
+    "Segoe UI", Roboto, Ubuntu, Cantarell, "Noto Sans", BlinkMacSystemFont,
+    "Helvetica Neue", "Hiragino Sans GB", Arial, sans-serif;
   position: absolute;
   user-select: none;
   overflow: hidden;
@@ -857,7 +1049,6 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
         height: 95%;
       }
 
-
       .title-contain {
         --font-size: 2rem;
         position: absolute;
@@ -868,10 +1059,13 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
         font-weight: 700;
         padding: var(--font-size) 0;
         width: 100%;
-        background: linear-gradient(58deg,
+        background: linear-gradient(
+            58deg,
             rgba(240, 240, 240, 0.1) 0%,
             rgba(240, 240, 240, 1) 38%,
-            rgba(240, 240, 240, 0.1) 100%), url("./assets/poli-light.png") rgb(164 216 237) no-repeat 0 30%;
+            rgba(240, 240, 240, 0.1) 100%
+          ),
+          url("./assets/poli-light.png") rgb(164 216 237) no-repeat 0 30%;
 
         .sub-title {
           font-size: calc(var(--font-size) * 0.6);
@@ -879,7 +1073,13 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
 
           .sub-title-inner {
             padding: 0 5px;
-            background: linear-gradient(0deg, #f6ed7e 0%, #F6ED7D 13%, transparent 13%) 0 calc(var(--font-size) * -0.12);
+            background: linear-gradient(
+                0deg,
+                #f6ed7e 0%,
+                #f6ed7d 13%,
+                transparent 13%
+              )
+              0 calc(var(--font-size) * -0.12);
           }
         }
 
@@ -911,7 +1111,7 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
       padding: calc(var(--font-size) / 2) 3rem calc(var(--font-size) / 2) 1rem;
 
       &:after {
-        content: '';
+        content: "";
         width: 100%;
         height: 100%;
         top: 0;
@@ -929,7 +1129,7 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
         font-style: var(--font-size);
 
         &:after {
-          content: '';
+          content: "";
           width: 3px;
           display: block;
           height: var(--font-size);
@@ -978,7 +1178,6 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
       line-height: 1;
     }
   }
-
 }
 
 @keyframes fade-in-out {
@@ -1036,7 +1235,12 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
 
   .to-be-continued-bg1 {
     transform: translateY(-100%);
-    background: radial-gradient(#808080, #808080 30%, #545454 65%, #545454 100%);
+    background: radial-gradient(
+      #808080,
+      #808080 30%,
+      #545454 65%,
+      #545454 100%
+    );
   }
 
   .to-be-continued {
@@ -1091,7 +1295,8 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
     .loading-log-item {
       color: grey;
     }
-    .loading-log-item-success {}
+    .loading-log-item-success {
+    }
     .loading-log-item-error {
       color: red;
     }

@@ -23,8 +23,8 @@ const emit = defineEmits<{
 }>();
 
 function handleClose(ev: Event) {
-  emit('close', ev as PointerEvent)
-  eventBus.emit("playOtherSounds", "back")
+  emit("close", ev as PointerEvent);
+  eventBus.emit("playOtherSounds", "back");
 }
 
 const dialogContainer = ref(null);
@@ -32,7 +32,7 @@ const dialogContainer = ref(null);
 // 对话框缓入动画
 watch(
   () => props.show,
-  (newValue) => {
+  newValue => {
     if (newValue === true) {
       gsap.from(dialogContainer.value, {
         opacity: 0,
@@ -60,10 +60,7 @@ watch(
         <h3 class="ba-dialog-title">
           <span>{{ title }}</span>
         </h3>
-        <button
-          class="ba-dialog-close button-nostyle"
-          @click="handleClose"
-        >
+        <button class="ba-dialog-close button-nostyle" @click="handleClose">
           <i style="user-select: none">
             <img
               src="../assets/close.svg"
