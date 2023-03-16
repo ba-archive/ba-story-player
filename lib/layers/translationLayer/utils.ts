@@ -43,19 +43,19 @@ export function isOption(s: string) {
  * @returns
  */
 export function generateText(rawStoryUnit: StoryRawUnit, stm?: boolean) {
-  let rawText = getText(rawStoryUnit, playerStore.language)
-  rawText = rawText.replaceAll('[USERNAME]', playerStore.userName)
-  rawText = rawText.replaceAll('#n', '\n')
-  let result: Text[] = []
+  const rawText = getText(rawStoryUnit, playerStore.language)
+    .replaceAll('[USERNAME]', playerStore.userName)
+    .replaceAll('#n', '\n');
+  const result: Text[] = [];
   if (rawText.includes('[wa')) {
     //原始文字示例: "― （いや[wa:200]いや、[wa:900]いくら[wa:300]そういう[wa:300]状況だからって"
     //根据[wa分开
-    let strs = rawText.split('[wa:')
-    for (let str of strs) {
-      let spiltIndex = str.indexOf(']')
-      let waitTime = Number(str.slice(0, spiltIndex))
-      let textUnit = str.slice(spiltIndex + 1)
-      result.push({ content: textUnit, waitTime, effects: [] })
+    const strList = rawText.split('[wa:');
+    for (const str of strList) {
+      const spiltIndex = str.indexOf(']');
+      const waitTime = Number(str.slice(0, spiltIndex));
+      const textUnit = str.slice(spiltIndex + 1);
+      result.push({ content: textUnit, waitTime, effects: [] });
     }
     return result;
   }
