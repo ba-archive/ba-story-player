@@ -1,4 +1,5 @@
 import eventBus from "@/eventBus";
+import { storyHandler } from "@/index";
 import { usePlayerStore } from "@/stores";
 import {
   CharacterEffectInstance,
@@ -175,6 +176,12 @@ export const CharacterLayerInstance: CharacterLayer = {
       spine.scale.set(scale);
       // 设置spine在播放器的y轴坐标
       spine.position.set(x, y);
+    }
+    // 跳过时设置为初始的高度, 可以优化为跳过时缩短 duration 为 200 以下,
+    // 但是现在看起来没啥问题先不改了, action那边 duration 有点多
+    if(storyHandler.isSkip){
+      const { y } = calcCharacterYAndScale(spine);
+      spine.position.y = y
     }
     // 不显示
     spine.alpha = 0

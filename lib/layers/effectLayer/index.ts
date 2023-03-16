@@ -7,6 +7,7 @@ import { Application, Sprite } from 'pixi.js'
 import { playBGEffect, removeBGEffect } from './bgEffectHandlers'
 import { emitterContainer } from './emitterUtils'
 import {calcBackgroundImageSize} from "@/layers/bgLayer";
+import { storyHandler } from '@/index'
 
 /**
  * 初始化特效层, 订阅player的剧情信息.
@@ -16,6 +17,7 @@ export function effectInit() {
   playerStore.app.stage.addChild(emitterContainer)
   eventBus.on('transitionIn', async transition => {
     let duration = transition.TransitionInDuration !== 1 ? transition.TransitionInDuration : 1000
+    duration = storyHandler.isSkip ? 50 : duration
     switch (transition.TransitionIn) {
       case 'fade':
         await playTransition('black', duration, 'in')
@@ -33,6 +35,7 @@ export function effectInit() {
   })
   eventBus.on('transitionOut', async transition => {
     let duration = transition.TransitionOutDuration !== 1 ? transition.TransitionOutDuration : 1000
+    duration = storyHandler.isSkip ? 50 : duration
     switch (transition.TransitionOut) {
       case 'fade':
         await playTransition('black', duration, 'out')
@@ -90,6 +93,13 @@ async function playTransition(color: 'black' | 'white', durationMs: number, mode
   let background = document.querySelector('#player__background') as HTMLDivElement
   background.style.backgroundColor = color
   let playerMain = document.querySelector('#player__main')
+  function killTransitionIn(){
+    // 避免在transitionIn 动画时快进导致一直黑屏或白屏
+    gsap.killTweensOf('#player__main')
+    gsap.to('#player__main', { alpha: 1 })
+    eventBus.off('skipping', killTransitionIn)
+  }
+  eventBus.on('skipping', killTransitionIn)
   switch (mode) {
     case 'in':
       await gsap.fromTo(playerMain, { alpha: 1 }, { alpha: 0, duration: durationMs / 1000 })

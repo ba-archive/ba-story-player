@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import BaButton from "@/layers/uiLayer/components/BaButton.vue";
-import { computed, ref, watchEffect } from "vue";
+import { onMounted, ref, watch,computed, watchEffect } from "vue";
 import BaDialog from "./components/BaDialog.vue";
 import BaChatLog from "./components/BaChatLog/BaChatLog.vue";
 import BaSelector from "./components/BaSelector.vue";
@@ -9,6 +9,7 @@ import { StorySummary } from "@/types/store";
 import { effectBtnMouseDown, effectBtnMouseUp } from "./utils";
 import { ShowOption } from "@/types/events";
 import { usePlayerStore } from "@/stores";
+import './userInteract.ts'
 import { useMouse, useThrottleFn } from '@vueuse/core'
 
 let hiddenSummary = ref(true);
@@ -26,6 +27,12 @@ eventBus.on("hide", () => {
   hiddenSummary.value = true
   hiddenStoryLog.value = true
   hiddenMenu.value = true
+})
+eventBus.on("showStoryLog", () => {
+  hiddenStoryLog.value = false
+})
+watch(hiddenStoryLog,() => {
+  eventBus.emit("isStoryLogShow", !hiddenStoryLog.value)
 })
 eventBus.on("hidemenu", () => {
   hiddenMenu.value = true
@@ -140,7 +147,7 @@ function handleBaUIClick() {
 </script>
 
 <template>
-  <div class="baui" @click.self="handleBaUIClick" :style="{'font-size': `${bauiem}px`, 'cursor': cursorStyle}">
+  <div class="baui" @click.self="handleBaUIClick" :style="{'font-size': `${bauiem}px`, 'cursor': cursorStyle}" tabindex="0">
     <div class="right-top" v-show="!hiddenMenu">
       <div class="baui-button-group">
         <BaButton @click="handleBtnAutoMode" :class="{ 'ba-button-auto': true, activated: autoMode }">

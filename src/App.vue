@@ -10,8 +10,8 @@ import { ref, watch } from 'vue'
 import * as PIXI from 'pixi.js'
 import { usePlayerStore } from '../lib/stores'
 import axios from 'axios'
-import { useResizeObserver } from '@vueuse/core'
-import { useThrottleFn } from '@vueuse/core'
+import {changeStoryIndex} from '../lib/layers/uiLayer/userInteract'
+import { useResizeObserver, useThrottleFn } from '@vueuse/core'
 
 console.log('资源加载: ', resourcesLoader)
 console.log('资源调用: ', usePlayerStore())
@@ -63,13 +63,7 @@ if (cacheIndex) {
 function setStartIndex() {
   localStorage.setItem(indexCacheKey, currentStoryIndex.value.toString())
 }
-/**
- * 切换到对应故事节点
- */
-function changeStoryIndex() {
-  storyHandler.currentStoryIndex = currentStoryIndex.value
-  eventBus.emit('next')
-}
+
 
 const story = ref(yuuka)
 const showPlayer = ref(false)
@@ -111,7 +105,7 @@ useResizeObserver(player as any, useThrottleFn((entries) => {
   <div style="display:flex;justify-content: center;">
     <div v-if="showPlayer">
       <BaStoryPlayer :story="story" data-url="https://yuuka.cdn.diyigemt.com/image/ba-all-data" :width="width"
-        :height="height" language="Cn" userName="testUser" :story-summary="storySummary" 
+        :height="height" language="Cn" userName="testUser" :story-summary="storySummary"
         style="resize: both; overflow: hidden;" ref="player"
       />
       <!--其实在左边的剧情json里填入11000就能测试序章, 不需要改动这里-->
@@ -126,7 +120,7 @@ useResizeObserver(player as any, useThrottleFn((entries) => {
       <label>storyIndex</label>
       <input v-model="currentStoryIndex" />
       <button @click="setStartIndex">设为故事初始index</button>
-      <button @click="changeStoryIndex">更换故事index</button>
+      <button @click="changeStoryIndex(currentStoryIndex)">更换故事index</button>
       <label>故事json</label>
       <input v-model="storyJsonName" />
       <button @click="changeJSON">更换故事json</button>

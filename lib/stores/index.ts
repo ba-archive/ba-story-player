@@ -1,7 +1,8 @@
 import { BGEffectImgTable } from '@/types/effectLayer'
-import { Actions, GetterFunctions, Getters, PrivateStates, PublicStates } from '@/types/store'
+import { Actions, GetterFunctions, Getters, LogText, PrivateStates, PublicStates } from '@/types/store'
 import { getResourcesUrl } from '@/utils'
 import { ref } from 'vue'
+import { storyHandler } from '..'
 
 // let characterNameTable = {
 //   '유우카 체육복ND': 3715128518,
@@ -168,6 +169,7 @@ let actions: Actions = {
       privateState.logText.value.push({
         type: 'user',
         text: newLog.text.map(it => it.content).join(""),
+        index: newLog.index,
         name: privateState.userName
       })
     }
@@ -181,16 +183,28 @@ let actions: Actions = {
           type: 'character',
           text,
           avatarUrl: newLog.avatarUrl,
-          name: newLog.speaker.name
+          name: newLog.speaker.name,
+          index: newLog.index
         })
       }
       else {
         privateState.logText.value.push({
           type: 'none',
-          text
+          text,
+          index: newLog.index
         })
       }
     }
+    // 日志不会超过当前的故事进度, 并且不重复
+    privateState.logText.value = privateState.logText.value.reduce((acc, cur)=>{
+      if(cur.index && cur.index <= storyHandler.currentStoryIndex){
+        const find = acc.find(i=>i.index === cur.index)
+        if(!find){
+          acc.push(cur)
+        }
+      }
+      return acc;
+    }, [] as LogText[])
   },
   setL2DSpineUrl(url) {
     privateState.l2dSpineUrl = url
