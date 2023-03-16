@@ -16,6 +16,10 @@ jobs:
     steps:
       - uses: actions/checkout@master
 
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 6.0.2
+
       - name: Install and Build 
         run: |
           pnpm install

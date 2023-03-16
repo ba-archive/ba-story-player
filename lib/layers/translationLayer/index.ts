@@ -262,10 +262,10 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
             const text = utils.splitStScriptAndParseTag(parseResult[2]);
             const selectGroup = Number(parseResult[1] || 0)
             if (unit.textAbout.options) {
-              unit.textAbout.options.push({ SelectionGroup: selectGroup, text })
+              unit.textAbout.options.push({ SelectionGroup: selectGroup, text ,index:rawIndex})
             }
             else {
-              unit.textAbout.options = [{ SelectionGroup: selectGroup, text }]
+              unit.textAbout.options = [{ SelectionGroup: selectGroup, text ,index:rawIndex}]
             }
             optionIndex++;
           }
