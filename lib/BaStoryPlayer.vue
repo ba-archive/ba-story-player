@@ -199,7 +199,7 @@ onActivated(() => {
   })
   }
   else{
-    firstMount=false 
+    firstMount=false
   }
 })
 
@@ -226,7 +226,7 @@ onDeactivated(() => {
         <BaDialog :player-height="playerHeight" :player-width="playerWidth" :style="{ width: `${playerWidth}px` }">
         </BaDialog>
         <BaUI :height="playerHeight" :width="playerWidth" :story-summary="storySummary"
-          v-model:full-screen="fullScreen" />
+          v-model:full-screen="fullScreen" :language="language" />
       </div>
     </div>
   </div>
