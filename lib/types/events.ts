@@ -91,6 +91,8 @@ export type Events = {
    * 跳过剧情
    */
   skip: undefined
+  /** 按contrl时跳过剧情 */
+  skipping: undefined
   /**
    * 自动模式
    */
@@ -105,7 +107,10 @@ export type Events = {
   hideDialog: undefined
   hidemenu: undefined
   showmenu: undefined
-
+  // 显示历史
+  showStoryLog: undefined
+  // 当前历史log是否显示
+  isStoryLogShow: boolean
   //文字层
   /**
    * 展示标题
@@ -253,6 +258,8 @@ export interface ShowText {
    * 人物头像, 填logText时使用
    */
   avatarUrl?: string
+  /** storyUnit 位置 */
+  index?: number
 }
 
 /**
@@ -280,7 +287,9 @@ export interface ShowOption {
   /**
    * 选项文本
    */
-  text: Text[]
+  text: Text[],
+  /** 当前剧情进度 */
+  index: number
 }
 
 export interface PlayEffect {

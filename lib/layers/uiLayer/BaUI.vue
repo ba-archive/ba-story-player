@@ -1,14 +1,15 @@
 <script lang="ts" setup>
 import BaButton from "@/layers/uiLayer/components/BaButton.vue";
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import BaDialog from "./components/BaDialog.vue";
 import BaChatLog from "./components/BaChatLog/BaChatLog.vue";
 import BaSelector from "./components/BaSelector.vue";
 import eventBus from "@/eventBus";
-import {Language, StorySummary} from "@/types/store";
+import { Language, StorySummary } from "@/types/store";
 import { effectBtnMouseDown, effectBtnMouseUp } from "./utils";
 import { ShowOption } from "@/types/events";
 import { usePlayerStore } from "@/stores";
+import "./userInteract.ts";
 import { useThrottleFn } from "@vueuse/core";
 
 let hiddenSummary = ref(true);
@@ -33,6 +34,12 @@ eventBus.on("hide", () => {
   hiddenSummary.value = true;
   hiddenStoryLog.value = true;
   hiddenMenu.value = true;
+});
+eventBus.on("showStoryLog", () => {
+  hiddenStoryLog.value = false;
+});
+watch(hiddenStoryLog, () => {
+  eventBus.emit("isStoryLogShow", !hiddenStoryLog.value);
 });
 eventBus.on("hidemenu", () => {
   hiddenMenu.value = true;
@@ -189,6 +196,7 @@ function getI18n(key: string) {
     class="baui"
     @click.self="handleBaUIClick"
     :style="{ 'font-size': `${bauiem}px`, cursor: cursorStyle }"
+    tabindex="0"
   >
     <div class="right-top" v-show="!hiddenMenu">
       <div class="baui-button-group">

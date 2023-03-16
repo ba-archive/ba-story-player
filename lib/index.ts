@@ -12,7 +12,6 @@ import axios from 'axios';
 import { SpineParser, IEventData } from 'pixi-spine';
 import { Application, Loader, settings, utils as pixiUtils } from "pixi.js";
 import { L2DInit } from "./layers/l2dLayer/L2D";
-import * as process from "process";
 
 let playerStore: ReturnType<typeof usePlayerStore>
 let privateState: ReturnType<typeof initPrivateState>
@@ -131,6 +130,7 @@ export let storyHandler = {
   unitPlaying: false,
   auto: false,
   isEnd: false,
+  isSkip: false,
 
   get currentStoryUnit(): StoryUnit {
     if (playerStore && playerStore.allStoryUnit.length > this.currentStoryIndex) {
@@ -194,7 +194,18 @@ export let storyHandler = {
   },
 
   next() {
-    if (eventEmitter.unitDone && !this.unitPlaying && !this.auto) {
+    if(this.isSkip && !eventEmitter.l2dPlaying){
+      storyHandler.storyIndexIncrement()
+      // 快进用 storyPlay 需要考虑 unitPlaying, 同时会有一个while循环在里边导致控制不符合预期
+      eventEmitter.emitEvents().then(()=>{
+        // 注意这个函数是 异步的, 需要等待执行完再继续 l2d, 此时后续的skip会被拦住
+        if(this.currentStoryUnit.l2d){
+          this.next()
+        }
+      })
+      return;
+    }
+    if ((eventEmitter.unitDone && !this.unitPlaying && !this.auto)) {
       storyHandler.storyIndexIncrement()
       storyHandler.storyPlay()
     }
@@ -309,6 +320,8 @@ export let eventEmitter = {
   titleDone: true,
   textDone: true,
   stDone: true,
+  // 当前的历史消息 log 是否显示
+  isStoryLogShow: false,
   toBeContinueDone: true,
   nextEpisodeDone: true,
   /** 当前l2d动画是否播放完成 */
@@ -344,11 +357,18 @@ export let eventEmitter = {
       }
     })
     eventBus.on('select', e => {
+      // 选择完直接下一步, 避免卡在 l2dplaying 前
+      if(storyHandler.isSkip){
+        storyHandler.select(e)
+        this.emitEvents()
+        return;
+      }
       if (this.unitDone) {
         storyHandler.select(e)
         storyHandler.storyPlay()
       }
     })
+    eventBus.on('isStoryLogShow', (e) => eventEmitter.isStoryLogShow = e)
     eventBus.on('effectDone', () => eventEmitter.effectDone = true)
     eventBus.on('characterDone', () => eventEmitter.characterDone = true)
     eventBus.on('titleDone', () => this.titleDone = true)
@@ -417,12 +437,14 @@ export let eventEmitter = {
         break
       case 'text':
         this.textDone = false
-        eventBus.emit('showText', currentStoryUnit.textAbout.showText)
+        eventBus.emit('showText', {...currentStoryUnit.textAbout.showText, index: storyHandler.currentStoryIndex})
         eventBus.emit('showmenu')
         break
       case 'option':
         if (currentStoryUnit.textAbout.options) {
-          eventBus.emit('option', currentStoryUnit.textAbout.options)
+          eventBus.emit('option', currentStoryUnit.textAbout.options.map(i=>{
+            return {...i, index: storyHandler.currentStoryIndex}
+          }))
         }
         break
       case 'st':
@@ -494,11 +516,12 @@ export let eventEmitter = {
   /**
    * 显示背景
    */
-  async showBg() {
-    if (storyHandler.currentStoryUnit.bg) {
-      const bgOverLap = storyHandler.currentStoryUnit.bg.overlap
+  async showBg(currentStoryUnit?:StoryUnit) {
+    currentStoryUnit = currentStoryUnit || storyHandler.currentStoryUnit
+    if (currentStoryUnit.bg) {
+      const bgOverLap = currentStoryUnit.bg.overlap
       eventBus.emit("showBg", {
-        url: storyHandler.currentStoryUnit.bg?.url,
+        url: currentStoryUnit.bg?.url,
         overlap: bgOverLap
       });
       if (this.l2dPlaying) {
@@ -521,7 +544,8 @@ export let eventEmitter = {
   /**
    * 显示角色
    */
-  showCharacter() {
+  showCharacter(currentStoryUnit?:StoryUnit) {
+    currentStoryUnit = currentStoryUnit || storyHandler.currentStoryUnit
     if (storyHandler.currentStoryUnit.characters.length != 0) {
       this.characterDone = false
       eventBus.emit('showCharacter', {
@@ -533,10 +557,11 @@ export let eventEmitter = {
   /**
    * 播放声音
    */
-  playAudio() {
-    if (storyHandler.currentStoryUnit.audio) {
-      eventBus.emit('playAudio', storyHandler.currentStoryUnit.audio)
-      if (storyHandler.currentStoryUnit.audio.voiceJPUrl) {
+  playAudio(currentStoryUnit?:StoryUnit) {
+    currentStoryUnit = currentStoryUnit || storyHandler.currentStoryUnit
+    if (currentStoryUnit.audio) {
+      eventBus.emit('playAudio', currentStoryUnit.audio)
+      if (currentStoryUnit.audio.voiceJPUrl) {
         this.VoiceJpDone = false
       }
     }
