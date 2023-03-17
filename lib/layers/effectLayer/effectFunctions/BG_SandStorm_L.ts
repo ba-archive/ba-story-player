@@ -1,5 +1,5 @@
 import { usePlayerStore } from "@/stores";
-import { Sprite, TilingSprite, filters } from "pixi.js";
+import { filters, Sprite, TilingSprite } from "pixi.js";
 import { emitterStarter } from "../emitterUtils";
 import { loadSpriteSheet } from "../resourcesUtils";
 
@@ -8,8 +8,8 @@ export default async function BG_SandStorm_L(resources: Sprite[]) {
   const { app } = usePlayerStore();
   const appWidth = app.view.width;
   const appHeight = app.view.height;
-  const animationsName = "sandStorm";
-  const spritesheet = await loadSpriteSheet(
+  let animationsName = "sandStorm";
+  let spritesheet = await loadSpriteSheet(
     resources[0],
     { x: 1, y: 4 },
     animationsName
@@ -36,7 +36,7 @@ export default async function BG_SandStorm_L(resources: Sprite[]) {
   TextureTilingBack.zIndex = -1;
   TextureTilingFront.tilePosition.x = appWidth * 0.05; // 错开一点
   TextureTilingFront.y = appHeight * 0.75;
-  const Remover = emitterStarter({
+  let Remover = emitterStarter({
     update: () => {
       TextureTilingBack.tilePosition.x += 1.3;
       TextureTilingFront.tilePosition.x += 1.3;

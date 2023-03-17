@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import eventBus from "@/eventBus";
-import { PropType, Ref, onMounted, ref } from "vue";
+import { onMounted, PropType, Ref, ref } from "vue";
 import { buttonAnimation } from "../utils";
 
 const props = defineProps({

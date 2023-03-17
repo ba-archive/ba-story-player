@@ -24,13 +24,13 @@ const CharacterFXPlayerInstance: CharacterFXPlayer = {
       return Promise.reject("该effect不存在或未实现");
     }
     const { fxImages, app } = usePlayerStore();
-    const fxImageSprites: Sprite[] = [];
-    const currentFxImgs = fxImages(type);
+    let fxImageSprites: Sprite[] = [];
+    let currentFxImgs = fxImages(type);
     if (!currentFxImgs) {
       Promise.reject(`fx中${type}对应的图像资源不存在`);
     }
-    for (const imageResource of currentFxImgs!) {
-      const tempSprite = Sprite.from(imageResource);
+    for (let imageResource of currentFxImgs!) {
+      let tempSprite = Sprite.from(imageResource);
       tempSprite.visible = false;
       instance.instance.addChild(tempSprite);
       fxImageSprites.push(tempSprite);
@@ -38,15 +38,15 @@ const CharacterFXPlayerInstance: CharacterFXPlayer = {
     return fn(instance, fxOptions[type], fxImageSprites) as Promise<void>;
   },
   shot(instance, options, sprites) {
-    const scale = (options.scale * getStandardWidth()) / sprites[0].width;
+    let scale = (options.scale * getStandardWidth()) / sprites[0].width;
 
-    const tl = gsap.timeline();
-    for (const [index, sequence] of options.shotSequence.entries()) {
-      const img = Sprite.from(sprites[sequence.startImg].texture);
+    let tl = gsap.timeline();
+    for (let [index, sequence] of options.shotSequence.entries()) {
+      let img = Sprite.from(sprites[sequence.startImg].texture);
       img.scale.set(scale * sequence.scale);
       img.angle = sequence.angle;
       img.zIndex = 10;
-      const adjustmentFilter = new AdjustmentFilter({
+      let adjustmentFilter = new AdjustmentFilter({
         brightness: 3,
         alpha: 0.5,
       });
@@ -91,8 +91,8 @@ function setPos(
   img: Sprite,
   pos: PositionOffset
 ) {
-  const standardWidth = getStandardWidth();
-  const finalPos = {
+  let standardWidth = getStandardWidth();
+  let finalPos = {
     x: standardWidth * pos.x,
     y: standardWidth * pos.y,
   };
@@ -116,7 +116,7 @@ function timelinePromise(
     timeLine
       .then(() => {
         resolve();
-        for (const img of destroyImgs) {
+        for (let img of destroyImgs) {
           img.destroy();
         }
       })

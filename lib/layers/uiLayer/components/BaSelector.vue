@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { computed, ref, withDefaults } from "vue";
+import { computed, withDefaults, ref } from "vue";
 import { ShowOption } from "@/types/events";
 import { useElementSize } from "@vueuse/core";
 import { Text } from "@/types/common";

@@ -1,6 +1,6 @@
 import { usePlayerStore } from "@/stores";
 import { Emitter, EmitterConfigV3 } from "@pixi/particle-emitter";
-import { Container, Rectangle, Sprite, Texture, filters } from "pixi.js";
+import { Container, filters, Rectangle, Sprite, Texture } from "pixi.js";
 import { emitterConfigs, emitterStarter } from "../emitterUtils";
 import { getEmitterType, sprite2TransParent } from "../resourcesUtils";
 
@@ -10,10 +10,10 @@ export default async function BG_Shining_L_BGOff(resources: Sprite[]) {
   const appWidth = app.view.width;
   const appHeight = app.view.height;
   // 波纹特效
-  const emitterContainer = new Container();
+  let emitterContainer = new Container();
   app.stage.addChild(emitterContainer);
   emitterContainer.zIndex = -1;
-  const ringConfig: EmitterConfigV3 = {
+  let ringConfig: EmitterConfigV3 = {
     ...(emitterConfigs("shining_ring") as EmitterConfigV3),
   };
   const ringSprite = sprite2TransParent(resources[0]);

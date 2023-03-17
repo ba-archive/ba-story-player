@@ -1,14 +1,17 @@
 import { Sprite } from "pixi.js";
 import { BGEffectExcelTableItem, BGEffectType } from "./excels";
 
-/**
- * BGEffect处理函数
- */
-export type BGEffectHandlerFunction<type extends BGEffectType> = (
-  resources: Sprite[],
-  setting: BGEffectExcelTableItem,
-  options: BGEffectHandlerOptions[type]
-) => Promise<EffectRemoveFunction>;
+export type BGEffectImgTable = Record<BGEffectType, string[]>;
+
+export type EffectRemoveFunction = () => Promise<void>;
+
+export type CurrentBGEffect =
+  | {
+      effect: BGEffectType;
+      removeFunction: EffectRemoveFunction;
+      resources: Sprite[];
+    }
+  | undefined;
 
 export interface BGEffectHandlerOptions {
   BG_FocusLine: {};
@@ -51,20 +54,17 @@ export interface BGEffectHandlerOptions {
 }
 
 /**
+ * BGEffect处理函数
+ */
+export type BGEffectHandlerFunction<type extends BGEffectType> = (
+  resources: Sprite[],
+  setting: BGEffectExcelTableItem,
+  options: BGEffectHandlerOptions[type]
+) => Promise<EffectRemoveFunction>;
+
+/**
  * 类型与处理函数的对应
  */
 export type BGEffectHandlers = {
   [key in BGEffectType]: BGEffectHandlerFunction<key>;
 };
-
-export type BGEffectImgTable = Record<BGEffectType, string[]>;
-
-export type CurrentBGEffect =
-  | {
-      effect: BGEffectType;
-      removeFunction: EffectRemoveFunction;
-      resources: Sprite[];
-    }
-  | undefined;
-
-export type EffectRemoveFunction = () => Promise<void>;

@@ -28,8 +28,8 @@ import { PixiPlugin } from "gsap/PixiPlugin";
 import { IAnimationState, ISkeletonData, Spine } from "pixi-spine";
 import * as PIXI from "pixi.js";
 import CharacterEffectPlayerInstance, {
-  POS_INDEX_MAP,
   calcSpineStagePosition,
+  POS_INDEX_MAP,
 } from "./actionPlayer";
 import CharacterEmotionPlayerInstance from "./emotionPlayer";
 import CharacterFXPlayerInstance from "./fxPlayer";
@@ -49,6 +49,34 @@ const EffectPlayerMap: IEffectPlayerMap = {
   emotion: CharacterEmotionPlayerInstance,
   fx: CharacterFXPlayerInstance,
 };
+
+/**
+ * 角色初始的pivot相对与长宽的比例, 当前值代表左上角
+ */
+export const Character_Initial_Pivot_Proportion = { x: 0, y: -1 / 2 };
+/**
+ * 标准宽度基于的播放器宽度的相对值
+ * 标准宽度用于计算图片缩放比例
+ */
+const Standard_Width_Relative = 0.3;
+
+/**
+ * 获取用于计算图片缩放比例的标准宽度
+ */
+export function getStandardWidth() {
+  return usePlayerStore().app.screen.width * Standard_Width_Relative;
+}
+
+PixiPlugin.registerPIXI(PIXI);
+gsap.registerPlugin(PixiPlugin);
+
+export function characterInit(): boolean {
+  return CharacterLayerInstance.init();
+}
+
+function showCharacter(data: ShowCharacter) {
+  CharacterLayerInstance.showCharacter(data);
+}
 
 export const CharacterLayerInstance: CharacterLayer = {
   init() {
@@ -229,7 +257,7 @@ export const CharacterLayerInstance: CharacterLayer = {
           value => value.CharacterName === character.CharacterName
         )
       ) {
-        const colorFilter = character.instance.filters![
+        let colorFilter = character.instance.filters![
           character.instance.filters!.length - 1
         ] as ColorOverlayFilter;
         colorFilter.alpha = 0.3;
@@ -265,8 +293,8 @@ export const CharacterLayerInstance: CharacterLayer = {
         return groups;
       }, {} as Record<K, T[]>);
     //将角色按CharacterName分组
-    const CharacterNameGroup = groupBy(mapList, value => value.CharacterName);
-    for (const [key, group] of Object.entries(CharacterNameGroup)) {
+    let CharacterNameGroup = groupBy(mapList, value => value.CharacterName);
+    for (let [key, group] of Object.entries(CharacterNameGroup)) {
       if (group.length !== 1) {
         //通过CharacterName出现两次则移除掉hide effect
         mapList = mapList.map(value => {
@@ -305,20 +333,20 @@ export const CharacterLayerInstance: CharacterLayer = {
 
     //处理全息状态
     if (data.signal) {
-      const crtFilter = new CRTFilter({
+      let crtFilter = new CRTFilter({
         lineWidth: data.instance.width * 0.005,
         time: 0,
       });
-      const adjustmentFilter = new AdjustmentFilter({
+      let adjustmentFilter = new AdjustmentFilter({
         gamma: 1.3,
         red: 1,
         green: 1.1,
         blue: 1.15,
       });
-      const motionBlurFilter = new MotionBlurFilter();
+      let motionBlurFilter = new MotionBlurFilter();
       data.instance.filters.push(crtFilter, adjustmentFilter, motionBlurFilter);
       loopCRtAnimation(crtFilter);
-      const tl = gsap.timeline();
+      let tl = gsap.timeline();
       tl.to(motionBlurFilter.velocity, {
         x: 5,
         duration: 0.1,
@@ -369,7 +397,7 @@ export const CharacterLayerInstance: CharacterLayer = {
       }
 
       const reasons: any[] = [];
-      const effectPromise: Array<Promise<void>> = [];
+      let effectPromise: Array<Promise<void>> = [];
       for (const index in data.effects) {
         const effect = data.effects[index];
         const effectPlayer = getEffectPlayer(effect.type);
@@ -397,7 +425,7 @@ export const CharacterLayerInstance: CharacterLayer = {
         }
       }
       const results = await Promise.allSettled(effectPromise);
-      for (const result of results) {
+      for (let result of results) {
         if (result.status === "rejected") {
           reasons.push(result.reason);
         }
@@ -416,37 +444,6 @@ export const CharacterLayerInstance: CharacterLayer = {
   onWindowResize() {},
   characterSpineCache: new Map<number, CharacterInstance>(),
 };
-/**
- * 标准宽度基于的播放器宽度的相对值
- * 标准宽度用于计算图片缩放比例
- */
-const Standard_Width_Relative = 0.3;
-
-/**
- * 角色初始的pivot相对与长宽的比例, 当前值代表左上角
- */
-export const Character_Initial_Pivot_Proportion = { x: 0, y: -1 / 2 };
-
-PixiPlugin.registerPIXI(PIXI);
-gsap.registerPlugin(PixiPlugin);
-
-export function calcCharacterYAndScale(spine: Spine) {
-  const { screenHeight } = getStageSize();
-  const scale = (screenHeight / PlayerHeight) * CharacterScale;
-  const spineHeight = (spine.height / spine.scale.y) * scale;
-  return {
-    scale,
-    y: screenHeight - spineHeight * (1 - spineHideRate),
-  };
-}
-
-function showCharacter(data: ShowCharacter) {
-  CharacterLayerInstance.showCharacter(data);
-}
-
-export function characterInit(): boolean {
-  return CharacterLayerInstance.init();
-}
 
 function loopCRtAnimation(crtFilter: CRTFilter) {
   gsap
@@ -562,6 +559,15 @@ const PlayerHeight = 550;
 const CharacterScale = 0.34;
 // spine在播放器之下的部分;
 const spineHideRate = 0.49;
+export function calcCharacterYAndScale(spine: Spine) {
+  const { screenHeight } = getStageSize();
+  const scale = (screenHeight / PlayerHeight) * CharacterScale;
+  const spineHeight = (spine.height / spine.scale.y) * scale;
+  return {
+    scale,
+    y: screenHeight - spineHeight * (1 - spineHideRate),
+  };
+}
 
 /**
  * 获取显示区域的大小
@@ -576,11 +582,4 @@ export function getStageSize() {
     screenWidth,
     screenHeight,
   };
-}
-
-/**
- * 获取用于计算图片缩放比例的标准宽度
- */
-export function getStandardWidth() {
-  return usePlayerStore().app.screen.width * Standard_Width_Relative;
 }

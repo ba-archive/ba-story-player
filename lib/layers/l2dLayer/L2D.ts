@@ -15,7 +15,7 @@ export function L2DInit() {
   // 背景混合或者其他播放 spine, 如普通星野和运动邮箱
   let otherItems: Spine[] = [];
   // 当前顶层的spine index
-  let currentIndex = 0;
+  let currentIndex: number = 0;
   let startAnimations: ({
     animation: string;
     spine: Spine;
@@ -117,7 +117,7 @@ export function L2DInit() {
             // 必须要先加入 app 才能播放
             timeOutArray.push(
               setTimeout(() => {
-                const e = curStartAnimations.spine.state.setAnimation(
+                let e = curStartAnimations.spine.state.setAnimation(
                   0,
                   curStartAnimations.animation,
                   !startAnimations[currentIndex] // 最后一个待机动作循环
@@ -142,11 +142,7 @@ export function L2DInit() {
 
           if (entryAnimationName.indexOf("_Talk_") >= 0) {
             // 说话动作结束后设为待机
-            const e = item.state.setAnimation(
-              entry.trackIndex,
-              "Idle_01",
-              true
-            );
+            let e = item.state.setAnimation(entry.trackIndex, "Idle_01", true);
             // 跳转到下一个动画的过场
             e!.mixDuration = 0.8;
           } else {
@@ -237,9 +233,9 @@ function calcL2DSize(
 }
 function fadeEffect() {
   if (!disposed) {
-    const player = document.querySelector("#player__main") as HTMLDivElement;
+    let player = document.querySelector("#player__main") as HTMLDivElement;
     player.style.backgroundColor = "white";
-    const playerCanvas = document.querySelector("#player canvas");
+    let playerCanvas = document.querySelector("#player canvas");
     gsap.to(playerCanvas, { alpha: 0, duration: 1 });
     setTimeout(() => {
       if (!disposed) {

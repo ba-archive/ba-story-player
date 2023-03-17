@@ -1,5 +1,5 @@
 import { usePlayerStore } from "@/stores";
-import { Emitter, EmitterConfigV3 } from "@pixi/particle-emitter";
+import { EmitterConfigV3, Emitter } from "@pixi/particle-emitter";
 import { Container, Sprite, TilingSprite } from "pixi.js";
 import {
   emitterConfigs,
@@ -17,9 +17,9 @@ export default async function BG_Dust_L(resources: Sprite[]) {
   const { app } = usePlayerStore();
   const appWidth = app.view.width;
   const appHeight = app.view.height;
-  const smokeAnimationsName = "dust_smoke";
+  let smokeAnimationsName = "dust_smoke";
 
-  const smokeSpritesheet = await loadSpriteSheet(
+  let smokeSpritesheet = await loadSpriteSheet(
     resources[0],
     { x: 1, y: 2 },
     smokeAnimationsName
@@ -60,7 +60,7 @@ export default async function BG_Dust_L(resources: Sprite[]) {
   smokeTextureTilingR1.zIndex = -1;
   smokeTextureTilingR1.x = appWidth / 2 - appWidth * 0.05;
   smokeTextureTilingR1.y = appHeight - appHeight * 0.02;
-  const smokeRemover = emitterStarter({
+  let smokeRemover = emitterStarter({
     update: () => {
       // 向左
       smokeTextureTilingL.tilePosition.x -= 1;
@@ -76,19 +76,19 @@ export default async function BG_Dust_L(resources: Sprite[]) {
     },
   } as any);
   // 火光粒子特效
-  const fireContainer = new Container();
+  let fireContainer = new Container();
   emitterContainer.addChild(fireContainer);
   fireContainer.zIndex = 100;
   const transParentSprite = resources[1];
-  const fireConfig: EmitterConfigV3 = {
+  let fireConfig: EmitterConfigV3 = {
     ...(emitterConfigs("dust_fire") as EmitterConfigV3),
   };
   fireConfig.pos = {
     x: 30,
     y: appHeight - 20,
   };
-  const fireAnimationsName = "dust_fire";
-  const fireSpritesheet = await loadSpriteSheet(
+  let fireAnimationsName = "dust_fire";
+  let fireSpritesheet = await loadSpriteSheet(
     transParentSprite,
     { x: 1, y: 3 },
     fireAnimationsName
@@ -107,11 +107,11 @@ export default async function BG_Dust_L(resources: Sprite[]) {
   const speedConfig = getEmitterType(fireConfig, "moveSpeedStatic").config;
   speedConfig.min = appHeight * 0.4;
   speedConfig.max = appHeight * 0.65;
-  const fireEmitter = new Emitter(fireContainer, fireConfig);
+  let fireEmitter = new Emitter(fireContainer, fireConfig);
   setTimeout(() => {
     fireEmitter.maxParticles = 15;
   }, 1500);
-  const fireRemover = emitterStarter(fireEmitter);
+  let fireRemover = emitterStarter(fireEmitter);
   return async () => {
     await smokeRemover();
     await fireRemover();

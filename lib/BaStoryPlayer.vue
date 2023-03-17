@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { continuePlay, dispose, init, stop } from "@/index";
+import { init, dispose, stop, continuePlay } from "@/index";
 import BaDialog from "@/layers/textLayer/BaDialog.vue";
 import BaUI from "@/layers/uiLayer/BaUI.vue";
 import { StoryRawUnit } from "@/types/common";
@@ -10,8 +10,8 @@ import {
   onBeforeMount,
   onBeforeUnmount,
   onDeactivated,
-  onMounted,
   onUnmounted,
+  onMounted,
   ref,
   watch,
 } from "vue";

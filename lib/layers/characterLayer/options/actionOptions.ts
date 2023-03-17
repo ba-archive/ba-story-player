@@ -1,6 +1,11 @@
 import { ActionOptions, OptionDescriptions } from "@/types/characterLayer";
 
-export const actionDescriptions: OptionDescriptions["action"] = {
+/**
+ * 立绘移动速度
+ */
+export const moveSpeed = 2.4;
+
+export let actionDescriptions: OptionDescriptions["action"] = {
   a: {},
   d: {
     duration: "消失动画的时间",
@@ -55,12 +60,7 @@ export const actionDescriptions: OptionDescriptions["action"] = {
   hide: {},
 };
 
-/**
- * 立绘移动速度
- */
-export const moveSpeed = 2.4;
-
-const actionOptions: ActionOptions = {
+let actionOptions: ActionOptions = {
   a: {},
   d: {
     duration: 0.6,

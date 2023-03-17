@@ -10,8 +10,8 @@ import { Spine } from "pixi-spine";
 import actionOptions, { moveSpeed } from "./options/actionOptions";
 import { ColorOverlayFilter } from "@pixi/filter-color-overlay";
 import {
-  CharacterLayerInstance,
   calcCharacterYAndScale,
+  CharacterLayerInstance,
   getStageSize,
 } from "./index";
 
@@ -48,7 +48,7 @@ const CharacterEffectPlayerInstance: CharacterEffectPlayer = {
     const colorFilter = characterInstance.filters![
       characterInstance.filters!.length - 1
     ] as ColorOverlayFilter;
-    const finalAlpha = colorFilter.alpha;
+    let finalAlpha = colorFilter.alpha;
     colorFilter.alpha = 1;
 
     return new Promise(resolve => {
@@ -63,12 +63,12 @@ const CharacterEffectPlayerInstance: CharacterEffectPlayer = {
   },
   al(instance: CharacterEffectInstance, options): Promise<void> {
     initCharacter(instance);
-    const { app } = usePlayerStore();
+    let { app } = usePlayerStore();
 
-    const tl = gsap.timeline();
-    const initX = app.screen.width + instance.instance.width;
-    const distance = initX - instance.instance.x;
-    const duration = distance / moveSpeedPx();
+    let tl = gsap.timeline();
+    let initX = app.screen.width + instance.instance.width;
+    let distance = initX - instance.instance.x;
+    let duration = distance / moveSpeedPx();
     tl.fromTo(
       instance.instance,
       { pixi: { x: initX } },
@@ -79,9 +79,9 @@ const CharacterEffectPlayerInstance: CharacterEffectPlayer = {
   ar(instance: CharacterEffectInstance, option): Promise<void> {
     initCharacter(instance);
 
-    const tl = gsap.timeline();
-    const distance = instance.instance.x + instance.instance.width;
-    const duration = distance / moveSpeedPx();
+    let tl = gsap.timeline();
+    let distance = instance.instance.x + instance.instance.width;
+    let duration = distance / moveSpeedPx();
     tl.fromTo(
       instance.instance,
       { pixi: { x: -instance.instance.width } },
@@ -91,17 +91,17 @@ const CharacterEffectPlayerInstance: CharacterEffectPlayer = {
   },
   closeup(instance: CharacterEffectInstance, options): Promise<void> {
     if (!instance.isCloseUp()) {
-      const scale = instance.instance.scale.x * options.scale;
+      let scale = instance.instance.scale.x * options.scale;
       instance.instance.scale.set(scale);
     }
 
     return Promise.resolve();
   },
   d(instance: CharacterEffectInstance, options): Promise<void> {
-    const colorFilter = instance.instance.filters![
+    let colorFilter = instance.instance.filters![
       instance.instance.filters!.length - 1
     ] as ColorOverlayFilter;
-    const tl = gsap.timeline();
+    let tl = gsap.timeline();
 
     tl.to(colorFilter, { alpha: 1, duration: options.duration });
     return timeLinePromise(tl, () => {
@@ -110,9 +110,9 @@ const CharacterEffectPlayerInstance: CharacterEffectPlayer = {
     });
   },
   dl(instance: CharacterEffectInstance, options): Promise<void> {
-    const tl = gsap.timeline();
-    const distance = instance.instance.x + instance.instance.width;
-    const duration = distance / moveSpeedPx();
+    let tl = gsap.timeline();
+    let distance = instance.instance.x + instance.instance.width;
+    let duration = distance / moveSpeedPx();
     tl.to(instance.instance, {
       pixi: { x: -instance.instance.width },
       duration,
@@ -120,18 +120,18 @@ const CharacterEffectPlayerInstance: CharacterEffectPlayer = {
     return timeLinePromise(tl, () => (instance.instance.visible = false));
   },
   dr(instance: CharacterEffectInstance, options): Promise<void> {
-    const { app } = usePlayerStore();
+    let { app } = usePlayerStore();
 
-    const tl = gsap.timeline();
-    const finalX = app.screen.width + instance.instance.width;
-    const distance = finalX - instance.instance.x;
-    const duration = distance / moveSpeedPx();
+    let tl = gsap.timeline();
+    let finalX = app.screen.width + instance.instance.width;
+    let distance = finalX - instance.instance.x;
+    let duration = distance / moveSpeedPx();
     tl.to(instance.instance, { pixi: { x: finalX }, duration });
     return timeLinePromise(tl, () => (instance.instance.visible = false));
   },
   falldownR(instance: CharacterEffectInstance, options): Promise<void> {
-    const tl = gsap.timeline();
-    const pivotOffset = {
+    let tl = gsap.timeline();
+    let pivotOffset = {
       x:
         (instance.instance.width * options.anchor.x) /
         instance.instance.scale.x,
@@ -139,15 +139,15 @@ const CharacterEffectPlayerInstance: CharacterEffectPlayer = {
         (instance.instance.height * options.anchor.y) /
         instance.instance.scale.y,
     };
-    const orginPivot = instance.instance.pivot.clone();
-    const originY = instance.instance.y;
+    let orginPivot = instance.instance.pivot.clone();
+    let originY = instance.instance.y;
     instance.instance.pivot.x += pivotOffset.x;
     instance.instance.pivot.y += pivotOffset.y;
     instance.instance.position.set(
       instance.instance.x + pivotOffset.x * instance.instance.scale.x,
       instance.instance.y + pivotOffset.y * instance.instance.scale.x
     );
-    const finalY =
+    let finalY =
       instance.instance.y + instance.instance.height * (options.anchor.y + 0.1);
     tl.to(instance.instance, {
       pixi: { angle: options.rightAngle },
@@ -191,8 +191,8 @@ const CharacterEffectPlayerInstance: CharacterEffectPlayer = {
     });
   },
   greeting(instance: CharacterEffectInstance, options): Promise<void> {
-    const tl = gsap.timeline();
-    const yOffset = options.yOffset * instance.instance.height;
+    let tl = gsap.timeline();
+    let yOffset = options.yOffset * instance.instance.height;
     tl.to(instance.instance, {
       pixi: { y: `-=${yOffset}` },
       repeat: 1,
@@ -207,8 +207,8 @@ const CharacterEffectPlayerInstance: CharacterEffectPlayer = {
     return Promise.resolve(undefined);
   },
   hophop(instance: CharacterEffectInstance, options): Promise<void> {
-    const tl = gsap.timeline();
-    const yOffset = options.yOffset * instance.instance.height;
+    let tl = gsap.timeline();
+    let yOffset = options.yOffset * instance.instance.height;
     tl.to(instance.instance, {
       pixi: { y: `-=${yOffset}` },
       repeat: 3,
@@ -219,8 +219,8 @@ const CharacterEffectPlayerInstance: CharacterEffectPlayer = {
     return timeLinePromise(tl);
   },
   jump(instance: CharacterEffectInstance, options): Promise<void> {
-    const tl = gsap.timeline();
-    const yOffset = options.yOffset * instance.instance.height;
+    let tl = gsap.timeline();
+    let yOffset = options.yOffset * instance.instance.height;
     tl.to(instance.instance, {
       pixi: { y: `-=${yOffset}` },
       repeat: 1,
@@ -246,9 +246,9 @@ const CharacterEffectPlayerInstance: CharacterEffectPlayer = {
     return timeLinePromise(moveTo(instance, 5));
   },
   shake(instance: CharacterEffectInstance, options): Promise<void> {
-    const tl = gsap.timeline();
-    const fromX = options.shakeAnimation.from * instance.instance.width;
-    const toX = options.shakeAnimation.to * instance.instance.width;
+    let tl = gsap.timeline();
+    let fromX = options.shakeAnimation.from * instance.instance.width;
+    let toX = options.shakeAnimation.to * instance.instance.width;
     tl.to(instance.instance, {
       pixi: { x: `+=${fromX}` },
       repeat: 1,
@@ -266,9 +266,9 @@ const CharacterEffectPlayerInstance: CharacterEffectPlayer = {
     return timeLinePromise(tl);
   },
   stiff(instance: CharacterEffectInstance, options): Promise<void> {
-    const tl = gsap.timeline();
-    const fromX = options.shakeAnimation.from * instance.instance.width;
-    const toX = options.shakeAnimation.to * instance.instance.width;
+    let tl = gsap.timeline();
+    let fromX = options.shakeAnimation.from * instance.instance.width;
+    let toX = options.shakeAnimation.to * instance.instance.width;
     tl.to(instance.instance, {
       pixi: { x: `+=${fromX}` },
       repeat: 1,
@@ -319,7 +319,7 @@ export function calcSpineStagePosition(
   position: number
 ): PositionOffset {
   const { screenWidth, screenHeight } = getStageSize();
-  const center = screenWidth / 2;
+  let center = screenWidth / 2;
   //当角色pivot x变为人物中心附近时改变计算算法
   // if (Math.abs(CharacterLayerInstance.characterScale! - character.scale.x) > 0.05) {
   //   let closeupScale = character.scale.x
@@ -381,10 +381,10 @@ function initCharacter(instance: CharacterEffectInstance) {
  * @returns
  */
 function moveTo(instance: CharacterEffectInstance, position: number) {
-  const movePos = calcSpineStagePosition(instance.instance, position);
-  const tl = gsap.timeline();
-  const distance = Math.abs(instance.instance.x - movePos.x);
-  const duration = distance / moveSpeedPx();
+  let movePos = calcSpineStagePosition(instance.instance, position);
+  let tl = gsap.timeline();
+  let distance = Math.abs(instance.instance.x - movePos.x);
+  let duration = distance / moveSpeedPx();
   instance.position = position;
   return tl.to(instance.instance, { pixi: { x: movePos.x }, duration });
 }

@@ -13,7 +13,7 @@ import { storyHandler } from "@/index";
  * 初始化特效层, 订阅player的剧情信息.
  */
 export function effectInit() {
-  const playerStore = usePlayerStore();
+  let playerStore = usePlayerStore();
   playerStore.app.stage.addChild(emitterContainer);
   eventBus.on("transitionIn", async transition => {
     let duration =
@@ -56,9 +56,9 @@ export function effectInit() {
     eventBus.emit("transitionOutDone");
   });
   eventBus.on("playEffect", async effects => {
-    const promiseArray: Array<Promise<any>> = [];
-    for (const effect of effects.otherEffect) {
-      const bgInstance = playerStore.bgInstance;
+    let promiseArray: Array<Promise<any>> = [];
+    for (let effect of effects.otherEffect) {
+      let bgInstance = playerStore.bgInstance;
       switch (effect.type) {
         case "wait":
           promiseArray.push(wait(effect.args));
@@ -90,7 +90,7 @@ export function effectInit() {
 
 export async function removeEffect() {
   await removeBGEffect();
-  const { bgInstance } = usePlayerStore();
+  let { bgInstance } = usePlayerStore();
   zmcPlayer.removeZmc(bgInstance);
 }
 
@@ -105,11 +105,11 @@ async function playTransition(
   durationMs: number,
   mode: "in" | "out"
 ): Promise<void> {
-  const background = document.querySelector(
+  let background = document.querySelector(
     "#player__background"
   ) as HTMLDivElement;
   background.style.backgroundColor = color;
-  const playerMain = document.querySelector("#player__main");
+  let playerMain = document.querySelector("#player__main");
   function killTransitionIn() {
     // 避免在transitionIn 动画时快进导致一直黑屏或白屏
     gsap.killTweensOf("#player__main");
@@ -146,7 +146,7 @@ function playHorSwipeTransition(duration: number): Promise<void> {
     const style = getComputedStyle(background);
     cover.style.backgroundPositionX = style.width;
     background.appendChild(cover);
-    const resolved = false;
+    let resolved = false;
     const timeline = gsap.timeline();
     timeline
       .to(cover, {
@@ -171,9 +171,9 @@ function playHorSwipeTransition(duration: number): Promise<void> {
  * @param bgInstance 背景图片实例
  */
 async function playBgShake(bgInstance: Sprite): Promise<void> {
-  const tl = gsap.timeline();
-  const fromX = -bgInstance.width * 0.01;
-  const toX = bgInstance.width * 0.01;
+  let tl = gsap.timeline();
+  let fromX = -bgInstance.width * 0.01;
+  let toX = bgInstance.width * 0.01;
   await tl
     .to(bgInstance, {
       pixi: { x: `+=${fromX}` },
@@ -195,7 +195,7 @@ async function playBgShake(bgInstance: Sprite): Promise<void> {
  * 可能对同个背景图片设置多次zmc, 用默认scale判断是否已经设置图片原始尺寸
  */
 const Default_Scale = 100;
-const zmcPlayer = {
+let zmcPlayer = {
   bgInstanceOriginScale: Default_Scale,
   bgInstanceOriginPosition: { x: 0, y: 0 },
   onZmc: false,
@@ -212,7 +212,7 @@ const zmcPlayer = {
   ): Promise<void> {
     //背景图片切换时取消zmc状态
     this.onZmc = true;
-    const removeOnZmc = () => {
+    let removeOnZmc = () => {
       this.onZmc = false;
       eventBus.off("showBg", removeOnZmc);
     };

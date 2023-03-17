@@ -2,30 +2,110 @@ import eventBus from "@/eventBus";
 import { bgInit } from "@/layers/bgLayer";
 import { characterInit } from "@/layers/characterLayer";
 import { effectInit } from "@/layers/effectLayer";
-import { preloadSound, soundInit } from "@/layers/soundLayer";
+import { soundInit, preloadSound } from "@/layers/soundLayer";
 import { translate } from "@/layers/translationLayer";
 import { initPrivateState, usePlayerStore } from "@/stores";
 import { PlayerConfigs, StoryUnit } from "@/types/common";
 import * as utils from "@/utils";
 import { getOtherSoundUrls, wait } from "@/utils";
 import axios from "axios";
-import { IEventData, SpineParser } from "pixi-spine";
-import { Application, Loader, utils as pixiUtils, settings } from "pixi.js";
+import { SpineParser, IEventData } from "pixi-spine";
+import { Application, Loader, settings, utils as pixiUtils } from "pixi.js";
 import { L2DInit } from "./layers/l2dLayer/L2D";
 
 let playerStore: ReturnType<typeof usePlayerStore>;
 let privateState: ReturnType<typeof initPrivateState>;
-const l2dVoiceExcelTable = {
+let l2dVoiceExcelTable = {
   CH0184_MemorialLobby: [...Array(10).keys()]
     .slice(1, 11)
     .map(value => value.toString()),
 } as { [index: string]: string[] };
 
 /**
- * 继续播放
+ * 调用各层的初始化函数
  */
-export function continuePlay() {
-  eventBus.emit("continue");
+export async function init(
+  elementID: string,
+  props: PlayerConfigs,
+  endCallback: () => void
+) {
+  //缓解图片缩放失真
+  settings.MIPMAP_TEXTURES = 2;
+
+  if (props.useMp3) {
+    utils.setOggAudioType("mp3");
+  }
+  storyHandler.endCallback = endCallback;
+  playerStore = usePlayerStore();
+  privateState = initPrivateState();
+  utils.setDataUrl(props.dataUrl);
+  privateState.dataUrl = props.dataUrl;
+  privateState.language = props.language;
+  privateState.userName = props.userName;
+  privateState.storySummary = props.storySummary;
+  //加入判断防止vite热更新重新创建app导致加载资源错误
+  if (!privateState.app) {
+    privateState.app = new Application({
+      height: props.height,
+      width: props.width,
+    });
+  }
+  // TODO debug用 线上环境删掉 而且会导致HMR出问题 慎用
+  // https://chrome.google.com/webstore/detail/pixijs-devtools/aamddddknhcagpehecnhphigffljadon/related?hl=en
+  // (window as any).__PIXI_INSPECTOR_GLOBAL_HOOK__ && (window as any).__PIXI_INSPECTOR_GLOBAL_HOOK__.register({ PIXI: PIXI })
+  // globalThis.__PIXI_APP__ = privateState.app;
+
+  let app = playerStore.app;
+  document.querySelector(`#${elementID}`)?.appendChild(app.view);
+  Loader.registerPlugin(SpineParser);
+
+  // 注册加载回调实现log滚动效果
+  app.loader.onLoad.add((_, resource) => {
+    eventBus.emit("oneResourceLoaded", {
+      type: "success",
+      resourceName: resource.name,
+    });
+  });
+  app.loader.onError.add((err, _, resource) => {
+    console.error(err);
+    eventBus.emit("oneResourceLoaded", {
+      type: "fail",
+      resourceName: resource.name,
+    });
+  });
+  //加载初始化资源以便翻译层进行翻译
+  await resourcesLoader.init(app.loader);
+  privateState.allStoryUnit = translate(props.story);
+
+  bgInit();
+  characterInit();
+  soundInit();
+  effectInit();
+  L2DInit();
+
+  // 记录加载开始时间 优化光速加载的体验
+  const startLoadTime = Date.now();
+  eventBus.emit("startLoading", props.dataUrl);
+  //加载剩余资源
+  await resourcesLoader.addLoadResources();
+  resourcesLoader.load(() => {
+    // 加载时间少于1秒, 延迟一下再开始
+    const loadedTime = Date.now() - startLoadTime;
+    new Promise<void>(resolve => {
+      if (loadedTime < 1000) {
+        setTimeout(() => {
+          resolve();
+        }, 1000 - loadedTime);
+      } else {
+        resolve();
+      }
+    }).then(() => {
+      eventBus.emit("loaded");
+      eventBus.emit("hidemenu");
+      //开始发送事件
+      eventEmitter.init();
+    });
+  });
 }
 
 /**
@@ -42,9 +122,221 @@ export function dispose() {
 }
 
 /**
+ * 暂停播放
+ */
+export function stop() {
+  eventBus.emit("stop");
+}
+
+/**
+ * 继续播放
+ */
+export function continuePlay() {
+  eventBus.emit("continue");
+}
+
+/**
+ * 处理故事进度对象
+ */
+export let storyHandler = {
+  currentStoryIndex: 0,
+  endCallback: () => {},
+  unitPlaying: false,
+  auto: false,
+  isEnd: false,
+  isSkip: false,
+
+  get currentStoryUnit(): StoryUnit {
+    if (
+      playerStore &&
+      playerStore.allStoryUnit.length > this.currentStoryIndex
+    ) {
+      return playerStore.allStoryUnit[this.currentStoryIndex];
+    }
+
+    //默认值
+    return {
+      type: "text",
+      GroupId: 0,
+      SelectionGroup: 0,
+      PopupFileName: "",
+      audio: {},
+      effect: { otherEffect: [] },
+      characters: [],
+      textAbout: {
+        showText: {
+          text: [],
+        },
+      },
+    };
+  },
+
+  get nextStoryUnit(): StoryUnit {
+    if (
+      playerStore &&
+      playerStore.allStoryUnit.length > this.currentStoryIndex + 1
+    ) {
+      return playerStore.allStoryUnit[this.currentStoryIndex + 1];
+    }
+
+    //默认值
+    return {
+      type: "text",
+      GroupId: 0,
+      SelectionGroup: 0,
+      PopupFileName: "",
+      audio: {},
+      effect: { otherEffect: [] },
+      characters: [],
+      textAbout: {
+        showText: {
+          text: [],
+        },
+      },
+    };
+  },
+
+  /**
+   * 通过下标递增更新当前故事节点
+   */
+  storyIndexIncrement() {
+    if (this.checkEnd()) {
+      return;
+    }
+    let currentSelectionGroup = this.currentStoryUnit.SelectionGroup;
+    this.currentStoryIndex++;
+    while (
+      !this.checkEnd() &&
+      ![0, currentSelectionGroup].includes(this.currentStoryUnit.SelectionGroup)
+    ) {
+      this.currentStoryIndex++;
+    }
+
+    return true;
+  },
+
+  next() {
+    if (this.isSkip && !eventEmitter.l2dPlaying) {
+      storyHandler.storyIndexIncrement();
+      // 快进用 storyPlay 需要考虑 unitPlaying, 同时会有一个while循环在里边导致控制不符合预期
+      eventEmitter.emitEvents().then(() => {
+        // 注意这个函数是 异步的, 需要等待执行完再继续 l2d, 此时后续的skip会被拦住
+        if (this.currentStoryUnit.l2d) {
+          this.next();
+        }
+      });
+      return;
+    }
+    if (eventEmitter.unitDone && !this.unitPlaying && !this.auto) {
+      storyHandler.storyIndexIncrement();
+      storyHandler.storyPlay();
+    }
+  },
+
+  /**
+   * 根据选项控制故事节点
+   * @param option
+   * @returns
+   */
+  select(option: number) {
+    if (option === 0) {
+      this.storyIndexIncrement();
+      return;
+    }
+    let index = playerStore.allStoryUnit.findIndex(
+      value => value.SelectionGroup === option
+    );
+    if (index === -1) {
+      return false;
+    }
+    this.currentStoryIndex = index;
+    return true;
+  },
+  /**
+   * 播放故事直到对话框或选项出现, auto模式下只在选项时停下
+   */
+  async storyPlay() {
+    if (!this.unitPlaying) {
+      this.unitPlaying = true;
+      //当auto开启时只在选项停下
+      let playCondition = () => {
+        if (this.auto) {
+          return ["option"];
+        } else {
+          return ["text", "option"];
+        }
+      };
+      while (
+        !playCondition().includes(storyHandler.currentStoryUnit.type) &&
+        !this.isEnd
+      ) {
+        await eventEmitter.emitEvents();
+        storyHandler.storyIndexIncrement();
+      }
+      if (!this.isEnd) {
+        await eventEmitter.emitEvents();
+      }
+      this.unitPlaying = false;
+    }
+  },
+
+  /**
+   * 检查故事是否已经结束, 结束则调用结束函数结束播放
+   */
+  checkEnd() {
+    if (playerStore.allStoryUnit.length <= this.currentStoryIndex) {
+      this.end();
+      return true;
+    }
+
+    return false;
+  },
+
+  /**
+   * 结束播放
+   */
+  end() {
+    console.log("播放结束");
+    this.auto = false;
+    this.isEnd = true;
+    this.endCallback();
+  },
+
+  /**
+   * 开启auto模式
+   */
+  startAuto() {
+    this.auto = true;
+    if (!this.unitPlaying) {
+      if (this.currentStoryUnit.type !== "option") {
+        this.storyIndexIncrement();
+        this.storyPlay();
+      }
+    } else {
+      //可能storyPlay正要结束但还没结束导致判断错误
+      setTimeout(() => {
+        if (!this.unitPlaying && this.auto) {
+          if (this.currentStoryUnit.type !== "option") {
+            this.storyIndexIncrement();
+            this.storyPlay();
+          }
+        }
+      }, 2000);
+    }
+  },
+
+  /**
+   * 停止auto模式
+   */
+  stopAuto() {
+    this.auto = false;
+  },
+};
+
+/**
  * 事件发送控制对象
  */
-export const eventEmitter = {
+export let eventEmitter = {
   /** 当前是否处于l2d播放中, 并不特指l2d某个动画 */
   l2dPlaying: false,
   characterDone: true,
@@ -62,7 +354,7 @@ export const eventEmitter = {
 
   get unitDone(): boolean {
     let result = true;
-    for (const key of Object.keys(eventEmitter) as Array<
+    for (let key of Object.keys(eventEmitter) as Array<
       keyof typeof eventEmitter
     >) {
       if (key.endsWith("Done") && key !== "unitDone") {
@@ -164,7 +456,7 @@ export const eventEmitter = {
     this.showCharacter();
     this.show();
 
-    const currentStoryUnit = storyHandler.currentStoryUnit;
+    let currentStoryUnit = storyHandler.currentStoryUnit;
     switch (currentStoryUnit.type) {
       case "title":
         this.titleDone = false;
@@ -201,7 +493,7 @@ export const eventEmitter = {
         this.stDone = false;
         if (currentStoryUnit.textAbout.st) {
           if (currentStoryUnit.textAbout.st.stArgs) {
-            const middle = currentStoryUnit.textAbout.st.middle ? true : false;
+            let middle = currentStoryUnit.textAbout.st.middle ? true : false;
             eventBus.emit("st", {
               text: currentStoryUnit.textAbout.showText.text,
               stArgs: currentStoryUnit.textAbout.st.stArgs,
@@ -228,9 +520,9 @@ export const eventEmitter = {
         console.log(`本体中尚未处理${currentStoryUnit.type}类型故事节点`);
     }
 
-    const startTime = Date.now();
-    const checkEffectDone = new Promise<void>((resolve, reject) => {
-      const interval = setInterval(() => {
+    let startTime = Date.now();
+    let checkEffectDone = new Promise<void>((resolve, reject) => {
+      let interval = setInterval(() => {
         if (storyHandler.isEnd) {
           resolve();
         }
@@ -404,7 +696,7 @@ export const eventEmitter = {
     if (storyHandler.currentStoryUnit.transition) {
       if (storyHandler.currentStoryUnit.transition) {
         await new Promise<void>(resolve => {
-          const resolveFun = () => {
+          let resolveFun = () => {
             eventBus.off("transitionOutDone", resolveFun);
             resolve();
           };
@@ -436,96 +728,9 @@ export const eventEmitter = {
 };
 
 /**
- * 调用各层的初始化函数
- */
-export async function init(
-  elementID: string,
-  props: PlayerConfigs,
-  endCallback: () => void
-) {
-  //缓解图片缩放失真
-  settings.MIPMAP_TEXTURES = 2;
-
-  if (props.useMp3) {
-    utils.setOggAudioType("mp3");
-  }
-  storyHandler.endCallback = endCallback;
-  playerStore = usePlayerStore();
-  privateState = initPrivateState();
-  utils.setDataUrl(props.dataUrl);
-  privateState.dataUrl = props.dataUrl;
-  privateState.language = props.language;
-  privateState.userName = props.userName;
-  privateState.storySummary = props.storySummary;
-  //加入判断防止vite热更新重新创建app导致加载资源错误
-  if (!privateState.app) {
-    privateState.app = new Application({
-      height: props.height,
-      width: props.width,
-    });
-  }
-  // TODO debug用 线上环境删掉 而且会导致HMR出问题 慎用
-  // https://chrome.google.com/webstore/detail/pixijs-devtools/aamddddknhcagpehecnhphigffljadon/related?hl=en
-  // (window as any).__PIXI_INSPECTOR_GLOBAL_HOOK__ && (window as any).__PIXI_INSPECTOR_GLOBAL_HOOK__.register({ PIXI: PIXI })
-  // globalThis.__PIXI_APP__ = privateState.app;
-
-  const app = playerStore.app;
-  document.querySelector(`#${elementID}`)?.appendChild(app.view);
-  Loader.registerPlugin(SpineParser);
-
-  // 注册加载回调实现log滚动效果
-  app.loader.onLoad.add((_, resource) => {
-    eventBus.emit("oneResourceLoaded", {
-      type: "success",
-      resourceName: resource.name,
-    });
-  });
-  app.loader.onError.add((err, _, resource) => {
-    console.error(err);
-    eventBus.emit("oneResourceLoaded", {
-      type: "fail",
-      resourceName: resource.name,
-    });
-  });
-  //加载初始化资源以便翻译层进行翻译
-  await resourcesLoader.init(app.loader);
-  privateState.allStoryUnit = translate(props.story);
-
-  bgInit();
-  characterInit();
-  soundInit();
-  effectInit();
-  L2DInit();
-
-  // 记录加载开始时间 优化光速加载的体验
-  const startLoadTime = Date.now();
-  eventBus.emit("startLoading", props.dataUrl);
-  //加载剩余资源
-  await resourcesLoader.addLoadResources();
-  resourcesLoader.load(() => {
-    // 加载时间少于1秒, 延迟一下再开始
-    const loadedTime = Date.now() - startLoadTime;
-    new Promise<void>(resolve => {
-      if (loadedTime < 1000) {
-        setTimeout(() => {
-          resolve();
-        }, 1000 - loadedTime);
-      } else {
-        resolve();
-      }
-    }).then(() => {
-      eventBus.emit("loaded");
-      eventBus.emit("hidemenu");
-      //开始发送事件
-      eventEmitter.init();
-    });
-  });
-}
-
-/**
  * 资源加载处理对象
  */
-export const resourcesLoader = {
+export let resourcesLoader = {
   loader: new Loader(),
   /**
    * 初始化, 预先加载表资源供翻译层使用
@@ -546,10 +751,10 @@ export const resourcesLoader = {
     this.addOtherSounds();
     this.addBGEffectImgs();
     const audioUrls: string[] = [];
-    for (const unit of playerStore.allStoryUnit) {
+    for (let unit of playerStore.allStoryUnit) {
       //添加人物spine
       if (unit.characters.length != 0) {
-        for (const character of unit.characters) {
+        for (let character of unit.characters) {
           const spineUrl = character.spineUrl;
           if (!this.loader.resources[character.CharacterName]) {
             this.loader.add(String(character.CharacterName), spineUrl);
@@ -638,8 +843,8 @@ export const resourcesLoader = {
    * 添加人物情绪相关资源(图片和声音)
    */
   async addEmotionResources() {
-    for (const emotionResources of playerStore.emotionResourcesTable.values()) {
-      for (const emotionResource of emotionResources) {
+    for (let emotionResources of playerStore.emotionResourcesTable.values()) {
+      for (let emotionResource of emotionResources) {
         if (!this.loader.resources[emotionResource]) {
           this.loader.add(
             emotionResource,
@@ -648,8 +853,8 @@ export const resourcesLoader = {
         }
       }
     }
-    for (const emotionName of playerStore.emotionResourcesTable.keys()) {
-      const emotionSoundName = `SFX_Emoticon_Motion_${emotionName}`;
+    for (let emotionName of playerStore.emotionResourcesTable.keys()) {
+      let emotionSoundName = `SFX_Emoticon_Motion_${emotionName}`;
       if (!this.loader.resources[emotionSoundName]) {
         this.loader.add(
           emotionSoundName,
@@ -663,8 +868,8 @@ export const resourcesLoader = {
    * 添加FX相关资源
    */
   async addFXResources() {
-    for (const fxImages of playerStore.fxImageTable.values()) {
-      for (const url of fxImages) {
+    for (let fxImages of playerStore.fxImageTable.values()) {
+      for (let url of fxImages) {
         if (!this.loader.resources[url]) {
           this.loader.add(url, utils.getResourcesUrl("fx", url));
         }
@@ -676,7 +881,7 @@ export const resourcesLoader = {
    * 添加l2d语音
    */
   loadL2dVoice(audioEvents: IEventData[]) {
-    for (const event of audioEvents) {
+    for (let event of audioEvents) {
       if (event.name.includes("MemorialLobby")) {
         const voiceUrl = utils.getResourcesUrl("l2dVoice", event.name);
         this.loader.add(voiceUrl, voiceUrl);
@@ -694,8 +899,8 @@ export const resourcesLoader = {
    * 添加其他特效音
    */
   addOtherSounds() {
-    const otherSoundUrls = getOtherSoundUrls();
-    for (const url of otherSoundUrls) {
+    let otherSoundUrls = getOtherSoundUrls();
+    for (let url of otherSoundUrls) {
       if (!this.loader.resources[url]) {
         this.loader.add(url, url);
       }
@@ -706,8 +911,8 @@ export const resourcesLoader = {
    * 添加bgEffect相关图像资源
    */
   addBGEffectImgs() {
-    for (const imgs of playerStore.bgEffectImgMap.values()) {
-      for (const img of imgs) {
+    for (let imgs of playerStore.bgEffectImgMap.values()) {
+      for (let img of imgs) {
         if (!this.loader.resources[img]) {
           this.loader.add(img, utils.getResourcesUrl("bgEffectImgs", img));
         }
@@ -724,7 +929,7 @@ export const resourcesLoader = {
       axios
         .get(utils.getResourcesUrl("excel", "ScenarioBGNameExcelTable.json"))
         .then(res => {
-          for (const i of res.data["DataList"]) {
+          for (let i of res.data["DataList"]) {
             privateState.BGNameExcelTable.set(i["Name"], i);
           }
         })
@@ -735,7 +940,7 @@ export const resourcesLoader = {
           utils.getResourcesUrl("excel", "ScenarioCharacterNameExcelTable.json")
         )
         .then(res => {
-          for (const i of res.data["DataList"]) {
+          for (let i of res.data["DataList"]) {
             privateState.CharacterNameExcelTable.set(i["CharacterName"], i);
           }
         })
@@ -744,7 +949,7 @@ export const resourcesLoader = {
       axios
         .get(utils.getResourcesUrl("excel", "BGMExcelTable.json"))
         .then(res => {
-          for (const i of res.data["DataList"]) {
+          for (let i of res.data["DataList"]) {
             privateState.BGMExcelTable.set(i["Id"], i);
           }
         })
@@ -755,7 +960,7 @@ export const resourcesLoader = {
           utils.getResourcesUrl("excel", "ScenarioTransitionExcelTable.json")
         )
         .then(res => {
-          for (const i of res.data["DataList"]) {
+          for (let i of res.data["DataList"]) {
             privateState.TransitionExcelTable.set(i["Name"], i);
           }
         })
@@ -764,7 +969,7 @@ export const resourcesLoader = {
       axios
         .get(utils.getResourcesUrl("excel", "ScenarioBGEffectExcelTable.json"))
         .then(res => {
-          for (const i of res.data["DataList"]) {
+          for (let i of res.data["DataList"]) {
             privateState.BGEffectExcelTable.set(i["Name"], i);
           }
         })
@@ -778,15 +983,15 @@ export const resourcesLoader = {
           )
         )
         .then(res => {
-          for (const i of res.data["DataList"]) {
+          for (let i of res.data["DataList"]) {
             privateState.EmotionExcelTable.set(i["Name"], i["EmoticonName"]);
           }
         })
     );
 
     const results = await Promise.allSettled(excelPromiseArray);
-    const reasons = [];
-    for (const result of results) {
+    let reasons = [];
+    for (let result of results) {
       if (result.status === "rejected") {
         reasons.push(result.reason);
       }
@@ -794,210 +999,5 @@ export const resourcesLoader = {
     if (reasons.length != 0) {
       throw new Error(reasons.toString());
     }
-  },
-};
-
-/**
- * 暂停播放
- */
-export function stop() {
-  eventBus.emit("stop");
-}
-
-/**
- * 处理故事进度对象
- */
-export const storyHandler = {
-  currentStoryIndex: 0,
-  endCallback: () => {},
-  unitPlaying: false,
-  auto: false,
-  isEnd: false,
-  isSkip: false,
-
-  get currentStoryUnit(): StoryUnit {
-    if (
-      playerStore &&
-      playerStore.allStoryUnit.length > this.currentStoryIndex
-    ) {
-      return playerStore.allStoryUnit[this.currentStoryIndex];
-    }
-
-    //默认值
-    return {
-      type: "text",
-      GroupId: 0,
-      SelectionGroup: 0,
-      PopupFileName: "",
-      audio: {},
-      effect: { otherEffect: [] },
-      characters: [],
-      textAbout: {
-        showText: {
-          text: [],
-        },
-      },
-    };
-  },
-
-  get nextStoryUnit(): StoryUnit {
-    if (
-      playerStore &&
-      playerStore.allStoryUnit.length > this.currentStoryIndex + 1
-    ) {
-      return playerStore.allStoryUnit[this.currentStoryIndex + 1];
-    }
-
-    //默认值
-    return {
-      type: "text",
-      GroupId: 0,
-      SelectionGroup: 0,
-      PopupFileName: "",
-      audio: {},
-      effect: { otherEffect: [] },
-      characters: [],
-      textAbout: {
-        showText: {
-          text: [],
-        },
-      },
-    };
-  },
-
-  /**
-   * 通过下标递增更新当前故事节点
-   */
-  storyIndexIncrement() {
-    if (this.checkEnd()) {
-      return;
-    }
-    const currentSelectionGroup = this.currentStoryUnit.SelectionGroup;
-    this.currentStoryIndex++;
-    while (
-      !this.checkEnd() &&
-      ![0, currentSelectionGroup].includes(this.currentStoryUnit.SelectionGroup)
-    ) {
-      this.currentStoryIndex++;
-    }
-
-    return true;
-  },
-
-  next() {
-    if (this.isSkip && !eventEmitter.l2dPlaying) {
-      storyHandler.storyIndexIncrement();
-      // 快进用 storyPlay 需要考虑 unitPlaying, 同时会有一个while循环在里边导致控制不符合预期
-      eventEmitter.emitEvents().then(() => {
-        // 注意这个函数是 异步的, 需要等待执行完再继续 l2d, 此时后续的skip会被拦住
-        if (this.currentStoryUnit.l2d) {
-          this.next();
-        }
-      });
-      return;
-    }
-    if (eventEmitter.unitDone && !this.unitPlaying && !this.auto) {
-      storyHandler.storyIndexIncrement();
-      storyHandler.storyPlay();
-    }
-  },
-
-  /**
-   * 根据选项控制故事节点
-   * @param option
-   * @returns
-   */
-  select(option: number) {
-    if (option === 0) {
-      this.storyIndexIncrement();
-      return;
-    }
-    const index = playerStore.allStoryUnit.findIndex(
-      value => value.SelectionGroup === option
-    );
-    if (index === -1) {
-      return false;
-    }
-    this.currentStoryIndex = index;
-    return true;
-  },
-  /**
-   * 播放故事直到对话框或选项出现, auto模式下只在选项时停下
-   */
-  async storyPlay() {
-    if (!this.unitPlaying) {
-      this.unitPlaying = true;
-      //当auto开启时只在选项停下
-      const playCondition = () => {
-        if (this.auto) {
-          return ["option"];
-        } else {
-          return ["text", "option"];
-        }
-      };
-      while (
-        !playCondition().includes(storyHandler.currentStoryUnit.type) &&
-        !this.isEnd
-      ) {
-        await eventEmitter.emitEvents();
-        storyHandler.storyIndexIncrement();
-      }
-      if (!this.isEnd) {
-        await eventEmitter.emitEvents();
-      }
-      this.unitPlaying = false;
-    }
-  },
-
-  /**
-   * 检查故事是否已经结束, 结束则调用结束函数结束播放
-   */
-  checkEnd() {
-    if (playerStore.allStoryUnit.length <= this.currentStoryIndex) {
-      this.end();
-      return true;
-    }
-
-    return false;
-  },
-
-  /**
-   * 结束播放
-   */
-  end() {
-    console.log("播放结束");
-    this.auto = false;
-    this.isEnd = true;
-    this.endCallback();
-  },
-
-  /**
-   * 开启auto模式
-   */
-  startAuto() {
-    this.auto = true;
-    if (!this.unitPlaying) {
-      if (this.currentStoryUnit.type !== "option") {
-        this.storyIndexIncrement();
-        this.storyPlay();
-      }
-    } else {
-      //可能storyPlay正要结束但还没结束导致判断错误
-      setTimeout(() => {
-        if (!this.unitPlaying && this.auto) {
-          if (this.currentStoryUnit.type !== "option") {
-            this.storyIndexIncrement();
-            this.storyPlay();
-          }
-        }
-      }, 2000);
-    }
-  },
-
-  /**
-   * 停止auto模式
-   */
-  stopAuto() {
-    this.auto = false;
   },
 };

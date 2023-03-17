@@ -23,7 +23,7 @@ let props = defineProps<{
   storySummary: StorySummary;
   height: number;
   width: number;
-  fullScreen: boolean;
+  fullScreen: Boolean;
   language: Language;
 }>();
 

@@ -11,12 +11,12 @@ import { getText } from "./utils";
  * @param rawStory: 原始剧情
  */
 export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
-  const result: StoryUnit[] = [];
-  const playerStore = usePlayerStore();
-  for (const [rawIndex, rawStoryUnit] of rawStory.entries()) {
+  let result: StoryUnit[] = [];
+  let playerStore = usePlayerStore();
+  for (let [rawIndex, rawStoryUnit] of rawStory.entries()) {
     //初始化unit, 将需要的原始属性填入unit, 同时查表填入其他属性
-    const { GroupId, SelectionGroup, PopupFileName } = rawStoryUnit;
-    const unit: StoryUnit = {
+    let { GroupId, SelectionGroup, PopupFileName } = rawStoryUnit;
+    let unit: StoryUnit = {
       GroupId,
       SelectionGroup,
       PopupFileName: !PopupFileName
@@ -34,12 +34,12 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
         otherEffect: [],
       },
     };
-    const audio = {
+    let audio = {
       bgm: utils.getBgm(rawStoryUnit.BGMId),
       soundUrl: utils.getSoundUrl(rawStoryUnit.Sound),
       voiceJPUrl: utils.getVoiceJPUrl(rawStoryUnit.VoiceJp),
     };
-    for (const key of Object.keys(audio) as Array<keyof typeof audio>) {
+    for (let key of Object.keys(audio) as Array<keyof typeof audio>) {
       if (audio[key] !== undefined) {
         unit.audio = audio;
         break;
@@ -51,7 +51,7 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
       );
     }
     if (rawStoryUnit.BGName) {
-      const BGItem = playerStore.BGNameExcelTable.get(rawStoryUnit.BGName);
+      let BGItem = playerStore.BGNameExcelTable.get(rawStoryUnit.BGName);
       if (BGItem) {
         if (BGItem.BGType === "Image") {
           unit.bg = {
@@ -82,16 +82,16 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
       unit.type = "effectOnly";
     }
     //解析scriptkr
-    const ScriptKr = String(rawStoryUnit.ScriptKr);
-    const scripts = ScriptKr.split("\n");
+    let ScriptKr = String(rawStoryUnit.ScriptKr);
+    let scripts = ScriptKr.split("\n");
     let optionIndex = 0;
-    for (const script of scripts) {
+    for (let script of scripts) {
       //根据';'将script分为更小的单元
-      const scriptUnits = script.split(";");
+      let scriptUnits = script.split(";");
       /**
        * 当前script类型, 小写字母
        */
-      const scriptType = scriptUnits[0].toLocaleLowerCase();
+      let scriptType = scriptUnits[0].toLocaleLowerCase();
       switch (scriptType) {
         case "#title":
           unit.type = "title";
@@ -118,7 +118,7 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
           //无立绘时的对话框对话, 可能有名字
           unit.type = "text";
           unit.textAbout.showText.text = utils.generateText(rawStoryUnit);
-          const characterInfo = utils.getCharacterInfo(scriptUnits[1]);
+          let characterInfo = utils.getCharacterInfo(scriptUnits[1]);
           if (scriptUnits.length === 3) {
             unit.textAbout.showText.speaker = characterInfo?.speaker;
             unit.textAbout.showText.avatarUrl = characterInfo?.avatarUrl;
@@ -216,9 +216,9 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
           break;
         default:
           if (utils.isCharacter(scriptType)) {
-            const CharacterName = utils.getCharacterName(scriptUnits[1]);
+            let CharacterName = utils.getCharacterName(scriptUnits[1]);
             let signal = false;
-            const characterInfo =
+            let characterInfo =
               playerStore.CharacterNameExcelTable.get(CharacterName);
             if (characterInfo) {
               //添加全息人物特效
@@ -226,15 +226,15 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
                 signal = true;
               }
               //添加人物spineUrl
-              const spineUrl = getResourcesUrl(
+              let spineUrl = getResourcesUrl(
                 "characterSpine",
                 characterInfo.SpinePrefabName
               );
-              const avatarUrl = getResourcesUrl(
+              let avatarUrl = getResourcesUrl(
                 "avatar",
                 characterInfo?.SmallPortrait
               );
-              const speaker = utils.getSpeaker(characterInfo);
+              let speaker = utils.getSpeaker(characterInfo);
               //人物有对话
               if (scriptUnits.length === 4) {
                 unit.type = "text";
@@ -260,7 +260,7 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
             }
           } else if (utils.isCharacterEffect(scriptType)) {
             if (scriptUnits.length === 2) {
-              const characterIndex = utils.getCharacterIndex(
+              let characterIndex = utils.getCharacterIndex(
                 unit,
                 Number(scriptType[1]),
                 result,
@@ -292,7 +292,7 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
                 });
               }
             } else if (utils.compareCaseInsensive(scriptUnits[1], "fx")) {
-              const characterIndex = utils.getCharacterIndex(
+              let characterIndex = utils.getCharacterIndex(
                 unit,
                 Number(scriptType[1]),
                 result,

@@ -52,12 +52,6 @@ export async function preloadSound(audioUrls: string[]) {
   await Promise.all(audioLoadPromises);
 }
 
-export function soundDispose() {
-  for (const sound of audioMap.values()) {
-    sound.stop();
-  }
-}
-
 /**
  * 初始化声音层, 订阅player的剧情信息.
  */
@@ -69,7 +63,7 @@ export function soundInit() {
   /**
    * 声音层的全局设置, 包括BGM音量, 效果音量和语音音量
    */
-  const soundSettings = new (class SoundSettings {
+  let soundSettings = new (class SoundSettings {
     BGMvolume = 0.3;
     SFXvolume = 1;
     Voicevolume = 1;
@@ -146,7 +140,7 @@ export function soundInit() {
   });
 
   eventBus.on("playEmotionAudio", (emotype: string) => {
-    const url = usePlayerStore().emotionSoundUrl(emotype);
+    let url = usePlayerStore().emotionSoundUrl(emotype);
     console.log(`Get emoAudio URL: ${url}`);
     playAudio({
       soundUrl: url,
@@ -161,4 +155,10 @@ export function soundInit() {
   eventBus.on("dispose", () => soundDispose());
   eventBus.on("stop", () => soundDispose());
   eventBus.on("continue", () => bgm?.play());
+}
+
+export function soundDispose() {
+  for (const sound of audioMap.values()) {
+    sound.stop();
+  }
 }

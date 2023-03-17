@@ -12,90 +12,7 @@ import {
 import { IL2dConfig } from "./l2d";
 import { OtherSounds } from "./resources";
 
-export interface Actions {
-  setBgInstance: (sprite: Sprite) => void;
-  /**
-   * 更新logText的值, 即已经显示过的文字和选项
-   * @param newLog 新加入log的值, 可为对话或选项
-   * @returns
-   */
-  updateLogText: (newLog: ShowText | ShowOption) => void;
-  /**
-   * 设置l2d的spine数据地址便于l2d层获取spinedata
-   * @param url
-   * @returns
-   */
-  setL2DSpineUrl: (url: string) => void;
-  /**
-   *  设置当前l2d特殊配置
-   * @param val l2dConfig
-   * @returns
-   */
-  setL2DConfig: (val: IL2dConfig[keyof IL2dConfig]) => void;
-}
-
-export interface BasicGetters {
-  app: Application;
-
-  /**
-   * 获取角色spineData
-   */
-  characterSpineData: (
-    CharacterName: number
-  ) => import("@pixi-spine/base").ISkeletonData | undefined;
-  /**
-   * 获取情绪图像资源
-   * @param emotionName 情绪名
-   * @returns 情绪资源图片url数组, 按从底而上, 从左到右排列
-   */
-  emotionResources: (emotionName: string) => string[] | undefined;
-  /**
-   * 获取fx特效图像资源
-   * @param fxName
-   * @returns 图像资源url数组
-   */
-  fxImages: (fxName: string) => string[] | undefined;
-
-  emotionSoundUrl: (emotionName: string) => string;
-  /**
-   * 获取其他特效音url
-   * @param type 特效音类型, 如select
-   * @returns
-   */
-  otherSoundUrl: (type: OtherSounds) => string;
-  /**
-   * 获取L2D资源
-   */
-  l2dSpineData: import("@pixi-spine/base").ISkeletonData | undefined;
-}
-
-export type GetterFunctions = {
-  [Getter in keyof BasicGetters]: () => BasicGetters[Getter];
-};
-
-export type Getters = Readonly<BasicGetters>;
-
 export type Language = "Cn" | "Jp" | "En" | "Tw";
-
-export interface LogText {
-  /**
-   * user: 用户选项
-   * character: 人物对话, 有头像
-   * none: 无所属对话, 此时name不存在
-   */
-  type: "user" | "character" | "none";
-  text: string;
-  /**
-   * 人物名
-   */
-  name?: string;
-  /**
-   * 头像地址
-   */
-  avatarUrl?: string;
-  /** storyUnit 位置 */
-  index?: number;
-}
 
 /**
  * 仅可通过函数修改的state
@@ -181,6 +98,88 @@ export interface PrivateStates {
 export interface PublicStates {
   //人物层
   currentCharacterMap: Map<number, CharacterInstance>;
+}
+
+export interface BasicGetters {
+  app: Application;
+
+  /**
+   * 获取角色spineData
+   */
+  characterSpineData: (
+    CharacterName: number
+  ) => import("@pixi-spine/base").ISkeletonData | undefined;
+  /**
+   * 获取情绪图像资源
+   * @param emotionName 情绪名
+   * @returns 情绪资源图片url数组, 按从底而上, 从左到右排列
+   */
+  emotionResources: (emotionName: string) => string[] | undefined;
+  /**
+   * 获取fx特效图像资源
+   * @param fxName
+   * @returns 图像资源url数组
+   */
+  fxImages: (fxName: string) => string[] | undefined;
+
+  emotionSoundUrl: (emotionName: string) => string;
+  /**
+   * 获取其他特效音url
+   * @param type 特效音类型, 如select
+   * @returns
+   */
+  otherSoundUrl: (type: OtherSounds) => string;
+  /**
+   * 获取L2D资源
+   */
+  l2dSpineData: import("@pixi-spine/base").ISkeletonData | undefined;
+}
+
+export type GetterFunctions = {
+  [Getter in keyof BasicGetters]: () => BasicGetters[Getter];
+};
+export type Getters = Readonly<BasicGetters>;
+
+export interface Actions {
+  setBgInstance: (sprite: Sprite) => void;
+  /**
+   * 更新logText的值, 即已经显示过的文字和选项
+   * @param newLog 新加入log的值, 可为对话或选项
+   * @returns
+   */
+  updateLogText: (newLog: ShowText | ShowOption) => void;
+  /**
+   * 设置l2d的spine数据地址便于l2d层获取spinedata
+   * @param url
+   * @returns
+   */
+  setL2DSpineUrl: (url: string) => void;
+  /**
+   *  设置当前l2d特殊配置
+   * @param val l2dConfig
+   * @returns
+   */
+  setL2DConfig: (val: IL2dConfig[keyof IL2dConfig]) => void;
+}
+
+export interface LogText {
+  /**
+   * user: 用户选项
+   * character: 人物对话, 有头像
+   * none: 无所属对话, 此时name不存在
+   */
+  type: "user" | "character" | "none";
+  text: string;
+  /**
+   * 人物名
+   */
+  name?: string;
+  /**
+   * 头像地址
+   */
+  avatarUrl?: string;
+  /** storyUnit 位置 */
+  index?: number;
 }
 
 export interface StorySummary {

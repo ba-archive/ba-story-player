@@ -1,7 +1,7 @@
 /**
  * 初始化背景层, 订阅player的剧情信息.
  */
-import { Application, LoaderResource, Sprite } from "pixi.js";
+import { Sprite, LoaderResource, Application } from "pixi.js";
 import gsap from "gsap";
 
 import { BgLayer } from "@/types/bgLayer";
@@ -97,7 +97,7 @@ const BgLayerInstance: BgLayer = {
   },
   async loadBgOverlap(instance: Sprite, overlap: number) {
     const { app, bgInstance: oldInstance, setBgInstance } = usePlayerStore();
-    const tl = gsap.timeline();
+    let tl = gsap.timeline();
     instance.zIndex = -99;
 
     app.stage.addChild(instance);

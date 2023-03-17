@@ -10,7 +10,7 @@ export default async function BG_FocusLine(resources: Sprite[]) {
   const { app } = usePlayerStore();
   const appWidth = app.view.width;
   const appHeight = app.view.height;
-  const emitterContainer = new Container();
+  let emitterContainer = new Container();
   app.stage.addChild(emitterContainer);
   emitterContainer.zIndex = -1;
   const centerPoint = [appWidth / 2, appHeight / 2].map(i => parseInt(i + ""));
@@ -56,7 +56,7 @@ export default async function BG_FocusLine(resources: Sprite[]) {
     }
   }
   Emitter.registerBehavior(FocusLine);
-  const emitterConfig: EmitterConfigV3 = {
+  let emitterConfig: EmitterConfigV3 = {
     ...(emitterConfigs("focusline") as EmitterConfigV3),
   };
   const sprite = sprite2TransParent(resources[0]);

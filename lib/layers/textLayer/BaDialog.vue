@@ -139,13 +139,13 @@
 
 <script setup lang="ts">
 import {
-  Ref,
-  computed,
-  nextTick,
   onMounted,
+  ref,
+  computed,
+  Ref,
+  nextTick,
   onUnmounted,
   reactive,
-  ref,
 } from "vue";
 import eventBus from "@/eventBus";
 import Typed, { TypedExtend, TypedOptions } from "typed.js";
@@ -217,7 +217,7 @@ function endPlay() {
  * 单击屏幕后触发效果 next或者立即显示当前对话
  */
 function moveToNext() {
-  if (!showDialog.value) return; // 显示st期间不允许跳过
+  if (!showDialog) return; // 显示st期间不允许跳过
   // 没打过任何一行字(初始化)或者对话已经显示完成, 点击屏幕代表继续
   if (!typingInstance || typingComplete.value) {
     eventBus.emit("next");
@@ -339,7 +339,7 @@ function handleShowStEvent(e: StText) {
     if (e.middle) {
       extendStyle =
         extendStyle +
-        ";text-align: center; left: 50%; transform: translateX(-50%)";
+        `;text-align: center; left: 50%; transform: translateX(-50%)`;
     }
     const fontSize = e.stArgs[2]; // st的字号
     extendStyle =

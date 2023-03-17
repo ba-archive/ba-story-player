@@ -8,10 +8,23 @@ let otherSoundMap: OtherSoundsUrls;
 let oggAudioType = "ogg";
 
 /**
- * 字面意思, 深拷贝json
+ * 设置数据站点
+ * @param url
  */
-export function deepCopyObject<T>(object: T): T {
-  return JSON.parse(JSON.stringify(object));
+export function setDataUrl(url: string): void {
+  dataUrl = url;
+  otherSoundMap = {
+    select: `${dataUrl}/Audio/Sound/UI_Button_Touch.wav`,
+    bg_underfire: `${dataUrl}/Audio/Sound/UI_FX_BG_UnderFire.wav`,
+    back: `${dataUrl}/Audio/Sound/UI_Button_Back.wav`,
+  };
+}
+
+/**
+ * 设置ogg类型音频的替代音频类型
+ */
+export function setOggAudioType(audioType: "mp3") {
+  oggAudioType = audioType;
 }
 
 /**
@@ -58,10 +71,10 @@ export function getResourcesUrl(type: ResourcesTypes, arg: string): string {
       return `${dataUrl}/Audio/VoiceJp/${arg}.${oggAudioType}`;
     case "characterSpine":
       //arg UIs/03_Scenario/02_Character/CharacterSpine_hasumi
-      const temp = String(arg).split("/");
+      let temp = String(arg).split("/");
       let id = temp.pop();
       id = id?.replace("CharacterSpine_", "");
-      const filename = `${id}_spr`; //hasumi_spr
+      let filename = `${id}_spr`; //hasumi_spr
       return `${dataUrl}/spine/${filename}/${filename}.skel`;
     case "bg":
       return `${dataUrl}/${arg}.jpg`;
@@ -80,23 +93,10 @@ export function getResourcesUrl(type: ResourcesTypes, arg: string): string {
 }
 
 /**
- * 设置数据站点
- * @param url
+ * 字面意思, 深拷贝json
  */
-export function setDataUrl(url: string): void {
-  dataUrl = url;
-  otherSoundMap = {
-    select: `${dataUrl}/Audio/Sound/UI_Button_Touch.wav`,
-    bg_underfire: `${dataUrl}/Audio/Sound/UI_FX_BG_UnderFire.wav`,
-    back: `${dataUrl}/Audio/Sound/UI_Button_Back.wav`,
-  };
-}
-
-/**
- * 设置ogg类型音频的替代音频类型
- */
-export function setOggAudioType(audioType: "mp3") {
-  oggAudioType = audioType;
+export function deepCopyObject<T>(object: T): T {
+  return JSON.parse(JSON.stringify(object));
 }
 
 /*
