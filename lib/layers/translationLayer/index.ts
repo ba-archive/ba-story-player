@@ -1,6 +1,6 @@
 import {usePlayerStore} from '@/stores';
 import {StoryRawUnit, StoryUnit, TextEffect, ZmcArgs} from "@/types/common";
-import {StArgs} from '@/types/events';
+import {ShowOption, StArgs} from '@/types/events';
 import {deepCopyObject, getResourcesUrl} from '@/utils';
 import {l2dConfig} from '../l2dLayer/l2dConfig';
 import * as utils from "./utils";
@@ -17,7 +17,7 @@ type IStoryRawUnitParserUnit = {
 // [\u2E80-\u9FFF]
 const StoryRawUnitParserUnit: IStoryRawUnitParserUnit = {
   title: {
-    reg: /#title;(.+);(.+);?/,
+    reg: /#title;(.+);?(.+)?;?/,
     fn(match: RegExpExecArray, unit: StoryUnit, rawUnit: StoryRawUnit) {
       unit.type = 'nextEpisode';
       unit.textAbout.titleInfo = utils.generateTitleInfo(rawUnit, usePlayerStore().language);
@@ -48,7 +48,7 @@ const StoryRawUnitParserUnit: IStoryRawUnitParserUnit = {
     }
   },
   na: {
-    reg: /#na;(.+);(.+);?/,
+    reg: /#na;(.+);?;(.+)?;?/,
     fn(match: RegExpExecArray, unit: StoryUnit, rawUnit: StoryRawUnit) {
       unit.type = 'text';
       unit.textAbout.showText.text = utils.generateText(rawUnit);
@@ -143,6 +143,7 @@ const StoryRawUnitParserUnit: IStoryRawUnitParserUnit = {
         Reflect.set(args, "type", "move");
         Reflect.set(args, "duration", Number(match[4]));
       }
+      unit.effect.otherEffect.push({ type: "zmc", args });
       return unit;
     }
   },
@@ -168,7 +169,7 @@ const StoryRawUnitParserUnit: IStoryRawUnitParserUnit = {
     // 5;세리카;12;부장은 옆방에서 자고 있어. 내가 가서 데려올게.
     // 初始位置;人名(用来xxhash);spine表情动画编号;说话
     reg: /([1-5]);(.+);(\d{1,3});?(.+)?/,
-    fn(match: RegExpExecArray, unit: StoryUnit, rawUnit: StoryRawUnit) {
+    fn(match: RegExpExecArray, unit: StoryUnit, rawUnit: StoryRawUnit, parseUnitResult: StoryUnit[], currentIndex: number) {
       const playerStore = usePlayerStore();
       const CharacterName = utils.getCharacterName(match[2]);
       const characterInfo = playerStore.CharacterNameExcelTable.get(CharacterName);
@@ -198,6 +199,8 @@ const StoryRawUnitParserUnit: IStoryRawUnitParserUnit = {
         })
       }
       else {
+        console.log(rawUnit);
+        console.log(currentIndex)
         throw new Error(`${CharacterName}在CharacterNameExcelTable中不存在`)
       }
       return unit;
@@ -241,23 +244,14 @@ const StoryRawUnitParserUnit: IStoryRawUnitParserUnit = {
     reg: /\[n?s(\d{0,2})?](.+)/,
     fn(match: RegExpExecArray, unit: StoryUnit, rawUnit: StoryRawUnit) {
       unit.type = 'option';
-      let index = 0;
-      if (unit.textAbout.options) {
-        index = unit.textAbout.options.length;
-      }
-      const rawText = String(getText(rawUnit, usePlayerStore().language)).split('\n')[index];
-      const parseResult = /\[n?s(\d{0,2})?](.+)/.exec(rawText);
-      if (!parseResult) {
-        console.error("在处理选项文本时遇到严重错误");
-        return unit;
-      }
-      const text = utils.splitStScriptAndParseTag(parseResult[2]);
-      if (unit.textAbout.options) {
-        unit.textAbout.options.push({ SelectionGroup: index, text });
-      }
-      else {
-        unit.textAbout.options = [{ SelectionGroup: index, text }];
-      }
+      unit.textAbout.options = String(getText(rawUnit, usePlayerStore().language)).split('\n').map((it, index) => {
+        const parseResult = /\[n?s(\d{0,2})?](.+)/.exec(it);
+        if (!parseResult) {
+          console.error("在处理选项文本时遇到严重错误");
+          return undefined;
+        }
+        return { SelectionGroup: index + 1, text: utils.splitStScriptAndParseTag(parseResult[2]) };
+      }).filter(it => it) as ShowOption[];
       return unit;
     }
   }
@@ -319,19 +313,23 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
       unit.type = 'effectOnly'
     }
     let ScriptKr = String(rawStoryUnit.ScriptKr);
-    Object.keys(StoryRawUnitParserUnit).map(key => {
-      const parseConfig = Reflect.get(StoryRawUnitParserUnit, key) as IStoryRawUnitParserFn;
-      if (!parseConfig) {
-        return undefined;
-      }
-      const match = parseConfig.reg.exec(ScriptKr);
-      if (!match) {
-        return undefined;
-      }
-      parseConfig.fn(match, unit, rawStoryUnit, parseA, index);
-      ScriptKr = ScriptKr.replace(match[0], "");
-    });
-
+    debugger
+    while (ScriptKr) {
+      debugger
+      Object.keys(StoryRawUnitParserUnit).map(key => {
+        const parseConfig = Reflect.get(StoryRawUnitParserUnit, key) as IStoryRawUnitParserFn;
+        if (!parseConfig) {
+          return undefined;
+        }
+        const match = parseConfig.reg.exec(ScriptKr);
+        if (!match) {
+          return undefined;
+        }
+        parseConfig.fn(match, unit, rawStoryUnit, parseA, index);
+        ScriptKr = ScriptKr.replace(match[0], "");
+        console.log(ScriptKr);
+      });
+    }
     if (!unit.characters.some(character => character.highlight)) {
       unit.characters = unit.characters.map(character => { character.highlight = true; return character; })
     }
@@ -601,35 +599,21 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
     }
     result.push(unit)
   }
-  console.log(result);
-  console.log(compare(result, parseA));
+  let compareIndex = 0;
+  window.A = parseA;
+  window.B = result;
+  window.C = rawStory;
+  window.next = () => {
+    console.log(parseA[compareIndex]);
+    console.log(result[compareIndex]);
+    console.log(rawStory[compareIndex]);
+    compareIndex++;
+  }
+  window.prev = () => {
+    compareIndex--;
+    console.log(parseA[compareIndex]);
+    console.log(result[compareIndex]);
+    console.log(rawStory[compareIndex]);
+  }
   return parseA
-}
-
-function compare(a: object, b: object) {
-  if (typeof a === "string" && typeof b === "string" && a === b) {
-    return true;
-  }
-  if (typeof a === "number" && typeof b === "number" && a === b) {
-    return true;
-  }
-  if (a === null && b === null) {
-    return true;
-  }
-  if (a === undefined && b === undefined) {
-    return true;
-  }
-  if (typeof a === "object" && typeof b === "object" && a !== null && b !== null) {
-    const aKey = Object.keys(a);
-    const bKey = Object.keys(b);
-    if (aKey.length !== bKey.length) {
-      debugger
-      return false;
-    }
-    return aKey.map((key, index) => {
-      console.log(index);
-      return compare(Reflect.get(a, key), Reflect.get(b, key));
-    }).reduce((p, c) => p && c, true);
-  }
-  return false;
 }
