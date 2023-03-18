@@ -1,0 +1,31 @@
+name: Public Npm Beta
+
+on:
+  push:
+    branches: ["dev.*"]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    name: "publish npm"
+
+    environment: npm
+
+    steps:
+      - uses: actions/checkout@master
+
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 7.21.0
+
+      - name: Install and Build
+        run: |
+          pnpm install
+          pnpm run build # 这是我的项目的打包命令，你也可以改成你的
+
+      - name: "Publish to the npm registry"
+        uses: JS-DevTools/npm-publish@v1
+        with:
+          token: ${{ secrets.NPM_TOKEN }}
+          tag: "beta"
