@@ -10,7 +10,7 @@ export let fxOptionsDescriptions: OptionDescriptions["fx"] = {
 
 let fxOptions: FXOptions = {
   shot: {
-    scale: 0.37,
+    scale: 0.2,
     shotDuration: 0.1,
     shotSequence: [
       {

@@ -45,7 +45,7 @@ let emotionResourcesTable = {
 };
 
 let fxImageTable = {
-  shot: ["fire1.svg", "fire2.svg", "fire3.svg"],
+  shot: ["fire1.png", "fire2.png", "fire3.png"],
 };
 
 /**
@@ -67,9 +67,9 @@ let bgEffectImgTable: BGEffectImgTable = {
   BG_Rain_L: ["HardRain.png"],
   BG_UnderFire: [
     "FX_TEX_Smoke_17.png",
-    "fire1.svg",
-    "fire2.svg",
-    "fire3.svg",
+    "fire1.png",
+    "fire2.png",
+    "fire3.png",
     "HardRain.png",
   ],
   BG_WaveShort_F: [],
