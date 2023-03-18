@@ -1,7 +1,7 @@
 import gsap from "gsap";
 
 // 按钮激活动画
-function effectBtnMouseDown(duration: number = 0.15, scale: number = 0.94) {
+function effectBtnMouseDown(duration = 0.15, scale = 0.94) {
   return (ev: Event) => {
     console.log("effectBtnMouseDown");
     gsap.to(ev.currentTarget, {
@@ -14,7 +14,7 @@ function effectBtnMouseDown(duration: number = 0.15, scale: number = 0.94) {
 }
 
 // 按钮失活动画
-function effectBtnMouseUp(duration: number = 0.3, scale: number = 1) {
+function effectBtnMouseUp(duration = 0.3, scale = 1) {
   return (ev: Event) => {
     console.log("effectBtnMouseUp");
     gsap.to(ev.currentTarget, {

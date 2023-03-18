@@ -108,7 +108,7 @@ watch(
             rgba(240, 240, 240, 1) 38%,
             rgba(240, 240, 240, 1) 100%
           ),
-        url(../assets/UITex_BGPoliLight_2.png) rgb(164 216 237);
+        url(../assets/UITex_BGPoliLight_1.svg) rgb(164 216 237);
       background-size: 100%;
       background-position: 0 30%;
       box-shadow: #d1d8da 0 1px 2px 0px;
@@ -165,7 +165,7 @@ watch(
             rgba(255, 255, 255, 0.85) 85%,
             rgba(255, 255, 255, 0) 100%
           ),
-        repeat right -30% bottom/50% url(../assets/UITex_BGPoliLight_4.png) rgb(135, 196, 232);
+        repeat right -30% bottom/50% url(../assets/UITex_BGPoliLight_1.svg) rgb(135, 196, 232);
     }
   }
 }

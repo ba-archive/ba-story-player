@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { computed, withDefaults, ref } from "vue";
+import { computed, ref, withDefaults } from "vue";
 import { ShowOption } from "@/types/events";
 import { useElementSize } from "@vueuse/core";
 import { Text } from "@/types/common";
@@ -188,7 +188,7 @@ function parseTextEffect(_text: Text) {
           rgba(240, 240, 240, 1) 38%,
           rgba(240, 240, 240, 0.1) 100%
         ),
-        url("../assets/UITex_BGPoliLight_1.png") rgb(164 216 237) no-repeat 0
+        url("../assets/UITex_BGPoliLight_1.svg") rgb(164 216 237) no-repeat 0
           30%;
       transition: all 0.175s ease-in-out;
       -webkit-tap-highlight-color: transparent;

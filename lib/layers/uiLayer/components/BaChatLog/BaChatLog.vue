@@ -60,7 +60,7 @@ watch(
         rgba(213, 213, 213, 0.85) 85%,
         rgba(213, 213, 213, 0) 100%
       ),
-    repeat right -30% bottom/50% url(../../assets/UITex_BGPoliLight_4.png) rgb(201, 232, 250);
+    repeat right -30% bottom/50% url(../../assets/UITex_BGPoliLight_1.svg) rgb(201, 232, 250);
 
   ul.ba-chat-content {
     // position: absolute;

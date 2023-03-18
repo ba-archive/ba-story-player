@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import eventBus from "@/eventBus";
-import { onMounted, PropType, Ref, ref } from "vue";
+import { PropType, Ref, onMounted, ref } from "vue";
 import { buttonAnimation } from "../utils";
 
 const props = defineProps({
@@ -74,7 +74,7 @@ onMounted(() => {
           rgba(227, 247, 255, 0.9) 60%,
           rgba(255, 255, 255, 0) 100%
         ),
-      url(../assets/UITex_BGPoliLight_4.png) rgb(128, 208, 255);
+      url(../assets/UITex_BGPoliLight_1.svg) rgb(128, 208, 255);
   }
   &.polydark {
     background: no-repeat center/contain
@@ -85,7 +85,7 @@ onMounted(() => {
           rgba(117, 218, 248, 0.9) 60%,
           rgba(255, 255, 255, 0) 100%
         ),
-      url(../assets/UITex_BGPoliLight_4.png) rgb(106, 224, 251);
+      url(../assets/UITex_BGPoliLight_1.svg) rgb(106, 224, 251);
   }
 
   &[class*="poly"] {

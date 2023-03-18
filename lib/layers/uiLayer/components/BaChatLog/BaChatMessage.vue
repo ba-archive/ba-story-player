@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { LogText } from "@/types/store";
 import { PropType, ref } from "vue";
-import avatarBG from "../../assets/Deco_GachaItemBg.png";
+import avatarBG from "../../assets/Deco_GachaItemBg.webp";
 import { changeStoryIndex } from "../../userInteract";
 const props = defineProps({
   chatMessage: Object as PropType<LogText>,
