@@ -19,7 +19,7 @@ const StoryRawUnitParserUnit: IStoryRawUnitParserUnit = {
   title: {
     reg: /#title;([^;\n]+);?([^;\n]+)?;?/,
     fn(match: RegExpExecArray, unit: StoryUnit, rawUnit: StoryRawUnit) {
-      unit.type = 'nextEpisode';
+      unit.type = 'title';
       unit.textAbout.titleInfo = utils.generateTitleInfo(rawUnit, usePlayerStore().language);
       return unit;
     }
@@ -248,7 +248,7 @@ const StoryRawUnitParserUnit: IStoryRawUnitParserUnit = {
           console.error("在处理选项文本时遇到严重错误");
           return undefined;
         }
-        return { SelectionGroup: Number(parseResult[1]), text: utils.splitStScriptAndParseTag(parseResult[2]) };
+        return { SelectionGroup: Number(parseResult[1] || "0"), text: utils.splitStScriptAndParseTag(parseResult[2]) };
       }).filter(it => it) as ShowOption[];
       return unit;
     }
@@ -603,21 +603,8 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
     }
     result.push(unit)
   }
-  let compareIndex = 0;
   window.A = parseA;
   window.B = result;
   window.C = rawStory;
-  window.next = () => {
-    console.log(parseA[compareIndex]);
-    console.log(result[compareIndex]);
-    console.log(rawStory[compareIndex]);
-    compareIndex++;
-  }
-  window.prev = () => {
-    compareIndex--;
-    console.log(parseA[compareIndex]);
-    console.log(result[compareIndex]);
-    console.log(rawStory[compareIndex]);
-  }
   return parseA
 }
