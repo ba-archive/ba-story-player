@@ -2,7 +2,7 @@ name: Public Npm Beta
 
 on:
   push:
-    branches: ["dev.*"]
+    branches: ["dev*"]
 
 jobs:
   publish:
