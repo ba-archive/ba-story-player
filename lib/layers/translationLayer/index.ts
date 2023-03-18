@@ -73,7 +73,7 @@ const StoryRawUnitParserUnit: IStoryRawUnitParserUnit = {
     }
   },
   stm: {
-    reg: /#stm;(\[0,-?\d+]);(serial|instant|smooth);(\d+);?/,
+    reg: /#stm;(\[0,-?\d+]);(serial|instant|smooth);(\d+);([^;\n]+);?/,
     fn(match: RegExpExecArray, unit: StoryUnit, rawUnit: StoryRawUnit) {
       unit.type = 'st';
       unit.textAbout.st = { middle: true };
@@ -132,7 +132,7 @@ const StoryRawUnitParserUnit: IStoryRawUnitParserUnit = {
     }
   },
   zmc: {
-    reg: /#zmc;(instant|move);(-?\d+,-?\d+);(\d+);?(\d+)?;?/,
+    reg: /#zmc;(instant|instnat|move);(-?\d+,-?\d+);(\d+);?(\d+)?;?/,
     fn(match: RegExpExecArray, unit: StoryUnit, rawUnit: StoryRawUnit) {
       const args: ZmcArgs = {
         type: match[1] as "instant",
@@ -167,8 +167,8 @@ const StoryRawUnitParserUnit: IStoryRawUnitParserUnit = {
   },
   character: {
     // 5;세리카;12;부장은 옆방에서 자고 있어. 내가 가서 데려올게.
-    // 初始位置;人名(用来xxhash);spine表情动画编号;说话
-    reg: /([1-5]);([^;\n]+);(\d{1,3});?([^;\n]+)?/,
+    // 初始位置;人名(用来xxhash);spine表情动画编号;说话(如果有)
+    reg: /^(?!#)([1-5]);([^;\n]+);([^;\n]+);?([^;\n]+)?/,
     fn(match: RegExpExecArray, unit: StoryUnit, rawUnit: StoryRawUnit, parseUnitResult: StoryUnit[], currentIndex: number) {
       const playerStore = usePlayerStore();
       const CharacterName = utils.getCharacterName(match[2]);
@@ -261,7 +261,7 @@ const StoryRawUnitParserUnit: IStoryRawUnitParserUnit = {
  */
 export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
   const playerStore = usePlayerStore();
-  const parseA: StoryUnit[] = [];
+  const parseResult: StoryUnit[] = [];
   for (const [index, rawStoryUnit] of deepCopyObject(rawStory).entries()) {
     const { GroupId, SelectionGroup, PopupFileName } = rawStoryUnit;
     const unit: StoryUnit = {
@@ -310,36 +310,30 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
     if (!rawStoryUnit.TextJp || !rawStoryUnit.TextJp) {
       unit.type = 'effectOnly'
     }
-    let ScriptKr = String(rawStoryUnit.ScriptKr);
-    let retryCount = 0
-    while (ScriptKr.replace(/\n/g, "")) {
+    const ScriptKr = String(rawStoryUnit.ScriptKr);
+    ScriptKr.split("\n").forEach((scriptUnit) => {
       Object.keys(StoryRawUnitParserUnit).map(key => {
         const parseConfig = Reflect.get(StoryRawUnitParserUnit, key) as IStoryRawUnitParserFn;
         if (!parseConfig) {
           return undefined;
         }
-        const match = parseConfig.reg.exec(ScriptKr);
+        const match = parseConfig.reg.exec(scriptUnit);
         if (!match) {
           return undefined;
         }
-        parseConfig.fn(match, unit, rawStoryUnit, parseA, index);
-        ScriptKr = ScriptKr.replace(match[0], "");
-        console.log(ScriptKr);
+        parseConfig.fn(match, unit, rawStoryUnit, parseResult, index);
       });
-      retryCount++;
-      if (retryCount > 10) {
-        console.error(`${index}解析失败, 重试次数过多`);
-        console.error(rawStoryUnit);
-        console.error(ScriptKr);
-        break;
-      }
-    }
+    });
     if (!unit.characters.some(character => character.highlight)) {
-      unit.characters = unit.characters.map(character => { character.highlight = true; return character; })
+      unit.characters = unit.characters.map(character => { character.highlight = true; return character; });
     }
-    parseA.push(unit);
+    parseResult.push(unit);
   }
-  console.log(parseA);
+  return parseResult;
+}
+
+function switchBaseTranslator(rawStory: StoryRawUnit[]): StoryUnit[] {
+  const playerStore = usePlayerStore();
   let result: StoryUnit[] = []
   for (let [rawIndex, rawStoryUnit] of rawStory.entries()) {
     //初始化unit, 将需要的原始属性填入unit, 同时查表填入其他属性
@@ -603,8 +597,5 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
     }
     result.push(unit)
   }
-  window.A = parseA;
-  window.B = result;
-  window.C = rawStory;
-  return parseA
+  return result;
 }
