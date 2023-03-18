@@ -17,7 +17,7 @@ type IStoryRawUnitParserUnit = {
 // [\u2E80-\u9FFF]
 const StoryRawUnitParserUnit: IStoryRawUnitParserUnit = {
   title: {
-    reg: /#title;(.+);?(.+)?;?/,
+    reg: /#title;([^;\n]+);?([^;\n]+)?;?/,
     fn(match: RegExpExecArray, unit: StoryUnit, rawUnit: StoryRawUnit) {
       unit.type = 'nextEpisode';
       unit.textAbout.titleInfo = utils.generateTitleInfo(rawUnit, usePlayerStore().language);
@@ -25,7 +25,7 @@ const StoryRawUnitParserUnit: IStoryRawUnitParserUnit = {
     }
   },
   place: {
-    reg: /#place;(.+);?/,
+    reg: /#place;([^;\n]+);?/,
     fn(match: RegExpExecArray, unit: StoryUnit, rawUnit: StoryRawUnit) {
       unit.type = 'place';
       unit.textAbout.word = utils.generateText(rawUnit)[0].content;
@@ -33,7 +33,7 @@ const StoryRawUnitParserUnit: IStoryRawUnitParserUnit = {
     }
   },
   nextEpisode: {
-    reg: /#nextepisode;(.+);(.+);?/,
+    reg: /#nextepisode;([^;\n]+);([^;\n]+);?/,
     fn(match: RegExpExecArray, unit: StoryUnit, rawUnit: StoryRawUnit) {
       unit.type = 'nextEpisode';
       unit.textAbout.titleInfo = utils.generateTitleInfo(rawUnit, usePlayerStore().language);
@@ -48,7 +48,7 @@ const StoryRawUnitParserUnit: IStoryRawUnitParserUnit = {
     }
   },
   na: {
-    reg: /#na;(.+);?;(.+)?;?/,
+    reg: /#na;([^;\n]+);?([^;\n]+)?;?/,
     fn(match: RegExpExecArray, unit: StoryUnit, rawUnit: StoryRawUnit) {
       unit.type = 'text';
       unit.textAbout.showText.text = utils.generateText(rawUnit);
@@ -109,7 +109,7 @@ const StoryRawUnitParserUnit: IStoryRawUnitParserUnit = {
   all: {
     // TODO #all;dl
     // #all;hide
-    reg: /#all;(.+);?/,
+    reg: /#all;([^;\n]+);?/,
     fn(match: RegExpExecArray, unit: StoryUnit) {
       if (utils.compareCaseInsensive(match[1], 'hide')) {
         unit.hide = 'all';
@@ -155,7 +155,7 @@ const StoryRawUnitParserUnit: IStoryRawUnitParserUnit = {
     }
   },
   video: {
-    reg: /#video;(.+);(.+);?/,
+    reg: /#video;([^;\n]+);([^;\n]+);?/,
     //处理情况为 #video;Scenario/Main/22000_MV_Video;Scenario/Main/22000_MV_Sound
     fn(match: RegExpExecArray, unit: StoryUnit) {
       unit.video = {
@@ -168,7 +168,7 @@ const StoryRawUnitParserUnit: IStoryRawUnitParserUnit = {
   character: {
     // 5;세리카;12;부장은 옆방에서 자고 있어. 내가 가서 데려올게.
     // 初始位置;人名(用来xxhash);spine表情动画编号;说话
-    reg: /([1-5]);(.+);(\d{1,3});?(.+)?/,
+    reg: /([1-5]);([^;\n]+);(\d{1,3});?([^;\n]+)?/,
     fn(match: RegExpExecArray, unit: StoryUnit, rawUnit: StoryRawUnit, parseUnitResult: StoryUnit[], currentIndex: number) {
       const playerStore = usePlayerStore();
       const CharacterName = utils.getCharacterName(match[2]);
@@ -207,20 +207,13 @@ const StoryRawUnitParserUnit: IStoryRawUnitParserUnit = {
     }
   },
   characterEffect: {
-    reg: /#([1-5]);(em;(.+)|\w+);?/,
+    reg: /#([1-5]);(((em|fx);([^;\n]+))|\w+);?/,
     fn(match: RegExpExecArray, unit: StoryUnit, rawUnit: StoryRawUnit, parseUnitResult: StoryUnit[], currentIndex: number) {
       const characterIndex = utils.getCharacterIndex(unit, Number(match[1]), parseUnitResult, currentIndex);
-      if (match[2]) {
-        unit.characters[characterIndex].effects.push({
-          type: 'action',
-          effect: match[1],
-          async: false
-        });
-      }
-      else if (utils.compareCaseInsensive(match[1], 'em')) {
-        const emotionName = utils.getEmotionName(match[2]);
+      if (match[5] && utils.compareCaseInsensive(match[4], "em")) {
+        const emotionName = utils.getEmotionName(match[5]);
         if (!emotionName) {
-          console.error(`查询不到${match[2]}的emotionName中, 当前rawStoryUnit: `, rawUnit);
+          console.error(`查询不到${match[3]}的emotionName中, 当前rawStoryUnit: `, rawUnit);
         }
         else {
           unit.characters[characterIndex].effects.push({
@@ -229,11 +222,16 @@ const StoryRawUnitParserUnit: IStoryRawUnitParserUnit = {
             async: false
           });
         }
-      }
-      else if (utils.compareCaseInsensive(match[1], 'fx')) {
+      } else if (match[5] && utils.compareCaseInsensive(match[4], "fx")) {
         unit.characters[characterIndex].effects.push({
           type: 'fx',
-          effect: match[2].replace('{', '').replace('}', ''),
+          effect: match[5].replace('{', '').replace('}', ''),
+          async: false
+        });
+      } else if (!match[3]) {
+        unit.characters[characterIndex].effects.push({
+          type: 'action',
+          effect: match[2],
           async: false
         });
       }
@@ -241,7 +239,7 @@ const StoryRawUnitParserUnit: IStoryRawUnitParserUnit = {
     }
   },
   option: {
-    reg: /\[n?s(\d{0,2})?](.+)/,
+    reg: /\[n?s(\d{0,2})?]([^;\n]+)/,
     fn(match: RegExpExecArray, unit: StoryUnit, rawUnit: StoryRawUnit) {
       unit.type = 'option';
       unit.textAbout.options = String(getText(rawUnit, usePlayerStore().language)).split('\n').map((it, index) => {
@@ -250,7 +248,7 @@ const StoryRawUnitParserUnit: IStoryRawUnitParserUnit = {
           console.error("在处理选项文本时遇到严重错误");
           return undefined;
         }
-        return { SelectionGroup: index + 1, text: utils.splitStScriptAndParseTag(parseResult[2]) };
+        return { SelectionGroup: Number(parseResult[1]), text: utils.splitStScriptAndParseTag(parseResult[2]) };
       }).filter(it => it) as ShowOption[];
       return unit;
     }
@@ -313,9 +311,8 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
       unit.type = 'effectOnly'
     }
     let ScriptKr = String(rawStoryUnit.ScriptKr);
-    debugger
-    while (ScriptKr) {
-      debugger
+    let retryCount = 0
+    while (ScriptKr.replace(/\n/g, "")) {
       Object.keys(StoryRawUnitParserUnit).map(key => {
         const parseConfig = Reflect.get(StoryRawUnitParserUnit, key) as IStoryRawUnitParserFn;
         if (!parseConfig) {
@@ -329,6 +326,13 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
         ScriptKr = ScriptKr.replace(match[0], "");
         console.log(ScriptKr);
       });
+      retryCount++;
+      if (retryCount > 10) {
+        console.error(`${index}解析失败, 重试次数过多`);
+        console.error(rawStoryUnit);
+        console.error(ScriptKr);
+        break;
+      }
     }
     if (!unit.characters.some(character => character.highlight)) {
       unit.characters = unit.characters.map(character => { character.highlight = true; return character; })
