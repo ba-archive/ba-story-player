@@ -82,7 +82,10 @@
           class="title-border"
           :style="{ '--side-padding': `${titleBorderPadding}px` }"
         >
-          <img src="./assets/title-border.png" />
+          <img src="./assets/title_border__upper_left.svg" alt="upper-left" />
+          <img src="./assets/title_border__upper_right.svg" alt="upper-right" />
+          <img src="./assets/title_border__lower_right.svg" alt="lower-right" />
+          <img src="./assets/title_border__lower_left.svg" alt="lower-left" />
           <div
             ref="titleContain"
             class="title-contain"
@@ -977,7 +980,7 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
     bottom: 1rem;
     width: 10px;
     height: 10px;
-    background: url("./assets/text-next.png");
+    background: url("./assets/text-next.webp");
     background-size: $size $size;
     animation: next-btn 0.6s linear alternate infinite;
   }
@@ -1028,26 +1031,47 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
     opacity: 0;
     color: white;
     z-index: $text-layer-z-index + $title-z-index;
-    // $padding: 10px;
-    // padding: $padding;
-
+     $padding: 10px;
+     padding: $padding;
     .title-border {
+      border: 2px solid white;
+      border-radius: 16px;
       position: relative;
       --side-padding: 0px;
+      $border-svg-size: 32px;
       // width: calc(100% - 2 * #{$padding} - 2 * var(--side-padding));
-      height: 100%;
-      // background: url("./assets/title-border.png") no-repeat;
-      background-size: 100% 100%;
-      display: inline-flex;
+      width: calc(100% - 2 * #{$padding});
+      height: calc(100% - 2 * #{$padding});
+      background: linear-gradient(to top, white, white), linear-gradient(to left, white, white), linear-gradient(to top, white, white), linear-gradient(to left, white, white);
+      background-size: calc(100% - 62px) 0.5px, 0.5px calc(100% - 65px),calc(100% - 62px) 0.5px, 0.5px calc(100% - 65px);
+      background-position: 31px 12px, 11px 32px, 31px calc(100% - 12px), calc(100% - 12px) 32px;
+      background-repeat: no-repeat;
+      img {
+        position: absolute;
+        width: $border-svg-size;
+        &:nth-child(1) {
+          top: 0;
+          left: 0;
+        }
+        &:nth-child(2) {
+          top: 0;
+          right: 0;
+        }
+        &:nth-child(3) {
+          bottom: 0;
+          right: 0;
+        }
+        &:nth-child(4) {
+          bottom: 0;
+          left: 0;
+        }
+      }
+
+      display: flex;
       align-items: center;
       justify-content: center;
       line-height: 1;
-      padding: var(--side-padding) 0;
       box-sizing: border-box;
-
-      img {
-        height: 95%;
-      }
 
       .title-contain {
         --font-size: 2rem;
@@ -1065,8 +1089,8 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
             rgba(240, 240, 240, 1) 38%,
             rgba(240, 240, 240, 0.1) 100%
           ),
-          url("./assets/poli-light.png") rgb(164 216 237) no-repeat 0 30%;
-
+          url(../uiLayer/assets/UITex_BGPoliLight_1.svg) rgb(164 216 237) no-repeat 0 30%;
+        background-size: 100%, 100%;
         .sub-title {
           font-size: calc(var(--font-size) * 0.6);
           margin-bottom: calc(var(--font-size) * 0.52);
