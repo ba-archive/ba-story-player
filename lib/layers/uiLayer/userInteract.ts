@@ -25,7 +25,7 @@ const keyEvent = (e: KeyboardEvent) => {
       }
       break;
     case "ArrowUp":
-      eventBus.emit("showStoryLog");
+      eventBus.emit("showStoryLog", true);
       break;
     case "Control":
       // 限流
@@ -48,36 +48,54 @@ const keyUpEvent = (e: KeyboardEvent) => {
       storyHandler.isSkip = false;
   }
 };
-
+let isScrollBottom = false;
 const wheelEvent = (e: WheelEvent & { [key: string]: any }) => {
+  const uiScrollElem = document.querySelector(".ba-chat-content");
+  const delta = e.wheelDelta ? e.wheelDelta : -e.detail;
+  if (delta > 0) {
+    isScrollBottom = false;
+  }
+  if (
+    delta < 0 &&
+    (uiScrollElem?.scrollTop || 0) + (uiScrollElem?.clientHeight || 0) >=
+      (uiScrollElem?.scrollHeight || 0) - 6
+  ) {
+    // 避免滑到底部就立刻关了, 再滚一次才生效
+    if (isScrollBottom) {
+      eventBus.emit("showStoryLog", false);
+      isScrollBottom = false;
+      return;
+    }
+    isScrollBottom = true;
+  }
   if (eventEmitter.isStoryLogShow || !isPlayerFocus()) {
     return;
   }
-  const delta = e.wheelDelta ? e.wheelDelta : -e.detail;
   if (delta < 0) {
     interactNext();
   } else {
-    eventBus.emit("showStoryLog");
+    eventBus.emit("showStoryLog", true);
   }
 };
 
-document.addEventListener("keydown", keyEvent);
-document.addEventListener("keyup", keyUpEvent);
-document.addEventListener("wheel", wheelEvent);
+eventBus.on("loaded", () => {
+  document.addEventListener("keydown", keyEvent);
+  document.addEventListener("keyup", keyUpEvent);
+  document
+    .querySelector("#player")
+    ?.addEventListener("wheel", wheelEvent as any);
+});
 eventBus.on("dispose", () => {
   document.removeEventListener("keydown", keyEvent);
   document.removeEventListener("keyup", keyUpEvent);
-  document.removeEventListener("wheel", wheelEvent);
+  document
+    .querySelector("#player")
+    ?.addEventListener("wheel", wheelEvent as any);
 });
 
-export const changeStoryIndex = (index?: number) => {
-  index = parseInt(index + "");
-  if (typeof index !== "number") return;
-  index -= 1;
+function getLastDataFromIndex(index: number) {
   const allStory = usePlayerStore().allStoryUnit;
   const recentStory = allStory.slice(0, index + 1).reverse();
-  eventBus.emit("hideCharacter");
-  eventBus.emit("removeEffect");
   const lastCharacterIdx = recentStory.findIndex(currentStoryUnit => {
     return currentStoryUnit.characters?.length;
   });
@@ -98,10 +116,6 @@ export const changeStoryIndex = (index?: number) => {
       }
       return story.hide === "all";
     });
-    setTimeout(() => {
-      // 在 hideCharacter 后触发
-      eventEmitter.showCharacter(lastCharacter);
-    }, 4);
   }
   const lastBg = recentStory.find(currentStoryUnit => {
     return currentStoryUnit.bg;
@@ -109,8 +123,36 @@ export const changeStoryIndex = (index?: number) => {
   const lastBgm = recentStory.find(currentStoryUnit => {
     return currentStoryUnit.audio?.bgm;
   });
-  lastBgm && eventEmitter.playAudio(lastBgm);
-  lastBg && eventEmitter.showBg(lastBg);
+  return { lastBg, lastBgm, lastCharacter };
+}
+
+export const changeStoryIndex = (index?: number) => {
+  index = parseInt(index + "");
+  if (typeof index !== "number") return;
+  index -= 1;
+  if (index < 0) index = 0;
+  eventBus.emit("removeEffect");
+  const { lastCharacter, lastBg, lastBgm } = getLastDataFromIndex(index);
+  const {
+    lastCharacter: curCharacter,
+    lastBg: curBg,
+    lastBgm: curBgm,
+  } = getLastDataFromIndex(storyHandler.currentStoryIndex);
+  const isSameCharacter =
+    JSON.stringify(lastCharacter?.characters?.map(i => i.CharacterName)) ===
+    JSON.stringify(curCharacter?.characters?.map(i => i.CharacterName));
+  const isSameBgm =
+    JSON.stringify(lastBgm?.audio?.bgm) === JSON.stringify(curBgm?.audio?.bgm);
+  // 如果和跳转前相同就不去除了, 避免闪动
+  if (!isSameCharacter) {
+    eventBus.emit("hideCharacter");
+  }
+  setTimeout(() => {
+    // 在 hideCharacter 后触发
+    eventEmitter.showCharacter(lastCharacter);
+  }, 4);
+  !isSameBgm && eventEmitter.playAudio(lastBgm);
+  eventEmitter.showBg(lastBg);
   storyHandler.currentStoryIndex = index;
   eventBus.emit("next");
 };
@@ -131,7 +173,14 @@ function interactNext() {
 function isPlayerFocus() {
   return document.activeElement?.className.includes("baui");
 }
-eventBus.on("select", () => {
+function focusPlayer() {
   // 选择后继续能跳过
   (document.querySelector(".baui") as any).focus();
+}
+eventBus.on("select", () => {
+  focusPlayer();
+});
+eventBus.on("isStoryLogShow", e => {
+  // 选择后继续能跳过
+  !e && focusPlayer();
 });
