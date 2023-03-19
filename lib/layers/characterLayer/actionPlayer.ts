@@ -22,7 +22,7 @@ const CharacterEffectPlayerInstance: CharacterEffectPlayer = {
   init() {
     return;
   },
-  dispose(): void { },
+  dispose(): void {},
   getHandlerFunction(type: CharacterEffectWord) {
     return Reflect.get(this, type);
   },
