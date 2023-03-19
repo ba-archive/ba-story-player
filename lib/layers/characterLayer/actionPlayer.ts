@@ -22,7 +22,7 @@ const CharacterEffectPlayerInstance: CharacterEffectPlayer = {
   init() {
     return;
   },
-  dispose(): void {},
+  dispose(): void { },
   getHandlerFunction(type: CharacterEffectWord) {
     return Reflect.get(this, type);
   },
@@ -348,7 +348,7 @@ export function calcSpineStagePosition(
  */
 async function timeLinePromise(tl: gsap.core.Timeline, callBack?: () => any) {
   try {
-    await tl.then();
+    await tl;
   } catch (e) {
     throw e;
   }
