@@ -1054,6 +1054,8 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
       img {
         position: absolute;
         width: $border-svg-size;
+        filter: drop-shadow(0 0 0.2px white);
+
         &:nth-child(1) {
           top: 0;
           left: 0;
