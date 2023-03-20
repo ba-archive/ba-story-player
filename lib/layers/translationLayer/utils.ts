@@ -50,15 +50,15 @@ export function isOption(s: string) {
  */
 export function generateText(rawStoryUnit: StoryRawUnit, stm?: boolean) {
   const rawText = getText(rawStoryUnit, playerStore.language)
-    .replaceAll('[USERNAME]', playerStore.userName)
-    .replaceAll('#n', '\n');
+    .replaceAll("[USERNAME]", playerStore.userName)
+    .replaceAll("#n", "\n");
   const result: Text[] = [];
-  if (rawText.includes('[wa')) {
+  if (rawText.includes("[wa")) {
     //原始文字示例: "― （いや[wa:200]いや、[wa:900]いくら[wa:300]そういう[wa:300]状況だからって"
     //根据[wa分开
-    const strList = rawText.split('[wa:');
+    const strList = rawText.split("[wa:");
     for (const str of strList) {
-      const spiltIndex = str.indexOf(']');
+      const spiltIndex = str.indexOf("]");
       const waitTime = Number(str.slice(0, spiltIndex));
       const textUnit = str.slice(spiltIndex + 1);
       result.push({ content: textUnit, waitTime, effects: [] });
@@ -133,21 +133,26 @@ export function splitStScript(rawText: string): string[] {
  */
 export function parseCustomTag(rawText: string): Text {
   let raw = rawText;
-  const effects = Object.keys(CustomTagParserMap).map(key => {
-    const parseConfig = Reflect.get(CustomTagParserMap, key) as CustomTagParserFnConfig;
-    if (!parseConfig) {
-      return undefined;
-    }
-    const match = parseConfig.reg.exec(raw);
-    if (!match) {
-      return undefined;
-    }
-    const res = parseConfig.fn(raw, match);
-    if (res) {
-      raw = res.remain;
-    }
-    return res?.effect;
-  }).filter(it => it) as TextEffect[];
+  const effects = Object.keys(CustomTagParserMap)
+    .map(key => {
+      const parseConfig = Reflect.get(
+        CustomTagParserMap,
+        key
+      ) as CustomTagParserFnConfig;
+      if (!parseConfig) {
+        return undefined;
+      }
+      const match = parseConfig.reg.exec(raw);
+      if (!match) {
+        return undefined;
+      }
+      const res = parseConfig.fn(raw, match);
+      if (res) {
+        raw = res.remain;
+      }
+      return res?.effect;
+    })
+    .filter(it => it) as TextEffect[];
   return {
     content: raw,
     effects: effects,
@@ -155,13 +160,16 @@ export function parseCustomTag(rawText: string): Text {
 }
 
 type CustomTagParserFnConfig = {
-  reg: RegExp,
-  fn: (rawText: string, match: RegExpExecArray) => { effect: TextEffect, remain: string } | undefined
+  reg: RegExp;
+  fn: (
+    rawText: string,
+    match: RegExpExecArray
+  ) => { effect: TextEffect; remain: string } | undefined;
 } | null;
 
 type ICustomTagParserMap = {
   [key in TextEffectName]: CustomTagParserFnConfig;
-}
+};
 
 const CustomTagParserMap: ICustomTagParserMap = {
   ruby: {
@@ -169,29 +177,31 @@ const CustomTagParserMap: ICustomTagParserMap = {
     fn(rawText: string, match: RegExpExecArray) {
       const effect: TextEffect = {
         name: "ruby",
-        value: [match[1]]
-      }
+        value: [match[1]],
+      };
       return {
         effect: effect,
-        remain: rawText.replace(`[ruby=${match[1]}]`, "").replace("[/ruby]", ""),
+        remain: rawText
+          .replace(`[ruby=${match[1]}]`, "")
+          .replace("[/ruby]", ""),
       };
-    }
+    },
   },
   color: {
     reg: /\[([A-Fa-f0-9]{6})](.+?)\[-]/,
     fn(rawText: string, match: RegExpExecArray) {
       const effect: TextEffect = {
         name: "color",
-        value: [`#${match[1]}`]
-      }
+        value: [`#${match[1]}`],
+      };
       return {
         effect: effect,
         remain: rawText.replace(`[${match[1]}]`, "").replace("[-]", ""),
       };
-    }
+    },
   },
   fontsize: null,
-}
+};
 
 /**
  * 在大小写不敏感的情况下比较字符串
