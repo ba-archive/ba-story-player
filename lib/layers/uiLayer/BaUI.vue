@@ -146,7 +146,6 @@ function handleBaUIClick() {
     hiddenSubMenu.value = true;
     return;
   }
-  eventBus.emit("playOtherSounds", "select");
   eventBus.emit("click");
 }
 
