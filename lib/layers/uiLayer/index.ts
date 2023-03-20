@@ -1,3 +1,1 @@
-export function uiInit() {
-    
-}
+export function uiInit() {}

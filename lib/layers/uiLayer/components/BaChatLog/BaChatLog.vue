@@ -12,17 +12,14 @@ let store = usePlayerStore();
 let chatMesasages = store.logText;
 watch(
   () => props.show,
-  (newValue) => {
+  newValue => {
     if (newValue) {
       setTimeout(() => {
         let elem = content.value;
-        let currentScroll = elem.scrollTop 
+        let currentScroll = elem.scrollTop;
         let clientHeight = elem.offsetHeight;
         let scrollHeight = elem.scrollHeight;
-        elem.scrollTo(
-          0,
-          scrollHeight 
-        );
+        elem.scrollTo(0, scrollHeight);
       }, 300);
     }
   }
@@ -32,7 +29,11 @@ watch(
 <template>
   <div class="ba-chat-log">
     <ul class="ba-chat-content" ref="content">
-      <li class="ba-chat-item" v-for="(chatMessage, key) in chatMesasages" :key="key">
+      <li
+        class="ba-chat-item"
+        v-for="(chatMessage, key) in chatMesasages"
+        :key="key"
+      >
         <BaChatMessage :chat-message="chatMessage" />
       </li>
     </ul>
@@ -51,12 +52,15 @@ watch(
   position: relative;
   box-shadow: inset #bdc8d0 0 0px 2px 1px;
 
-  background: no-repeat right bottom/contain linear-gradient(135deg,
-      rgba(213, 213, 213, 1) 0%,
-      rgba(213, 213, 213, 1) 67%,
-      rgba(213, 213, 213, 0.85) 85%,
-      rgba(213, 213, 213, 0) 100%),
-    repeat right -30% bottom/50% url(../../assets/UITex_BGPoliLight_4.png) rgb(201, 232, 250);
+  background: no-repeat right bottom/contain
+      linear-gradient(
+        135deg,
+        rgba(213, 213, 213, 1) 0%,
+        rgba(213, 213, 213, 1) 67%,
+        rgba(213, 213, 213, 0.85) 85%,
+        rgba(213, 213, 213, 0) 100%
+      ),
+    repeat right -30% bottom/50% url(../../assets/UITex_BGPoliLight_1.svg) rgb(201, 232, 250);
 
   ul.ba-chat-content {
     // position: absolute;

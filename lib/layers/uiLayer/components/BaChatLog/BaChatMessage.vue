@@ -1,12 +1,12 @@
 <script lang="ts" setup>
 import { LogText } from "@/types/store";
 import { PropType, ref } from "vue";
-import avatarBG from "../../assets/Deco_GachaItemBg.png"
-
+import avatarBG from "../../assets/Deco_GachaItemBg.webp";
+import { changeStoryIndex } from "../../userInteract";
 const props = defineProps({
   chatMessage: Object as PropType<LogText>,
 });
-const avatarBGRef = ref<string>(avatarBG)
+const avatarBGRef = ref<string>(avatarBG);
 
 const bubbleType = ref<"student" | "teacher" | "narration">("student");
 switch (props.chatMessage?.type) {
@@ -26,13 +26,27 @@ switch (props.chatMessage?.type) {
 </script>
 
 <template>
-  <div :class="['ba-chat-message', bubbleType]">
+  <div
+    :class="['ba-chat-message', bubbleType]"
+    @click="changeStoryIndex(chatMessage?.index)"
+  >
     <!-- 设置透明度为0如果没有图片需要显示 -->
-    <div class="ba-chat-message-avatar-border" :style="{ opacity: props.chatMessage?.avatarUrl ? 1 : 0 }">
+    <div
+      class="ba-chat-message-avatar-border"
+      :style="{ opacity: props.chatMessage?.avatarUrl ? 1 : 0 }"
+    >
       <div
         class="ba-chat-message-avatar"
         role="img"
-        :style="{ 'background-image': 'url(' + props.chatMessage?.avatarUrl + ')' + ', url(' + avatarBGRef + ')' }"
+        :style="{
+          'background-image':
+            'url(' +
+            props.chatMessage?.avatarUrl +
+            ')' +
+            ', url(' +
+            avatarBGRef +
+            ')',
+        }"
       />
     </div>
     <div class="ba-chat-message-bubble">
@@ -89,7 +103,7 @@ switch (props.chatMessage?.type) {
   // 旁白样式
   &.narration {
     filter: drop-shadow(0 1px 2px #2c3f4a);
-    .ba-chat-message-avatar-border{
+    .ba-chat-message-avatar-border {
       height: 0;
     }
     .ba-chat-message-bubble {

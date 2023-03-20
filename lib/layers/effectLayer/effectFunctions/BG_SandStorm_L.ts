@@ -22,7 +22,7 @@ export default async function BG_SandStorm_L(resources: Sprite[]) {
   const height = texture.height;
   const scale = appHeight / height;
   const blurFilter = new filters.BlurFilter();
-  [TextureTilingBack, TextureTilingFront].forEach((i) => {
+  [TextureTilingBack, TextureTilingFront].forEach(i => {
     // 避免 tiling 产生的像素
     i.clampMargin = 1.5;
     i.tint = 0xb98c56;

@@ -1,0 +1,34 @@
+
+name: Public Npm
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    name: 'publish npm'
+
+    environment: npm
+
+    steps:
+      - uses: actions/checkout@master
+
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 7.21.0
+
+      - name: Install and Build 
+        run: |
+          pnpm install
+          pnpm run build # 这是我的项目的打包命令，你也可以改成你的
+
+      - name: 'Publish to the npm registry'
+        uses: primer/publish@3.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }} # 跟前面步骤中的 NPM_AUTH_TOKEN 保持一致
+        with:
+          default_branch: 'master'

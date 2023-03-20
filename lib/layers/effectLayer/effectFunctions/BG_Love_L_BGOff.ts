@@ -10,8 +10,8 @@ export default async function BG_Love_L_BGOff(resources: Sprite[]) {
   const appWidth = app.view.width;
   const appHeight = app.view.height;
   const backSprite = resources[2];
-  backSprite.x = -0.2* appWidth
-  backSprite.y = -0.2* appHeight
+  backSprite.x = -0.2 * appWidth;
+  backSprite.y = -0.2 * appHeight;
   backSprite.width = appWidth * 1.4;
   backSprite.height = appHeight * 1.4;
   backSprite.zIndex = -1;

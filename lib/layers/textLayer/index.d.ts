@@ -2,7 +2,8 @@ import Typed from "typed.js";
 declare module "typed.js" {
   declare interface TypedExtend extends Typed {
     strings: string[]; // 要打印的内容
-    pause: { // 暂停时保存的回复参数
+    pause: {
+      // 暂停时保存的回复参数
       curStrPos: number; // 暂停前字符串指针位置
       curString: string; // 暂停前打印的字符串
       status: boolean; // 是否在暂停
