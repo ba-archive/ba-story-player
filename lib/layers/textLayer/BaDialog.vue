@@ -1,9 +1,12 @@
 <template>
-  <div class="container" :style="{
-    height: `${playerHeight}px`,
-    '--standard-font-size': standardFontSize,
-    '--standard-unity-font-size': standardUnityFontSize
-  }">
+  <div
+    class="container"
+    :style="{
+      height: `${playerHeight}px`,
+      '--standard-font-size': standardFontSize,
+      '--standard-unity-font-size': standardUnityFontSize,
+    }"
+  >
     <div class="container-inner">
       <div class="loading-container absolute-container" v-if="showLoading">
         <img
@@ -81,8 +84,16 @@
           '--st-pos-bounds-y': `${stPositionBounds.height}`,
         }"
       />
-      <div ref="titleEL" class="title-container absolute-container" :style="overrideTitleStyle" v-if="titleContent">
-        <div class="title-border" :style="{ '--side-padding': `${titleBorderPadding}px` }">
+      <div
+        ref="titleEL"
+        class="title-container absolute-container"
+        :style="overrideTitleStyle"
+        v-if="titleContent"
+      >
+        <div
+          class="title-border"
+          :style="{ '--side-padding': `${titleBorderPadding}px` }"
+        >
           <img src="./assets/title-border.png" />
           <div
             ref="titleContain"
@@ -469,19 +480,27 @@ function parseTextEffect(text: Text, extendStyle = "", tag = "span"): Text {
     .replace(/&/g, "&amp;")
     .replace(/{{escape-(\w{3,4};)}}/g, "&$1");
   // 注解
-  const rt = (effects.filter(effect => effect.name === "ruby")[0] || { value: [] }).value.join("")
-  const style = effects.filter(effect => effect.name !== "ruby").map(effect => {
-    const value = effect.value.join("");
-    const name = effect.name;
-    if (name === "color") {
-      return `color: ${value}`;
-    } else if (name === "fontsize") {
-      return `--param-font-size: ${value}`
-      // `font-size: ${unityFontSizeToHTMLSize(Number(value))}rem;--font-size: ${unityFontSizeToHTMLSize(Number(value))}rem`
-    }
-    // 暂时废弃, 没办法处理字体自适应
-    return (StyleEffectTemplate[effect.name] || "").replace("${value}", effect.value.join(""))
-  }).join(";");
+  const rt = (
+    effects.filter(effect => effect.name === "ruby")[0] || { value: [] }
+  ).value.join("");
+  const style = effects
+    .filter(effect => effect.name !== "ruby")
+    .map(effect => {
+      const value = effect.value.join("");
+      const name = effect.name;
+      if (name === "color") {
+        return `color: ${value}`;
+      } else if (name === "fontsize") {
+        return `--param-font-size: ${value}`;
+        // `font-size: ${unityFontSizeToHTMLSize(Number(value))}rem;--font-size: ${unityFontSizeToHTMLSize(Number(value))}rem`
+      }
+      // 暂时废弃, 没办法处理字体自适应
+      return (StyleEffectTemplate[effect.name] || "").replace(
+        "${value}",
+        effect.value.join("")
+      );
+    })
+    .join(";");
   // 如果有注解就用ruby标签实现
   if (rt) {
     text.content = `<${tag} style="${style};${extendStyle}" class="ruby" data-content="${rt}"><span class="rb">${text.content}</span><span class="rt">${rt}</span></${tag}>`;
@@ -992,7 +1011,12 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
   margin-top: 1.5%;
   color: white;
   :deep(span) {
-    --font-size: calc((var(--param-font-size) / var(--standard-unity-font-size) * var(--standard-font-size)) * 1rem);
+    --font-size: calc(
+      (
+          var(--param-font-size) / var(--standard-unity-font-size) *
+            var(--standard-font-size)
+        ) * 1rem
+    );
     font-size: var(--font-size);
   }
   line-height: 1.5em;
@@ -1140,9 +1164,18 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
     color: white;
     text-shadow: $text-outline;
     :deep(div) {
-      --font-size: calc((var(--param-font-size) / var(--standard-unity-font-size) * var(--standard-font-size)) * 1rem);
-      --left: calc((var(--st-width-half) + var(--st-x)) * var(--st-pos-bounds-x) * 1px);
-      --top: calc((var(--st-height-half) - var(--st-y)) * var(--st-pos-bounds-y) * 1px);
+      --font-size: calc(
+        (
+            var(--param-font-size) / var(--standard-unity-font-size) *
+              var(--standard-font-size)
+          ) * 1rem
+      );
+      --left: calc(
+        (var(--st-width-half) + var(--st-x)) * var(--st-pos-bounds-x) * 1px
+      );
+      --top: calc(
+        (var(--st-height-half) - var(--st-y)) * var(--st-pos-bounds-y) * 1px
+      );
       line-height: var(--font-size);
       display: inline-block;
       top: calc(var(--top) - var(--font-size) / 2);
