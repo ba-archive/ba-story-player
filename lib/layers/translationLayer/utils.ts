@@ -1,12 +1,19 @@
-import { Speaker, StoryRawUnit, StoryUnit, Text, TextEffect, TextEffectName } from "@/types/common"
-import { usePlayerStore } from '@/stores/index'
-import { Language } from "@/types/store"
-import { PlayAudio, ShowTitleOption } from "@/types/events"
-import { getResourcesUrl } from '@/utils'
-import xxhash from 'xxhashjs'
-import { CharacterNameExcelTableItem } from "@/types/excels"
+import {
+  Speaker,
+  StoryRawUnit,
+  StoryUnit,
+  Text,
+  TextEffect,
+  TextEffectName,
+} from "@/types/common";
+import { usePlayerStore } from "@/stores/index";
+import { Language } from "@/types/store";
+import { PlayAudio, ShowTitleOption } from "@/types/events";
+import { getResourcesUrl } from "@/utils";
+import xxhash from "xxhashjs";
+import { CharacterNameExcelTableItem } from "@/types/excels";
 
-let playerStore = usePlayerStore()
+let playerStore = usePlayerStore();
 
 /**
  * 判断是否是角色
@@ -14,7 +21,7 @@ let playerStore = usePlayerStore()
  */
 export function isCharacter(s: string) {
   //类似#3
-  return /^\d+$/.test(s)
+  return /^\d+$/.test(s);
 }
 
 /**
@@ -22,7 +29,7 @@ export function isCharacter(s: string) {
  * @param s
  */
 export function isCharacterEffect(s: string) {
-  return /#\d/.test(s)
+  return /#\d/.test(s);
 }
 
 /**
@@ -32,9 +39,8 @@ export function isCharacterEffect(s: string) {
 export function isOption(s: string) {
   // 选项字符串示例: '[s1] \"我正想着稍微散散步来着。\"\n[s2] \"优香在做什么？\"'
   //除此之外还有[ns], [s], [ns1]等情况
-  return /\[n?s(\d{0,2})?](.+)/.test(s)
+  return /\[n?s(\d{0,2})?](.+)/.test(s);
 }
-
 
 /**
  * 从原始文字生成Text[], 即带特效参数字符串
@@ -112,7 +118,7 @@ export function splitStScript(rawText: string): string[] {
   });
   // 处理尾巴情况
   if (startIndex !== rawText.length) {
-    res.push(rawText.substring(startIndex, rawText.length + 1))
+    res.push(rawText.substring(startIndex, rawText.length + 1));
   }
   return res;
 }
@@ -144,8 +150,8 @@ export function parseCustomTag(rawText: string): Text {
   }).filter(it => it) as TextEffect[];
   return {
     content: raw,
-    effects: effects
-  }
+    effects: effects,
+  };
 }
 
 type CustomTagParserFnConfig = {
@@ -191,45 +197,54 @@ const CustomTagParserMap: ICustomTagParserMap = {
  * 在大小写不敏感的情况下比较字符串
  */
 export function compareCaseInsensive(s1: string, s2: string) {
-  return s1.localeCompare(s2, undefined, { sensitivity: 'accent' }) === 0;
+  return s1.localeCompare(s2, undefined, { sensitivity: "accent" }) === 0;
 }
 
 /**
  * 获取角色在unit的characters里的index, 当不存在时会自动往unit的character里加入该角色
  */
-export function getCharacterIndex(unit: StoryUnit, initPosition: number, result: StoryUnit[], rawIndex: number) {
-  let characterIndex = unit.characters.findIndex(value => value.position === initPosition)
-  let tempIndex = rawIndex
+export function getCharacterIndex(
+  unit: StoryUnit,
+  initPosition: number,
+  result: StoryUnit[],
+  rawIndex: number
+) {
+  let characterIndex = unit.characters.findIndex(
+    value => value.position === initPosition
+  );
+  let tempIndex = rawIndex;
   while (characterIndex === -1) {
-    tempIndex--
-    characterIndex = result[tempIndex].characters.findIndex(value => value.position === initPosition)
+    tempIndex--;
+    characterIndex = result[tempIndex].characters.findIndex(
+      value => value.position === initPosition
+    );
     if (characterIndex !== -1) {
-      let preCharacter = { ...result[tempIndex].characters[characterIndex] }
-      preCharacter.effects = []
-      unit.characters.push(preCharacter)
-      characterIndex = unit.characters.length - 1
+      let preCharacter = { ...result[tempIndex].characters[characterIndex] };
+      preCharacter.effects = [];
+      unit.characters.push(preCharacter);
+      characterIndex = unit.characters.length - 1;
     }
   }
 
-  return characterIndex
+  return characterIndex;
 }
 
-export function getBgm(BGMId: number): PlayAudio['bgm'] | undefined {
-  let item = playerStore.BGMExcelTable.get(BGMId)
+export function getBgm(BGMId: number): PlayAudio["bgm"] | undefined {
+  let item = playerStore.BGMExcelTable.get(BGMId);
   if (item) {
-    return { url: getResourcesUrl('bgm', item.Path), bgmArgs: item }
+    return { url: getResourcesUrl("bgm", item.Path), bgmArgs: item };
   }
 }
 
 export function getSoundUrl(Sound: string) {
   if (Sound) {
-    return getResourcesUrl('sound', Sound)
+    return getResourcesUrl("sound", Sound);
   }
 }
 
 export function getVoiceJPUrl(VoiceJp: string) {
   if (VoiceJp) {
-    return getResourcesUrl('voiceJp', VoiceJp)
+    return getResourcesUrl("voiceJp", VoiceJp);
   }
 }
 
@@ -239,18 +254,21 @@ export function getVoiceJPUrl(VoiceJp: string) {
  */
 export function checkBgOverlap(unit: StoryUnit) {
   if (unit.transition) {
-    if (unit.transition.TransitionOut === 'bgoverlap') {
-      let duration = unit.transition.TransitionOutDuration
-      unit.transition = undefined
-      return duration
+    if (unit.transition.TransitionOut === "bgoverlap") {
+      let duration = unit.transition.TransitionOutDuration;
+      unit.transition = undefined;
+      return duration;
     }
   }
 }
 
 export function getL2DUrlAndName(BGFileName: string) {
-  let filename = String(BGFileName).split('/').pop()?.replace('SpineBG_Lobby', '')
-  filename = `${filename}_home`
-  return { url: getResourcesUrl('l2dSpine', filename), name: filename }
+  let filename = String(BGFileName)
+    .split("/")
+    .pop()
+    ?.replace("SpineBG_Lobby", "");
+  filename = `${filename}_home`;
+  return { url: getResourcesUrl("l2dSpine", filename), name: filename };
 }
 
 /**
@@ -259,34 +277,35 @@ export function getL2DUrlAndName(BGFileName: string) {
  * @returns 包含speaker,avatar的对象
  */
 export function getCharacterInfo(krName: string) {
-  let CharacterName = getCharacterName(krName)
-  let characterInfo = playerStore.CharacterNameExcelTable.get(CharacterName)
+  let CharacterName = getCharacterName(krName);
+  let characterInfo = playerStore.CharacterNameExcelTable.get(CharacterName);
   if (characterInfo) {
-    let avatarUrl = getResourcesUrl('avatar', characterInfo.SmallPortrait)
-    let speaker = getSpeaker(characterInfo)
+    let avatarUrl = getResourcesUrl("avatar", characterInfo.SmallPortrait);
+    let speaker = getSpeaker(characterInfo);
     return {
       speaker,
-      avatarUrl
-    }
+      avatarUrl,
+    };
   }
 }
 
 /**
  * 在CharacterNameExcelTableItem中获取到speaker信息
  */
-export function getSpeaker(characterInfo: CharacterNameExcelTableItem): Speaker {
-  let language = playerStore.language.toUpperCase() as 'CN' | 'JP'
+export function getSpeaker(
+  characterInfo: CharacterNameExcelTableItem
+): Speaker {
+  let language = playerStore.language.toUpperCase() as "CN" | "JP";
   if (characterInfo[`Name${language}`]) {
     return {
       name: characterInfo[`Name${language}`]!,
-      nickName: characterInfo[`Nickname${language}`]!
-    }
-  }
-  else {
+      nickName: characterInfo[`Nickname${language}`]!,
+    };
+  } else {
     return {
       name: characterInfo.NameJP,
-      nickName: characterInfo.NicknameJP
-    }
+      nickName: characterInfo.NicknameJP,
+    };
   }
 }
 
@@ -295,72 +314,80 @@ export function getSpeaker(characterInfo: CharacterNameExcelTableItem): Speaker 
  * @param krName
  */
 export function getCharacterName(krName: string) {
-  return xxhash.h32(krName, 0).toNumber()
+  return xxhash.h32(krName, 0).toNumber();
 }
 
 /**
  * 选择文字, 当没有当前语言文字时返回日文
  */
-export function getText(rawStoryUnit: StoryRawUnit, language: Language): string {
-  let textProperty = `Text${language}` as const
-  return String(Reflect.get(rawStoryUnit, textProperty)) || String(rawStoryUnit.TextJp)
+export function getText(
+  rawStoryUnit: StoryRawUnit,
+  language: Language
+): string {
+  let textProperty = `Text${language}` as const;
+  return (
+    String(Reflect.get(rawStoryUnit, textProperty)) ||
+    String(rawStoryUnit.TextJp)
+  );
 }
 
-export function generateTitleInfo(rawStoryUnit: StoryRawUnit, language: Language): ShowTitleOption {
-  const text = getText(rawStoryUnit, language)
+export function generateTitleInfo(
+  rawStoryUnit: StoryRawUnit,
+  language: Language
+): ShowTitleOption {
+  const text = getText(rawStoryUnit, language);
   // 第114话;这是514个主标题
   // [这是514个主标题, 第114话]
-  const spiltText = text.split(';').reverse();
+  const spiltText = text.split(";").reverse();
   const rawTitle = spiltText[0];
   const title = parseRubyText(rawTitle);
   return {
     title: title,
-    subtitle: spiltText[1]
-  }
+    subtitle: spiltText[1],
+  };
 }
 
 function parseRubyText(raw: string): Text[] {
   // etc.
   // [ruby=Hod]ホド[/ruby]……その[ruby=Path]パス[/ruby]は名誉を通じた完成。
   // [ruby=Hod]ホド ……その[ruby=Path]パス は名誉を通じた完成。
-  const a = raw
-    .split("[/ruby]")
-    .filter(s => s);
-  return a.map(it => {
-    const rubyIndex = it.indexOf("[ruby=");
-    // は名誉を通じた完成。
-    if (rubyIndex === -1) {
-      return {
-        content: it,
-        effects: []
-      };
-    }
-    // Hod]ホド
-    // ……その Path]パス
-    const b = it
-      .split("[ruby=")
-      .filter(s => s);
-    return b.map(item => {
-      // ……その
-      // パス Path
-      const split = item.split("]").reverse();
-      const content = split[0];
-      const ruby = split[1];
-      const effects: TextEffect[] = [];
-      if (ruby) {
-        effects.push({
-          name: "ruby", value: [ruby]
-        })
+  const a = raw.split("[/ruby]").filter(s => s);
+  return a
+    .map(it => {
+      const rubyIndex = it.indexOf("[ruby=");
+      // は名誉を通じた完成。
+      if (rubyIndex === -1) {
+        return {
+          content: it,
+          effects: [],
+        };
       }
-      return {
-        content: content,
-        effects: effects
-      }
-    });
-  }).flat(1);
+      // Hod]ホド
+      // ……その Path]パス
+      const b = it.split("[ruby=").filter(s => s);
+      return b.map(item => {
+        // ……その
+        // パス Path
+        const split = item.split("]").reverse();
+        const content = split[0];
+        const ruby = split[1];
+        const effects: TextEffect[] = [];
+        if (ruby) {
+          effects.push({
+            name: "ruby",
+            value: [ruby],
+          });
+        }
+        return {
+          content: content,
+          effects: effects,
+        };
+      });
+    })
+    .flat(1);
 }
 
 export function getEmotionName(rawName: string): string | undefined {
-  const name = xxhash.h32(rawName, 0).toNumber()
-  return usePlayerStore().EmotionExcelTable.get(name)
+  const name = xxhash.h32(rawName, 0).toNumber();
+  return usePlayerStore().EmotionExcelTable.get(name);
 }

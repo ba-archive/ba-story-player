@@ -16,7 +16,10 @@ export function L2DInit() {
   let otherItems: Spine[] = [];
   // 当前顶层的spine index
   let currentIndex: number = 0;
-  let startAnimations: ({ animation: string; spine: Spine; } & Partial<IL2dPlayQue>)[];
+  let startAnimations: ({
+    animation: string;
+    spine: Spine;
+  } & Partial<IL2dPlayQue>)[];
   let timeOutArray: NodeJS.Timeout[] = [];
   eventBus.on("dispose", () => {
     for (const timeout of timeOutArray) {
@@ -26,9 +29,9 @@ export function L2DInit() {
     disposed = true;
   });
   // 接收动画消息
-  eventBus.on("changeAnimation", (e) => {
+  eventBus.on("changeAnimation", e => {
     const temAnimation = e.replace(/_(A|M)/, "");
-    const devAnimation = mainItem.spineData.animations.find((i) =>
+    const devAnimation = mainItem.spineData.animations.find(i =>
       i.name.includes(temAnimation)
     );
     if (devAnimation) {
@@ -40,7 +43,7 @@ export function L2DInit() {
   });
   // 停止
   eventBus.on("endL2D", () => {
-    [mainItem, ...otherItems].forEach((i) => app.stage.removeChild(i));
+    [mainItem, ...otherItems].forEach(i => app.stage.removeChild(i));
   });
   // 播放live2D
   eventBus.on("playL2D", () => {
@@ -76,10 +79,13 @@ export function L2DInit() {
         start: function (entry: any) {
           const entryAnimationName = entry.animation.name + item.name;
           const duration = entry.animation.duration;
-          const { fade, fadeTime = 0.8 } = startAnimations[currentIndex - 1] || {}
+          const { fade, fadeTime = 0.8 } =
+            startAnimations[currentIndex - 1] || {};
           if (fade) {
             // 在快结束的时候触发 fade
-            timeOutArray.push(setTimeout(fadeEffect, (duration - fadeTime) * 1000));
+            timeOutArray.push(
+              setTimeout(fadeEffect, (duration - fadeTime) * 1000)
+            );
           }
           // 如果没有播放过的话就设置播放状态为播放
           if (!hasPlayedAnimation[entryAnimationName]) {
@@ -171,24 +177,24 @@ export function L2DInit() {
     setSpinePlayInfo({ item: mainItem, zIndex: 100 });
     // 注意!!! 起始动画中最后一个动作是塞入的待机动作
     startAnimations = mainItem.spineData.animations
-      .map((i) => i.name)
-      .filter((i) => i.startsWith("Start_Idle"))
+      .map(i => i.name)
+      .filter(i => i.startsWith("Start_Idle"))
       .sort()
-      .map((i) => {
+      .map(i => {
         return {
           animation: i,
           spine: mainItem,
         };
       });
     if (curL2dConfig?.playQue) {
-      startAnimations = curL2dConfig.playQue.map((i) => {
+      startAnimations = curL2dConfig.playQue.map(i => {
         return {
           ...i,
           // playQue 中的name和otherSpine中的一致
           spine:
             i.name === curL2dConfig.name
               ? mainItem
-              : otherItems.find((j) => j.name === i.name)!,
+              : otherItems.find(j => j.name === i.name)!,
         };
       });
     }

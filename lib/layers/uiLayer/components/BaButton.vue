@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import eventBus from "@/eventBus";
-import { onMounted, PropType, Ref, ref } from "vue";
+import { PropType, Ref, onMounted, ref } from "vue";
 import { buttonAnimation } from "../utils";
 
 const props = defineProps({
@@ -13,24 +13,27 @@ const props = defineProps({
 
 const emit = defineEmits<{
   (ev: "click", event: Event): void;
-}>()
+}>();
 
-const button = ref(null) as unknown as Ref<Element>
+const button = ref(null) as unknown as Ref<Element>;
 
 function handleClick(ev: Event) {
-  emit("click", ev)
-  eventBus.emit("playOtherSounds", "select")
+  emit("click", ev);
+  eventBus.emit("playOtherSounds", "select");
 }
 
-onMounted(()=>{
-  buttonAnimation({elem: button.value})
-})
-
-
+onMounted(() => {
+  buttonAnimation({ elem: button.value });
+});
 </script>
 
 <template>
-  <button :class="['ba-button', size]" ref="button" @click="handleClick" tabindex="-1">
+  <button
+    :class="['ba-button', size]"
+    ref="button"
+    @click="handleClick"
+    tabindex="-1"
+  >
     <slot></slot>
   </button>
 </template>
@@ -48,7 +51,7 @@ onMounted(()=>{
   background-color: #f3f5f6;
   transform: skew(-10deg);
   box-shadow: #2c3f4a 0 1px 2px;
-  transition: background-color .3s;
+  transition: background-color 0.3s;
 
   &.large {
     padding: 0.5em 4.25em;
@@ -71,7 +74,7 @@ onMounted(()=>{
           rgba(227, 247, 255, 0.9) 60%,
           rgba(255, 255, 255, 0) 100%
         ),
-      url(../assets/UITex_BGPoliLight_4.png) rgb(128, 208, 255);
+      url(../assets/UITex_BGPoliLight_1.svg) rgb(128, 208, 255);
   }
   &.polydark {
     background: no-repeat center/contain
@@ -82,13 +85,13 @@ onMounted(()=>{
           rgba(117, 218, 248, 0.9) 60%,
           rgba(255, 255, 255, 0) 100%
         ),
-      url(../assets/UITex_BGPoliLight_4.png) rgb(106, 224, 251);
+      url(../assets/UITex_BGPoliLight_1.svg) rgb(106, 224, 251);
   }
 
   &[class*="poly"] {
     background-size: 140%;
     background-position: -15px 72%;
-    box-shadow: #98C0D7 0 1px 2px;
+    box-shadow: #98c0d7 0 1px 2px;
   }
 }
 </style>

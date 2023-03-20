@@ -1,83 +1,97 @@
 import eventBus from "@/eventBus";
 import { bgInit } from "@/layers/bgLayer";
 import { characterInit } from "@/layers/characterLayer";
-import { effectInit } from '@/layers/effectLayer';
+import { effectInit } from "@/layers/effectLayer";
 import { soundInit, preloadSound } from "@/layers/soundLayer";
-import { translate } from '@/layers/translationLayer';
+import { translate } from "@/layers/translationLayer";
 import { initPrivateState, usePlayerStore } from "@/stores";
 import { PlayerConfigs, StoryUnit } from "@/types/common";
-import * as utils from '@/utils';
+import * as utils from "@/utils";
 import { getOtherSoundUrls, wait } from "@/utils";
-import axios from 'axios';
-import { SpineParser, IEventData } from 'pixi-spine';
+import axios from "axios";
+import { SpineParser, IEventData } from "pixi-spine";
 import { Application, Loader, settings, utils as pixiUtils } from "pixi.js";
 import { L2DInit } from "./layers/l2dLayer/L2D";
-import * as process from "process";
 
-let playerStore: ReturnType<typeof usePlayerStore>
-let privateState: ReturnType<typeof initPrivateState>
+let playerStore: ReturnType<typeof usePlayerStore>;
+let privateState: ReturnType<typeof initPrivateState>;
 let l2dVoiceExcelTable = {
-  'CH0184_MemorialLobby': [...Array(10).keys()].slice(1, 11).map(value => value.toString())
-} as { [index: string]: string[] }
+  CH0184_MemorialLobby: [...Array(10).keys()]
+    .slice(1, 11)
+    .map(value => value.toString()),
+} as { [index: string]: string[] };
 
 /**
  * 调用各层的初始化函数
  */
-export async function init(elementID: string, props: PlayerConfigs, endCallback: () => void) {
+export async function init(
+  elementID: string,
+  props: PlayerConfigs,
+  endCallback: () => void
+) {
   //缓解图片缩放失真
-  settings.MIPMAP_TEXTURES = 2
+  settings.MIPMAP_TEXTURES = 2;
 
   if (props.useMp3) {
-    utils.setOggAudioType('mp3')
+    utils.setOggAudioType("mp3");
   }
-  storyHandler.endCallback = endCallback
-  playerStore = usePlayerStore()
-  privateState = initPrivateState()
-  utils.setDataUrl(props.dataUrl)
-  privateState.dataUrl = props.dataUrl
-  privateState.language = props.language
-  privateState.userName = props.userName
-  privateState.storySummary = props.storySummary
+  storyHandler.endCallback = endCallback;
+  playerStore = usePlayerStore();
+  privateState = initPrivateState();
+  utils.setDataUrl(props.dataUrl);
+  privateState.dataUrl = props.dataUrl;
+  privateState.language = props.language;
+  privateState.userName = props.userName;
+  privateState.storySummary = props.storySummary;
   //加入判断防止vite热更新重新创建app导致加载资源错误
   if (!privateState.app) {
-    privateState.app = new Application({ height: props.height, width: props.width })
+    privateState.app = new Application({
+      height: props.height,
+      width: props.width,
+    });
   }
   // TODO debug用 线上环境删掉 而且会导致HMR出问题 慎用
   // https://chrome.google.com/webstore/detail/pixijs-devtools/aamddddknhcagpehecnhphigffljadon/related?hl=en
   // (window as any).__PIXI_INSPECTOR_GLOBAL_HOOK__ && (window as any).__PIXI_INSPECTOR_GLOBAL_HOOK__.register({ PIXI: PIXI })
   // globalThis.__PIXI_APP__ = privateState.app;
 
-  let app = playerStore.app
-  document.querySelector(`#${elementID}`)?.appendChild(app.view)
+  let app = playerStore.app;
+  document.querySelector(`#${elementID}`)?.appendChild(app.view);
   Loader.registerPlugin(SpineParser);
 
   // 注册加载回调实现log滚动效果
   app.loader.onLoad.add((_, resource) => {
-    eventBus.emit("oneResourceLoaded", { type: "success", resourceName: resource.name });
+    eventBus.emit("oneResourceLoaded", {
+      type: "success",
+      resourceName: resource.name,
+    });
   });
   app.loader.onError.add((err, _, resource) => {
     console.error(err);
-    eventBus.emit("oneResourceLoaded", { type: "fail", resourceName: resource.name });
+    eventBus.emit("oneResourceLoaded", {
+      type: "fail",
+      resourceName: resource.name,
+    });
   });
   //加载初始化资源以便翻译层进行翻译
-  await resourcesLoader.init(app.loader)
-  privateState.allStoryUnit = translate(props.story)
+  await resourcesLoader.init(app.loader);
+  privateState.allStoryUnit = translate(props.story);
 
-  bgInit()
-  characterInit()
-  soundInit()
-  effectInit()
-  L2DInit()
+  bgInit();
+  characterInit();
+  soundInit();
+  effectInit();
+  L2DInit();
 
   // 记录加载开始时间 优化光速加载的体验
   const startLoadTime = Date.now();
   eventBus.emit("startLoading", props.dataUrl);
   //加载剩余资源
-  await resourcesLoader.addLoadResources()
+  await resourcesLoader.addLoadResources();
   resourcesLoader.load(() => {
     // 加载时间少于1秒, 延迟一下再开始
     const loadedTime = Date.now() - startLoadTime;
-    new Promise<void>((resolve) => {
+    new Promise<void>(resolve => {
       if (loadedTime < 1000) {
         setTimeout(() => {
           resolve();
@@ -87,93 +101,99 @@ export async function init(elementID: string, props: PlayerConfigs, endCallback:
       }
     }).then(() => {
       eventBus.emit("loaded");
-      eventBus.emit('hidemenu')
+      eventBus.emit("hidemenu");
       //开始发送事件
-      eventEmitter.init()
-    })
-  })
+      eventEmitter.init();
+    });
+  });
 }
 
 /**
  * 回收播放器资源, 让播放器回到初始状态
  */
 export function dispose() {
-  initPrivateState().app?.destroy()
-  initPrivateState().app = null
-  eventBus.emit('dispose')
-  eventBus.all.clear()
-  usePlayerStore().logText.value = []
-  pixiUtils.clearTextureCache()
-  storyHandler.isEnd = true
+  initPrivateState().app?.destroy();
+  initPrivateState().app = null;
+  eventBus.emit("dispose");
+  eventBus.all.clear();
+  usePlayerStore().logText.value = [];
+  pixiUtils.clearTextureCache();
+  storyHandler.isEnd = true;
 }
 
 /**
  * 暂停播放
  */
-export function stop(){
-  eventBus.emit('stop')
+export function stop() {
+  eventBus.emit("stop");
 }
 
 /**
  * 继续播放
  */
-export function continuePlay(){
-  eventBus.emit('continue')
+export function continuePlay() {
+  eventBus.emit("continue");
 }
-
 
 /**
  * 处理故事进度对象
  */
 export let storyHandler = {
   currentStoryIndex: 0,
-  endCallback: () => { },
+  endCallback: () => {},
   unitPlaying: false,
   auto: false,
   isEnd: false,
+  isSkip: false,
 
   get currentStoryUnit(): StoryUnit {
-    if (playerStore && playerStore.allStoryUnit.length > this.currentStoryIndex) {
-      return playerStore.allStoryUnit[this.currentStoryIndex]
+    if (
+      playerStore &&
+      playerStore.allStoryUnit.length > this.currentStoryIndex
+    ) {
+      return playerStore.allStoryUnit[this.currentStoryIndex];
     }
 
     //默认值
     return {
-      type: 'text',
+      type: "text",
       GroupId: 0,
       SelectionGroup: 0,
-      PopupFileName: '',
+      PopupFileName: "",
       audio: {},
       effect: { otherEffect: [] },
       characters: [],
       textAbout: {
         showText: {
-          text: []
-        }
-      }
-    }
+          text: [],
+        },
+      },
+    };
   },
 
   get nextStoryUnit(): StoryUnit {
-    if (playerStore && playerStore.allStoryUnit.length > this.currentStoryIndex + 1) {
-      return playerStore.allStoryUnit[this.currentStoryIndex + 1]
+    if (
+      playerStore &&
+      playerStore.allStoryUnit.length > this.currentStoryIndex + 1
+    ) {
+      return playerStore.allStoryUnit[this.currentStoryIndex + 1];
     }
 
     //默认值
     return {
-      type: 'text',
+      type: "text",
       GroupId: 0,
       SelectionGroup: 0,
-      PopupFileName: '',
+      PopupFileName: "",
       audio: {},
       effect: { otherEffect: [] },
       characters: [],
       textAbout: {
         showText: {
-          text: []
-        }
-      }
-    }
+          text: [],
+        },
+      },
+    };
   },
 
   /**
@@ -181,22 +201,35 @@ export let storyHandler = {
    */
   storyIndexIncrement() {
     if (this.checkEnd()) {
-      return
+      return;
     }
-    let currentSelectionGroup = this.currentStoryUnit.SelectionGroup
-    this.currentStoryIndex++
-    while (!this.checkEnd() &&
-      ![0, currentSelectionGroup].includes(this.currentStoryUnit.SelectionGroup)) {
-      this.currentStoryIndex++
+    let currentSelectionGroup = this.currentStoryUnit.SelectionGroup;
+    this.currentStoryIndex++;
+    while (
+      !this.checkEnd() &&
+      ![0, currentSelectionGroup].includes(this.currentStoryUnit.SelectionGroup)
+    ) {
+      this.currentStoryIndex++;
     }
 
-    return true
+    return true;
   },
 
   next() {
+    if (this.isSkip && !eventEmitter.l2dPlaying) {
+      storyHandler.storyIndexIncrement();
+      // 快进用 storyPlay 需要考虑 unitPlaying, 同时会有一个while循环在里边导致控制不符合预期
+      eventEmitter.emitEvents().then(() => {
+        // 注意这个函数是 异步的, 需要等待执行完再继续 l2d, 此时后续的skip会被拦住
+        if (this.currentStoryUnit.l2d) {
+          this.next();
+        }
+      });
+      return;
+    }
     if (eventEmitter.unitDone && !this.unitPlaying && !this.auto) {
-      storyHandler.storyIndexIncrement()
-      storyHandler.storyPlay()
+      storyHandler.storyIndexIncrement();
+      storyHandler.storyPlay();
     }
   },
 
@@ -207,39 +240,43 @@ export let storyHandler = {
    */
   select(option: number) {
     if (option === 0) {
-      this.storyIndexIncrement()
-      return
+      this.storyIndexIncrement();
+      return;
     }
-    let index = playerStore.allStoryUnit.findIndex(value => value.SelectionGroup === option)
+    let index = playerStore.allStoryUnit.findIndex(
+      value => value.SelectionGroup === option
+    );
     if (index === -1) {
-      return false
+      return false;
     }
-    this.currentStoryIndex = index
-    return true
+    this.currentStoryIndex = index;
+    return true;
   },
   /**
-    * 播放故事直到对话框或选项出现, auto模式下只在选项时停下
-    */
+   * 播放故事直到对话框或选项出现, auto模式下只在选项时停下
+   */
   async storyPlay() {
     if (!this.unitPlaying) {
-      this.unitPlaying = true
+      this.unitPlaying = true;
       //当auto开启时只在选项停下
       let playCondition = () => {
         if (this.auto) {
-          return ['option']
+          return ["option"];
+        } else {
+          return ["text", "option"];
         }
-        else {
-          return ['text', 'option']
-        }
-      }
-      while (!playCondition().includes(storyHandler.currentStoryUnit.type) && !this.isEnd) {
-        await eventEmitter.emitEvents()
-        storyHandler.storyIndexIncrement()
+      };
+      while (
+        !playCondition().includes(storyHandler.currentStoryUnit.type) &&
+        !this.isEnd
+      ) {
+        await eventEmitter.emitEvents();
+        storyHandler.storyIndexIncrement();
       }
       if (!this.isEnd) {
-        await eventEmitter.emitEvents()
+        await eventEmitter.emitEvents();
       }
-      this.unitPlaying = false
+      this.unitPlaying = false;
     }
   },
 
@@ -248,44 +285,43 @@ export let storyHandler = {
    */
   checkEnd() {
     if (playerStore.allStoryUnit.length <= this.currentStoryIndex) {
-      this.end()
-      return true
+      this.end();
+      return true;
     }
 
-    return false
+    return false;
   },
 
   /**
    * 结束播放
    */
   end() {
-    console.log('播放结束')
-    this.auto = false
-    this.isEnd = true
-    this.endCallback()
+    console.log("播放结束");
+    this.auto = false;
+    this.isEnd = true;
+    this.endCallback();
   },
 
   /**
    * 开启auto模式
    */
   startAuto() {
-    this.auto = true
+    this.auto = true;
     if (!this.unitPlaying) {
-      if (this.currentStoryUnit.type !== 'option') {
-        this.storyIndexIncrement()
-        this.storyPlay()
+      if (this.currentStoryUnit.type !== "option") {
+        this.storyIndexIncrement();
+        this.storyPlay();
       }
-    }
-    else {
+    } else {
       //可能storyPlay正要结束但还没结束导致判断错误
       setTimeout(() => {
         if (!this.unitPlaying && this.auto) {
-          if (this.currentStoryUnit.type !== 'option') {
-            this.storyIndexIncrement()
-            this.storyPlay()
+          if (this.currentStoryUnit.type !== "option") {
+            this.storyIndexIncrement();
+            this.storyPlay();
           }
         }
-      }, 2000)
+      }, 2000);
     }
   },
 
@@ -293,10 +329,9 @@ export let storyHandler = {
    * 停止auto模式
    */
   stopAuto() {
-    this.auto = false
-  }
-}
-
+    this.auto = false;
+  },
+};
 
 /**
  * 事件发送控制对象
@@ -309,6 +344,8 @@ export let eventEmitter = {
   titleDone: true,
   textDone: true,
   stDone: true,
+  // 当前的历史消息 log 是否显示
+  isStoryLogShow: false,
   toBeContinueDone: true,
   nextEpisodeDone: true,
   /** 当前l2d动画是否播放完成 */
@@ -316,13 +353,15 @@ export let eventEmitter = {
   VoiceJpDone: true,
 
   get unitDone(): boolean {
-    let result = true
-    for (let key of Object.keys(eventEmitter) as Array<keyof typeof eventEmitter>) {
-      if (key.endsWith('Done') && key !== 'unitDone') {
-        result = result && eventEmitter[key] as boolean
+    let result = true;
+    for (let key of Object.keys(eventEmitter) as Array<
+      keyof typeof eventEmitter
+    >) {
+      if (key.endsWith("Done") && key !== "unitDone") {
+        result = result && (eventEmitter[key] as boolean);
       }
     }
-    return result
+    return result;
   },
 
   /**
@@ -330,54 +369,69 @@ export let eventEmitter = {
    */
   init() {
     //初始化值
-    for (const key of Object.keys(eventEmitter) as Array<keyof typeof eventEmitter>) {
-      if (key.endsWith('Done') && key !== 'unitDone') {
-        Reflect.set(eventEmitter, key, true)
+    for (const key of Object.keys(eventEmitter) as Array<
+      keyof typeof eventEmitter
+    >) {
+      if (key.endsWith("Done") && key !== "unitDone") {
+        Reflect.set(eventEmitter, key, true);
       }
     }
-    this.l2dPlaying = false
-    eventBus.on('next', () => {
-      storyHandler.next()
+    this.l2dPlaying = false;
+    eventBus.on("next", () => {
+      storyHandler.next();
       if (!this.unitDone) {
-        this.textDone = true
-        this.VoiceJpDone = true
+        this.textDone = true;
+        this.VoiceJpDone = true;
       }
-    })
-    eventBus.on('select', e => {
+    });
+    eventBus.on("select", e => {
+      // 选择完直接下一步, 避免卡在 l2dplaying 前
+      if (storyHandler.isSkip) {
+        storyHandler.select(e);
+        this.emitEvents();
+        return;
+      }
       if (this.unitDone) {
-        storyHandler.select(e)
-        storyHandler.storyPlay()
+        storyHandler.select(e);
+        storyHandler.storyPlay();
       }
-    })
-    eventBus.on('effectDone', () => eventEmitter.effectDone = true)
-    eventBus.on('characterDone', () => eventEmitter.characterDone = true)
-    eventBus.on('titleDone', () => this.titleDone = true)
-    eventBus.on('stDone', () => this.stDone = true)
-    eventBus.on('l2dAnimationDone', (e) => { if (e.done) { eventEmitter.l2dAnimationDone = e.done } })
-    eventBus.on('textDone', async () => {
+    });
+    eventBus.on("isStoryLogShow", e => (eventEmitter.isStoryLogShow = e));
+    eventBus.on("effectDone", () => (eventEmitter.effectDone = true));
+    eventBus.on("characterDone", () => (eventEmitter.characterDone = true));
+    eventBus.on("titleDone", () => (this.titleDone = true));
+    eventBus.on("stDone", () => (this.stDone = true));
+    eventBus.on("l2dAnimationDone", e => {
+      if (e.done) {
+        eventEmitter.l2dAnimationDone = e.done;
+      }
+    });
+    eventBus.on("textDone", async () => {
       //等待一段时间在textDone, 提升auto的体验
       if (storyHandler.auto) {
-        await wait(1000)
+        await wait(1000);
       }
-      this.textDone = true
-    })
-    eventBus.on('auto', () => storyHandler.startAuto())
-    eventBus.on('stopAuto', () => storyHandler.stopAuto())
-    eventBus.on('skip', () => storyHandler.end())
-    eventBus.on('playVoiceJPDone', async () => {
+      this.textDone = true;
+    });
+    eventBus.on("auto", () => storyHandler.startAuto());
+    eventBus.on("stopAuto", () => storyHandler.stopAuto());
+    eventBus.on("skip", () => storyHandler.end());
+    eventBus.on("playVoiceJPDone", async () => {
       if (storyHandler.auto) {
-        await wait(1200)
+        await wait(1200);
       }
-      this.VoiceJpDone = true
-    })
-    eventBus.on('nextEpisodeDone', () => this.nextEpisodeDone = true)
-    eventBus.on('toBeContinueDone', () => this.toBeContinueDone = true)
+      this.VoiceJpDone = true;
+    });
+    eventBus.on("nextEpisodeDone", () => (this.nextEpisodeDone = true));
+    eventBus.on("toBeContinueDone", () => (this.toBeContinueDone = true));
 
-    storyHandler.currentStoryIndex = 0
+    storyHandler.currentStoryIndex = 0;
     if (import.meta.env.DEV) {
-      storyHandler.currentStoryIndex = Number(localStorage.getItem("storyIndex") || 0)
+      storyHandler.currentStoryIndex = Number(
+        localStorage.getItem("storyIndex") || 0
+      );
     }
-    storyHandler.isEnd = false
+    storyHandler.isEnd = false;
     storyHandler.storyPlay().then();
   },
 
@@ -386,107 +440,119 @@ export let eventEmitter = {
    */
   async emitEvents() {
     // TODO: 上线注释, 也可以不注释
-    console.log('剧情进度: ' + storyHandler.currentStoryIndex, storyHandler.currentStoryUnit)
-    await this.transitionIn()
-    this.hide()
-    await this.showBg()
-    this.showPopup()
-    this.playEffect()
-    this.playL2d()
-    this.playAudio()
-    this.clearSt()
-    await this.transitionOut()
-    this.showCharacter()
-    this.show()
+    console.log(
+      "剧情进度: " + storyHandler.currentStoryIndex,
+      storyHandler.currentStoryUnit
+    );
+    await this.transitionIn();
+    this.hide();
+    await this.showBg();
+    this.showPopup();
+    this.playEffect();
+    this.playL2d();
+    this.playAudio();
+    this.clearSt();
+    await this.transitionOut();
+    this.showCharacter();
+    this.show();
 
-    let currentStoryUnit = storyHandler.currentStoryUnit
+    let currentStoryUnit = storyHandler.currentStoryUnit;
     switch (currentStoryUnit.type) {
-      case 'title':
-        this.titleDone = false
+      case "title":
+        this.titleDone = false;
         if (currentStoryUnit.textAbout.titleInfo) {
-          eventBus.emit('showTitle', currentStoryUnit.textAbout.titleInfo)
+          eventBus.emit("showTitle", currentStoryUnit.textAbout.titleInfo);
+        } else {
+          throw new Error("没有标题信息提供");
         }
-        else {
-          throw new Error('没有标题信息提供')
-        }
-        break
-      case 'place':
+        break;
+      case "place":
         if (currentStoryUnit.textAbout.word) {
-          eventBus.emit('showPlace', currentStoryUnit.textAbout.word)
+          eventBus.emit("showPlace", currentStoryUnit.textAbout.word);
         }
-        break
-      case 'text':
-        this.textDone = false
-        eventBus.emit('showText', currentStoryUnit.textAbout.showText)
-        eventBus.emit('showmenu')
-        break
-      case 'option':
+        break;
+      case "text":
+        this.textDone = false;
+        eventBus.emit("showText", {
+          ...currentStoryUnit.textAbout.showText,
+          index: storyHandler.currentStoryIndex,
+        });
+        eventBus.emit("showmenu");
+        break;
+      case "option":
         if (currentStoryUnit.textAbout.options) {
-          eventBus.emit('option', currentStoryUnit.textAbout.options)
+          eventBus.emit(
+            "option",
+            currentStoryUnit.textAbout.options.map(i => {
+              return { ...i, index: storyHandler.currentStoryIndex };
+            })
+          );
         }
-        break
-      case 'st':
-        this.stDone = false
+        break;
+      case "st":
+        this.stDone = false;
         if (currentStoryUnit.textAbout.st) {
           if (currentStoryUnit.textAbout.st.stArgs) {
-            let middle = currentStoryUnit.textAbout.st.middle ? true : false
-            eventBus.emit('st', {
+            let middle = currentStoryUnit.textAbout.st.middle ? true : false;
+            eventBus.emit("st", {
               text: currentStoryUnit.textAbout.showText.text,
               stArgs: currentStoryUnit.textAbout.st.stArgs,
-              middle
-            })
+              middle,
+            });
           }
         }
-        break
-      case 'effectOnly':
-        break
-      case 'continue':
-        this.toBeContinueDone = false
-        eventBus.emit('toBeContinue')
-        break
-      case 'nextEpisode':
-        this.nextEpisodeDone = false
+        break;
+      case "effectOnly":
+        break;
+      case "continue":
+        this.toBeContinueDone = false;
+        eventBus.emit("toBeContinue");
+        break;
+      case "nextEpisode":
+        this.nextEpisodeDone = false;
         if (currentStoryUnit.textAbout.titleInfo) {
-          eventBus.emit('nextEpisode', currentStoryUnit.textAbout.titleInfo)
+          eventBus.emit("nextEpisode", currentStoryUnit.textAbout.titleInfo);
+        } else {
+          throw new Error("没有标题信息提供");
         }
-        else {
-          throw new Error('没有标题信息提供')
-        }
-        break
+        break;
       default:
-        console.log(`本体中尚未处理${currentStoryUnit.type}类型故事节点`)
+        console.log(`本体中尚未处理${currentStoryUnit.type}类型故事节点`);
     }
 
-    let startTime = Date.now()
+    let startTime = Date.now();
     let checkEffectDone = new Promise<void>((resolve, reject) => {
       let interval = setInterval(() => {
         if (storyHandler.isEnd) {
-          resolve()
+          resolve();
         }
         if (this.unitDone) {
-          clearInterval(interval)
-          resolve()
-        }
-        else if (Date.now() - startTime >= 50000) {
-          for (const key of Object.keys(eventEmitter) as Array<keyof typeof eventEmitter>) {
-            if (key.endsWith('Done') && key !== 'unitDone') {
+          clearInterval(interval);
+          resolve();
+        } else if (Date.now() - startTime >= 50000) {
+          for (const key of Object.keys(eventEmitter) as Array<
+            keyof typeof eventEmitter
+          >) {
+            if (key.endsWith("Done") && key !== "unitDone") {
               if (!eventEmitter[key]) {
-                console.error(`${key}未完成: `)
+                console.error(`${key}未完成: `);
               }
             }
           }
-          reject(`故事节点 index: ${storyHandler.currentStoryIndex},object:${storyHandler.currentStoryUnit}长时间未完成`)
-          clearInterval(interval)
+          reject(
+            `故事节点 index: ${storyHandler.currentStoryIndex},object:${storyHandler.currentStoryUnit}长时间未完成`
+          );
+          clearInterval(interval);
         }
-      })
-    })
-    await checkEffectDone
+      });
+    });
+    await checkEffectDone;
   },
 
   clearSt() {
     if (storyHandler.currentStoryUnit.textAbout.st) {
       if (storyHandler.currentStoryUnit.textAbout.st.clearSt) {
-        eventBus.emit('clearSt')
+        eventBus.emit("clearSt");
       }
     }
   },
@@ -494,25 +560,26 @@ export let eventEmitter = {
   /**
    * 显示背景
    */
-  async showBg() {
-    if (storyHandler.currentStoryUnit.bg) {
-      const bgOverLap = storyHandler.currentStoryUnit.bg.overlap
+  async showBg(currentStoryUnit?: StoryUnit) {
+    currentStoryUnit = currentStoryUnit || storyHandler.currentStoryUnit;
+    if (currentStoryUnit.bg) {
+      const bgOverLap = currentStoryUnit.bg.overlap;
       eventBus.emit("showBg", {
-        url: storyHandler.currentStoryUnit.bg?.url,
-        overlap: bgOverLap
+        url: currentStoryUnit.bg?.url,
+        overlap: bgOverLap,
       });
       if (this.l2dPlaying) {
-        eventBus.emit('endL2D')
-        this.l2dPlaying = false
+        eventBus.emit("endL2D");
+        this.l2dPlaying = false;
       }
       if (bgOverLap) {
-        await new Promise<void>((resolve) => {
+        await new Promise<void>(resolve => {
           const fn = () => {
-            eventBus.off('bgOverLapDone', fn)
-            resolve()
-          }
-          eventBus.on('bgOverLapDone', fn)
-        })
+            eventBus.off("bgOverLapDone", fn);
+            resolve();
+          };
+          eventBus.on("bgOverLapDone", fn);
+        });
       }
     }
     // eventBus.emit('showBg', 'https://yuuka.cdn.diyigemt.com/image/ba-all-data/UIs/03_Scenario/01_Background/BG_CS_PR_16.jpg')
@@ -521,35 +588,39 @@ export let eventEmitter = {
   /**
    * 显示角色
    */
-  showCharacter() {
+  showCharacter(currentStoryUnit?: StoryUnit) {
+    currentStoryUnit = currentStoryUnit || storyHandler.currentStoryUnit;
     if (storyHandler.currentStoryUnit.characters.length != 0) {
-      this.characterDone = false
-      eventBus.emit('showCharacter', {
+      this.characterDone = false;
+      eventBus.emit("showCharacter", {
         characters: storyHandler.currentStoryUnit.characters,
-      })
+      });
     }
   },
 
   /**
    * 播放声音
    */
-  playAudio() {
-    if (storyHandler.currentStoryUnit.audio) {
-      eventBus.emit('playAudio', storyHandler.currentStoryUnit.audio)
-      if (storyHandler.currentStoryUnit.audio.voiceJPUrl) {
-        this.VoiceJpDone = false
+  playAudio(currentStoryUnit?: StoryUnit) {
+    currentStoryUnit = currentStoryUnit || storyHandler.currentStoryUnit;
+    if (currentStoryUnit.audio) {
+      eventBus.emit("playAudio", currentStoryUnit.audio);
+      if (currentStoryUnit.audio.voiceJPUrl) {
+        this.VoiceJpDone = false;
       }
     }
   },
 
   playL2d() {
     if (storyHandler.currentStoryUnit.l2d) {
-      if (storyHandler.currentStoryUnit.l2d.animationName === 'Idle_01') {
-        eventBus.emit('playL2D')
-        this.l2dPlaying = true
-      }
-      else {
-        eventBus.emit('changeAnimation', storyHandler.currentStoryUnit.l2d.animationName)
+      if (storyHandler.currentStoryUnit.l2d.animationName === "Idle_01") {
+        eventBus.emit("playL2D");
+        this.l2dPlaying = true;
+      } else {
+        eventBus.emit(
+          "changeAnimation",
+          storyHandler.currentStoryUnit.l2d.animationName
+        );
       }
     }
   },
@@ -560,30 +631,32 @@ export let eventEmitter = {
   hide() {
     if (storyHandler.currentStoryUnit.hide) {
       //当下一节点仍是text时只隐藏character
-      if (storyHandler.currentStoryUnit.hide === 'all') {
+      if (storyHandler.currentStoryUnit.hide === "all") {
         // if (storyHandler.nextStoryUnit.type === 'text' && !storyHandler.currentStoryUnit.transition) {
         //   eventBus.emit('hideCharacter')
         // }
         // else {
         //   eventBus.emit('hide')
         // }
-        eventBus.emit('hideCharacter')
-      }
-      else {
-        eventBus.emit('hidemenu')
+        eventBus.emit("hideCharacter");
+      } else {
+        eventBus.emit("hidemenu");
       }
     }
     //在有变换时隐藏所有对象
-    if (storyHandler.currentStoryUnit.bg?.overlap || storyHandler.currentStoryUnit.transition
-      || storyHandler.currentStoryUnit.type === 'continue') {
-      eventBus.emit('hide')
+    if (
+      storyHandler.currentStoryUnit.bg?.overlap ||
+      storyHandler.currentStoryUnit.transition ||
+      storyHandler.currentStoryUnit.type === "continue"
+    ) {
+      eventBus.emit("hide");
     }
   },
 
   show() {
     if (storyHandler.currentStoryUnit.show) {
-      if (storyHandler.currentStoryUnit.show === 'menu') {
-        eventBus.emit('showmenu')
+      if (storyHandler.currentStoryUnit.show === "menu") {
+        eventBus.emit("showmenu");
       }
     }
   },
@@ -592,12 +665,14 @@ export let eventEmitter = {
    * 播放特效
    */
   playEffect() {
-    if (storyHandler.currentStoryUnit.effect.BGEffect || storyHandler.currentStoryUnit.effect.otherEffect.length != 0) {
-      this.effectDone = false
-      eventBus.emit('playEffect', storyHandler.currentStoryUnit.effect)
-    }
-    else {
-      eventBus.emit('removeEffect')
+    if (
+      storyHandler.currentStoryUnit.effect.BGEffect ||
+      storyHandler.currentStoryUnit.effect.otherEffect.length != 0
+    ) {
+      this.effectDone = false;
+      eventBus.emit("playEffect", storyHandler.currentStoryUnit.effect);
+    } else {
+      eventBus.emit("removeEffect");
     }
   },
 
@@ -605,12 +680,15 @@ export let eventEmitter = {
     if (storyHandler.currentStoryUnit.transition) {
       await new Promise<void>(resolve => {
         function complete() {
-          eventBus.off('transitionInDone', complete);
-          resolve()
+          eventBus.off("transitionInDone", complete);
+          resolve();
         }
-        eventBus.on('transitionInDone', complete);
-        eventBus.emit('transitionIn', storyHandler.currentStoryUnit.transition!);
-      })
+        eventBus.on("transitionInDone", complete);
+        eventBus.emit(
+          "transitionIn",
+          storyHandler.currentStoryUnit.transition!
+        );
+      });
     }
   },
 
@@ -619,30 +697,35 @@ export let eventEmitter = {
       if (storyHandler.currentStoryUnit.transition) {
         await new Promise<void>(resolve => {
           let resolveFun = () => {
-            eventBus.off('transitionOutDone', resolveFun);
-            resolve()
-          }
-          eventBus.on('transitionOutDone', resolveFun);
-          eventBus.emit('transitionOut', storyHandler.currentStoryUnit.transition!);
-        })
+            eventBus.off("transitionOutDone", resolveFun);
+            resolve();
+          };
+          eventBus.on("transitionOutDone", resolveFun);
+          eventBus.emit(
+            "transitionOut",
+            storyHandler.currentStoryUnit.transition!
+          );
+        });
       }
     }
   },
 
   showPopup() {
     if (storyHandler.currentStoryUnit.PopupFileName) {
-      eventBus.emit('popupImage', storyHandler.currentStoryUnit.PopupFileName)
+      eventBus.emit("popupImage", storyHandler.currentStoryUnit.PopupFileName);
+    } else if (storyHandler.currentStoryUnit.video) {
+      eventBus.emit(
+        "popupVideo",
+        storyHandler.currentStoryUnit.video.videoPath
+      );
+      eventBus.emit("playAudio", {
+        soundUrl: storyHandler.currentStoryUnit.video.soundPath,
+      });
+    } else {
+      eventBus.emit("hidePopup");
     }
-    else if (storyHandler.currentStoryUnit.video) {
-      eventBus.emit('popupVideo', storyHandler.currentStoryUnit.video.videoPath)
-      eventBus.emit('playAudio', { soundUrl: storyHandler.currentStoryUnit.video.soundPath })
-    }
-    else {
-      eventBus.emit('hidePopup')
-    }
-  }
-}
-
+  },
+};
 
 /**
  * 资源加载处理对象
@@ -653,8 +736,8 @@ export let resourcesLoader = {
    * 初始化, 预先加载表资源供翻译层使用
    */
   async init(loader: Loader) {
-    await this.loadExcels()
-    this.loader = loader
+    await this.loadExcels();
+    this.loader = loader;
   },
   /**
    * 添加所有资源, 有些pixi loader不能处理的资源则会调用资源处理函数, 故会返回promise
@@ -663,31 +746,31 @@ export let resourcesLoader = {
     // this.loader.add('https://yuuka.cdn.diyigemt.com/image/ba-all-data/UIs/03_Scenario/01_Background/BG_CS_PR_16.jpg',
     //   'https://yuuka.cdn.diyigemt.com/image/ba-all-data/UIs/03_Scenario/01_Background/BG_CS_PR_16.jpg'
     // )
-    this.addEmotionResources()
-    this.addFXResources()
-    this.addOtherSounds()
-    this.addBGEffectImgs()
-    const audioUrls: string[] = []
+    this.addEmotionResources();
+    this.addFXResources();
+    this.addOtherSounds();
+    this.addBGEffectImgs();
+    const audioUrls: string[] = [];
     for (let unit of playerStore.allStoryUnit) {
       //添加人物spine
       if (unit.characters.length != 0) {
         for (let character of unit.characters) {
-          const spineUrl = character.spineUrl
+          const spineUrl = character.spineUrl;
           if (!this.loader.resources[character.CharacterName]) {
-            this.loader.add(String(character.CharacterName), spineUrl)
+            this.loader.add(String(character.CharacterName), spineUrl);
           }
         }
       }
       if (unit.audio) {
         //添加bgm资源
         if (unit.audio.bgm?.url) {
-          audioUrls.push(unit.audio.bgm.url)
+          audioUrls.push(unit.audio.bgm.url);
         }
         if (unit.audio.soundUrl) {
-          audioUrls.push(unit.audio.soundUrl)
+          audioUrls.push(unit.audio.soundUrl);
         }
         if (unit.audio.voiceJPUrl) {
-          audioUrls.push(unit.audio.voiceJPUrl)
+          audioUrls.push(unit.audio.voiceJPUrl);
         }
         // this.checkAndAdd(unit.audio.bgm?.url)
 
@@ -696,18 +779,20 @@ export let resourcesLoader = {
         // this.checkAndAdd(unit.audio.voiceJPUrl)
       }
       //添加背景图片
-      this.checkAndAdd(unit.bg, 'url')
+      this.checkAndAdd(unit.bg, "url");
       //添加popupImage
-      this.checkAndAdd(unit.PopupFileName)
+      this.checkAndAdd(unit.PopupFileName);
 
       //添加l2d spine资源
-      this.checkAndAdd(unit.l2d, 'spineUrl')
+      this.checkAndAdd(unit.l2d, "spineUrl");
       if (unit.l2d) {
-        playerStore.curL2dConfig?.otherSpine?.forEach(i => this.checkAndAdd(utils.getResourcesUrl('otherL2dSpine', i)))
-        playerStore.setL2DSpineUrl(unit.l2d.spineUrl)
+        playerStore.curL2dConfig?.otherSpine?.forEach(i =>
+          this.checkAndAdd(utils.getResourcesUrl("otherL2dSpine", i))
+        );
+        playerStore.setL2DSpineUrl(unit.l2d.spineUrl);
       }
     }
-    await preloadSound(audioUrls)
+    await preloadSound(audioUrls);
   },
 
   /**
@@ -715,23 +800,24 @@ export let resourcesLoader = {
    * @param callback
    */
   load(callback: () => void) {
-    let hasLoad = false
-    this.loader.onError.add((error) => { throw error })
+    let hasLoad = false;
+    this.loader.onError.add(error => {
+      throw error;
+    });
     this.loader.load((loader, res) => {
       playerStore.app.loader.load(async (loader, res) => {
         //当chrome webgl inspector打开时可能导致callback被执行两次
         if (!hasLoad) {
-          console.log('已加载资源:', res)
-          hasLoad = true
-          const spineData = usePlayerStore().l2dSpineData
+          console.log("已加载资源:", res);
+          hasLoad = true;
+          const spineData = usePlayerStore().l2dSpineData;
           if (spineData) {
-            await this.loadL2dVoice(spineData.events)
+            await this.loadL2dVoice(spineData.events);
           }
-          callback()
+          callback();
         }
-
-      })
-    })
+      });
+    });
   },
 
   /**
@@ -740,16 +826,15 @@ export let resourcesLoader = {
    * @param key 当resoureces为对象时指定的url属性
    */
   checkAndAdd(resources: Object | string | undefined, key?: string) {
-    let url = ''
+    let url = "";
     if (resources) {
-      if (typeof resources === 'string') {
-        url = resources
-      }
-      else {
-        url = Reflect.get(resources, key!)
+      if (typeof resources === "string") {
+        url = resources;
+      } else {
+        url = Reflect.get(resources, key!);
       }
       if (!this.loader.resources[url]) {
-        this.loader.add(url, url)
+        this.loader.add(url, url);
       }
     }
   },
@@ -761,14 +846,20 @@ export let resourcesLoader = {
     for (let emotionResources of playerStore.emotionResourcesTable.values()) {
       for (let emotionResource of emotionResources) {
         if (!this.loader.resources[emotionResource]) {
-          this.loader.add(emotionResource, utils.getResourcesUrl('emotionImg', emotionResource))
+          this.loader.add(
+            emotionResource,
+            utils.getResourcesUrl("emotionImg", emotionResource)
+          );
         }
       }
     }
     for (let emotionName of playerStore.emotionResourcesTable.keys()) {
-      let emotionSoundName = `SFX_Emoticon_Motion_${emotionName}`
+      let emotionSoundName = `SFX_Emoticon_Motion_${emotionName}`;
       if (!this.loader.resources[emotionSoundName]) {
-        this.loader.add(emotionSoundName, utils.getResourcesUrl('emotionSound', emotionSoundName))
+        this.loader.add(
+          emotionSoundName,
+          utils.getResourcesUrl("emotionSound", emotionSoundName)
+        );
       }
     }
   },
@@ -780,7 +871,7 @@ export let resourcesLoader = {
     for (let fxImages of playerStore.fxImageTable.values()) {
       for (let url of fxImages) {
         if (!this.loader.resources[url]) {
-          this.loader.add(url, utils.getResourcesUrl('fx', url))
+          this.loader.add(url, utils.getResourcesUrl("fx", url));
         }
       }
     }
@@ -791,27 +882,27 @@ export let resourcesLoader = {
    */
   loadL2dVoice(audioEvents: IEventData[]) {
     for (let event of audioEvents) {
-      if (event.name.includes('MemorialLobby')) {
-        const voiceUrl = utils.getResourcesUrl('l2dVoice', event.name)
-        this.loader.add(voiceUrl, voiceUrl)
+      if (event.name.includes("MemorialLobby")) {
+        const voiceUrl = utils.getResourcesUrl("l2dVoice", event.name);
+        this.loader.add(voiceUrl, voiceUrl);
       }
     }
 
     return new Promise<void>(resolve => {
       this.loader.load(() => {
-        resolve()
-      })
-    })
+        resolve();
+      });
+    });
   },
 
   /**
    * 添加其他特效音
    */
   addOtherSounds() {
-    let otherSoundUrls = getOtherSoundUrls()
+    let otherSoundUrls = getOtherSoundUrls();
     for (let url of otherSoundUrls) {
       if (!this.loader.resources[url]) {
-        this.loader.add(url, url)
+        this.loader.add(url, url);
       }
     }
   },
@@ -823,7 +914,7 @@ export let resourcesLoader = {
     for (let imgs of playerStore.bgEffectImgMap.values()) {
       for (let img of imgs) {
         if (!this.loader.resources[img]) {
-          this.loader.add(img, utils.getResourcesUrl('bgEffectImgs', img))
+          this.loader.add(img, utils.getResourcesUrl("bgEffectImgs", img));
         }
       }
     }
@@ -833,60 +924,80 @@ export let resourcesLoader = {
    * 加载原始数据资源
    */
   async loadExcels() {
-    const excelPromiseArray: Array<Promise<void>> = []
+    const excelPromiseArray: Array<Promise<void>> = [];
     excelPromiseArray.push(
-      axios.get(utils.getResourcesUrl('excel', 'ScenarioBGNameExcelTable.json')).then(res => {
-        for (let i of res.data['DataList']) {
-          privateState.BGNameExcelTable.set(i['Name'], i)
-        }
-      })
-    )
+      axios
+        .get(utils.getResourcesUrl("excel", "ScenarioBGNameExcelTable.json"))
+        .then(res => {
+          for (let i of res.data["DataList"]) {
+            privateState.BGNameExcelTable.set(i["Name"], i);
+          }
+        })
+    );
     excelPromiseArray.push(
-      axios.get(utils.getResourcesUrl('excel', 'ScenarioCharacterNameExcelTable.json')).then(res => {
-        for (let i of res.data['DataList']) {
-          privateState.CharacterNameExcelTable.set(i['CharacterName'], i)
-        }
-      })
-    )
+      axios
+        .get(
+          utils.getResourcesUrl("excel", "ScenarioCharacterNameExcelTable.json")
+        )
+        .then(res => {
+          for (let i of res.data["DataList"]) {
+            privateState.CharacterNameExcelTable.set(i["CharacterName"], i);
+          }
+        })
+    );
     excelPromiseArray.push(
-      axios.get(utils.getResourcesUrl('excel', 'BGMExcelTable.json')).then(res => {
-        for (let i of res.data['DataList']) {
-          privateState.BGMExcelTable.set(i['Id'], i)
-        }
-      })
-    )
+      axios
+        .get(utils.getResourcesUrl("excel", "BGMExcelTable.json"))
+        .then(res => {
+          for (let i of res.data["DataList"]) {
+            privateState.BGMExcelTable.set(i["Id"], i);
+          }
+        })
+    );
     excelPromiseArray.push(
-      axios.get(utils.getResourcesUrl('excel', 'ScenarioTransitionExcelTable.json')).then(res => {
-        for (let i of res.data['DataList']) {
-          privateState.TransitionExcelTable.set(i['Name'], i)
-        }
-      })
-    )
+      axios
+        .get(
+          utils.getResourcesUrl("excel", "ScenarioTransitionExcelTable.json")
+        )
+        .then(res => {
+          for (let i of res.data["DataList"]) {
+            privateState.TransitionExcelTable.set(i["Name"], i);
+          }
+        })
+    );
     excelPromiseArray.push(
-      axios.get(utils.getResourcesUrl('excel', 'ScenarioBGEffectExcelTable.json')).then(res => {
-        for (let i of res.data['DataList']) {
-          privateState.BGEffectExcelTable.set(i['Name'], i)
-        }
-      })
-    )
+      axios
+        .get(utils.getResourcesUrl("excel", "ScenarioBGEffectExcelTable.json"))
+        .then(res => {
+          for (let i of res.data["DataList"]) {
+            privateState.BGEffectExcelTable.set(i["Name"], i);
+          }
+        })
+    );
     excelPromiseArray.push(
-      axios.get(utils.getResourcesUrl('excel', 'ScenarioCharacterEmotionExcelTable.json')).then(res => {
-        for (let i of res.data['DataList']) {
-          privateState.EmotionExcelTable.set(i['Name'], i['EmoticonName'])
-        }
-      })
-    )
+      axios
+        .get(
+          utils.getResourcesUrl(
+            "excel",
+            "ScenarioCharacterEmotionExcelTable.json"
+          )
+        )
+        .then(res => {
+          for (let i of res.data["DataList"]) {
+            privateState.EmotionExcelTable.set(i["Name"], i["EmoticonName"]);
+          }
+        })
+    );
 
-    const results = await Promise.allSettled(excelPromiseArray)
-    let reasons = []
+    const results = await Promise.allSettled(excelPromiseArray);
+    let reasons = [];
     for (let result of results) {
-      if (result.status === 'rejected') {
-        reasons.push(result.reason)
+      if (result.status === "rejected") {
+        reasons.push(result.reason);
       }
     }
     if (reasons.length != 0) {
-      throw new Error(reasons.toString())
+      throw new Error(reasons.toString());
     }
-  }
-
-}
+  },
+};
