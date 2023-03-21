@@ -278,22 +278,22 @@ function proxyShowCoverTitle(
         opacity: 1,
         duration: 0.75,
       });
-      // if (!onElUpdate) {
-      //   timeline.to(
-      //     el.value!,
-      //     {
-      //       opacity: 0,
-      //       duration: 0.75,
-      //     },
-      //     "+=1.5"
-      //   );
-      // }
-      // timeline.then(() => {
-      //   if (!onElUpdate) {
-      //     proxy.value = "";
-      //   }
-      //   resolve();
-      // });
+      if (!onElUpdate) {
+        timeline.to(
+          el.value!,
+          {
+            opacity: 0,
+            duration: 0.75,
+          },
+          "+=1.5"
+        );
+      }
+      timeline.then(() => {
+        if (!onElUpdate) {
+          proxy.value = "";
+        }
+        resolve();
+      });
     });
   });
 }
