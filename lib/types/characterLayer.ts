@@ -1,8 +1,8 @@
 import { Character, CharacterInstance } from "@/types/common";
 import { ShowCharacter } from "@/types/events";
 import { IAnimationStateListener } from "@pixi-spine/base";
-import type { ISkeletonData, Spine } from 'pixi-spine';
-import { Sprite } from 'pixi.js';
+import type { ISkeletonData, Spine } from "pixi-spine";
+import { Sprite } from "pixi.js";
 
 /**
  * 角色层定义
@@ -67,7 +67,10 @@ export interface CharacterLayer {
    * @param spineData 打包好的spine数据
    * @return 创建出的pixi-spine对象
    */
-  createSpineFromSpineData(character: Character, spineData: ISkeletonData): Spine;
+  createSpineFromSpineData(
+    character: Character,
+    spineData: ISkeletonData
+  ): Spine;
   /**
    * 执行showCharacter函数时检查所需资源是否已经创建, 若没有创建则调用createSpineFromSpineData进行创建
    * @param characterMap 需要处理的资源
@@ -95,13 +98,15 @@ export interface CharacterLayer {
    * @key number 角色唯一key
    * @value CharacterInstance 包含spine对象的实例
    */
-  characterSpineCache: Map<number, CharacterInstance>,
+  characterSpineCache: Map<number, CharacterInstance>;
 }
 
 /**
  * 所有角色特效基础接口
  */
-export interface CharacterEffectPlayerInterface<T extends EmotionWord | CharacterEffectWord | FXEffectWord> {
+export interface CharacterEffectPlayerInterface<
+  T extends EmotionWord | CharacterEffectWord | FXEffectWord
+> {
   /**
    * 初始化函数, player初始化时调用
    */
@@ -119,13 +124,14 @@ export interface CharacterEffectPlayerInterface<T extends EmotionWord | Characte
 /**
  * 所有角色特效统一接口
  */
-export type BaseCharacterEffectPlayer<T extends EffectsWord>
-  = CharacterEffectPlayerInterface<T> & EffectFunction<T>
+export type BaseCharacterEffectPlayer<T extends EffectsWord> =
+  CharacterEffectPlayerInterface<T> & EffectFunction<T>;
 
 /**
  * 对话特效处理
  */
-export interface CharacterEmotionPlayer extends BaseCharacterEffectPlayer<EmotionWord> {
+export interface CharacterEmotionPlayer
+  extends BaseCharacterEffectPlayer<EmotionWord> {
   /**
    * 获取特效处理函数
    * @param type 角色特效类型
@@ -136,7 +142,8 @@ export interface CharacterEmotionPlayer extends BaseCharacterEffectPlayer<Emotio
 /**
  * 人物特效处理
  */
-export interface CharacterEffectPlayer extends BaseCharacterEffectPlayer<CharacterEffectWord> {
+export interface CharacterEffectPlayer
+  extends BaseCharacterEffectPlayer<CharacterEffectWord> {
   /**
    * 获取特效处理函数
    * @param type 人物特效类型
@@ -147,7 +154,8 @@ export interface CharacterEffectPlayer extends BaseCharacterEffectPlayer<Charact
 /**
  * 人物fx特效处理
  */
-export interface CharacterFXPlayer extends BaseCharacterEffectPlayer<FXEffectWord> {
+export interface CharacterFXPlayer
+  extends BaseCharacterEffectPlayer<FXEffectWord> {
   /**
    * 获取特效处理函数
    * @param type 人物特效类型
@@ -163,31 +171,39 @@ export interface CharacterEffectInstance extends Character {
   isCloseUp: () => boolean;
 }
 
-export type EffectsWord = EmotionWord | CharacterEffectWord | FXEffectWord
+export type EffectsWord = EmotionWord | CharacterEffectWord | FXEffectWord;
 
-type Options = EmotionOptions & ActionOptions & FXOptions
+type Options = EmotionOptions & ActionOptions & FXOptions;
 
-type EffectFunctionUnit = (instance: CharacterEffectInstance, options: any, sprites: Sprite[]) => Promise<void> | undefined
+type EffectFunctionUnit = (
+  instance: CharacterEffectInstance,
+  options: any,
+  sprites: Sprite[]
+) => Promise<void> | undefined;
 
 export type EffectFunction<T extends EffectsWord> = {
-  [key in T]: (instance: CharacterEffectInstance, options: Options[key], sprites: Sprite[]) => Promise<void>
-}
+  [key in T]: (
+    instance: CharacterEffectInstance,
+    options: Options[key],
+    sprites: Sprite[]
+  ) => Promise<void>;
+};
 
 type DescriptionUnit<T> = {
   [key in keyof T]: {
-    [option in keyof T[key]]: string
-  }
-}
+    [option in keyof T[key]]: string;
+  };
+};
 
 export type OptionDescriptions = {
   emotion: {
     globalOptions: {
-      [key in keyof GlobalEmotionOptions]: string
-    }
-  } & DescriptionUnit<BasicEmotionOptions>,
-  action: DescriptionUnit<ActionOptions>,
-  fx: DescriptionUnit<FXOptions>
-}
+      [key in keyof GlobalEmotionOptions]: string;
+    };
+  } & DescriptionUnit<BasicEmotionOptions>;
+  action: DescriptionUnit<ActionOptions>;
+  fx: DescriptionUnit<FXOptions>;
+};
 
 /**
  * 位置标识
@@ -201,20 +217,48 @@ export interface PositionOffset {
  * 对话特效定义
  */
 export type EmotionWord =
-  "Heart" | "Respond" | "Music" | "Twinkle" |
-  "Sad" | "Sweat" | "Dot" | "Chat" | "Exclaim" |
-  "Angry" | "Surprise" | "Question" | "Shy" | "Upset" | "Steam" |
-  "Sigh" | 'Bulb' | 'Tear';
+  | "Heart"
+  | "Respond"
+  | "Music"
+  | "Twinkle"
+  | "Sad"
+  | "Sweat"
+  | "Dot"
+  | "Chat"
+  | "Exclaim"
+  | "Angry"
+  | "Surprise"
+  | "Question"
+  | "Shy"
+  | "Upset"
+  | "Steam"
+  | "Sigh"
+  | "Bulb"
+  | "Tear";
 
 /**
  * 人物特效定义
  */
 export type CharacterEffectWord =
-  "a" | "d" | "dl" | "dr" |
-  "ar" | "al" | "hophop" | "greeting" |
-  "shake" | "m1" | "m2" | "m3" |
-  "m4" | "m5" | "stiff" | "closeup" |
-  "jump" | "falldownR" | "hide";
+  | "a"
+  | "d"
+  | "dl"
+  | "dr"
+  | "ar"
+  | "al"
+  | "hophop"
+  | "greeting"
+  | "shake"
+  | "m1"
+  | "m2"
+  | "m3"
+  | "m4"
+  | "m5"
+  | "stiff"
+  | "closeup"
+  | "jump"
+  | "falldownR"
+  | "hide";
 
 /**
  * fx特效定义
@@ -226,305 +270,303 @@ export type FXEffectWord = "shot";
  */
 export type SignalEffectWord = "signal";
 
-
 /**
  * 在x, y方向各自的缩放
  */
 export interface Scale {
-  x: number
-  y: number
+  x: number;
+  y: number;
 }
 
-export type BaseOptions<T extends string> = Record<T, Record<string, any>>
+export type BaseOptions<T extends string> = Record<T, Record<string, any>>;
 /**
  * 情绪动作的具体参数
  */
 export interface BasicEmotionOptions extends BaseOptions<EmotionWord> {
   Heart: {
     heartImg: {
-      scale: number
-      position: PositionOffset
-    }
+      scale: number;
+      position: PositionOffset;
+    };
     jumpAnimation: {
-      firstScale: Scale
-      secondScale: Scale
-      duration: number
-    }
-  },
+      firstScale: Scale;
+      secondScale: Scale;
+      duration: number;
+    };
+  };
   Respond: {
     flashAnimation: {
-      alpha: number
-      duration: number
-    }
+      alpha: number;
+      duration: number;
+    };
     perImgSetting: {
-      angle: number
-      scale: number
-      anchor: PositionOffset
-    }[]
-  },
+      angle: number;
+      scale: number;
+      anchor: PositionOffset;
+    }[];
+  };
   Music: {
-    rotateAngle: number
+    rotateAngle: number;
     animation: {
-      offset: PositionOffset
-      duration: number
-    }
-  },
+      offset: PositionOffset;
+      duration: number;
+    };
+  };
   Twinkle: {
     starImgs: {
-      pos: PositionOffset[]
-      scale: number[]
-    }
-    fadeInDuration: number
+      pos: PositionOffset[];
+      scale: number[];
+    };
+    fadeInDuration: number;
     flashAnimation: {
-      scales: number[]
-      duration: number[]
-      totalDuration: number
-    }
-  },
+      scales: number[];
+      duration: number[];
+      totalDuration: number;
+    };
+  };
   Sad: {
-    imageGap: number
-    moveYDistance: number
-    imgInitYPosition: [number, number, number]
-  },
+    imageGap: number;
+    moveYDistance: number;
+    imgInitYPosition: [number, number, number];
+  };
   Sweat: {
     smallImg: {
-      scale: number
+      scale: number;
       offset: {
-        x: number
-        y: number
-      },
-      dropAnimationOffset: number
-    }
+        x: number;
+        y: number;
+      };
+      dropAnimationOffset: number;
+    };
     dropAnimation: {
-      yOffset: number
-      duration: number
-    }
-  },
+      yOffset: number;
+      duration: number;
+    };
+  };
   Dot: {
-    dotContainerPos: PositionOffset
-    dotPos: number[]
+    dotContainerPos: PositionOffset;
+    dotPos: number[];
     showAnimation: {
-      showDelay: number
-      alpahaDuration: number
-    }
-  },
+      showDelay: number;
+      alpahaDuration: number;
+    };
+  };
   Chat: {
-    rotateAngle: number,
-    rotateTime: number,
+    rotateAngle: number;
+    rotateTime: number;
     rotatePivot: {
-      x: number
-      y: number
-    }
-  },
+      x: number;
+      y: number;
+    };
+  };
   Exclaim: {
     scaleAnimation: {
-      scale: number
-      scaleDuration: number
-      recoverScale: number
-      recoverDuration: number
-    }
-    fadeOutWaitTime: number
-  },
+      scale: number;
+      scaleDuration: number;
+      recoverScale: number;
+      recoverDuration: number;
+    };
+    fadeOutWaitTime: number;
+  };
   Angry: {
     pivotPosition: {
-      x: number
-      y: number
-    },
+      x: number;
+      y: number;
+    };
     animationScale: {
-      scale: number
-      duration: number
-    }
+      scale: number;
+      duration: number;
+    };
     endScale: {
-      scale: number
-      duration: number
-    }
-  },
+      scale: number;
+      duration: number;
+    };
+  };
   Surprise: {
     imgSetting: {
-      angles: number[]
-      questionImgPos: PositionOffset
-    }
+      angles: number[];
+      questionImgPos: PositionOffset;
+    };
     scaleAnimation: {
-      startScale: number
-      questionImgYScale: number
-      duration: number
-      anchor: PositionOffset
-    }
+      startScale: number;
+      questionImgYScale: number;
+      duration: number;
+      anchor: PositionOffset;
+    };
     jumpAnimation: {
-      xOffset: number
-      jumpYOffset: number
-      duration: number
-    }
-  },
+      xOffset: number;
+      jumpYOffset: number;
+      duration: number;
+    };
+  };
   Question: {
     scaleAnimation: {
-      scale: number
-      anchor: PositionOffset
-      scaleDuration: number
-      recoverScale: number
-      recoverDuration: number
-    }
-  },
+      scale: number;
+      anchor: PositionOffset;
+      scaleDuration: number;
+      recoverScale: number;
+      recoverDuration: number;
+    };
+  };
   Shy: {
     shyImg: {
-      anchor: PositionOffset
-      scale: number
-      position: PositionOffset
-    }
+      anchor: PositionOffset;
+      scale: number;
+      position: PositionOffset;
+    };
     scaleAnamation: {
-      anchor: PositionOffset
-      startScale: number
-      duration: number
-    }
+      anchor: PositionOffset;
+      startScale: number;
+      duration: number;
+    };
     shakeAnimation: {
-      angleFrom: number
-      angleTo: number
-      duration: number
-      times: number
-    }
-  },
+      angleFrom: number;
+      angleTo: number;
+      duration: number;
+      times: number;
+    };
+  };
   Upset: {
-    upsetImgPos: PositionOffset
+    upsetImgPos: PositionOffset;
     rotateAnimation: {
-      angleFrom: number
-      angleTo: number
-      duration: number
-    }
+      angleFrom: number;
+      angleTo: number;
+      duration: number;
+    };
     yScaleAnimation: {
-      scale: number
-      duration: number
-    }
-    animationTotalDuration: number
-  },
+      scale: number;
+      duration: number;
+    };
+    animationTotalDuration: number;
+  };
   Steam: {
-    imgAngles: [number, number]
-    imgPivot: PositionOffset
+    imgAngles: [number, number];
+    imgPivot: PositionOffset;
     imgScaleAnimation: {
-      start: number
-      end: number
-    }[]
-  },
+      start: number;
+      end: number;
+    }[];
+  };
   Sigh: {
-    angle: number
-    scaleAnimation: { start: number, end: number },
-    anchor: PositionOffset
-  },
+    angle: number;
+    scaleAnimation: { start: number; end: number };
+    anchor: PositionOffset;
+  };
   Bulb: {
-    dialogScaleAnimation: ScaleAnimation
-    bulbYPosition: number
-    lightYPosition: number
-    lightScale: number
-  },
+    dialogScaleAnimation: ScaleAnimation;
+    bulbYPosition: number;
+    lightYPosition: number;
+    lightScale: number;
+  };
   Tear: {
-    positions: PositionOffset[]
-    scaleAnimations: ScaleAnimation[]
-    anchors: PositionOffset[]
-  }
+    positions: PositionOffset[];
+    scaleAnimations: ScaleAnimation[];
+    anchors: PositionOffset[];
+  };
 }
 
 /**
  * emotion情绪动画共有的参数
  */
 export interface GlobalEmotionOptions {
-  startPositionOffset: { x: number, y: number };
+  startPositionOffset: { x: number; y: number };
   scale: number;
   fadeOutPreDuration?: number;
   fadeOutDuration: number;
 }
 
 export type EmotionOptions = {
-  [Option in keyof BasicEmotionOptions]: BasicEmotionOptions[Option] & GlobalEmotionOptions
-}
+  [Option in keyof BasicEmotionOptions]: BasicEmotionOptions[Option] &
+    GlobalEmotionOptions;
+};
 
 export interface ActionOptions extends BaseOptions<CharacterEffectWord> {
-  a: {},
+  a: {};
   d: {
-    duration: number
-  },
+    duration: number;
+  };
   dl: {
-    speed: number
-  },
+    speed: number;
+  };
   dr: {
-    speed: number
-  },
+    speed: number;
+  };
   ar: {
-    speed: number
-  },
+    speed: number;
+  };
   al: {
-    speed: number
-  },
+    speed: number;
+  };
   hophop: {
-    yOffset: number
-    duration: number
-  },
+    yOffset: number;
+    duration: number;
+  };
   greeting: {
-    yOffset: number
-    duration: number
-  },
+    yOffset: number;
+    duration: number;
+  };
   shake: {
     shakeAnimation: {
-      from: number
-      to: number
-      duration: number
-      repeat: number
-    }
-  },
-  m1: {},
-  m2: {},
-  m3: {},
-  m4: {},
-  m5: {},
+      from: number;
+      to: number;
+      duration: number;
+      repeat: number;
+    };
+  };
+  m1: {};
+  m2: {};
+  m3: {};
+  m4: {};
+  m5: {};
   stiff: {
     shakeAnimation: {
-      from: number
-      to: number
-      duration: number
-      repeat: number
-    }
-  },
+      from: number;
+      to: number;
+      duration: number;
+      repeat: number;
+    };
+  };
   closeup: {
-    scale: number
-  },
+    scale: number;
+  };
   jump: {
-    yOffset: number
-    duration: number
-  },
+    yOffset: number;
+    duration: number;
+  };
   falldownR: {
-    anchor: PositionOffset
-    rightAngle: number
-    leftAngle: number
-    firstRotateDuration: number
-    leftRotationPercent: number
-    falldownDuration: number
-    xOffset: number
-  },
-  hide: {}
+    anchor: PositionOffset;
+    rightAngle: number;
+    leftAngle: number;
+    firstRotateDuration: number;
+    leftRotationPercent: number;
+    falldownDuration: number;
+    xOffset: number;
+  };
+  hide: {};
 }
 
 export interface FXOptions extends BaseOptions<FXEffectWord> {
   shot: {
-    scale: number
-    shotDuration: number
+    scale: number;
+    shotDuration: number;
     shotSequence: {
-      startImg: number
-      endImg?: number
-      endRed: boolean
-      pos: PositionOffset
-      scale: number
-      angle: number
-    }[]
-  }
+      startImg: number;
+      endImg?: number;
+      endRed: boolean;
+      pos: PositionOffset;
+      scale: number;
+      angle: number;
+    }[];
+  };
 }
 
 export interface ILoopAnimationStateListener extends IAnimationStateListener {
   key: string;
 }
 
-export interface SignalOptions extends BaseOptions<SignalEffectWord> {
-
-}
+export interface SignalOptions extends BaseOptions<SignalEffectWord> {}
 
 export type ScaleAnimation = {
-  start: number
-  end: number
-}
+  start: number;
+  end: number;
+};

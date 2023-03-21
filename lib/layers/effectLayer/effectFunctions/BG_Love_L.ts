@@ -34,10 +34,10 @@ export default async function BG_Love_L(resources: Sprite[]) {
   );
   const heartTextureWidth = resources[0].texture.width;
   const heartBaseRatio = (0.074 * appWidth) / heartTextureWidth; // 0.074 量出来的, 此时定为emiter时会达到的最大值
-  const scaleConfig = getEmitterType(heartConfig, "scale").config
-  scaleConfig.scale.list[0].value = heartBaseRatio * 0.8
-  scaleConfig.scale.list[1].value = heartBaseRatio
-  scaleConfig.scale.list[2].value = heartBaseRatio * 0.95
+  const scaleConfig = getEmitterType(heartConfig, "scale").config;
+  scaleConfig.scale.list[0].value = heartBaseRatio * 0.8;
+  scaleConfig.scale.list[1].value = heartBaseRatio;
+  scaleConfig.scale.list[2].value = heartBaseRatio * 0.95;
   const curEmitter = new Emitter(emitterContainer, heartConfig);
   const heartRemover = emitterStarter(curEmitter);
   let ringConfig: EmitterConfigV3 = {
@@ -51,9 +51,9 @@ export default async function BG_Love_L(resources: Sprite[]) {
   getEmitterType(ringConfig, "spawnShape").config.data.h = appHeight;
   const ringTextureWidth = resources[1].texture.width;
   const ringBaseRatio = (0.28 * appWidth) / ringTextureWidth;
-  const ringScaleConfig = getEmitterType(ringConfig, "scale").config
-  ringScaleConfig.scale.list[0].value = ringBaseRatio * 0.9
-  ringScaleConfig.scale.list[1].value = ringBaseRatio
+  const ringScaleConfig = getEmitterType(ringConfig, "scale").config;
+  ringScaleConfig.scale.list[0].value = ringBaseRatio * 0.9;
+  ringScaleConfig.scale.list[1].value = ringBaseRatio;
   const ringEmitter = new Emitter(emitterContainer, ringConfig);
   const ringRemover = emitterStarter(ringEmitter);
   return async () => {

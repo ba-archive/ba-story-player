@@ -24,9 +24,9 @@ export default async function BG_Shining_L_BGOff(resources: Sprite[]) {
   getEmitterType(ringConfig, "spawnShape").config.data.h = appHeight;
   const ringTextureWidth = resources[0].texture.width;
   const ringBaseRatio = (0.7 * appWidth) / ringTextureWidth;
-  const ringScaleConfig = getEmitterType(ringConfig, "scale").config
-  ringScaleConfig.scale.list[0].value = ringBaseRatio * 0.9
-  ringScaleConfig.scale.list[1].value = ringBaseRatio
+  const ringScaleConfig = getEmitterType(ringConfig, "scale").config;
+  ringScaleConfig.scale.list[0].value = ringBaseRatio * 0.9;
+  ringScaleConfig.scale.list[1].value = ringBaseRatio;
   const ringEmitter = new Emitter(emitterContainer, ringConfig);
   const ringRemover = emitterStarter(ringEmitter);
   return async () => {

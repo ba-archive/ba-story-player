@@ -1,3 +1,4 @@
+import eventBus from "@/eventBus";
 import { usePlayerStore } from "@/stores";
 import { Emitter, EmitterConfigV3, Particle } from "@pixi/particle-emitter";
 import { BehaviorOrder } from "@pixi/particle-emitter/lib/behaviors";
@@ -7,15 +8,14 @@ import { getEmitterType, sprite2TransParent } from "../resourcesUtils";
 
 export default async function BG_FocusLine(resources: Sprite[]) {
   // 原理是线条 emitter
+  eventBus.emit("playBgEffectSound", "BG_FocusLine");
   const { app } = usePlayerStore();
   const appWidth = app.view.width;
   const appHeight = app.view.height;
   let emitterContainer = new Container();
   app.stage.addChild(emitterContainer);
   emitterContainer.zIndex = -1;
-  const centerPoint = [appWidth / 2, appHeight / 2].map((i) =>
-    parseInt(i + "")
-  );
+  const centerPoint = [appWidth / 2, appHeight / 2].map(i => parseInt(i + ""));
   class FocusLine {
     public static type = "focusLine";
     public order = 5; // 代表延迟执行, 可能是 emitter 包的问题, 引入定义报错

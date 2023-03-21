@@ -6,7 +6,11 @@ import {
   emitterContainer,
   emitterStarter,
 } from "../emitterUtils";
-import { getEmitterType, loadSpriteSheet, sprite2TransParent } from "../resourcesUtils";
+import {
+  getEmitterType,
+  loadSpriteSheet,
+  sprite2TransParent,
+} from "../resourcesUtils";
 
 export default async function BG_Dust_L(resources: Sprite[]) {
   // 原理是三个平铺图片不断移动, 加上火光粒子效果
@@ -31,9 +35,9 @@ export default async function BG_Dust_L(resources: Sprite[]) {
   const smokeWidth = Math.sqrt(appWidth * appWidth + appHeight * appHeight);
   // 高度应该是当前分切图片的高度
   const smokeHeight = smokeTexture.height;
-  const scale = appHeight / smokeHeight * 0.6;
+  const scale = (appHeight / smokeHeight) * 0.6;
   [smokeTextureTilingL, smokeTextureTilingR, smokeTextureTilingR1].forEach(
-    (i) => {
+    i => {
       // 避免 tiling 产生的像素
       i.clampMargin = 1.5;
       i.rotation = 0.55;
@@ -65,7 +69,7 @@ export default async function BG_Dust_L(resources: Sprite[]) {
     },
     destroy: () => {
       [smokeTextureTilingL, smokeTextureTilingR, smokeTextureTilingR1].forEach(
-        (i) => {
+        i => {
           app.stage.removeChild(i);
         }
       );
@@ -96,13 +100,13 @@ export default async function BG_Dust_L(resources: Sprite[]) {
   // 塞入随机 texture 中
   fireConfig.behaviors[2].config.textures.push(...fireTextures);
   const baseRatio = (0.05 * appWidth) / fireTextures[0].width;
-  const scaleConfig = getEmitterType(fireConfig, "scale").config
-  scaleConfig.scale.list[0].value = baseRatio
-  scaleConfig.scale.list[1].value = baseRatio * 0.8
-  scaleConfig.scale.list[2].value = baseRatio
-  const speedConfig = getEmitterType(fireConfig, "moveSpeedStatic").config
-  speedConfig.min = appHeight * 0.4
-  speedConfig.max = appHeight * 0.65
+  const scaleConfig = getEmitterType(fireConfig, "scale").config;
+  scaleConfig.scale.list[0].value = baseRatio;
+  scaleConfig.scale.list[1].value = baseRatio * 0.8;
+  scaleConfig.scale.list[2].value = baseRatio;
+  const speedConfig = getEmitterType(fireConfig, "moveSpeedStatic").config;
+  speedConfig.min = appHeight * 0.4;
+  speedConfig.max = appHeight * 0.65;
   let fireEmitter = new Emitter(fireContainer, fireConfig);
   setTimeout(() => {
     fireEmitter.maxParticles = 15;
