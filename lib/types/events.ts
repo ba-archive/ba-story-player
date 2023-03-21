@@ -1,6 +1,7 @@
 import { Character, Effect, Speaker, Text } from "./common";
 import {
   BGEffectExcelTableItem,
+  BGEffectType,
   BGMExcelTableItem,
   TransitionTableItem,
 } from "./excels";
@@ -85,6 +86,7 @@ export type Events = {
    * 播放选项选择特效音
    */
   playOtherSounds: OtherSounds;
+  playBgEffectSound: BGEffectType;
   /**
    * 播放voiceJP结束提示
    */

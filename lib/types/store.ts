@@ -4,6 +4,7 @@ import { CharacterInstance, StoryUnit } from "./common";
 import { ShowOption, ShowText } from "./events";
 import {
   BGEffectExcelTableItem,
+  BGEffectType,
   BGMExcelTableItem,
   BGNameExcelTableItem,
   CharacterNameExcelTableItem,
@@ -129,6 +130,7 @@ export interface BasicGetters {
    * @returns
    */
   otherSoundUrl: (type: OtherSounds) => string;
+  bgEffectSoundUrl: (bgEffect: BGEffectType) => string;
   /**
    * 获取L2D资源
    */

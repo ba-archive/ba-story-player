@@ -82,6 +82,8 @@ export function getResourcesUrl(type: ResourcesTypes, arg: string): string {
       return Reflect.get(otherSoundMap, arg) || "";
     case "bgEffectImgs":
       return `${dataUrl}/effectTexture/${arg}`;
+    case "bgEffectSounds":
+      return `${dataUrl}/Audio/Sound/UI_FX_${arg}.wav`;
     case "avatar":
       //arg: UIs/01_Common/01_Character/Student_Portrait_Hasumi
       return `${dataUrl}/${arg}.png`;

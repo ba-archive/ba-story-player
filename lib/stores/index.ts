@@ -175,6 +175,10 @@ let getterFunctions: GetterFunctions = {
     return getResourcesUrl("otherSound", sound);
   },
 
+  bgEffectSoundUrl: () => bgeffect => {
+    return getResourcesUrl("bgEffectSounds", bgeffect);
+  },
+
   l2dSpineData() {
     const resource =
       privateState.app?.loader.resources[privateState.l2dSpineUrl];
