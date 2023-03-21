@@ -278,22 +278,22 @@ function proxyShowCoverTitle(
         opacity: 1,
         duration: 0.75,
       });
-      if (!onElUpdate) {
-        timeline.to(
-          el.value!,
-          {
-            opacity: 0,
-            duration: 0.75,
-          },
-          "+=1.5"
-        );
-      }
-      timeline.then(() => {
-        if (!onElUpdate) {
-          proxy.value = "";
-        }
-        resolve();
-      });
+      // if (!onElUpdate) {
+      //   timeline.to(
+      //     el.value!,
+      //     {
+      //       opacity: 0,
+      //       duration: 0.75,
+      //     },
+      //     "+=1.5"
+      //   );
+      // }
+      // timeline.then(() => {
+      //   if (!onElUpdate) {
+      //     proxy.value = "";
+      //   }
+      //   resolve();
+      // });
     });
   });
 }
@@ -1031,21 +1031,23 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
     opacity: 0;
     color: white;
     z-index: $text-layer-z-index + $title-z-index;
-    $padding: 10px;
+    $padding: 20px;
     padding: $padding;
     .title-border {
-      border: 2px solid white;
-      border-radius: 16px;
       position: relative;
       --side-padding: 0px;
       $border-svg-size: 32px;
+      $border-opacity: 0.5;
+      $border-color: rgba(255, 255, 255, $border-opacity);
+      border: 2px solid $border-color;
+      border-radius: 8px;
       // width: calc(100% - 2 * #{$padding} - 2 * var(--side-padding));
       width: calc(100% - 2 * #{$padding});
       height: calc(100% - 2 * #{$padding});
-      background: linear-gradient(to top, white, white),
-        linear-gradient(to left, white, white),
-        linear-gradient(to top, white, white),
-        linear-gradient(to left, white, white);
+      background: linear-gradient(to top, white, $border-color),
+        linear-gradient(to left, white, $border-color),
+        linear-gradient(to top, white, $border-color),
+        linear-gradient(to left, white, $border-color);
       background-size: calc(100% - 62px) 0.5px, 0.5px calc(100% - 65px),
         calc(100% - 62px) 0.5px, 0.5px calc(100% - 65px);
       background-position: 31px 12px, 11px 32px, 31px calc(100% - 12px),
@@ -1055,6 +1057,7 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
         position: absolute;
         width: $border-svg-size;
         filter: drop-shadow(0 0 0.2px white);
+        opacity: $border-opacity;
 
         &:nth-child(1) {
           top: 0;
