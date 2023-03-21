@@ -16,8 +16,7 @@ export type ResourcesTypes =
   | "avatar"
   | "video"
   | "popupImage"
-  | "bgEffectSounds" 
-  ;
+  | "bgEffectSounds";
 
 // select：按钮点击音效，back：返回音效
 export type OtherSounds = "select" | "bg_underfire" | "back";
