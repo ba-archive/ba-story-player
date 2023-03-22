@@ -36,7 +36,7 @@ eventBus.on("hide", () => {
   hiddenStoryLog.value = true;
   hiddenMenu.value = true;
 });
-eventBus.on("showStoryLog", (e) => {
+eventBus.on("showStoryLog", e => {
   hiddenStoryLog.value = !e;
 });
 watch(hiddenStoryLog, () => {
@@ -51,12 +51,14 @@ eventBus.on("showmenu", () => {
 eventBus.on("option", e => (selectOptions.value = [...e]));
 eventBus.on("next", () => {
   // 如果用跳转之类的事件跳过后, 此时关闭显示 选项
-  if(!selectOptions.value.length) return;
-  const find = selectOptions.value.find(i=>i.index === storyHandler.currentStoryIndex)
-  if(!find){
-    selectOptions.value = []
+  if (!selectOptions.value.length) return;
+  const find = selectOptions.value.find(
+    i => i.index === storyHandler.currentStoryIndex
+  );
+  if (!find) {
+    selectOptions.value = [];
   }
-})
+});
 function handleBtnFullScreen() {
   emitter("update:fullScreen", !props.fullScreen);
 }
