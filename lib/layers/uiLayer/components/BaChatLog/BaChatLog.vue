@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import BaChatMessage from "./BaChatMessage.vue";
 import { usePlayerStore } from "@/stores";
-import { Ref, ref, watch } from "vue";
+import { ref, watch } from "vue";
 
 const props = defineProps<{
   show: boolean,
@@ -13,14 +13,16 @@ watch(
     if (newValue) {
       setTimeout(() => {
         let elem = content.value;
-        let scrollHeight = elem.scrollHeight;
-        elem.scrollTo(0, scrollHeight);
+        if (elem) {
+          let scrollHeight = elem.scrollHeight;
+          elem.scrollTo(0, scrollHeight);
+        }
       }, 300);
     }
   }, {immediate: true}  // Why it's works when add `immediate: true`
 );
 
-const content = ref(null) as unknown as Ref<HTMLElement>;
+const content = ref<HTMLElement | null>(null);
 let store = usePlayerStore();
 let chatMessages = store.logText;
 
