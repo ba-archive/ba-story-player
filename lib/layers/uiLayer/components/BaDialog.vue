@@ -1,7 +1,7 @@
 <script lang="ts" setup>
-import { watch } from "vue";
-import { ref } from "vue";
 import eventBus from "@/eventBus";
+import { computed, nextTick, watch, watchEffect } from "vue";
+import { ref } from "vue";
 
 const props = defineProps({
   width: {
@@ -30,28 +30,29 @@ function handleClose() {
 </script>
 
 <template>
-  <div class="ba-dialog" :style="{ display: show === true ? '' : 'none' }" @click.self="handleClose">
-    <div class="ba-dialog-container" :style="{ width: props.width, height: props.height }">
-      <div class="ba-dialog-header">
-        <h3 class="ba-dialog-title">
-          <span>{{ title }}</span>
-        </h3>
-        <button class="ba-dialog-close button-nostyle" @click="handleClose">
-          <i style="user-select: none">
-            <img
-              src="../assets/close.svg"
-              alt="close dialog"
-              style="width: 1em; height: 1em; vertical-align: -0.15em"
-            />
-          </i>
-        </button>
-      </div>
-
-      <div class="ba-dialog-content-wrapper">
-        <slot></slot>
+  <Transition name="dialog">
+    <div class="ba-dialog" v-if="show" @click.self="handleClose">
+      <div class="ba-dialog-container" :style="{ width: props.width, height: props.height }">
+        <div class="ba-dialog-header">
+          <h3 class="ba-dialog-title">
+            <span>{{ title }}</span>
+          </h3>
+          <button class="ba-dialog-close button-nostyle" @click="handleClose">
+            <i style="user-select: none">
+              <img
+                src="../assets/close.svg"
+                alt="close dialog"
+                style="width: 1em; height: 1em; vertical-align: -0.15em"
+              />
+            </i>
+          </button>
+        </div>
+        <div class="ba-dialog-content-wrapper">
+          <slot></slot>
+        </div>
       </div>
     </div>
-  </div>
+  </Transition>
 </template>
 
 <style lang="scss" scoped>
@@ -61,6 +62,19 @@ function handleClose() {
   height: 100%;
   background: rgba(63, 63, 63, 0.4);
   z-index: 120;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  &.dialog-enter-active .ba-dialog-container,
+  &.dialog-leave-active .ba-dialog-container {
+    transition: transform .3s ease-out;
+  }
+
+  &.dialog-enter-from .ba-dialog-container,
+  &.dialog-leave-to .ba-dialog-container {
+    transform: translateY(40%);
+  }
 
   .ba-dialog-container {
     display: flex;
@@ -68,11 +82,9 @@ function handleClose() {
     background-color: #f0f0f0;
     border-radius: 0.625em;
     position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
     overflow: hidden;
     box-shadow: rgb(56, 56, 56) 0 2px 2px 1px;
+    transition: transform 1s ease-in;
 
     .ba-dialog-header {
       position: relative;
