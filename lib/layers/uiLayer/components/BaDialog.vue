@@ -1,7 +1,5 @@
 <script lang="ts" setup>
 import eventBus from "@/eventBus";
-import { computed, nextTick, watch, watchEffect } from "vue";
-import { ref } from "vue";
 
 const props = defineProps({
   width: {

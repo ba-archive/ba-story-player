@@ -2,35 +2,34 @@
 import BaChatMessage from "./BaChatMessage.vue";
 import { usePlayerStore } from "@/stores";
 import { Ref, ref, watch } from "vue";
-// import { checkBgOverlap } from "@/layers/translationLayer/utils";
 
-const props = defineProps({
-  show: Boolean,
-});
-const content = ref(null) as unknown as Ref<HTMLElement>;
-let store = usePlayerStore();
-let chatMesasages = store.logText;
+const props = defineProps<{
+  show: boolean,
+}>();
+
 watch(
   () => props.show,
-  newValue => {
-    console.log("show log")
+  (newValue) => {
     if (newValue) {
       setTimeout(() => {
         let elem = content.value;
-        // let currentScroll = elem.scrollTop;
-        // let clientHeight = elem.offsetHeight;
         let scrollHeight = elem.scrollHeight;
         elem.scrollTo(0, scrollHeight);
       }, 300);
     }
-  }
+  }, {immediate: true}  // Why it's works when add `immediate: true`
 );
+
+const content = ref(null) as unknown as Ref<HTMLElement>;
+let store = usePlayerStore();
+let chatMessages = store.logText;
+
 </script>
 
 <template>
   <div class="ba-chat-log">
     <ul class="ba-chat-content" ref="content">
-      <li class="ba-chat-item" v-for="(chatMessage, key) in chatMesasages" :key="key">
+      <li class="ba-chat-item" v-for="(chatMessage, key) in chatMessages" :key="key">
         <BaChatMessage :chat-message="chatMessage" />
       </li>
     </ul>
