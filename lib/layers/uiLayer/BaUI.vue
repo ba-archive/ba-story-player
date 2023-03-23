@@ -17,7 +17,6 @@ let hiddenStoryLog = ref(true);
 let autoMode = ref(false);
 let hiddenMenu = ref(true);
 let hiddenSubMenu = ref(true);
-const playerStore = usePlayerStore();
 
 let props = defineProps<{
   storySummary: StorySummary;
@@ -131,7 +130,7 @@ let cursorTimer: number = window.setTimeout(() => {
   cursorStyle.value = "none";
 }, hideCursorDelay);
 
-document.addEventListener("mousemove", ev => {
+document.addEventListener("mousemove", () => {
   cursorStyle.value = "auto";
   clearTimeout(cursorTimer);
   if (hiddenSummary.value && hiddenStoryLog.value && props.fullScreen) {

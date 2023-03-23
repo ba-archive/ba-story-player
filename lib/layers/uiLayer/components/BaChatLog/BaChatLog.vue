@@ -2,7 +2,7 @@
 import BaChatMessage from "./BaChatMessage.vue";
 import { usePlayerStore } from "@/stores";
 import { Ref, ref, watch } from "vue";
-import { checkBgOverlap } from "@/layers/translationLayer/utils";
+// import { checkBgOverlap } from "@/layers/translationLayer/utils";
 
 const props = defineProps({
   show: Boolean,
@@ -16,8 +16,8 @@ watch(
     if (newValue) {
       setTimeout(() => {
         let elem = content.value;
-        let currentScroll = elem.scrollTop;
-        let clientHeight = elem.offsetHeight;
+        // let currentScroll = elem.scrollTop;
+        // let clientHeight = elem.offsetHeight;
         let scrollHeight = elem.scrollHeight;
         elem.scrollTo(0, scrollHeight);
       }, 300);
