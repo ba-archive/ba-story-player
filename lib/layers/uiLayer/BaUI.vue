@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import BaButton from "@/layers/uiLayer/components/BaButton.vue";
-import { computed, ref, watch } from "vue";
+import { Ref, computed, ref, watch } from "vue";
 import BaDialog from "./components/BaDialog.vue";
 import BaChatLog from "./components/BaChatLog/BaChatLog.vue";
 import BaSelector from "./components/BaSelector.vue";
@@ -15,8 +15,8 @@ import { storyHandler } from "@/index";
 let showSummary = ref(false);
 let showStoryLog = ref(false);
 let autoMode = ref(false);
-let hiddenMenu = ref(true);
-let hiddenSubMenu = ref(true);
+let showMenu = ref(false);
+let showSubMenu = ref(true);
 
 let props = defineProps<{
   storySummary: StorySummary;
@@ -32,7 +32,7 @@ const emitter = defineEmits(["update:fullScreen"]);
 eventBus.on("hide", () => {
   showSummary.value = false;
   showStoryLog.value = false;
-  hiddenMenu.value = true;
+  showMenu.value = false;
 });
 eventBus.on("showStoryLog", e => {
   showStoryLog.value = e;
@@ -41,10 +41,10 @@ watch(showStoryLog, () => {
   eventBus.emit("isStoryLogShow", showStoryLog.value);
 });
 eventBus.on("hidemenu", () => {
-  hiddenMenu.value = true;
+  showMenu.value = false;
 });
 eventBus.on("showmenu", () => {
-  hiddenMenu.value = false;
+  showMenu.value = true;
 });
 eventBus.on("option", e => (selectOptions.value = [...e]));
 eventBus.on("next", () => {
@@ -75,7 +75,7 @@ function handleBtnSkipSummary() {
 
 // 处理选项
 function handleBaSelector(selectionGroup: number) {
-  hiddenSubMenu.value = true;
+  showSubMenu.value = false;
   eventBus.emit("playOtherSounds", "select");
   eventBus.emit("select", selectOptions.value[selectionGroup].SelectionGroup);
   usePlayerStore().updateLogText(selectOptions.value[selectionGroup]);
@@ -96,25 +96,25 @@ function handleBtnAutoMode() {
 let btnMenuTimer: number;
 
 function handleBtnMenu() {
-  if (hiddenSubMenu.value) {
-    hiddenSubMenu.value = false;
+  if (showSubMenu.value) {
+    showSubMenu.value = false;
+  } else {
+    showSubMenu.value = true;
     // 一段时间后自动影藏
     clearInterval(btnMenuTimer);
     btnMenuTimer = window.setTimeout(() => {
-      hiddenSubMenu.value = true;
+      showSubMenu.value = false;
     }, 5555);
-  } else {
-    hiddenSubMenu.value = true;
   }
 }
 
 const handleBtnMenuDebounced = useThrottleFn(handleBtnMenu, 200);
 
 function refreshBtnMenuTimer() {
-  if (!hiddenSubMenu.value) {
+  if (showSubMenu.value) {
     clearTimeout(btnMenuTimer);
     btnMenuTimer = window.setTimeout(() => {
-      hiddenSubMenu.value = true;
+      showSubMenu.value = false;
     }, 5555);
   }
 }
@@ -150,8 +150,8 @@ document.addEventListener("mousemove", () => {
 
 // 点击其他地方关闭子菜单
 eventBus.on("click", function() {
-  if (!hiddenSubMenu.value) {
-    hiddenSubMenu.value = true;
+  if (showSubMenu.value) {
+    showSubMenu.value = false;
     return;
   }
 });
@@ -193,6 +193,22 @@ const dict = {
 function getI18n(key: string) {
   return Reflect.get(Reflect.get(dict, props.language.toLowerCase()), key) || key;
 }
+
+// #97 UI层接收到隐藏UI事件后无法操作菜单
+const rightTop = ref<HTMLElement | null>(null);
+if (rightTop.value) {
+  const el = rightTop.value;
+  var mouseEnter = function mouseEnter() {
+    showMenu.value = true
+  }
+  var mouseLeave = function mouseLeave() {
+    showMenu.value = false
+  }
+  el.addEventListener("mouseenter", mouseEnter)
+  el.addEventListener("mouseleave", mouseLeave)
+  // el.addEventListener("click", enter)
+}
+
 </script>
 
 <template>
@@ -201,16 +217,16 @@ function getI18n(key: string) {
     :style="{ 'font-size': `${bauiem}px`, cursor: cursorStyle }"
     tabindex="0"
   >
-    <div class="right-top" v-show="!hiddenMenu">
+    <div class="right-top" v-show="showMenu" ref="rightTop">
       <div class="baui-button-group">
         <BaButton @click="handleBtnAutoMode" :class="{ 'ba-button-auto': true, activated: autoMode }"> AUTO </BaButton>
-        <BaButton @click="handleBtnMenuDebounced" :class="{ 'ba-button-menu': true, activated: !hiddenSubMenu }">
+        <BaButton @click="handleBtnMenuDebounced" :class="{ 'ba-button-menu': true, activated: showSubMenu }">
           MENU
         </BaButton>
       </div>
 
       <Transition>
-        <div class="baui-menu-options lean-rect" v-if="!hiddenSubMenu">
+        <div class="baui-menu-options lean-rect" v-if="showSubMenu">
           <button
             class="button-nostyle ba-menu-option"
             @click="handleBtnFullScreen"
