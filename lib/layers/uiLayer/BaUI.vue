@@ -9,8 +9,8 @@ import { Language, StorySummary } from "@/types/store";
 import { effectBtnMouseDown, effectBtnMouseUp } from "./utils";
 import { ShowOption } from "@/types/events";
 import { usePlayerStore } from "@/stores";
-import "./userInteract.ts";
 import { useThrottleFn } from "@vueuse/core";
+import "./userInteract";
 
 let hiddenSummary = ref(true);
 let hiddenStoryLog = ref(true);
@@ -86,14 +86,14 @@ function handleBtnAutoMode() {
 }
 
 // 计时器：当这个计时器到时间时 -- 回调函数会把 hiddenMenu 设置成 true 来影藏菜单
-let btnMenuTimer: NodeJS.Timeout;
+let btnMenuTimer: number;
 
 function handleBtnMenu() {
   if (hiddenSubMenu.value) {
     hiddenSubMenu.value = false;
     // 一段时间后自动影藏
     clearInterval(btnMenuTimer);
-    btnMenuTimer = setTimeout(() => {
+    btnMenuTimer = window.setTimeout(() => {
       hiddenSubMenu.value = true;
     }, 5555);
   } else {
@@ -106,7 +106,7 @@ const handleBtnMenuDebounced = useThrottleFn(handleBtnMenu, 200);
 function refreshBtnMenuTimer() {
   if (!hiddenSubMenu.value) {
     clearTimeout(btnMenuTimer);
-    btnMenuTimer = setTimeout(() => {
+    btnMenuTimer = window.setTimeout(() => {
       hiddenSubMenu.value = true;
     }, 5555);
   }
@@ -127,7 +127,7 @@ const bauiem = computed(() => {
 // #86 全屏时 UI 层鼠标不可见
 const cursorStyle = ref("auto");
 const hideCursorDelay = 3000;
-let cursorTimer: NodeJS.Timeout = setTimeout(() => {
+let cursorTimer: number = window.setTimeout(() => {
   cursorStyle.value = "none";
 }, hideCursorDelay);
 
@@ -135,7 +135,7 @@ document.addEventListener("mousemove", ev => {
   cursorStyle.value = "auto";
   clearTimeout(cursorTimer);
   if (hiddenSummary.value && hiddenStoryLog.value && props.fullScreen) {
-    cursorTimer = setTimeout(() => {
+    cursorTimer = window.setTimeout(() => {
       cursorStyle.value = "none";
     }, hideCursorDelay);
   }
@@ -184,9 +184,7 @@ const dict = {
 };
 
 function getI18n(key: string) {
-  return (
-    Reflect.get(Reflect.get(dict, props.language.toLowerCase()), key) || key
-  );
+  return Reflect.get(Reflect.get(dict, props.language.toLowerCase()), key) || key;
 }
 </script>
 
@@ -199,16 +197,8 @@ function getI18n(key: string) {
   >
     <div class="right-top" v-show="!hiddenMenu">
       <div class="baui-button-group">
-        <BaButton
-          @click="handleBtnAutoMode"
-          :class="{ 'ba-button-auto': true, activated: autoMode }"
-        >
-          AUTO
-        </BaButton>
-        <BaButton
-          @click="handleBtnMenuDebounced"
-          :class="{ 'ba-button-menu': true, activated: !hiddenSubMenu }"
-        >
+        <BaButton @click="handleBtnAutoMode" :class="{ 'ba-button-auto': true, activated: autoMode }"> AUTO </BaButton>
+        <BaButton @click="handleBtnMenuDebounced" :class="{ 'ba-button-menu': true, activated: !hiddenSubMenu }">
           MENU
         </BaButton>
       </div>
@@ -331,9 +321,8 @@ function getI18n(key: string) {
   top: 0;
   z-index: 100;
   overflow: hidden;
-  font-family: "TJL", "Microsoft YaHei", "PingFang SC", -apple-system, system-ui,
-    "Segoe UI", Roboto, Ubuntu, Cantarell, "Noto Sans", BlinkMacSystemFont,
-    "Helvetica Neue", "Hiragino Sans GB", Arial, sans-serif;
+  font-family: "TJL", "Microsoft YaHei", "PingFang SC", -apple-system, system-ui, "Segoe UI", Roboto, Ubuntu, Cantarell,
+    "Noto Sans", BlinkMacSystemFont, "Helvetica Neue", "Hiragino Sans GB", Arial, sans-serif;
 
   .v-enter-active,
   .v-leave-active {
@@ -356,8 +345,7 @@ function getI18n(key: string) {
     }
 
     .ba-button-auto.activated {
-      background: no-repeat right -17% bottom/contain url(./assets/Common_Btn_Normal_Y_S_Pt.webp)
-        #efe34b;
+      background: no-repeat right -17% bottom/contain url(./assets/Common_Btn_Normal_Y_S_Pt.webp) #efe34b;
     }
 
     .ba-button-menu.activated {

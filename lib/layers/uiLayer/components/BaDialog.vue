@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { watch } from "vue";
-import { onMounted, ref } from "vue";
+import { ref } from "vue";
 import gsap from "gsap";
 import eventBus from "@/eventBus";
 
@@ -46,16 +46,8 @@ watch(
 </script>
 
 <template>
-  <div
-    class="ba-dialog"
-    :style="{ display: show === true ? '' : 'none' }"
-    @click.self="handleClose"
-  >
-    <div
-      class="ba-dialog-container"
-      :style="{ width: props.width, height: props.height }"
-      ref="dialogContainer"
-    >
+  <div class="ba-dialog" :style="{ display: show === true ? '' : 'none' }" @click.self="handleClose">
+    <div class="ba-dialog-container" :style="{ width: props.width, height: props.height }" ref="dialogContainer">
       <div class="ba-dialog-header">
         <h3 class="ba-dialog-title">
           <span>{{ title }}</span>
@@ -102,12 +94,7 @@ watch(
       position: relative;
       overflow: hidden;
       background: no-repeat center/contain
-          linear-gradient(
-            58deg,
-            rgba(240, 240, 240, 0.1) 0%,
-            rgba(240, 240, 240, 1) 38%,
-            rgba(240, 240, 240, 1) 100%
-          ),
+          linear-gradient(58deg, rgba(240, 240, 240, 0.1) 0%, rgba(240, 240, 240, 1) 38%, rgba(240, 240, 240, 1) 100%),
         url(../assets/UITex_BGPoliLight_1.svg) rgb(164 216 237);
       background-size: 100%;
       background-position: 0 30%;
@@ -123,6 +110,7 @@ watch(
 
         span {
           display: inline-block;
+
           &::after {
             content: "";
             display: block;

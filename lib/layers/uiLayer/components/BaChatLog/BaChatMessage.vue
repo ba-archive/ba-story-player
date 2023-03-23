@@ -26,26 +26,14 @@ switch (props.chatMessage?.type) {
 </script>
 
 <template>
-  <div
-    :class="['ba-chat-message', bubbleType]"
-    @click="changeStoryIndex(chatMessage?.index)"
-  >
+  <div :class="['ba-chat-message', bubbleType]" @click="changeStoryIndex(chatMessage?.index)">
     <!-- 设置透明度为0如果没有图片需要显示 -->
-    <div
-      class="ba-chat-message-avatar-border"
-      :style="{ opacity: props.chatMessage?.avatarUrl ? 1 : 0 }"
-    >
+    <div class="ba-chat-message-avatar-border" :style="{ opacity: props.chatMessage?.avatarUrl ? 1 : 0 }">
       <div
         class="ba-chat-message-avatar"
         role="img"
         :style="{
-          'background-image':
-            'url(' +
-            props.chatMessage?.avatarUrl +
-            ')' +
-            ', url(' +
-            avatarBGRef +
-            ')',
+          'background-image': 'url(' + props.chatMessage?.avatarUrl + ')' + ', url(' + avatarBGRef + ')',
         }"
       />
     </div>

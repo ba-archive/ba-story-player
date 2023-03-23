@@ -29,11 +29,7 @@ watch(
 <template>
   <div class="ba-chat-log">
     <ul class="ba-chat-content" ref="content">
-      <li
-        class="ba-chat-item"
-        v-for="(chatMessage, key) in chatMesasages"
-        :key="key"
-      >
+      <li class="ba-chat-item" v-for="(chatMessage, key) in chatMesasages" :key="key">
         <BaChatMessage :chat-message="chatMessage" />
       </li>
     </ul>
