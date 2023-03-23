@@ -149,7 +149,7 @@ document.addEventListener("mousemove", () => {
 });
 
 // 点击其他地方关闭子菜单
-eventBus.on("click", function() {
+eventBus.on("click", function () {
   if (showSubMenu.value) {
     showSubMenu.value = false;
     return;
@@ -199,24 +199,19 @@ const rightTop = ref<HTMLElement | null>(null);
 if (rightTop.value) {
   const el = rightTop.value;
   var mouseEnter = function mouseEnter() {
-    showMenu.value = true
-  }
+    showMenu.value = true;
+  };
   var mouseLeave = function mouseLeave() {
-    showMenu.value = false
-  }
-  el.addEventListener("mouseenter", mouseEnter)
-  el.addEventListener("mouseleave", mouseLeave)
+    showMenu.value = false;
+  };
+  el.addEventListener("mouseenter", mouseEnter);
+  el.addEventListener("mouseleave", mouseLeave);
   // el.addEventListener("click", enter)
 }
-
 </script>
 
 <template>
-  <div
-    class="baui"
-    :style="{ 'font-size': `${bauiem}px`, cursor: cursorStyle }"
-    tabindex="0"
-  >
+  <div class="baui" :style="{ 'font-size': `${bauiem}px`, cursor: cursorStyle }" tabindex="0">
     <div class="right-top" v-show="showMenu" ref="rightTop">
       <div class="baui-button-group">
         <BaButton @click="handleBtnAutoMode" :class="{ 'ba-button-auto': true, activated: autoMode }"> AUTO </BaButton>
