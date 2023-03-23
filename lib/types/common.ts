@@ -1,23 +1,8 @@
 import type { Spine } from "pixi-spine";
-import {
-  PlayAudio,
-  PlayEffect,
-  ShowOption,
-  ShowText,
-  ShowTitleOption,
-  StArgs,
-} from "./events";
+import { PlayAudio, PlayEffect, ShowOption, ShowText, ShowTitleOption, StArgs } from "./events";
 import { TransitionTableItem } from "./excels";
 import { PlayerProps } from "@/BaStoryPlayer.vue";
-export type StoryType =
-  | "title"
-  | "place"
-  | "text"
-  | "option"
-  | "st"
-  | "effectOnly"
-  | "continue"
-  | "nextEpisode";
+export type StoryType = "title" | "place" | "text" | "option" | "st" | "effectOnly" | "continue" | "nextEpisode";
 
 export type Dict<T> = {
   [key: string]: T;

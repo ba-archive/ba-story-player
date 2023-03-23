@@ -21,10 +21,7 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
   getHandlerFunction(type: EmotionWord) {
     return Reflect.get(this, type);
   },
-  processEffect(
-    type: EmotionWord,
-    instance: CharacterEffectInstance
-  ): Promise<void> {
+  processEffect(type: EmotionWord, instance: CharacterEffectInstance): Promise<void> {
     const fn = this.getHandlerFunction(type);
     if (!fn) {
       return Promise.reject(`不支持的特效类型: ${type}`);
@@ -48,11 +45,7 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
       }
     }) as Promise<void>;
   },
-  Angry(
-    instance: CharacterEffectInstance,
-    options: EmotionOptions["Angry"],
-    sprites: Sprite[]
-  ): Promise<void> {
+  Angry(instance: CharacterEffectInstance, options: EmotionOptions["Angry"], sprites: Sprite[]): Promise<void> {
     const angryImgUnit = sprites[0];
     const scale = getRelativeScale(angryImgUnit, options);
     const { container } = prepareEmotionContainer(instance.instance, options);
@@ -86,11 +79,7 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
 
     return timelinePromise(waitTimeLine, destroyImg);
   },
-  Chat(
-    instance: CharacterEffectInstance,
-    options: EmotionOptions["Chat"],
-    sprites: Sprite[]
-  ): Promise<void> {
+  Chat(instance: CharacterEffectInstance, options: EmotionOptions["Chat"], sprites: Sprite[]): Promise<void> {
     const chatImage = sprites[0];
     prepareEmotionContainer(instance.instance, options, chatImage);
 
@@ -109,11 +98,7 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
 
     return timelinePromise(tl, []);
   },
-  Dot(
-    instance: CharacterEffectInstance,
-    options: EmotionOptions["Dot"],
-    sprites: Sprite[]
-  ): Promise<void> {
+  Dot(instance: CharacterEffectInstance, options: EmotionOptions["Dot"], sprites: Sprite[]): Promise<void> {
     const dialogImg = Sprite.from(sprites[0].texture);
     prepareEmotionContainer(instance.instance, options, dialogImg);
     const dotContainer = new Container();
@@ -142,16 +127,9 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
       duration: options.fadeOutDuration,
       delay: options.fadeOutPreDuration,
     });
-    return timelinePromise(showTl, [
-      dialogImg,
-      ...(dotContainer.children as Sprite[]),
-    ]);
+    return timelinePromise(showTl, [dialogImg, ...(dotContainer.children as Sprite[])]);
   },
-  Exclaim(
-    instance: CharacterEffectInstance,
-    options,
-    sprites: Sprite[]
-  ): Promise<void> {
+  Exclaim(instance: CharacterEffectInstance, options, sprites: Sprite[]): Promise<void> {
     const surpriseImg = sprites[0];
     prepareEmotionContainer(instance.instance, options, surpriseImg);
     const scale = getRelativeScale(surpriseImg, options);
@@ -176,11 +154,7 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
       []
     );
   },
-  Heart(
-    instance: CharacterEffectInstance,
-    options: EmotionOptions["Heart"],
-    sprites: Sprite[]
-  ): Promise<void> {
+  Heart(instance: CharacterEffectInstance, options: EmotionOptions["Heart"], sprites: Sprite[]): Promise<void> {
     const dialogImg = sprites[0];
     const heartImg = sprites[1];
     const dialogScale = getRelativeScale(dialogImg, options);
@@ -189,8 +163,7 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
     dialogImg.scale.set(dialogScale);
     heartImg.x = dialogImg.width * options.heartImg.position.x;
     heartImg.y = dialogImg.width * options.heartImg.position.y;
-    const heartScale =
-      (options.heartImg.scale * dialogImg.width) / heartImg.width;
+    const heartScale = (options.heartImg.scale * dialogImg.width) / heartImg.width;
     heartImg.scale.set(heartScale);
     dialogImg.zIndex = 10;
     heartImg.zIndex = 11;
@@ -224,18 +197,10 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
       })
       .to(heartImg, { alpha: 0, duration: options.fadeOutDuration })
       .add("fadeOut", "<")
-      .to(
-        dialogImg,
-        { alpha: 0, duration: options.fadeOutDuration },
-        "fadeOut"
-      );
+      .to(dialogImg, { alpha: 0, duration: options.fadeOutDuration }, "fadeOut");
     return timelinePromise(tl, []);
   },
-  Music(
-    instance: CharacterEffectInstance,
-    options: EmotionOptions["Music"],
-    sprites: Sprite[]
-  ) {
+  Music(instance: CharacterEffectInstance, options: EmotionOptions["Music"], sprites: Sprite[]) {
     const note = sprites[0];
     const scale = getRelativeScale(note, options);
     const { container } = prepareEmotionContainer(instance.instance, options);
@@ -258,11 +223,7 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
         },
         "start"
       )
-      .to(
-        note,
-        { y: 0, angle: 0, duration: options.animation.duration * 0.3 },
-        ">"
-      )
+      .to(note, { y: 0, angle: 0, duration: options.animation.duration * 0.3 }, ">")
       .to(
         note,
         {
@@ -272,20 +233,12 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
         },
         ">"
       )
-      .to(
-        note,
-        { y: 0, angle: 0, duration: options.animation.duration * 0.4 },
-        ">"
-      )
+      .to(note, { y: 0, angle: 0, duration: options.animation.duration * 0.4 }, ">")
       .to(note, { alpha: 0, duration: options.fadeOutDuration }, ">");
 
     return timelinePromise(tl, []);
   },
-  Question(
-    instance: CharacterEffectInstance,
-    options: EmotionOptions["Question"],
-    sprites: Sprite[]
-  ): Promise<void> {
+  Question(instance: CharacterEffectInstance, options: EmotionOptions["Question"], sprites: Sprite[]): Promise<void> {
     const questionImg = sprites[0];
     questionImg.visible = true;
     questionImg.zIndex = 10;
@@ -293,10 +246,7 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
     prepareEmotionContainer(instance.instance, options, questionImg);
 
     questionImg.scale.set(scale);
-    questionImg.anchor.set(
-      options.scaleAnimation.anchor.x,
-      options.scaleAnimation.anchor.y
-    );
+    questionImg.anchor.set(options.scaleAnimation.anchor.x, options.scaleAnimation.anchor.y);
     const tl = gsap.timeline();
     const animationScale = scale * options.scaleAnimation.scale;
     const recoverScale = scale * options.scaleAnimation.recoverScale;
@@ -317,11 +267,7 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
       []
     );
   },
-  Respond(
-    instance: CharacterEffectInstance,
-    options: EmotionOptions["Respond"],
-    sprites: Sprite[]
-  ): Promise<void> {
+  Respond(instance: CharacterEffectInstance, options: EmotionOptions["Respond"], sprites: Sprite[]): Promise<void> {
     const { instance: spine } = instance;
     const { container } = prepareEmotionContainer(spine, options);
     const scale = getRelativeScale(sprites[0], options);
@@ -329,10 +275,7 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
     for (let i = 0; i < 3; ++i) {
       let respondImg = spine.newSprite(sprites[0].texture);
       respondImg.angle = options.perImgSetting[i].angle;
-      respondImg.anchor.set(
-        options.perImgSetting[i].anchor.x,
-        options.perImgSetting[i].anchor.y
-      );
+      respondImg.anchor.set(options.perImgSetting[i].anchor.x, options.perImgSetting[i].anchor.y);
       respondImg.scale.set((scale * options.perImgSetting[i].scale) / 0.5);
       container.addChild(respondImg);
     }
@@ -352,11 +295,7 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
       [...(container.children as Sprite[]), ...sprites]
     );
   },
-  Sad(
-    instance: CharacterEffectInstance,
-    options: EmotionOptions["Sad"],
-    sprites: Sprite[]
-  ): Promise<void> {
+  Sad(instance: CharacterEffectInstance, options: EmotionOptions["Sad"], sprites: Sprite[]): Promise<void> {
     const { container } = prepareEmotionContainer(instance.instance, options);
     const tl = gsap.timeline();
     const sadLineImages: Sprite[] = [];
@@ -370,35 +309,22 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
       container.addChild(sadLineImage);
       tl.to(sadLineImage, { pixi: { alpha: 1 }, duration: 1 / 15 }, i / 6)
         .to(sadLineImage, { pixi: { scaleY: 1 }, duration: 4 / 15 }, ">")
-        .to(
-          sadLineImage,
-          { pixi: { positionY: `+=${options.moveYDistance}` } },
-          "<"
-        )
+        .to(sadLineImage, { pixi: { positionY: `+=${options.moveYDistance}` } }, "<")
         .to(sadLineImage, { duration: 26 / 60 }, ">");
     }
     tl.to(container, { pixi: { alpha: 0 }, duration: 8 / 60 });
 
     return timelinePromise(tl, sadLineImages);
   },
-  Shy(
-    instance: CharacterEffectInstance,
-    options: EmotionOptions["Shy"],
-    sprites: Sprite[]
-  ): Promise<void> {
+  Shy(instance: CharacterEffectInstance, options: EmotionOptions["Shy"], sprites: Sprite[]): Promise<void> {
     const dialogImg = sprites[0];
     const shyImg = sprites[1];
     const { container } = prepareEmotionContainer(instance.instance, options);
     const scale = getRelativeScale(dialogImg, options);
     dialogImg.scale.set(scale * options.scaleAnamation.startScale);
-    dialogImg.anchor.set(
-      options.scaleAnamation.anchor.x,
-      options.scaleAnamation.anchor.y
-    );
+    dialogImg.anchor.set(options.scaleAnamation.anchor.x, options.scaleAnamation.anchor.y);
     const shyImgPos = calcRelativePosition(dialogImg, options.shyImg.position);
-    shyImg.scale.set(
-      scale * options.shyImg.scale * options.scaleAnamation.startScale
-    );
+    shyImg.scale.set(scale * options.shyImg.scale * options.scaleAnamation.startScale);
     shyImg.position = shyImgPos;
     dialogImg.zIndex = 10;
     shyImg.zIndex = 11;
@@ -426,11 +352,7 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
           y: scale,
           duration: options.scaleAnamation.duration,
         })
-        .to(
-          dialogImg.scale,
-          { x: scale, y: scale, duration: options.scaleAnamation.duration },
-          "<"
-        )
+        .to(dialogImg.scale, { x: scale, y: scale, duration: options.scaleAnamation.duration }, "<")
         .add(
           shakeTl.tweenFromTo("start", "end", {
             repeat: options.shakeAnimation.times - 1,
@@ -441,41 +363,24 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
       []
     );
   },
-  Surprise(
-    instance: CharacterEffectInstance,
-    options: EmotionOptions["Surprise"],
-    sprites: Sprite[]
-  ): Promise<void> {
+  Surprise(instance: CharacterEffectInstance, options: EmotionOptions["Surprise"], sprites: Sprite[]): Promise<void> {
     const exclaimImg = Sprite.from(sprites[0].texture);
     const surpriseImg = Sprite.from(sprites[1].texture);
     const scale = getRelativeScale(exclaimImg, options);
     const startScale = scale * options.scaleAnimation.startScale;
 
     exclaimImg.scale.set(startScale);
-    exclaimImg.anchor.set(
-      options.scaleAnimation.anchor.x,
-      options.scaleAnimation.anchor.y
-    );
-    surpriseImg.scale.set(
-      startScale,
-      startScale * options.scaleAnimation.questionImgYScale
-    );
-    surpriseImg.position = calcRelativePosition(
-      exclaimImg,
-      options.imgSetting.questionImgPos
-    );
-    surpriseImg.anchor.set(
-      options.scaleAnimation.anchor.x,
-      options.scaleAnimation.anchor.y
-    );
+    exclaimImg.anchor.set(options.scaleAnimation.anchor.x, options.scaleAnimation.anchor.y);
+    surpriseImg.scale.set(startScale, startScale * options.scaleAnimation.questionImgYScale);
+    surpriseImg.position = calcRelativePosition(exclaimImg, options.imgSetting.questionImgPos);
+    surpriseImg.anchor.set(options.scaleAnimation.anchor.x, options.scaleAnimation.anchor.y);
     const { container } = prepareEmotionContainer(instance.instance, options);
     container.addChild(exclaimImg, surpriseImg);
     container.zIndex = 10;
 
     const tl = gsap.timeline();
     const xOffset = options.jumpAnimation.xOffset * instance.instance.width;
-    const jumpYOffset =
-      options.jumpAnimation.jumpYOffset * instance.instance.width;
+    const jumpYOffset = options.jumpAnimation.jumpYOffset * instance.instance.width;
     return timelinePromise(
       tl
         .to(container, {
@@ -499,36 +404,21 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
           ">"
         )
         .add("jumpEnd")
-        .to(
-          exclaimImg.scale,
-          { x: scale, y: scale, duration: options.scaleAnimation.duration },
-          0
-        )
-        .to(
-          surpriseImg.scale,
-          { x: scale, y: scale, duration: options.scaleAnimation.duration },
-          0
-        )
+        .to(exclaimImg.scale, { x: scale, y: scale, duration: options.scaleAnimation.duration }, 0)
+        .to(surpriseImg.scale, { x: scale, y: scale, duration: options.scaleAnimation.duration }, 0)
         .to(container, { duration: options.fadeOutPreDuration }, "jumpEnd")
         .to(container, { alpha: 0, duration: options.fadeOutDuration }, ">"),
       [surpriseImg, exclaimImg]
     );
   },
-  Sweat(
-    instance: CharacterEffectInstance,
-    options: EmotionOptions["Sweat"],
-    sprites: Sprite[]
-  ): Promise<void> {
+  Sweat(instance: CharacterEffectInstance, options: EmotionOptions["Sweat"], sprites: Sprite[]): Promise<void> {
     const dropImg = sprites[0];
     const smallDropImg = sprites[1];
     const { container } = prepareEmotionContainer(instance.instance, options);
     const scale = getRelativeScale(dropImg, options);
     dropImg.scale.set(scale);
     smallDropImg.scale.set(scale);
-    const smallPosition = calcRelativePosition(
-      dropImg,
-      options.smallImg.offset
-    );
+    const smallPosition = calcRelativePosition(dropImg, options.smallImg.offset);
     smallDropImg.x = smallPosition.x;
     smallDropImg.y = smallPosition.y;
     dropImg.zIndex = 10;
@@ -542,9 +432,7 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
     }).to(
       smallDropImg,
       {
-        y:
-          smallDropImg.y -
-          options.smallImg.dropAnimationOffset * smallDropImg.width,
+        y: smallDropImg.y - options.smallImg.dropAnimationOffset * smallDropImg.width,
         duration: options.dropAnimation.duration,
       },
       "<"
@@ -552,11 +440,7 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
 
     return timelinePromise(tl, []);
   },
-  Twinkle(
-    instance: CharacterEffectInstance,
-    options: EmotionOptions["Twinkle"],
-    sprites: Sprite[]
-  ): Promise<void> {
+  Twinkle(instance: CharacterEffectInstance, options: EmotionOptions["Twinkle"], sprites: Sprite[]): Promise<void> {
     const { container } = prepareEmotionContainer(instance.instance, options);
 
     const scale = getRelativeScale(sprites[0], options) / 0.5;
@@ -570,10 +454,7 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
       starImgs.push(starImg);
       starImg.anchor.set(0.5);
       starImg.scale.set(starImgScales[i]);
-      starImg.position = calcRelativePosition(
-        starImgs[0],
-        options.starImgs.pos[i]
-      );
+      starImg.position = calcRelativePosition(starImgs[0], options.starImgs.pos[i]);
       container.addChild(starImg);
     }
     container.alpha = 0;
@@ -599,19 +480,11 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
       tl
         .to(container, { alpha: 1, duration: options.fadeInDuration })
         .add(flashTlMaster.tweenFromTo(0, options.flashAnimation.totalDuration))
-        .to(
-          container,
-          { alpha: 0, duration: options.fadeOutDuration },
-          `>-=${options.fadeOutPreDuration}`
-        ),
+        .to(container, { alpha: 0, duration: options.fadeOutDuration }, `>-=${options.fadeOutPreDuration}`),
       [...starImgs]
     );
   },
-  Upset(
-    instance: CharacterEffectInstance,
-    options: EmotionOptions["Upset"],
-    sprites: Sprite[]
-  ): Promise<void> {
+  Upset(instance: CharacterEffectInstance, options: EmotionOptions["Upset"], sprites: Sprite[]): Promise<void> {
     const dialogImg = sprites[0];
     const upsetImg = Sprite.from(sprites[1].texture);
     prepareEmotionContainer(instance.instance, options, dialogImg);
@@ -641,12 +514,10 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
 
     const tl = gsap.timeline();
     return timelinePromise(
-      tl
-        .add(animationTl.tweenFromTo(0, options.animationTotalDuration))
-        .to(dialogImg, {
-          pixi: { alpha: 0 },
-          duration: options.fadeOutDuration,
-        }),
+      tl.add(animationTl.tweenFromTo(0, options.animationTotalDuration)).to(dialogImg, {
+        pixi: { alpha: 0 },
+        duration: options.fadeOutDuration,
+      }),
       [upsetImg]
     );
   },
@@ -703,21 +574,13 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
         ease: Power4.easeOut,
         duration: 33 / 60,
       })
-      .to(
-        sighImage,
-        { pixi: { alpha: 0 }, duration: 11 / 60 },
-        `>+=${12 / 60}`
-      );
+      .to(sighImage, { pixi: { alpha: 0 }, duration: 11 / 60 }, `>+=${12 / 60}`);
 
     return timelinePromise(tl, [sighImage]);
   },
   Bulb(instance, options, sprites) {
     const dialogImg = Sprite.from(sprites[0].texture);
-    const { container } = prepareEmotionContainer(
-      instance.instance,
-      options,
-      dialogImg
-    );
+    const { container } = prepareEmotionContainer(instance.instance, options, dialogImg);
     container.alpha = 0;
 
     const bulbImage = Sprite.from(sprites[1].texture);
@@ -783,11 +646,7 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
         ease: Power4.easeOut,
         duration: 12 / 60,
       })
-      .to(
-        smallTearImage,
-        { pixi: { alpha: 0 }, duration: 15 / 60 },
-        `>+=${13 / 60}`
-      )
+      .to(smallTearImage, { pixi: { alpha: 0 }, duration: 15 / 60 }, `>+=${13 / 60}`)
       .to(largeTearImage, { pixi: { alpha: 1 }, duration: 3 / 60 }, 12 / 60)
       .to(
         largeTearImage,
@@ -798,11 +657,7 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
         },
         "<"
       )
-      .to(
-        largeTearImage,
-        { pixi: { alpha: 0 }, ease: Power4.easeOut, duration: 4 / 60 },
-        `>+=${32 / 60}`
-      );
+      .to(largeTearImage, { pixi: { alpha: 0 }, ease: Power4.easeOut, duration: 4 / 60 }, `>+=${32 / 60}`);
 
     return timelinePromise(tl, [smallTearImage, largeTearImage]);
   },
@@ -827,11 +682,7 @@ function calcRelativePosition(standard: Sprite, relativeValue: PositionOffset) {
  * @param containerImg 作为容器的图片
  * @param relativeValue 位置的相对值(相对于容器图片宽度而言)
  */
-function setRelativePosition(
-  childImg: Sprite,
-  containerImg: Sprite,
-  relativeValue: PositionOffset
-) {
+function setRelativePosition(childImg: Sprite, containerImg: Sprite, relativeValue: PositionOffset) {
   childImg.position = {
     x: relativeValue.x * containerImg.width,
     y: relativeValue.y * containerImg.height,
@@ -851,11 +702,7 @@ function setRelativePosition(
  * @param options 表情自己的配置信息
  * @param container 装表情的容器, 也可以是表情自己
  */
-function prepareEmotionContainer(
-  spine: Spine,
-  options: EmotionOptions[EmotionWord],
-  container?: Container | Sprite
-) {
+function prepareEmotionContainer(spine: Spine, options: EmotionOptions[EmotionWord], container?: Container | Sprite) {
   if (!container) {
     container = new Container();
   }

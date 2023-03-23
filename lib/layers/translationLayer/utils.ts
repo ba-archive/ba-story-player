@@ -1,11 +1,4 @@
-import {
-  Speaker,
-  StoryRawUnit,
-  StoryUnit,
-  Text,
-  TextEffect,
-  TextEffectName,
-} from "@/types/common";
+import { Speaker, StoryRawUnit, StoryUnit, Text, TextEffect, TextEffectName } from "@/types/common";
 import { usePlayerStore } from "@/stores/index";
 import { Language } from "@/types/store";
 import { PlayAudio, ShowTitleOption } from "@/types/events";
@@ -149,9 +142,7 @@ export function parseCustomTag(rawText: string): Text {
   };
 }
 
-type CustomTagParserFn = (
-  rawText: string
-) => { effect: TextEffect; remain: string } | undefined;
+type CustomTagParserFn = (rawText: string) => { effect: TextEffect; remain: string } | undefined;
 
 type CustomTagParserMap = {
   [key in TextEffectName]: CustomTagParserFn;
@@ -201,21 +192,12 @@ export function compareCaseInsensive(s1: string, s2: string) {
 /**
  * 获取角色在unit的characters里的index, 当不存在时会自动往unit的character里加入该角色
  */
-export function getCharacterIndex(
-  unit: StoryUnit,
-  initPosition: number,
-  result: StoryUnit[],
-  rawIndex: number
-) {
-  let characterIndex = unit.characters.findIndex(
-    value => value.position === initPosition
-  );
+export function getCharacterIndex(unit: StoryUnit, initPosition: number, result: StoryUnit[], rawIndex: number) {
+  let characterIndex = unit.characters.findIndex(value => value.position === initPosition);
   let tempIndex = rawIndex;
   while (characterIndex === -1) {
     tempIndex--;
-    characterIndex = result[tempIndex].characters.findIndex(
-      value => value.position === initPosition
-    );
+    characterIndex = result[tempIndex].characters.findIndex(value => value.position === initPosition);
     if (characterIndex !== -1) {
       let preCharacter = { ...result[tempIndex].characters[characterIndex] };
       preCharacter.effects = [];
@@ -261,10 +243,7 @@ export function checkBgOverlap(unit: StoryUnit) {
 }
 
 export function getL2DUrlAndName(BGFileName: string) {
-  let filename = String(BGFileName)
-    .split("/")
-    .pop()
-    ?.replace("SpineBG_Lobby", "");
+  let filename = String(BGFileName).split("/").pop()?.replace("SpineBG_Lobby", "");
   filename = `${filename}_home`;
   return { url: getResourcesUrl("l2dSpine", filename), name: filename };
 }
@@ -290,9 +269,7 @@ export function getCharacterInfo(krName: string) {
 /**
  * 在CharacterNameExcelTableItem中获取到speaker信息
  */
-export function getSpeaker(
-  characterInfo: CharacterNameExcelTableItem
-): Speaker {
+export function getSpeaker(characterInfo: CharacterNameExcelTableItem): Speaker {
   let language = playerStore.language.toUpperCase() as "CN" | "JP";
   if (characterInfo[`Name${language}`]) {
     return {
@@ -318,21 +295,12 @@ export function getCharacterName(krName: string) {
 /**
  * 选择文字, 当没有当前语言文字时返回日文
  */
-export function getText(
-  rawStoryUnit: StoryRawUnit,
-  language: Language
-): string {
+export function getText(rawStoryUnit: StoryRawUnit, language: Language): string {
   let textProperty = `Text${language}` as const;
-  return (
-    String(Reflect.get(rawStoryUnit, textProperty)) ||
-    String(rawStoryUnit.TextJp)
-  );
+  return String(Reflect.get(rawStoryUnit, textProperty)) || String(rawStoryUnit.TextJp);
 }
 
-export function generateTitleInfo(
-  rawStoryUnit: StoryRawUnit,
-  language: Language
-): ShowTitleOption {
+export function generateTitleInfo(rawStoryUnit: StoryRawUnit, language: Language): ShowTitleOption {
   const text = getText(rawStoryUnit, language);
   // 第114话;这是514个主标题
   // [这是514个主标题, 第114话]

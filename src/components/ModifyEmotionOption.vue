@@ -1,15 +1,9 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, ref } from "vue";
 import eventBus from "../../lib/eventBus";
-import emotionOptions, {
-  emotionDescriptions,
-} from "../../lib/layers/characterLayer/options/emotionOptions";
-import actionOptions, {
-  actionDescriptions,
-} from "../../lib/layers/characterLayer/options/actionOptions";
-import fxOptions, {
-  fxOptionsDescriptions,
-} from "../../lib/layers/characterLayer/options/fxOptions";
+import emotionOptions, { emotionDescriptions } from "../../lib/layers/characterLayer/options/emotionOptions";
+import actionOptions, { actionDescriptions } from "../../lib/layers/characterLayer/options/actionOptions";
+import fxOptions, { fxOptionsDescriptions } from "../../lib/layers/characterLayer/options/fxOptions";
 import { EffectsWord } from "../../lib/types/characterLayer";
 import { resizeTextareas } from "../utils";
 
@@ -67,8 +61,7 @@ function showCharacter() {
         position: 3,
         highlight: true,
         signal: false,
-        spineUrl:
-          "https://yuuka.diyigemt.com/image/ba-all-data/spine/CH0184ND_spr/CH0184ND_spr.skel",
+        spineUrl: "https://yuuka.diyigemt.com/image/ba-all-data/spine/CH0184ND_spr/CH0184ND_spr.skel",
         effects: [
           {
             type: "action",

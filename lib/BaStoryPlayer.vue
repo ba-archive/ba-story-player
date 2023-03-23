@@ -39,10 +39,7 @@ const props = withDefaults(defineProps<PlayerProps>(), {
   useSuperSampling: false,
 });
 const storySummary = ref(props.storySummary);
-storySummary.value.summary = storySummary.value.summary.replace(
-  "[USERNAME]",
-  props.userName
-);
+storySummary.value.summary = storySummary.value.summary.replace("[USERNAME]", props.userName);
 const emit = defineEmits(["end"]);
 
 const playerHeight = ref(props.height);
@@ -75,10 +72,7 @@ watch(fullScreen, updateFullScreenState);
  * 强制横屏使播放器居中的top值
  */
 const fullscreenTopOffset = computed(() => {
-  const screenWidth = Math.max(
-    window.screen.availHeight,
-    window.screen.availWidth
-  );
+  const screenWidth = Math.max(window.screen.availHeight, window.screen.availWidth);
   return `${100 - ((1 - playerWidth.value / screenWidth) / 2) * 100}%`;
 });
 
@@ -92,22 +86,14 @@ async function updateFullScreenState() {
     ![null, undefined].includes(document.mozFullScreenElement);
   if (fullScreen.value) {
     if (!currentFullScreenState) {
-      if (
-        document.fullscreenEnabled ||
-        document.webkitFullscreenEnabled ||
-        document.mozFullScreenEnabled
-      ) {
+      if (document.fullscreenEnabled || document.webkitFullscreenEnabled || document.mozFullScreenEnabled) {
         if ("function" === typeof document.documentElement.requestFullscreen) {
           console.log("requestFullscreen");
           await player.value?.requestFullscreen({ navigationUI: "hide" });
-        } else if (
-          "function" === typeof document.documentElement.webkitRequestFullScreen
-        ) {
+        } else if ("function" === typeof document.documentElement.webkitRequestFullScreen) {
           console.log("webkitRequestFullScreen");
           await player.value?.webkitRequestFullScreen({ navigationUI: "hide" });
-        } else if (
-          "function" === typeof document.documentElement.mozRequestFullScreen
-        ) {
+        } else if ("function" === typeof document.documentElement.mozRequestFullScreen) {
           console.log("mozRequestFullScreen");
           await player.value?.mozRequestFullScreen({ navigationUI: "hide" });
         }
@@ -122,14 +108,8 @@ async function updateFullScreenState() {
       }
     }
     if (!isPseudoFullscreen.value) {
-      playerHeight.value = Math.min(
-        window.screen.availWidth,
-        window.screen.availHeight
-      );
-      const tempWidth = Math.max(
-        window.screen.availWidth,
-        window.screen.availHeight
-      );
+      playerHeight.value = Math.min(window.screen.availWidth, window.screen.availHeight);
+      const tempWidth = Math.max(window.screen.availWidth, window.screen.availHeight);
       if (tempWidth / playerHeight.value > fullScreenMaxAspectRatio) {
         playerWidth.value = playerHeight.value * fullScreenMaxAspectRatio;
       } else {
@@ -213,10 +193,7 @@ onMounted(() => {
   }
   //保证fullscreen值正确性
   prefixes.forEach(prefix => {
-    player.value?.addEventListener(
-      `${prefix}fullscreenchange`,
-      handleFullScreenChange
-    );
+    player.value?.addEventListener(`${prefix}fullscreenchange`, handleFullScreenChange);
   });
   firstMount = true;
 });
@@ -231,10 +208,7 @@ onActivated(() => {
   if (!firstMount) {
     continuePlay();
     prefixes.forEach(prefix => {
-      player.value?.addEventListener(
-        `${prefix}fullscreenchange`,
-        handleFullScreenChange
-      );
+      player.value?.addEventListener(`${prefix}fullscreenchange`, handleFullScreenChange);
     });
   } else {
     firstMount = false;
@@ -243,41 +217,24 @@ onActivated(() => {
 
 onBeforeUnmount(() => {
   prefixes.forEach(prefix => {
-    player.value?.removeEventListener(
-      `${prefix}fullscreenchange`,
-      handleFullScreenChange
-    );
+    player.value?.removeEventListener(`${prefix}fullscreenchange`, handleFullScreenChange);
   });
 });
 
 onDeactivated(() => {
   prefixes.forEach(prefix => {
-    player.value?.removeEventListener(
-      `${prefix}fullscreenchange`,
-      handleFullScreenChange
-    );
+    player.value?.removeEventListener(`${prefix}fullscreenchange`, handleFullScreenChange);
   });
   stop();
 });
 </script>
 
 <template>
-  <div
-    id="player"
-    :style="{ height: `${playerHeight}px`, width: `${playerWidth}px` }"
-    ref="player"
-  >
+  <div id="player" :style="{ height: `${playerHeight}px`, width: `${playerWidth}px` }" ref="player">
     <div id="player__background" :style="playerStyle">
       <div id="player__main" :style="playerStyle">
-        <div
-          id="player__main__canvas"
-          :style="{ transform: `scale(${pixiScale})` }"
-        ></div>
-        <BaDialog
-          :player-height="playerHeight"
-          :player-width="playerWidth"
-          :style="{ width: `${playerWidth}px` }"
-        >
+        <div id="player__main__canvas" :style="{ transform: `scale(${pixiScale})` }"></div>
+        <BaDialog :player-height="playerHeight" :player-width="playerWidth" :style="{ width: `${playerWidth}px` }">
         </BaDialog>
         <BaUI
           :height="playerHeight"

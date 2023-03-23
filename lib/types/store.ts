@@ -107,9 +107,7 @@ export interface BasicGetters {
   /**
    * 获取角色spineData
    */
-  characterSpineData: (
-    CharacterName: number
-  ) => import("@pixi-spine/base").ISkeletonData | undefined;
+  characterSpineData: (CharacterName: number) => import("@pixi-spine/base").ISkeletonData | undefined;
   /**
    * 获取情绪图像资源
    * @param emotionName 情绪名

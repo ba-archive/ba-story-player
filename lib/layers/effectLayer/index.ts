@@ -16,10 +16,7 @@ export function effectInit() {
   let playerStore = usePlayerStore();
   playerStore.app.stage.addChild(emitterContainer);
   eventBus.on("transitionIn", async transition => {
-    let duration =
-      transition.TransitionInDuration !== 1
-        ? transition.TransitionInDuration
-        : 1000;
+    let duration = transition.TransitionInDuration !== 1 ? transition.TransitionInDuration : 1000;
     duration = storyHandler.isSkip ? 50 : duration;
     switch (transition.TransitionIn) {
       case "fade":
@@ -29,10 +26,7 @@ export function effectInit() {
         await playTransition("white", duration, "in");
         break;
       default: {
-        if (
-          transition.TransitionInResource ===
-          "Effect/UI/BGFX/UI_FX_HorSwipe_RtoL_Out"
-        ) {
+        if (transition.TransitionInResource === "Effect/UI/BGFX/UI_FX_HorSwipe_RtoL_Out") {
           await playHorSwipeTransition(duration);
         }
       }
@@ -40,10 +34,7 @@ export function effectInit() {
     eventBus.emit("transitionInDone");
   });
   eventBus.on("transitionOut", async transition => {
-    let duration =
-      transition.TransitionOutDuration !== 1
-        ? transition.TransitionOutDuration
-        : 1000;
+    let duration = transition.TransitionOutDuration !== 1 ? transition.TransitionOutDuration : 1000;
     duration = storyHandler.isSkip ? 50 : duration;
     switch (transition.TransitionOut) {
       case "fade":
@@ -70,9 +61,7 @@ export function effectInit() {
           break;
         case "zmc":
           if (bgInstance) {
-            promiseArray.push(
-              zmcPlayer.playZmc(bgInstance, effect.args, playerStore.app)
-            );
+            promiseArray.push(zmcPlayer.playZmc(bgInstance, effect.args, playerStore.app));
           }
           break;
         default:
@@ -100,14 +89,8 @@ export async function removeEffect() {
  * @param durationMs 渐变时间, 单位为ms
  * @param mode 渐变方式 in为淡入, out为淡出
  */
-async function playTransition(
-  color: "black" | "white",
-  durationMs: number,
-  mode: "in" | "out"
-): Promise<void> {
-  let background = document.querySelector(
-    "#player__background"
-  ) as HTMLDivElement;
+async function playTransition(color: "black" | "white", durationMs: number, mode: "in" | "out"): Promise<void> {
+  let background = document.querySelector("#player__background") as HTMLDivElement;
   background.style.backgroundColor = color;
   let playerMain = document.querySelector("#player__main");
   function killTransitionIn() {
@@ -119,27 +102,17 @@ async function playTransition(
   eventBus.on("skipping", killTransitionIn);
   switch (mode) {
     case "in":
-      await gsap.fromTo(
-        playerMain,
-        { alpha: 1 },
-        { alpha: 0, duration: durationMs / 1000 }
-      );
+      await gsap.fromTo(playerMain, { alpha: 1 }, { alpha: 0, duration: durationMs / 1000 });
       break;
     case "out":
-      await gsap.fromTo(
-        playerMain,
-        { alpha: 0 },
-        { alpha: 1, duration: durationMs / 1000 }
-      );
+      await gsap.fromTo(playerMain, { alpha: 0 }, { alpha: 1, duration: durationMs / 1000 });
       break;
   }
 }
 
 function playHorSwipeTransition(duration: number): Promise<void> {
   return new Promise<void>(resolve => {
-    const background = document.querySelector(
-      "#player__background"
-    ) as HTMLDivElement;
+    const background = document.querySelector("#player__background") as HTMLDivElement;
     const cover = document.createElement("div");
     const obj = { a: 0 };
     cover.classList.add("transition-cover");
@@ -205,11 +178,7 @@ let zmcPlayer = {
    * @param args zmc参数
    * @param app pixi Application实例
    */
-  async playZmc(
-    bgInstance: Sprite,
-    args: ZmcArgs,
-    app: Application
-  ): Promise<void> {
+  async playZmc(bgInstance: Sprite, args: ZmcArgs, app: Application): Promise<void> {
     //背景图片切换时取消zmc状态
     this.onZmc = true;
     let removeOnZmc = () => {
@@ -240,11 +209,9 @@ let zmcPlayer = {
     const finalOffsetX = finalOffsetXA * (1 / 5) + finalOffsetXB * (4 / 5);
     const finalOffsetY = (finalOffsetYA + finalOffsetYB) / 2;
 
-    const afterScaleWidth =
-      (bgInstance.width / bgInstance.scale.x) * finalScale;
+    const afterScaleWidth = (bgInstance.width / bgInstance.scale.x) * finalScale;
     const afterScaleHalfWidth = afterScaleWidth / 2;
-    const afterScaleHeight =
-      (bgInstance.height / bgInstance.scale.y) * finalScale;
+    const afterScaleHeight = (bgInstance.height / bgInstance.scale.y) * finalScale;
     const afterScaleHalfHeight = afterScaleHeight / 2;
     const finalX = -(afterScaleHalfWidth - (viewHalfWidth - finalOffsetX));
     const finalY = -(afterScaleHalfHeight - (viewHalfHeight + finalOffsetY));

@@ -14,11 +14,7 @@
     </select>
     <div v-if="effectType === 'transition'">
       <label>transitionName</label>
-      <input
-        list="transitionNames"
-        v-model="currentTransition"
-        @input="updateTransitionItem"
-      />
+      <input list="transitionNames" v-model="currentTransition" @input="updateTransitionItem" />
       <datalist id="transitionNames">
         <option v-for="name in transitionNames">{{ name }}</option>
       </datalist>
@@ -45,9 +41,7 @@
       />
       <label>option(该参数仅当前起效)</label>
       <textarea
-        :value="
-          JSON.stringify(bgEffectHandlerOptions[currentBGEffectType], null, 2)
-        "
+        :value="JSON.stringify(bgEffectHandlerOptions[currentBGEffectType], null, 2)"
         @input="event => { bgEffectHandlerOptions[currentBGEffectType] = JSON.parse((event.target as HTMLTextAreaElement).value) }"
       />
     </div>
@@ -131,9 +125,7 @@ function updateTransitionItem() {
     currentTransitionItem.value = item;
   }
 }
-let currentTransitionItem = ref(
-  stores.TransitionExcelTable.get(transitionNames[0])
-);
+let currentTransitionItem = ref(stores.TransitionExcelTable.get(transitionNames[0]));
 
 //bgEffect
 let effectNamesTable: Record<string, number[]> = {};
@@ -146,9 +138,7 @@ for (let [key, item] of stores.BGEffectExcelTable.entries()) {
 }
 let currentBGEffect = ref(0);
 let currentBGEffectType = ref<BGEffectType>("BG_Rain_L");
-let currentBGEffectItem = ref(
-  stores.BGEffectExcelTable.get(effectNamesTable["BG_Rain_L"][0])
-);
+let currentBGEffectItem = ref(stores.BGEffectExcelTable.get(effectNamesTable["BG_Rain_L"][0]));
 let currentBGEffectNames = computed(() => {
   if (effectNamesTable[currentBGEffectType.value]) {
     return effectNamesTable[currentBGEffectType.value];

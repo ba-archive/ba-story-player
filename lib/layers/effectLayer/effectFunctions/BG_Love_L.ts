@@ -29,9 +29,7 @@ export default async function BG_Love_L(resources: Sprite[]) {
     y: appHeight / 2,
   };
   // 塞入 texture 中
-  getEmitterType(heartConfig, "textureRandom").config.textures.push(
-    resources[0].texture
-  );
+  getEmitterType(heartConfig, "textureRandom").config.textures.push(resources[0].texture);
   const heartTextureWidth = resources[0].texture.width;
   const heartBaseRatio = (0.074 * appWidth) / heartTextureWidth; // 0.074 量出来的, 此时定为emiter时会达到的最大值
   const scaleConfig = getEmitterType(heartConfig, "scale").config;
@@ -44,9 +42,7 @@ export default async function BG_Love_L(resources: Sprite[]) {
     ...(emitterConfigs("love_ring") as EmitterConfigV3),
   };
   const ringSprite = sprite2TransParent(resources[1]);
-  getEmitterType(ringConfig, "textureRandom").config.textures.push(
-    ringSprite.texture
-  );
+  getEmitterType(ringConfig, "textureRandom").config.textures.push(ringSprite.texture);
   getEmitterType(ringConfig, "spawnShape").config.data.w = appWidth;
   getEmitterType(ringConfig, "spawnShape").config.data.h = appHeight;
   const ringTextureWidth = resources[1].texture.width;

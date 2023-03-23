@@ -2,23 +2,11 @@
   <div class="container" :style="{ height: `${playerHeight}px` }">
     <div class="container-inner">
       <div class="loading-container absolute-container" v-if="showLoading">
-        <img
-          class="loading-image"
-          :src="loadingImageSrc"
-          alt="本来应该是加载图片的"
-        />
+        <img class="loading-image" :src="loadingImageSrc" alt="本来应该是加载图片的" />
         <div class="loading-log">
-          <div
-            v-for="(e, index) in mapLoadLog"
-            class="loading-log-item"
-            :key="index"
-          >
-            <span v-if="e.type === 'success'" class="loading-log-item-success">
-              加载资源:{{ e.resourceName }}
-            </span>
-            <span v-else class="loading-log-item-error">
-              加载错误:{{ e.resourceName }}
-            </span>
+          <div v-for="(e, index) in mapLoadLog" class="loading-log-item" :key="index">
+            <span v-if="e.type === 'success'" class="loading-log-item-success"> 加载资源:{{ e.resourceName }} </span>
+            <span v-else class="loading-log-item-error"> 加载错误:{{ e.resourceName }} </span>
           </div>
         </div>
       </div>
@@ -31,24 +19,14 @@
         <div class="next-episode-cover" />
         <div class="next-episode-cover" />
       </div>
-      <div
-        class="to-be-continued-container absolute-container"
-        v-if="showToBeContinue"
-      >
+      <div class="to-be-continued-container absolute-container" v-if="showToBeContinue">
         <div ref="toBeContinuedBg0" class="to-be-continued-bg0" />
         <div ref="toBeContinuedBg1" class="to-be-continued-bg1" />
-        <div
-          ref="toBeContinuedText"
-          class="to-be-continued"
-          :style="{ fontSize: `${standardFontSize}rem` }"
-        >
+        <div ref="toBeContinuedText" class="to-be-continued" :style="{ fontSize: `${standardFontSize}rem` }">
           To Be Continued...
         </div>
       </div>
-      <div
-        class="image-video-container absolute-container"
-        v-if="popupSrc.image || popupSrc.video"
-      >
+      <div class="image-video-container absolute-container" v-if="popupSrc.image || popupSrc.video">
         <div class="image-video-container-inner">
           <div
             class="image-container absolute-container"
@@ -67,27 +45,11 @@
           />
         </div>
       </div>
-      <div
-        class="st-container absolute-container"
-        ref="stOutput"
-        :style="{ fontSize: `${standardFontSize}rem` }"
-      />
-      <div
-        ref="titleEL"
-        class="title-container absolute-container"
-        :style="overrideTitleStyle"
-        v-if="titleContent"
-      >
-        <div
-          class="title-border"
-          :style="{ '--side-padding': `${titleBorderPadding}px` }"
-        >
+      <div class="st-container absolute-container" ref="stOutput" :style="{ fontSize: `${standardFontSize}rem` }" />
+      <div ref="titleEL" class="title-container absolute-container" :style="overrideTitleStyle" v-if="titleContent">
+        <div class="title-border" :style="{ '--side-padding': `${titleBorderPadding}px` }">
           <img src="./assets/title-border.png" />
-          <div
-            ref="titleContain"
-            class="title-contain"
-            :style="{ '--font-size': `${fontSize(4)}rem` }"
-          >
+          <div ref="titleContain" class="title-contain" :style="{ '--font-size': `${fontSize(4)}rem` }">
             <div class="sub-title" v-if="subTitleContent">
               <span class="sub-title-inner">{{ subTitleContent }}</span>
             </div>
@@ -95,12 +57,7 @@
           </div>
         </div>
       </div>
-      <div
-        ref="placeEL"
-        class="place-container"
-        :style="{ '--font-size': `${fontSize(2)}rem` }"
-        v-if="placeContent"
-      >
+      <div ref="placeEL" class="place-container" :style="{ '--font-size': `${fontSize(2)}rem` }" v-if="placeContent">
         <div class="round-place">
           <span class="place-content">{{ placeContent }}</span>
         </div>
@@ -115,21 +72,11 @@
       >
         <div class="inner-dialog">
           <div class="title">
-            <span :style="{ fontSize: `${fontSize(3.5)}rem` }" class="name">{{
-              name ? name : "&emsp;"
-            }}</span>
-            <span
-              :style="{ fontSize: `${fontSize(2)}rem` }"
-              class="department"
-              >{{ nickName }}</span
-            >
+            <span :style="{ fontSize: `${fontSize(3.5)}rem` }" class="name">{{ name ? name : "&emsp;" }}</span>
+            <span :style="{ fontSize: `${fontSize(2)}rem` }" class="department">{{ nickName }}</span>
           </div>
           <hr />
-          <div
-            ref="typewriterOutput"
-            :style="{ '--font-size': `${standardFontSize}rem` }"
-            class="content"
-          />
+          <div ref="typewriterOutput" :style="{ '--font-size': `${standardFontSize}rem` }" class="content" />
           <div class="next-image-btn" v-if="typingComplete">&zwj;</div>
         </div>
       </div>
@@ -138,24 +85,10 @@
 </template>
 
 <script setup lang="ts">
-import {
-  onMounted,
-  ref,
-  computed,
-  Ref,
-  nextTick,
-  onUnmounted,
-  reactive,
-} from "vue";
+import { onMounted, ref, computed, Ref, nextTick, onUnmounted, reactive } from "vue";
 import eventBus from "@/eventBus";
 import Typed, { TypedExtend, TypedOptions } from "typed.js";
-import {
-  ResourceLoadState,
-  ShowText,
-  ShowTitleOption,
-  StArgs,
-  StText,
-} from "@/types/events";
+import { ResourceLoadState, ShowText, ShowTitleOption, StArgs, StText } from "@/types/events";
 import { Text, TextEffectName } from "@/types/common";
 import { deepCopyObject } from "@/utils";
 import { usePlayerStore } from "@/stores";
@@ -327,24 +260,16 @@ function handleShowStEvent(e: StText) {
     // st显示类型
     const stType = e.stArgs[1];
     // st坐标系映射视口坐标系
-    const x = Math.floor(
-      (stWidth / 2 + stPos[0]) * stPositionBounds.value.width
-    );
-    const y = Math.floor(
-      (stHeight / 2 - stPos[1]) * stPositionBounds.value.height
-    );
+    const x = Math.floor((stWidth / 2 + stPos[0]) * stPositionBounds.value.width);
+    const y = Math.floor((stHeight / 2 - stPos[1]) * stPositionBounds.value.height);
     // st样式
     let extendStyle = `;position: absolute; --top: ${y}px; width: auto;left: ${x}px;`;
     // 居中显示特殊样式
     if (e.middle) {
-      extendStyle =
-        extendStyle +
-        `;text-align: center; left: 50%; transform: translateX(-50%)`;
+      extendStyle = extendStyle + `;text-align: center; left: 50%; transform: translateX(-50%)`;
     }
     const fontSize = e.stArgs[2]; // st的字号
-    extendStyle =
-      extendStyle +
-      `;--font-size: ${unityFontSizeToHTMLSize(Number(fontSize))}rem`;
+    extendStyle = extendStyle + `;--font-size: ${unityFontSizeToHTMLSize(Number(fontSize))}rem`;
     // 立即显示, 跳过打字机
     const fn = Reflect.get(StMap, stType);
     if (fn) {
@@ -364,8 +289,7 @@ type StMap = {
 };
 const StMap: StMap = {
   instant(e: StText, parsedStyle: string): void {
-    stOutput.value!.innerHTML =
-      stOutput.value!.innerHTML + parseStInnerHtml(e, parsedStyle).content;
+    stOutput.value!.innerHTML = stOutput.value!.innerHTML + parseStInnerHtml(e, parsedStyle).content;
     eventBus.emit("stDone");
   },
   serial(e: StText, parsedStyle: string): void {
@@ -391,11 +315,8 @@ const StMap: StMap = {
   },
   smooth(e: StText, parsedStyle: string): void {
     parsedStyle = parsedStyle + ";opacity: 0";
-    stOutput.value!.innerHTML =
-      stOutput.value!.innerHTML + parseStInnerHtml(e, parsedStyle).content;
-    const el = stOutput.value!.children.item(
-      stOutput.value!.children.length - 1
-    );
+    stOutput.value!.innerHTML = stOutput.value!.innerHTML + parseStInnerHtml(e, parsedStyle).content;
+    const el = stOutput.value!.children.item(stOutput.value!.children.length - 1);
     const timeline = gsap.timeline();
     timeline
       .fromTo(
@@ -470,9 +391,7 @@ function parseTextEffect(text: Text, extendStyle = "", tag = "span"): Text {
     .replace(/&/g, "&amp;")
     .replace(/{{escape-(\w{3,4};)}}/g, "&$1");
   // 注解
-  const rt = (
-    effects.filter(effect => effect.name === "ruby")[0] || { value: [] }
-  ).value.join("");
+  const rt = (effects.filter(effect => effect.name === "ruby")[0] || { value: [] }).value.join("");
   const style = effects
     .filter(effect => effect.name !== "ruby")
     .map(effect => {
@@ -482,15 +401,12 @@ function parseTextEffect(text: Text, extendStyle = "", tag = "span"): Text {
         return `color: ${value}`;
       } else if (name === "fontsize") {
         return;
-        `font-size: ${unityFontSizeToHTMLSize(
+        `font-size: ${unityFontSizeToHTMLSize(Number(value))}rem;--font-size: ${unityFontSizeToHTMLSize(
           Number(value)
-        )}rem;--font-size: ${unityFontSizeToHTMLSize(Number(value))}rem`;
+        )}rem`;
       }
       // 暂时废弃, 没办法处理字体自适应
-      return (StyleEffectTemplate[effect.name] || "").replace(
-        "${value}",
-        effect.value.join("")
-      );
+      return (StyleEffectTemplate[effect.name] || "").replace("${value}", effect.value.join(""));
     })
     .join(";");
   // 如果有注解就用ruby标签实现
@@ -708,30 +624,21 @@ function handleNextEpisode(e: ShowTitleOption) {
               return;
             }
             const matrix = getComputedStyle(bottomChild).transform;
-            if (
-              Number(
-                matrix.substring(matrix.lastIndexOf(",") + 2).replace(")", "")
-              ) > 100
-            ) {
+            if (Number(matrix.substring(matrix.lastIndexOf(",") + 2).replace(")", "")) > 100) {
               subTitleContent.value = e.subtitle || "";
-              proxyShowCoverTitle(
-                titleEL,
-                titleContent,
-                parseTitle(e.title),
-                el => {
-                  const tl = gsap.timeline();
-                  tl.fromTo(
-                    el,
-                    {
-                      scaleY: 0.8,
-                    },
-                    {
-                      scaleY: 1,
-                      duration: 0.2,
-                    }
-                  );
-                }
-              );
+              proxyShowCoverTitle(titleEL, titleContent, parseTitle(e.title), el => {
+                const tl = gsap.timeline();
+                tl.fromTo(
+                  el,
+                  {
+                    scaleY: 0.8,
+                  },
+                  {
+                    scaleY: 1,
+                    duration: 0.2,
+                  }
+                );
+              });
               flag = true;
             }
           },
@@ -854,9 +761,7 @@ const standardDialogTopOffset = 100;
 // 计算title的padding以让其符合边框第二边线
 const titleBorderWidth = 2280;
 const standardBorderWidth = 26;
-const titleBorderPadding = computed(
-  () => (props.playerWidth / titleBorderWidth) * standardBorderWidth
-);
+const titleBorderPadding = computed(() => (props.playerWidth / titleBorderWidth) * standardBorderWidth);
 const loadLog = ref<ResourceLoadState[]>([]);
 const mapLoadLog = computed(() =>
   deepCopyObject(loadLog.value)
@@ -954,11 +859,7 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
   width: 100%;
   padding: 3rem 8rem;
   box-sizing: border-box;
-  background-image: linear-gradient(
-    to bottom,
-    rgba(255, 0, 0, 0),
-    rgba(19, 32, 45, 0.9) 30%
-  );
+  background-image: linear-gradient(to bottom, rgba(255, 0, 0, 0), rgba(19, 32, 45, 0.9) 30%);
   position: absolute;
   bottom: 0;
   z-index: $text-layer-z-index + $dialog-z-index;
@@ -1006,9 +907,8 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
 }
 
 .container {
-  font-family: "TJL", "Microsoft YaHei", "PingFang SC", -apple-system, system-ui,
-    "Segoe UI", Roboto, Ubuntu, Cantarell, "Noto Sans", BlinkMacSystemFont,
-    "Helvetica Neue", "Hiragino Sans GB", Arial, sans-serif;
+  font-family: "TJL", "Microsoft YaHei", "PingFang SC", -apple-system, system-ui, "Segoe UI", Roboto, Ubuntu, Cantarell,
+    "Noto Sans", BlinkMacSystemFont, "Helvetica Neue", "Hiragino Sans GB", Arial, sans-serif;
   position: absolute;
   user-select: none;
   overflow: hidden;
@@ -1073,13 +973,7 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
 
           .sub-title-inner {
             padding: 0 5px;
-            background: linear-gradient(
-                0deg,
-                #f6ed7e 0%,
-                #f6ed7d 13%,
-                transparent 13%
-              )
-              0 calc(var(--font-size) * -0.12);
+            background: linear-gradient(0deg, #f6ed7e 0%, #f6ed7d 13%, transparent 13%) 0 calc(var(--font-size) * -0.12);
           }
         }
 
@@ -1235,12 +1129,7 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
 
   .to-be-continued-bg1 {
     transform: translateY(-100%);
-    background: radial-gradient(
-      #808080,
-      #808080 30%,
-      #545454 65%,
-      #545454 100%
-    );
+    background: radial-gradient(#808080, #808080 30%, #545454 65%, #545454 100%);
   }
 
   .to-be-continued {

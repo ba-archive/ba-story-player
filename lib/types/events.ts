@@ -1,10 +1,5 @@
 import { Character, Effect, Speaker, Text } from "./common";
-import {
-  BGEffectExcelTableItem,
-  BGEffectType,
-  BGMExcelTableItem,
-  TransitionTableItem,
-} from "./excels";
+import { BGEffectExcelTableItem, BGEffectType, BGMExcelTableItem, TransitionTableItem } from "./excels";
 import { OtherSounds } from "./resources";
 
 export type Events = {

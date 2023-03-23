@@ -34,10 +34,7 @@ export interface BgLayer {
    * @param resources loader resources
    * @param name 背景图片名
    */
-  getBgSpriteFromResource(
-    resources: Dict<LoaderResource>,
-    name: string
-  ): Sprite | undefined;
+  getBgSpriteFromResource(resources: Dict<LoaderResource>, name: string): Sprite | undefined;
   /**
    * 直接加载背景
    */

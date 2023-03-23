@@ -5,8 +5,7 @@ import { EmotionOptions, OptionDescriptions } from "@/types/characterLayer";
  */
 export const emotionDescriptions: OptionDescriptions["emotion"] = {
   globalOptions: {
-    startPositionOffset:
-      "图片开始时相对于角色的位置, 相对值, 值为偏移量与角色宽度比例",
+    startPositionOffset: "图片开始时相对于角色的位置, 相对值, 值为偏移量与角色宽度比例",
     scale: "图片缩放比例, 多个图片时为基准图片缩放比例",
     fadeOutPreDuration: "淡出动画前的时间, 可选",
     fadeOutDuration: "淡出动画的时间",
@@ -59,8 +58,7 @@ export const emotionDescriptions: OptionDescriptions["emotion"] = {
   Surprise: {
     imgSetting: "图片位置和选择角度设置",
 
-    scaleAnimation:
-      "图片放大的动画, 其中?图片还有一个y方向的形变, 还可以选定缩放动画的原点",
+    scaleAnimation: "图片放大的动画, 其中?图片还有一个y方向的形变, 还可以选定缩放动画的原点",
     jumpAnimation: "图片向左移动并跳动的动画",
   },
   Question: {
@@ -68,10 +66,8 @@ export const emotionDescriptions: OptionDescriptions["emotion"] = {
   },
   Shy: {
     shyImg: "///图片的相关设置",
-    scaleAnamation:
-      "开始时的放大动画设置, 包括放大开始前的大小,放大动画的依据点, 放大动画的时间",
-    shakeAnimation:
-      "///图片摇动动画的相关设置, 包括摇动从哪个角度到哪个角度, 摇动次数",
+    scaleAnamation: "开始时的放大动画设置, 包括放大开始前的大小,放大动画的依据点, 放大动画的时间",
+    shakeAnimation: "///图片摇动动画的相关设置, 包括摇动从哪个角度到哪个角度, 摇动次数",
   },
   Upset: {
     upsetImgPos: "线条图片的位置",
