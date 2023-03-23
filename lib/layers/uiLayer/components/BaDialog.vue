@@ -68,7 +68,7 @@ function handleClose() {
 
   &.dialog-enter-active .ba-dialog-container,
   &.dialog-leave-active .ba-dialog-container {
-    transition: transform .3s ease-out;
+    transition: transform 0.3s ease-out;
   }
 
   &.dialog-enter-from .ba-dialog-container,
