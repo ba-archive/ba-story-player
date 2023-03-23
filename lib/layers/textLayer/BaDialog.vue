@@ -94,7 +94,7 @@
           class="title-border"
           :style="{ '--side-padding': `${titleBorderPadding}px` }"
         >
-          <img src="./assets/title-border.png" alt="border"/>
+          <img src="./assets/title-border.png" alt="border" />
           <div
             ref="titleContain"
             class="title-contain"
@@ -404,9 +404,7 @@ const StMap: IStMap = {
     parsedStyle = parsedStyle + ";opacity: 0";
     _stOutput.innerHTML =
       _stOutput.innerHTML + parseStInnerHtml(e, parsedStyle).content;
-    const el = _stOutput.children.item(
-      _stOutput.children.length - 1
-    );
+    const el = _stOutput.children.item(_stOutput.children.length - 1);
     const timeline = gsap.timeline();
     timeline
       .fromTo(
