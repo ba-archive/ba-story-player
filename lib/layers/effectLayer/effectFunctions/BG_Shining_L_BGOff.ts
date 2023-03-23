@@ -17,9 +17,7 @@ export default async function BG_Shining_L_BGOff(resources: Sprite[]) {
     ...(emitterConfigs("shining_ring") as EmitterConfigV3),
   };
   const ringSprite = sprite2TransParent(resources[0]);
-  getEmitterType(ringConfig, "textureRandom").config.textures.push(
-    ringSprite.texture
-  );
+  getEmitterType(ringConfig, "textureRandom").config.textures.push(ringSprite.texture);
   getEmitterType(ringConfig, "spawnShape").config.data.w = appWidth;
   getEmitterType(ringConfig, "spawnShape").config.data.h = appHeight;
   const ringTextureWidth = resources[0].texture.width;

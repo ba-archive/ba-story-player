@@ -67,10 +67,7 @@ export interface CharacterLayer {
    * @param spineData 打包好的spine数据
    * @return 创建出的pixi-spine对象
    */
-  createSpineFromSpineData(
-    character: Character,
-    spineData: ISkeletonData
-  ): Spine;
+  createSpineFromSpineData(character: Character, spineData: ISkeletonData): Spine;
   /**
    * 执行showCharacter函数时检查所需资源是否已经创建, 若没有创建则调用createSpineFromSpineData进行创建
    * @param characterMap 需要处理的资源
@@ -104,9 +101,7 @@ export interface CharacterLayer {
 /**
  * 所有角色特效基础接口
  */
-export interface CharacterEffectPlayerInterface<
-  T extends EmotionWord | CharacterEffectWord | FXEffectWord
-> {
+export interface CharacterEffectPlayerInterface<T extends EmotionWord | CharacterEffectWord | FXEffectWord> {
   /**
    * 初始化函数, player初始化时调用
    */
@@ -124,14 +119,12 @@ export interface CharacterEffectPlayerInterface<
 /**
  * 所有角色特效统一接口
  */
-export type BaseCharacterEffectPlayer<T extends EffectsWord> =
-  CharacterEffectPlayerInterface<T> & EffectFunction<T>;
+export type BaseCharacterEffectPlayer<T extends EffectsWord> = CharacterEffectPlayerInterface<T> & EffectFunction<T>;
 
 /**
  * 对话特效处理
  */
-export interface CharacterEmotionPlayer
-  extends BaseCharacterEffectPlayer<EmotionWord> {
+export interface CharacterEmotionPlayer extends BaseCharacterEffectPlayer<EmotionWord> {
   /**
    * 获取特效处理函数
    * @param type 角色特效类型
@@ -142,8 +135,7 @@ export interface CharacterEmotionPlayer
 /**
  * 人物特效处理
  */
-export interface CharacterEffectPlayer
-  extends BaseCharacterEffectPlayer<CharacterEffectWord> {
+export interface CharacterEffectPlayer extends BaseCharacterEffectPlayer<CharacterEffectWord> {
   /**
    * 获取特效处理函数
    * @param type 人物特效类型
@@ -154,8 +146,7 @@ export interface CharacterEffectPlayer
 /**
  * 人物fx特效处理
  */
-export interface CharacterFXPlayer
-  extends BaseCharacterEffectPlayer<FXEffectWord> {
+export interface CharacterFXPlayer extends BaseCharacterEffectPlayer<FXEffectWord> {
   /**
    * 获取特效处理函数
    * @param type 人物特效类型
@@ -182,11 +173,7 @@ type EffectFunctionUnit = (
 ) => Promise<void> | undefined;
 
 export type EffectFunction<T extends EffectsWord> = {
-  [key in T]: (
-    instance: CharacterEffectInstance,
-    options: Options[key],
-    sprites: Sprite[]
-  ) => Promise<void>;
+  [key in T]: (instance: CharacterEffectInstance, options: Options[key], sprites: Sprite[]) => Promise<void>;
 };
 
 type DescriptionUnit<T> = {
@@ -476,8 +463,7 @@ export interface GlobalEmotionOptions {
 }
 
 export type EmotionOptions = {
-  [Option in keyof BasicEmotionOptions]: BasicEmotionOptions[Option] &
-    GlobalEmotionOptions;
+  [Option in keyof BasicEmotionOptions]: BasicEmotionOptions[Option] & GlobalEmotionOptions;
 };
 
 export interface ActionOptions extends BaseOptions<CharacterEffectWord> {

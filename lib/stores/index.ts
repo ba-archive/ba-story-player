@@ -1,12 +1,5 @@
 import { BGEffectImgTable } from "@/types/effectLayer";
-import {
-  Actions,
-  GetterFunctions,
-  Getters,
-  LogText,
-  PrivateStates,
-  PublicStates,
-} from "@/types/store";
+import { Actions, GetterFunctions, Getters, LogText, PrivateStates, PublicStates } from "@/types/store";
 import { getResourcesUrl } from "@/utils";
 import { ref } from "vue";
 import { storyHandler } from "..";
@@ -58,30 +51,16 @@ let bgEffectImgTable: BGEffectImgTable = {
   BG_Wave_F: [],
   BG_Flash: [],
   BG_UnderFire_R: [],
-  BG_Love_L: [
-    "FX_TEX_Img_Heart_01.png",
-    "FX_TEX_SCN_Ring_02.png",
-    "Gacha/FX_TEX_GT_Circle_Blur_inv.png",
-  ],
+  BG_Love_L: ["FX_TEX_Img_Heart_01.png", "FX_TEX_SCN_Ring_02.png", "Gacha/FX_TEX_GT_Circle_Blur_inv.png"],
   "BG_ScrollB_0.5": [],
   BG_Rain_L: ["HardRain.png"],
-  BG_UnderFire: [
-    "FX_TEX_Smoke_17.png",
-    "fire1.png",
-    "fire2.png",
-    "fire3.png",
-    "HardRain.png",
-  ],
+  BG_UnderFire: ["FX_TEX_Smoke_17.png", "fire1.png", "fire2.png", "fire3.png", "HardRain.png"],
   BG_WaveShort_F: [],
   BG_SandStorm_L: ["FX_TEX_Smoke_10a.png"],
   "BG_ScrollT_1.5": [],
   BG_Shining_L: [],
   "BG_ScrollB_1.0": [],
-  BG_Love_L_BGOff: [
-    "FX_TEX_Img_Heart_01.png",
-    "FX_TEX_SCN_Ring_02.png",
-    "FX_TEX_SCN_Circle_Love.png",
-  ],
+  BG_Love_L_BGOff: ["FX_TEX_Img_Heart_01.png", "FX_TEX_SCN_Ring_02.png", "FX_TEX_SCN_Circle_Love.png"],
   BG_Dust_L: ["FX_TEX_Smoke_Scroll_23.png", "dust_spark.png"],
   "BG_ScrollL_0.5": [],
   "BG_ScrollL_1.0": [],
@@ -165,10 +144,7 @@ let getterFunctions: GetterFunctions = {
    * 获取emotion的对应声音资源的url, 传入的参数是emotion的名字
    */
   emotionSoundUrl: () => emotionName => {
-    return getResourcesUrl(
-      "emotionSound",
-      `SFX_Emoticon_Motion_${emotionName}`
-    );
+    return getResourcesUrl("emotionSound", `SFX_Emoticon_Motion_${emotionName}`);
   },
 
   otherSoundUrl: () => sound => {
@@ -180,8 +156,7 @@ let getterFunctions: GetterFunctions = {
   },
 
   l2dSpineData() {
-    const resource =
-      privateState.app?.loader.resources[privateState.l2dSpineUrl];
+    const resource = privateState.app?.loader.resources[privateState.l2dSpineUrl];
     if (resource) return resource.spineData;
   },
 };
@@ -220,18 +195,15 @@ let actions: Actions = {
       }
     }
     // 日志不会超过当前的故事进度, 并且不重复
-    privateState.logText.value = privateState.logText.value.reduce(
-      (acc, cur) => {
-        if (cur.index && cur.index <= storyHandler.currentStoryIndex) {
-          const find = acc.find(i => i.index === cur.index);
-          if (!find) {
-            acc.push(cur);
-          }
+    privateState.logText.value = privateState.logText.value.reduce((acc, cur) => {
+      if (cur.index && cur.index <= storyHandler.currentStoryIndex) {
+        const find = acc.find(i => i.index === cur.index);
+        if (!find) {
+          acc.push(cur);
         }
-        return acc;
-      },
-      [] as LogText[]
-    );
+      }
+      return acc;
+    }, [] as LogText[]);
   },
   setL2DSpineUrl(url) {
     privateState.l2dSpineUrl = url;
@@ -246,9 +218,7 @@ let store = {
   ...actions,
 };
 
-for (let getter of Object.keys(getterFunctions) as Array<
-  keyof GetterFunctions
->) {
+for (let getter of Object.keys(getterFunctions) as Array<keyof GetterFunctions>) {
   Reflect.defineProperty(store, getter, {
     get: () => getterFunctions[getter](),
   });
@@ -267,10 +237,7 @@ for (let state of Object.keys(privateState) as Array<keyof PrivateStates>) {
  * @returns 资源调用工具对象
  */
 export let usePlayerStore = () => {
-  return store as unknown as PublicStates &
-    Getters &
-    Readonly<PrivateStates> &
-    Actions;
+  return store as unknown as PublicStates & Getters & Readonly<PrivateStates> & Actions;
 };
 
 /**

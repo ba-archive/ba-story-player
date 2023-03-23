@@ -18,14 +18,7 @@ console.log("资源调用: ", usePlayerStore());
 console.log("剧情进度: ", storyHandler);
 
 eventBus.on("*", (type, e) => {
-  if (
-    !(
-      type === "l2dAnimationDone" &&
-      (e as { done: boolean; animation: string }).animation.startsWith(
-        "Idle_01"
-      )
-    )
-  )
+  if (!(type === "l2dAnimationDone" && (e as { done: boolean; animation: string }).animation.startsWith("Idle_01")))
     console.log("事件类型", type, "值", e);
 });
 
@@ -106,8 +99,7 @@ useResizeObserver(
   player as any,
   useThrottleFn(entries => {
     const entry = entries[0];
-    if (document.fullscreenElement === null)
-      ({ width: width.value, height: height.value } = entry.contentRect);
+    if (document.fullscreenElement === null) ({ width: width.value, height: height.value } = entry.contentRect);
   }, 1)
 );
 </script>
@@ -128,16 +120,7 @@ useResizeObserver(
       />
       <!--其实在左边的剧情json里填入11000就能测试序章, 不需要改动这里-->
     </div>
-    <div
-      style="
-        position: absolute;
-        left: 0;
-        display: flex;
-        flex-direction: column;
-        width: 20vh;
-        z-index: 100;
-      "
-    >
+    <div style="position: absolute; left: 0; display: flex; flex-direction: column; width: 20vh; z-index: 100">
       <label>辅助工具选择</label>
       <select v-model="toolType">
         <option value="emotion">人物特效测试</option>
@@ -147,18 +130,13 @@ useResizeObserver(
       <label>storyIndex</label>
       <input v-model="currentStoryIndex" />
       <button @click="setStartIndex">设为故事初始index</button>
-      <button @click="changeStoryIndex(currentStoryIndex)">
-        更换故事index
-      </button>
+      <button @click="changeStoryIndex(currentStoryIndex)">更换故事index</button>
       <label>故事json</label>
       <input v-model="storyJsonName" />
       <button @click="changeJSON">更换故事json</button>
       <button @click="showPlayer = !showPlayer">切换显示状态</button>
     </div>
-    <ModifyEmotionOption
-      class="absolute-right-center"
-      v-if="toolType === 'emotion'"
-    />
+    <ModifyEmotionOption class="absolute-right-center" v-if="toolType === 'emotion'" />
     <Suspense>
       <TestEffect class="absolute-right-center" v-if="toolType === 'effect'" />
     </Suspense>

@@ -9,11 +9,7 @@ import gsap from "gsap";
 import { Spine } from "pixi-spine";
 import actionOptions, { moveSpeed } from "./options/actionOptions";
 import { ColorOverlayFilter } from "@pixi/filter-color-overlay";
-import {
-  calcCharacterYAndScale,
-  CharacterLayerInstance,
-  getStageSize,
-} from "./index";
+import { calcCharacterYAndScale, CharacterLayerInstance, getStageSize } from "./index";
 
 const AnimationIdleTrack = 0; // 光环动画track index
 const AnimationFaceTrack = 1; // 差分切换
@@ -26,10 +22,7 @@ const CharacterEffectPlayerInstance: CharacterEffectPlayer = {
   getHandlerFunction(type: CharacterEffectWord) {
     return Reflect.get(this, type);
   },
-  processEffect(
-    type: CharacterEffectWord,
-    instance: CharacterEffectInstance
-  ): Promise<void> {
+  processEffect(type: CharacterEffectWord, instance: CharacterEffectInstance): Promise<void> {
     const fn = this.getHandlerFunction(type);
     if (!fn) {
       return new Promise((resolve, reject) => {
@@ -45,9 +38,7 @@ const CharacterEffectPlayerInstance: CharacterEffectPlayer = {
     characterInstance.zIndex = Reflect.get(POS_INDEX_MAP, instance.position);
     characterInstance.state.setAnimation(AnimationIdleTrack, "Idle_01", true);
     characterInstance.alpha = 1;
-    const colorFilter = characterInstance.filters![
-      characterInstance.filters!.length - 1
-    ] as ColorOverlayFilter;
+    const colorFilter = characterInstance.filters![characterInstance.filters!.length - 1] as ColorOverlayFilter;
     let finalAlpha = colorFilter.alpha;
     colorFilter.alpha = 1;
 
@@ -69,11 +60,7 @@ const CharacterEffectPlayerInstance: CharacterEffectPlayer = {
     let initX = app.screen.width + instance.instance.width;
     let distance = initX - instance.instance.x;
     let duration = distance / moveSpeedPx();
-    tl.fromTo(
-      instance.instance,
-      { pixi: { x: initX } },
-      { pixi: { x: instance.instance.x }, duration }
-    );
+    tl.fromTo(instance.instance, { pixi: { x: initX } }, { pixi: { x: instance.instance.x }, duration });
     return timeLinePromise(tl);
   },
   ar(instance: CharacterEffectInstance, option): Promise<void> {
@@ -98,9 +85,7 @@ const CharacterEffectPlayerInstance: CharacterEffectPlayer = {
     return Promise.resolve();
   },
   d(instance: CharacterEffectInstance, options): Promise<void> {
-    let colorFilter = instance.instance.filters![
-      instance.instance.filters!.length - 1
-    ] as ColorOverlayFilter;
+    let colorFilter = instance.instance.filters![instance.instance.filters!.length - 1] as ColorOverlayFilter;
     let tl = gsap.timeline();
 
     tl.to(colorFilter, { alpha: 1, duration: options.duration });
@@ -132,12 +117,8 @@ const CharacterEffectPlayerInstance: CharacterEffectPlayer = {
   falldownR(instance: CharacterEffectInstance, options): Promise<void> {
     let tl = gsap.timeline();
     let pivotOffset = {
-      x:
-        (instance.instance.width * options.anchor.x) /
-        instance.instance.scale.x,
-      y:
-        (instance.instance.height * options.anchor.y) /
-        instance.instance.scale.y,
+      x: (instance.instance.width * options.anchor.x) / instance.instance.scale.x,
+      y: (instance.instance.height * options.anchor.y) / instance.instance.scale.y,
     };
     let orginPivot = instance.instance.pivot.clone();
     let originY = instance.instance.y;
@@ -147,8 +128,7 @@ const CharacterEffectPlayerInstance: CharacterEffectPlayer = {
       instance.instance.x + pivotOffset.x * instance.instance.scale.x,
       instance.instance.y + pivotOffset.y * instance.instance.scale.x
     );
-    let finalY =
-      instance.instance.y + instance.instance.height * (options.anchor.y + 0.1);
+    let finalY = instance.instance.y + instance.instance.height * (options.anchor.y + 0.1);
     tl.to(instance.instance, {
       pixi: { angle: options.rightAngle },
       duration: options.firstRotateDuration,
@@ -177,11 +157,7 @@ const CharacterEffectPlayerInstance: CharacterEffectPlayer = {
         },
         ">"
       )
-      .to(
-        instance.instance,
-        { pixi: { x: `+=${options.xOffset * instance.instance.width}` } },
-        0
-      );
+      .to(instance.instance, { pixi: { x: `+=${options.xOffset * instance.instance.width}` } }, 0);
 
     return timeLinePromise(tl, () => {
       instance.instance.angle = 0;
@@ -314,10 +290,7 @@ export const POS_X_CNETER_OFFSET = {
  * @param character 要显示的角色
  * @param position 角色所在位置
  */
-export function calcSpineStagePosition(
-  character: Spine,
-  position: number
-): PositionOffset {
+export function calcSpineStagePosition(character: Spine, position: number): PositionOffset {
   const { screenWidth, screenHeight } = getStageSize();
   let center = screenWidth / 2;
   //当角色pivot x变为人物中心附近时改变计算算法

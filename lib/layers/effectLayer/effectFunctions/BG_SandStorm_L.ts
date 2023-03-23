@@ -9,11 +9,7 @@ export default async function BG_SandStorm_L(resources: Sprite[]) {
   const appWidth = app.view.width;
   const appHeight = app.view.height;
   let animationsName = "sandStorm";
-  let spritesheet = await loadSpriteSheet(
-    resources[0],
-    { x: 1, y: 4 },
-    animationsName
-  );
+  let spritesheet = await loadSpriteSheet(resources[0], { x: 1, y: 4 }, animationsName);
   const texture = Reflect.get(spritesheet.animations, animationsName)[3];
   const TextureTilingBack = new TilingSprite(texture);
   const TextureTilingFront = new TilingSprite(texture);

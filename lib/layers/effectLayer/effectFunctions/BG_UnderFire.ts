@@ -3,18 +3,10 @@ import { usePlayerStore } from "@/stores";
 import { BGEffectHandlerFunction } from "@/types/effectLayer";
 import { Emitter, EmitterConfigV3 } from "@pixi/particle-emitter";
 import { Container } from "pixi.js";
-import {
-  emitterConfigs,
-  emitterContainer,
-  emitterStarter,
-} from "../emitterUtils";
+import { emitterConfigs, emitterContainer, emitterStarter } from "../emitterUtils";
 import { loadSpriteSheet } from "../resourcesUtils";
 
-const handler: BGEffectHandlerFunction<"BG_UnderFire"> = async function (
-  resources,
-  setting,
-  options
-) {
+const handler: BGEffectHandlerFunction<"BG_UnderFire"> = async function (resources, setting, options) {
   let { height: appHeight, width: appWidth } = usePlayerStore().app.screen;
   let ininX = (appWidth * 7) / 8;
   let ininY = (appHeight * 7) / 8;
@@ -32,15 +24,8 @@ const handler: BGEffectHandlerFunction<"BG_UnderFire"> = async function (
     y: ininY,
   };
   let smokeAnimationsName = "smoke";
-  let smokeSpritesheet = await loadSpriteSheet(
-    resources[0],
-    { x: 3, y: 3 },
-    smokeAnimationsName
-  );
-  smokeConifg.behaviors[0].config.anim.textures = Reflect.get(
-    smokeSpritesheet.animations,
-    smokeAnimationsName
-  );
+  let smokeSpritesheet = await loadSpriteSheet(resources[0], { x: 3, y: 3 }, smokeAnimationsName);
+  smokeConifg.behaviors[0].config.anim.textures = Reflect.get(smokeSpritesheet.animations, smokeAnimationsName);
   let smokeImageHeight = resources[0].height / 3;
   //根据高度算缩放比例
   let smokeScale = ((2 / 5) * appHeight) / smokeImageHeight;
@@ -98,11 +83,7 @@ const handler: BGEffectHandlerFunction<"BG_UnderFire"> = async function (
   Reflect.set(firelineConfig.behaviors[1].config, "min", firelineScale - 0.2);
   Reflect.set(firelineConfig.behaviors[1].config, "max", firelineScale);
   let firelineMoveSpeed = 2 * appHeight;
-  Reflect.set(
-    firelineConfig.behaviors[2].config,
-    "min",
-    firelineMoveSpeed * 0.95
-  );
+  Reflect.set(firelineConfig.behaviors[2].config, "min", firelineMoveSpeed * 0.95);
   Reflect.set(firelineConfig.behaviors[2].config, "max", firelineMoveSpeed);
   let fireLineEmitter = new Emitter(firelineContainer, firelineConfig);
   let firelineRemover = emitterStarter(fireLineEmitter);

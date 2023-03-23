@@ -16,19 +16,13 @@ import { L2DInit } from "./layers/l2dLayer/L2D";
 let playerStore: ReturnType<typeof usePlayerStore>;
 let privateState: ReturnType<typeof initPrivateState>;
 let l2dVoiceExcelTable = {
-  CH0184_MemorialLobby: [...Array(10).keys()]
-    .slice(1, 11)
-    .map(value => value.toString()),
+  CH0184_MemorialLobby: [...Array(10).keys()].slice(1, 11).map(value => value.toString()),
 } as { [index: string]: string[] };
 
 /**
  * 调用各层的初始化函数
  */
-export async function init(
-  elementID: string,
-  props: PlayerConfigs,
-  endCallback: () => void
-) {
+export async function init(elementID: string, props: PlayerConfigs, endCallback: () => void) {
   //缓解图片缩放失真
   settings.MIPMAP_TEXTURES = 2;
 
@@ -147,10 +141,7 @@ export let storyHandler = {
   isSkip: false,
 
   get currentStoryUnit(): StoryUnit {
-    if (
-      playerStore &&
-      playerStore.allStoryUnit.length > this.currentStoryIndex
-    ) {
+    if (playerStore && playerStore.allStoryUnit.length > this.currentStoryIndex) {
       return playerStore.allStoryUnit[this.currentStoryIndex];
     }
 
@@ -172,10 +163,7 @@ export let storyHandler = {
   },
 
   get nextStoryUnit(): StoryUnit {
-    if (
-      playerStore &&
-      playerStore.allStoryUnit.length > this.currentStoryIndex + 1
-    ) {
+    if (playerStore && playerStore.allStoryUnit.length > this.currentStoryIndex + 1) {
       return playerStore.allStoryUnit[this.currentStoryIndex + 1];
     }
 
@@ -205,10 +193,7 @@ export let storyHandler = {
     }
     let currentSelectionGroup = this.currentStoryUnit.SelectionGroup;
     this.currentStoryIndex++;
-    while (
-      !this.checkEnd() &&
-      ![0, currentSelectionGroup].includes(this.currentStoryUnit.SelectionGroup)
-    ) {
+    while (!this.checkEnd() && ![0, currentSelectionGroup].includes(this.currentStoryUnit.SelectionGroup)) {
       this.currentStoryIndex++;
     }
 
@@ -243,9 +228,7 @@ export let storyHandler = {
       this.storyIndexIncrement();
       return;
     }
-    let index = playerStore.allStoryUnit.findIndex(
-      value => value.SelectionGroup === option
-    );
+    let index = playerStore.allStoryUnit.findIndex(value => value.SelectionGroup === option);
     if (index === -1) {
       return false;
     }
@@ -266,10 +249,7 @@ export let storyHandler = {
           return ["text", "option"];
         }
       };
-      while (
-        !playCondition().includes(storyHandler.currentStoryUnit.type) &&
-        !this.isEnd
-      ) {
+      while (!playCondition().includes(storyHandler.currentStoryUnit.type) && !this.isEnd) {
         await eventEmitter.emitEvents();
         storyHandler.storyIndexIncrement();
       }
@@ -354,9 +334,7 @@ export let eventEmitter = {
 
   get unitDone(): boolean {
     let result = true;
-    for (let key of Object.keys(eventEmitter) as Array<
-      keyof typeof eventEmitter
-    >) {
+    for (let key of Object.keys(eventEmitter) as Array<keyof typeof eventEmitter>) {
       if (key.endsWith("Done") && key !== "unitDone") {
         result = result && (eventEmitter[key] as boolean);
       }
@@ -369,9 +347,7 @@ export let eventEmitter = {
    */
   init() {
     //初始化值
-    for (const key of Object.keys(eventEmitter) as Array<
-      keyof typeof eventEmitter
-    >) {
+    for (const key of Object.keys(eventEmitter) as Array<keyof typeof eventEmitter>) {
       if (key.endsWith("Done") && key !== "unitDone") {
         Reflect.set(eventEmitter, key, true);
       }
@@ -427,9 +403,7 @@ export let eventEmitter = {
 
     storyHandler.currentStoryIndex = 0;
     if (import.meta.env.DEV) {
-      storyHandler.currentStoryIndex = Number(
-        localStorage.getItem("storyIndex") || 0
-      );
+      storyHandler.currentStoryIndex = Number(localStorage.getItem("storyIndex") || 0);
     }
     storyHandler.isEnd = false;
     storyHandler.storyPlay().then();
@@ -440,10 +414,7 @@ export let eventEmitter = {
    */
   async emitEvents() {
     // TODO: 上线注释, 也可以不注释
-    console.log(
-      "剧情进度: " + storyHandler.currentStoryIndex,
-      storyHandler.currentStoryUnit
-    );
+    console.log("剧情进度: " + storyHandler.currentStoryIndex, storyHandler.currentStoryUnit);
     await this.transitionIn();
     this.hide();
     await this.showBg();
@@ -530,9 +501,7 @@ export let eventEmitter = {
           clearInterval(interval);
           resolve();
         } else if (Date.now() - startTime >= 50000) {
-          for (const key of Object.keys(eventEmitter) as Array<
-            keyof typeof eventEmitter
-          >) {
+          for (const key of Object.keys(eventEmitter) as Array<keyof typeof eventEmitter>) {
             if (key.endsWith("Done") && key !== "unitDone") {
               if (!eventEmitter[key]) {
                 console.error(`${key}未完成: `);
@@ -617,10 +586,7 @@ export let eventEmitter = {
         eventBus.emit("playL2D");
         this.l2dPlaying = true;
       } else {
-        eventBus.emit(
-          "changeAnimation",
-          storyHandler.currentStoryUnit.l2d.animationName
-        );
+        eventBus.emit("changeAnimation", storyHandler.currentStoryUnit.l2d.animationName);
       }
     }
   },
@@ -665,10 +631,7 @@ export let eventEmitter = {
    * 播放特效
    */
   playEffect() {
-    if (
-      storyHandler.currentStoryUnit.effect.BGEffect ||
-      storyHandler.currentStoryUnit.effect.otherEffect.length != 0
-    ) {
+    if (storyHandler.currentStoryUnit.effect.BGEffect || storyHandler.currentStoryUnit.effect.otherEffect.length != 0) {
       this.effectDone = false;
       eventBus.emit("playEffect", storyHandler.currentStoryUnit.effect);
     } else {
@@ -684,10 +647,7 @@ export let eventEmitter = {
           resolve();
         }
         eventBus.on("transitionInDone", complete);
-        eventBus.emit(
-          "transitionIn",
-          storyHandler.currentStoryUnit.transition!
-        );
+        eventBus.emit("transitionIn", storyHandler.currentStoryUnit.transition!);
       });
     }
   },
@@ -701,10 +661,7 @@ export let eventEmitter = {
             resolve();
           };
           eventBus.on("transitionOutDone", resolveFun);
-          eventBus.emit(
-            "transitionOut",
-            storyHandler.currentStoryUnit.transition!
-          );
+          eventBus.emit("transitionOut", storyHandler.currentStoryUnit.transition!);
         });
       }
     }
@@ -714,10 +671,7 @@ export let eventEmitter = {
     if (storyHandler.currentStoryUnit.PopupFileName) {
       eventBus.emit("popupImage", storyHandler.currentStoryUnit.PopupFileName);
     } else if (storyHandler.currentStoryUnit.video) {
-      eventBus.emit(
-        "popupVideo",
-        storyHandler.currentStoryUnit.video.videoPath
-      );
+      eventBus.emit("popupVideo", storyHandler.currentStoryUnit.video.videoPath);
       eventBus.emit("playAudio", {
         soundUrl: storyHandler.currentStoryUnit.video.soundPath,
       });
@@ -786,9 +740,7 @@ export let resourcesLoader = {
       //添加l2d spine资源
       this.checkAndAdd(unit.l2d, "spineUrl");
       if (unit.l2d) {
-        playerStore.curL2dConfig?.otherSpine?.forEach(i =>
-          this.checkAndAdd(utils.getResourcesUrl("otherL2dSpine", i))
-        );
+        playerStore.curL2dConfig?.otherSpine?.forEach(i => this.checkAndAdd(utils.getResourcesUrl("otherL2dSpine", i)));
         playerStore.setL2DSpineUrl(unit.l2d.spineUrl);
       }
     }
@@ -846,20 +798,14 @@ export let resourcesLoader = {
     for (let emotionResources of playerStore.emotionResourcesTable.values()) {
       for (let emotionResource of emotionResources) {
         if (!this.loader.resources[emotionResource]) {
-          this.loader.add(
-            emotionResource,
-            utils.getResourcesUrl("emotionImg", emotionResource)
-          );
+          this.loader.add(emotionResource, utils.getResourcesUrl("emotionImg", emotionResource));
         }
       }
     }
     for (let emotionName of playerStore.emotionResourcesTable.keys()) {
       let emotionSoundName = `SFX_Emoticon_Motion_${emotionName}`;
       if (!this.loader.resources[emotionSoundName]) {
-        this.loader.add(
-          emotionSoundName,
-          utils.getResourcesUrl("emotionSound", emotionSoundName)
-        );
+        this.loader.add(emotionSoundName, utils.getResourcesUrl("emotionSound", emotionSoundName));
       }
     }
   },
@@ -926,67 +872,46 @@ export let resourcesLoader = {
   async loadExcels() {
     const excelPromiseArray: Array<Promise<void>> = [];
     excelPromiseArray.push(
-      axios
-        .get(utils.getResourcesUrl("excel", "ScenarioBGNameExcelTable.json"))
-        .then(res => {
-          for (let i of res.data["DataList"]) {
-            privateState.BGNameExcelTable.set(i["Name"], i);
-          }
-        })
+      axios.get(utils.getResourcesUrl("excel", "ScenarioBGNameExcelTable.json")).then(res => {
+        for (let i of res.data["DataList"]) {
+          privateState.BGNameExcelTable.set(i["Name"], i);
+        }
+      })
     );
     excelPromiseArray.push(
-      axios
-        .get(
-          utils.getResourcesUrl("excel", "ScenarioCharacterNameExcelTable.json")
-        )
-        .then(res => {
-          for (let i of res.data["DataList"]) {
-            privateState.CharacterNameExcelTable.set(i["CharacterName"], i);
-          }
-        })
+      axios.get(utils.getResourcesUrl("excel", "ScenarioCharacterNameExcelTable.json")).then(res => {
+        for (let i of res.data["DataList"]) {
+          privateState.CharacterNameExcelTable.set(i["CharacterName"], i);
+        }
+      })
     );
     excelPromiseArray.push(
-      axios
-        .get(utils.getResourcesUrl("excel", "BGMExcelTable.json"))
-        .then(res => {
-          for (let i of res.data["DataList"]) {
-            privateState.BGMExcelTable.set(i["Id"], i);
-          }
-        })
+      axios.get(utils.getResourcesUrl("excel", "BGMExcelTable.json")).then(res => {
+        for (let i of res.data["DataList"]) {
+          privateState.BGMExcelTable.set(i["Id"], i);
+        }
+      })
     );
     excelPromiseArray.push(
-      axios
-        .get(
-          utils.getResourcesUrl("excel", "ScenarioTransitionExcelTable.json")
-        )
-        .then(res => {
-          for (let i of res.data["DataList"]) {
-            privateState.TransitionExcelTable.set(i["Name"], i);
-          }
-        })
+      axios.get(utils.getResourcesUrl("excel", "ScenarioTransitionExcelTable.json")).then(res => {
+        for (let i of res.data["DataList"]) {
+          privateState.TransitionExcelTable.set(i["Name"], i);
+        }
+      })
     );
     excelPromiseArray.push(
-      axios
-        .get(utils.getResourcesUrl("excel", "ScenarioBGEffectExcelTable.json"))
-        .then(res => {
-          for (let i of res.data["DataList"]) {
-            privateState.BGEffectExcelTable.set(i["Name"], i);
-          }
-        })
+      axios.get(utils.getResourcesUrl("excel", "ScenarioBGEffectExcelTable.json")).then(res => {
+        for (let i of res.data["DataList"]) {
+          privateState.BGEffectExcelTable.set(i["Name"], i);
+        }
+      })
     );
     excelPromiseArray.push(
-      axios
-        .get(
-          utils.getResourcesUrl(
-            "excel",
-            "ScenarioCharacterEmotionExcelTable.json"
-          )
-        )
-        .then(res => {
-          for (let i of res.data["DataList"]) {
-            privateState.EmotionExcelTable.set(i["Name"], i["EmoticonName"]);
-          }
-        })
+      axios.get(utils.getResourcesUrl("excel", "ScenarioCharacterEmotionExcelTable.json")).then(res => {
+        for (let i of res.data["DataList"]) {
+          privateState.EmotionExcelTable.set(i["Name"], i["EmoticonName"]);
+        }
+      })
     );
 
     const results = await Promise.allSettled(excelPromiseArray);

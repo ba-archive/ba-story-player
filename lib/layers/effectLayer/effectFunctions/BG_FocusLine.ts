@@ -51,8 +51,7 @@ export default async function BG_FocusLine(resources: Sprite[]) {
           transAngle = 180;
         }
         next.angle = angle - transAngle;
-        next.width =
-          Math.random() * (appWidth * (0.24 - 0.037)) + appWidth * 0.037; // 0.037 - 0.24 之间
+        next.width = Math.random() * (appWidth * (0.24 - 0.037)) + appWidth * 0.037; // 0.037 - 0.24 之间
         next = next.next;
       }
     }
@@ -62,9 +61,7 @@ export default async function BG_FocusLine(resources: Sprite[]) {
     ...(emitterConfigs("focusline") as EmitterConfigV3),
   };
   const sprite = sprite2TransParent(resources[0]);
-  getEmitterType(emitterConfig, "textureRandom").config.textures.push(
-    sprite.texture
-  );
+  getEmitterType(emitterConfig, "textureRandom").config.textures.push(sprite.texture);
   const shapeData = getEmitterType(emitterConfig, "spawnShape").config.data[0];
   shapeData[1].y = appHeight;
   shapeData[2].x = appWidth;

@@ -1,16 +1,8 @@
 import { usePlayerStore } from "@/stores";
 import { EmitterConfigV3, Emitter } from "@pixi/particle-emitter";
 import { Container, Sprite, TilingSprite } from "pixi.js";
-import {
-  emitterConfigs,
-  emitterContainer,
-  emitterStarter,
-} from "../emitterUtils";
-import {
-  getEmitterType,
-  loadSpriteSheet,
-  sprite2TransParent,
-} from "../resourcesUtils";
+import { emitterConfigs, emitterContainer, emitterStarter } from "../emitterUtils";
+import { getEmitterType, loadSpriteSheet, sprite2TransParent } from "../resourcesUtils";
 
 export default async function BG_Dust_L(resources: Sprite[]) {
   // 原理是三个平铺图片不断移动, 加上火光粒子效果
@@ -19,15 +11,8 @@ export default async function BG_Dust_L(resources: Sprite[]) {
   const appHeight = app.view.height;
   let smokeAnimationsName = "dust_smoke";
 
-  let smokeSpritesheet = await loadSpriteSheet(
-    resources[0],
-    { x: 1, y: 2 },
-    smokeAnimationsName
-  );
-  const smokeTexture = Reflect.get(
-    smokeSpritesheet.animations,
-    smokeAnimationsName
-  )[0];
+  let smokeSpritesheet = await loadSpriteSheet(resources[0], { x: 1, y: 2 }, smokeAnimationsName);
+  const smokeTexture = Reflect.get(smokeSpritesheet.animations, smokeAnimationsName)[0];
   const smokeTextureTilingL = new TilingSprite(smokeTexture);
   const smokeTextureTilingR = new TilingSprite(smokeTexture);
   const smokeTextureTilingR1 = new TilingSprite(smokeTexture);
@@ -36,18 +21,16 @@ export default async function BG_Dust_L(resources: Sprite[]) {
   // 高度应该是当前分切图片的高度
   const smokeHeight = smokeTexture.height;
   const scale = (appHeight / smokeHeight) * 0.6;
-  [smokeTextureTilingL, smokeTextureTilingR, smokeTextureTilingR1].forEach(
-    i => {
-      // 避免 tiling 产生的像素
-      i.clampMargin = 1.5;
-      i.rotation = 0.55;
-      i.tint = 0x4c413f;
-      i.width = smokeWidth;
-      i.height = smokeHeight;
-      i.scale.set(scale);
-      app.stage.addChild(i);
-    }
-  );
+  [smokeTextureTilingL, smokeTextureTilingR, smokeTextureTilingR1].forEach(i => {
+    // 避免 tiling 产生的像素
+    i.clampMargin = 1.5;
+    i.rotation = 0.55;
+    i.tint = 0x4c413f;
+    i.width = smokeWidth;
+    i.height = smokeHeight;
+    i.scale.set(scale);
+    app.stage.addChild(i);
+  });
   smokeTextureTilingL.x = -(appWidth * 0.01);
   smokeTextureTilingL.y = appHeight - smokeHeight * scale;
   // 放大, 避免下方出现空隙
@@ -68,11 +51,9 @@ export default async function BG_Dust_L(resources: Sprite[]) {
       smokeTextureTilingR1.tilePosition.x += 1;
     },
     destroy: () => {
-      [smokeTextureTilingL, smokeTextureTilingR, smokeTextureTilingR1].forEach(
-        i => {
-          app.stage.removeChild(i);
-        }
-      );
+      [smokeTextureTilingL, smokeTextureTilingR, smokeTextureTilingR1].forEach(i => {
+        app.stage.removeChild(i);
+      });
     },
   } as any);
   // 火光粒子特效
@@ -88,15 +69,8 @@ export default async function BG_Dust_L(resources: Sprite[]) {
     y: appHeight - 20,
   };
   let fireAnimationsName = "dust_fire";
-  let fireSpritesheet = await loadSpriteSheet(
-    transParentSprite,
-    { x: 1, y: 3 },
-    fireAnimationsName
-  );
-  const fireTextures = Reflect.get(
-    fireSpritesheet.animations,
-    fireAnimationsName
-  );
+  let fireSpritesheet = await loadSpriteSheet(transParentSprite, { x: 1, y: 3 }, fireAnimationsName);
+  const fireTextures = Reflect.get(fireSpritesheet.animations, fireAnimationsName);
   // 塞入随机 texture 中
   fireConfig.behaviors[2].config.textures.push(...fireTextures);
   const baseRatio = (0.05 * appWidth) / fireTextures[0].width;

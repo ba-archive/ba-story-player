@@ -1,9 +1,5 @@
 import { usePlayerStore } from "@/stores";
-import {
-  BGEffectHandlerFunction,
-  BGEffectHandlerOptions,
-  CurrentBGEffect,
-} from "@/types/effectLayer";
+import { BGEffectHandlerFunction, BGEffectHandlerOptions, CurrentBGEffect } from "@/types/effectLayer";
 import { BGEffectExcelTableItem, BGEffectType } from "@/types/excels";
 import { Sprite } from "pixi.js";
 
@@ -11,10 +7,7 @@ const effectFunctionsRaw = import.meta.glob<{
   default: BGEffectHandlerFunction<BGEffectType>;
 }>("./effectFunctions/*", { eager: true });
 function getEffectFunctions(functionName: string) {
-  const effectFunction = Reflect.get(
-    effectFunctionsRaw,
-    `./effectFunctions/${functionName}.ts`
-  );
+  const effectFunction = Reflect.get(effectFunctionsRaw, `./effectFunctions/${functionName}.ts`);
   if (!effectFunction) {
     return undefined;
   }
@@ -48,11 +41,7 @@ export async function playBGEffect(bgEffectItem: BGEffectExcelTableItem) {
     let handler = bgEffectHandlers[effect];
     let removeFunction: any;
     try {
-      removeFunction = await Reflect.apply(handler, undefined, [
-        imgs,
-        bgEffectItem,
-        bgEffectHandlerOptions[effect],
-      ]);
+      removeFunction = await Reflect.apply(handler, undefined, [imgs, bgEffectItem, bgEffectHandlerOptions[effect]]);
     } catch (e) {
       console.error(`执行 ${effect} 时发生错误`, e);
     }
@@ -114,10 +103,7 @@ const bgEffects = [
   "BG_Fireworks_L_BGOff_01",
   "BG_ScrollR_1.0",
 ];
-export let bgEffectHandlers: Record<
-  string,
-  BGEffectHandlerFunction<BGEffectType>
-> = {};
+export let bgEffectHandlers: Record<string, BGEffectHandlerFunction<BGEffectType>> = {};
 for (const effect of bgEffects) {
   const handler = getEffectFunctions(effect);
   if (handler) {

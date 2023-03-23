@@ -31,9 +31,7 @@ export function L2DInit() {
   // 接收动画消息
   eventBus.on("changeAnimation", e => {
     const temAnimation = e.replace(/_(A|M)/, "");
-    const devAnimation = mainItem.spineData.animations.find(i =>
-      i.name.includes(temAnimation)
-    );
+    const devAnimation = mainItem.spineData.animations.find(i => i.name.includes(temAnimation));
     if (devAnimation) {
       mainItem.state.setAnimation(1, devAnimation.name, false);
     } else {
@@ -52,20 +50,9 @@ export function L2DInit() {
     const hasPlayedAnimation = {} as { [key: string]: boolean };
     currentIndex = 0;
     // 设置 spine 播放信息
-    function setSpinePlayInfo({
-      item,
-      zIndex,
-    }: {
-      item: Spine;
-      zIndex: number;
-    }) {
+    function setSpinePlayInfo({ item, zIndex }: { item: Spine; zIndex: number }) {
       const { scale = 1 } = curL2dConfig?.spineSettings?.[item.name] || {};
-      const { width, height } = calcL2DSize(
-        item.width,
-        item.height,
-        app.renderer.width,
-        app.renderer.height
-      );
+      const { width, height } = calcL2DSize(item.width, item.height, app.renderer.width, app.renderer.height);
       // 设置位置, 大小
       item = Object.assign(item, {
         x: app.renderer.width / 2,
@@ -79,13 +66,10 @@ export function L2DInit() {
         start: function (entry: any) {
           const entryAnimationName = entry.animation.name + item.name;
           const duration = entry.animation.duration;
-          const { fade, fadeTime = 0.8 } =
-            startAnimations[currentIndex - 1] || {};
+          const { fade, fadeTime = 0.8 } = startAnimations[currentIndex - 1] || {};
           if (fade) {
             // 在快结束的时候触发 fade
-            timeOutArray.push(
-              setTimeout(fadeEffect, (duration - fadeTime) * 1000)
-            );
+            timeOutArray.push(setTimeout(fadeEffect, (duration - fadeTime) * 1000));
           }
           // 如果没有播放过的话就设置播放状态为播放
           if (!hasPlayedAnimation[entryAnimationName]) {
@@ -106,10 +90,7 @@ export function L2DInit() {
             );
           }
           const entryAnimationName = entry.animation.name + item.name;
-          if (
-            entryAnimationName.includes("Idle") &&
-            startAnimations[currentIndex]
-          ) {
+          if (entryAnimationName.includes("Idle") && startAnimations[currentIndex]) {
             const curStartAnimations = startAnimations[currentIndex]!;
             currentIndex += 1;
             app.stage.addChild(curStartAnimations.spine);
@@ -166,9 +147,7 @@ export function L2DInit() {
     mainItem.name = curL2dConfig?.name || "";
     if (curL2dConfig?.otherSpine) {
       otherItems = curL2dConfig.otherSpine.map((i, idx) => {
-        const temItem = new Spine(
-          app.loader.resources[getResourcesUrl("otherL2dSpine", i)].spineData!
-        );
+        const temItem = new Spine(app.loader.resources[getResourcesUrl("otherL2dSpine", i)].spineData!);
         temItem.name = i;
         setSpinePlayInfo({ item: temItem, zIndex: 100 + idx + 1 });
         return temItem;
@@ -191,10 +170,7 @@ export function L2DInit() {
         return {
           ...i,
           // playQue 中的name和otherSpine中的一致
-          spine:
-            i.name === curL2dConfig.name
-              ? mainItem
-              : otherItems.find(j => j.name === i.name)!,
+          spine: i.name === curL2dConfig.name ? mainItem : otherItems.find(j => j.name === i.name)!,
         };
       });
     }
@@ -208,23 +184,14 @@ export function L2DInit() {
       const curStartAnimations = startAnimations[currentIndex]!;
       currentIndex += 1;
       app.stage.addChild(curStartAnimations.spine);
-      curStartAnimations.spine.state.setAnimation(
-        0,
-        curStartAnimations.animation,
-        false
-      );
+      curStartAnimations.spine.state.setAnimation(0, curStartAnimations.animation, false);
     } catch {}
   });
 }
 /**
  * 计算 l2d 样式尺寸 - utils
  */
-function calcL2DSize(
-  rawWidth: number,
-  rawHeight: number,
-  viewportWidth: number,
-  viewportHeight: number
-) {
+function calcL2DSize(rawWidth: number, rawHeight: number, viewportWidth: number, viewportHeight: number) {
   const ratio = Math.min(rawWidth / viewportWidth, rawHeight / viewportHeight);
   // 稍微放大点完全遮住
   const width = (rawWidth / ratio) * 1.1; // 是根据spine呼吸时最小和正常的比例推测得到的, 不同的spine可能会有不同的最小比例...

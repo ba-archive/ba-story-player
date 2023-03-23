@@ -19,9 +19,7 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
     let unit: StoryUnit = {
       GroupId,
       SelectionGroup,
-      PopupFileName: !PopupFileName
-        ? ""
-        : getResourcesUrl("popupImage", PopupFileName),
+      PopupFileName: !PopupFileName ? "" : getResourcesUrl("popupImage", PopupFileName),
       type: "text",
       characters: [],
       textAbout: {
@@ -46,9 +44,7 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
       }
     }
     if (rawStoryUnit.Transition) {
-      unit.transition = playerStore.TransitionExcelTable.get(
-        rawStoryUnit.Transition
-      );
+      unit.transition = playerStore.TransitionExcelTable.get(rawStoryUnit.Transition);
     }
     if (rawStoryUnit.BGName) {
       let BGItem = playerStore.BGNameExcelTable.get(rawStoryUnit.BGName);
@@ -61,9 +57,7 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
         } else if (BGItem.BGType === "Spine") {
           // 取第一次出现的 l2d 作为配置
           const l2dInfo = utils.getL2DUrlAndName(BGItem.BGFileName);
-          playerStore.setL2DConfig(
-            playerStore.curL2dConfig || l2dConfig[l2dInfo.name]
-          );
+          playerStore.setL2DConfig(playerStore.curL2dConfig || l2dConfig[l2dInfo.name]);
           unit.l2d = {
             spineUrl: l2dInfo.url,
             animationName: BGItem.AnimationName,
@@ -72,9 +66,7 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
       }
     }
     if (rawStoryUnit.BGEffect) {
-      unit.effect.BGEffect = playerStore.BGEffectExcelTable.get(
-        rawStoryUnit.BGEffect
-      );
+      unit.effect.BGEffect = playerStore.BGEffectExcelTable.get(rawStoryUnit.BGEffect);
     }
 
     //当没有文字时初步判断为effectOnly类型
@@ -95,17 +87,11 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
       switch (scriptType) {
         case "#title":
           unit.type = "title";
-          unit.textAbout.titleInfo = utils.generateTitleInfo(
-            rawStoryUnit,
-            usePlayerStore().language
-          );
+          unit.textAbout.titleInfo = utils.generateTitleInfo(rawStoryUnit, usePlayerStore().language);
           break;
         case "#nextepisode":
           unit.type = "nextEpisode";
-          unit.textAbout.titleInfo = utils.generateTitleInfo(
-            rawStoryUnit,
-            usePlayerStore().language
-          );
+          unit.textAbout.titleInfo = utils.generateTitleInfo(rawStoryUnit, usePlayerStore().language);
           break;
         case "#continued":
           unit.type = "continue";
@@ -185,20 +171,14 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
           if (scriptUnits.length === 5) {
             args = {
               type: scriptUnits[1] as "move",
-              position: scriptUnits[2].split(",").map(Number) as [
-                number,
-                number
-              ],
+              position: scriptUnits[2].split(",").map(Number) as [number, number],
               size: Number(scriptUnits[3]),
               duration: Number(scriptUnits[4]),
             };
           } else {
             args = {
               type: scriptUnits[1] as "instant",
-              position: scriptUnits[2].split(",").map(Number) as [
-                number,
-                number
-              ],
+              position: scriptUnits[2].split(",").map(Number) as [number, number],
               size: Number(scriptUnits[3]),
             };
           }
@@ -218,22 +198,15 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
           if (utils.isCharacter(scriptType)) {
             let CharacterName = utils.getCharacterName(scriptUnits[1]);
             let signal = false;
-            let characterInfo =
-              playerStore.CharacterNameExcelTable.get(CharacterName);
+            let characterInfo = playerStore.CharacterNameExcelTable.get(CharacterName);
             if (characterInfo) {
               //添加全息人物特效
               if (characterInfo.Shape === "Signal") {
                 signal = true;
               }
               //添加人物spineUrl
-              let spineUrl = getResourcesUrl(
-                "characterSpine",
-                characterInfo.SpinePrefabName
-              );
-              let avatarUrl = getResourcesUrl(
-                "avatar",
-                characterInfo?.SmallPortrait
-              );
+              let spineUrl = getResourcesUrl("characterSpine", characterInfo.SpinePrefabName);
+              let avatarUrl = getResourcesUrl("avatar", characterInfo?.SmallPortrait);
               let speaker = utils.getSpeaker(characterInfo);
               //人物有对话
               if (scriptUnits.length === 4) {
@@ -254,18 +227,11 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
                 effects: [],
               });
             } else {
-              throw new Error(
-                `${CharacterName}在CharacterNameExcelTable中不存在`
-              );
+              throw new Error(`${CharacterName}在CharacterNameExcelTable中不存在`);
             }
           } else if (utils.isCharacterEffect(scriptType)) {
             if (scriptUnits.length === 2) {
-              let characterIndex = utils.getCharacterIndex(
-                unit,
-                Number(scriptType[1]),
-                result,
-                rawIndex
-              );
+              let characterIndex = utils.getCharacterIndex(unit, Number(scriptType[1]), result, rawIndex);
               unit.characters[characterIndex].effects.push({
                 type: "action",
                 effect: scriptUnits[1],
@@ -274,17 +240,9 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
             } else if (utils.compareCaseInsensive(scriptUnits[1], "em")) {
               const emotionName = utils.getEmotionName(scriptUnits[2]);
               if (!emotionName) {
-                console.error(
-                  `查询不到${scriptUnits[2]}的emotionName中, 当前rawStoryUnit: `,
-                  rawStoryUnit
-                );
+                console.error(`查询不到${scriptUnits[2]}的emotionName中, 当前rawStoryUnit: `, rawStoryUnit);
               } else {
-                const characterIndex = utils.getCharacterIndex(
-                  unit,
-                  Number(scriptType[1]),
-                  result,
-                  rawIndex
-                );
+                const characterIndex = utils.getCharacterIndex(unit, Number(scriptType[1]), result, rawIndex);
                 unit.characters[characterIndex].effects.push({
                   type: "emotion",
                   effect: emotionName,
@@ -292,12 +250,7 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
                 });
               }
             } else if (utils.compareCaseInsensive(scriptUnits[1], "fx")) {
-              let characterIndex = utils.getCharacterIndex(
-                unit,
-                Number(scriptType[1]),
-                result,
-                rawIndex
-              );
+              let characterIndex = utils.getCharacterIndex(unit, Number(scriptType[1]), result, rawIndex);
               unit.characters[characterIndex].effects.push({
                 type: "fx",
                 effect: scriptUnits[2].replace("{", "").replace("}", ""),
@@ -306,9 +259,7 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
             }
           } else if (utils.isOption(scriptType)) {
             unit.type = "option";
-            const rawText = String(
-              getText(rawStoryUnit, playerStore.language)
-            ).split("\n")[optionIndex];
+            const rawText = String(getText(rawStoryUnit, playerStore.language)).split("\n")[optionIndex];
             const parseResult = /\[n?s(\d{0,2})?](.+)/.exec(rawText);
             if (!parseResult) {
               console.error("在处理选项文本时遇到严重错误");
@@ -323,9 +274,7 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
                 index: rawIndex,
               });
             } else {
-              unit.textAbout.options = [
-                { SelectionGroup: selectGroup, text, index: rawIndex },
-              ];
+              unit.textAbout.options = [{ SelectionGroup: selectGroup, text, index: rawIndex }];
             }
             optionIndex++;
           }

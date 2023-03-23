@@ -1,9 +1,5 @@
 import { usePlayerStore } from "@/stores";
-import {
-  CharacterEffectInstance,
-  CharacterFXPlayer,
-  PositionOffset,
-} from "@/types/characterLayer";
+import { CharacterEffectInstance, CharacterFXPlayer, PositionOffset } from "@/types/characterLayer";
 import { Sprite } from "pixi.js";
 import fxOptions from "./options/fxOptions";
 import gsap from "gsap";
@@ -86,11 +82,7 @@ const CharacterFXPlayerInstance: CharacterFXPlayer = {
  * @param pos
  * @returns
  */
-function setPos(
-  instance: CharacterEffectInstance,
-  img: Sprite,
-  pos: PositionOffset
-) {
+function setPos(instance: CharacterEffectInstance, img: Sprite, pos: PositionOffset) {
   let standardWidth = getStandardWidth();
   let finalPos = {
     x: standardWidth * pos.x,
@@ -107,11 +99,7 @@ function setPos(
  * @param destroyImgs 要回收的sprite对象数组
  * @returns 生成的promise
  */
-function timelinePromise(
-  timeLine: gsap.core.Timeline,
-  destroyImgs: Sprite[],
-  callback?: () => any
-) {
+function timelinePromise(timeLine: gsap.core.Timeline, destroyImgs: Sprite[], callback?: () => any) {
   return new Promise<void>((resolve, reject) => {
     timeLine
       .then(() => {

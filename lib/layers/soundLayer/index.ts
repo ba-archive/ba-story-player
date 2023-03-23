@@ -130,13 +130,7 @@ export function soundInit() {
   // 这样就可以了x
 
   eventBus.on("playAudio", (playAudioInfo: PlayAudio) => {
-    console.log(
-      `Get playAudioInfo: ${
-        playAudioInfo.soundUrl ||
-        playAudioInfo.voiceJPUrl ||
-        playAudioInfo.bgm?.url
-      }`
-    );
+    console.log(`Get playAudioInfo: ${playAudioInfo.soundUrl || playAudioInfo.voiceJPUrl || playAudioInfo.bgm?.url}`);
     playAudio(playAudioInfo);
   });
 
