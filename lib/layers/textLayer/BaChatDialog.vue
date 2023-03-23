@@ -6,6 +6,7 @@
       '--standard-font-size': standardFontSize,
       '--standard-unity-font-size': standardUnityFontSize,
     }"
+    @click="handleClick"
   >
     <div class="container-inner">
       <div class="loading-container absolute-container" v-if="showLoading">
@@ -182,6 +183,14 @@ function moveToNext() {
     }
   }
 }
+/**
+ * 发送文字层被点击事件
+ */
+
+function handleClick() {
+  eventBus.emit("click");
+}
+
 /**
  * 展示主标题
  */

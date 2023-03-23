@@ -148,13 +148,13 @@ document.addEventListener("mousemove", () => {
   }
 });
 
-function handleBaUIClick() {
+// 点击其他地方关闭子菜单
+eventBus.on("click", function() {
   if (!hiddenSubMenu.value) {
     hiddenSubMenu.value = true;
     return;
   }
-  eventBus.emit("click");
-}
+});
 
 // i18n
 const dict = {
@@ -198,7 +198,6 @@ function getI18n(key: string) {
 <template>
   <div
     class="baui"
-    @click.self="handleBaUIClick"
     :style="{ 'font-size': `${bauiem}px`, cursor: cursorStyle }"
     tabindex="0"
   >
@@ -263,7 +262,12 @@ function getI18n(key: string) {
           {{ storySummary.summary }}
         </p>
         <div class="ba-story-summary-button-group">
-          <BaButton size="middle" class="polylight button-close-summary" @click="showSummary = true" style="width: 96%">
+          <BaButton
+            size="middle"
+            class="polylight button-close-summary"
+            @click="showSummary = false"
+            style="width: 96%"
+          >
             {{ getI18n("close") }}
           </BaButton>
         </div>
@@ -305,16 +309,16 @@ function getI18n(key: string) {
   right: 0;
   padding: 1.5%;
   user-select: none;
-  z-index: 110;
+  z-index: 120;
 }
 
 .baui {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  top: 0;
+  // position: absolute;
+  // width: 100%;
+  // height: 100%;
+  // top: 0;
+  // overflow: hidden;
   z-index: 100;
-  overflow: hidden;
   font-family: "TJL", "Microsoft YaHei", "PingFang SC", -apple-system, system-ui, "Segoe UI", Roboto, Ubuntu, Cantarell,
     "Noto Sans", BlinkMacSystemFont, "Helvetica Neue", "Hiragino Sans GB", Arial, sans-serif;
 
@@ -379,11 +383,12 @@ function getI18n(key: string) {
 
   #ba-story-log {
     color: #32363c;
-    z-index: 110;
+    z-index: 140;
   }
 
   #ba-story-summary {
     color: #32363c;
+    z-index: 140;
 
     .ba-story-summary-container {
       height: 100%;
