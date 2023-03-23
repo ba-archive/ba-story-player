@@ -1,7 +1,6 @@
 <script lang="ts" setup>
 import { watch } from "vue";
 import { ref } from "vue";
-import gsap from "gsap";
 import eventBus from "@/eventBus";
 
 const props = defineProps({
@@ -19,35 +18,20 @@ const props = defineProps({
 });
 
 const emit = defineEmits<{
-  (ev: "close", event: PointerEvent): void;
+  (ev: "update:show", event: boolean): void;
 }>();
 
-function handleClose(ev: Event) {
-  emit("close", ev as PointerEvent);
+function handleClose() {
+  emit("update:show", false);
   eventBus.emit("playOtherSounds", "back");
 }
 
-const dialogContainer = ref(null);
-
 // 对话框缓入动画
-watch(
-  () => props.show,
-  newValue => {
-    if (newValue === true) {
-      gsap.from(dialogContainer.value, {
-        opacity: 0,
-        y: "30%",
-        duration: 0.3,
-        ease: "power1.out",
-      });
-    }
-  }
-);
 </script>
 
 <template>
   <div class="ba-dialog" :style="{ display: show === true ? '' : 'none' }" @click.self="handleClose">
-    <div class="ba-dialog-container" :style="{ width: props.width, height: props.height }" ref="dialogContainer">
+    <div class="ba-dialog-container" :style="{ width: props.width, height: props.height }">
       <div class="ba-dialog-header">
         <h3 class="ba-dialog-title">
           <span>{{ title }}</span>

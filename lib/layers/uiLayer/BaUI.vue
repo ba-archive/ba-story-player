@@ -12,8 +12,8 @@ import { usePlayerStore } from "@/stores";
 import { useThrottleFn } from "@vueuse/core";
 import "./userInteract";
 
-let hiddenSummary = ref(true);
-let hiddenStoryLog = ref(true);
+let showSummary = ref(false);
+let showStoryLog = ref(false);
 let autoMode = ref(false);
 let hiddenMenu = ref(true);
 let hiddenSubMenu = ref(true);
@@ -30,15 +30,15 @@ const selectOptions = ref<ShowOption[]>([]);
 const emitter = defineEmits(["update:fullScreen"]);
 
 eventBus.on("hide", () => {
-  hiddenSummary.value = true;
-  hiddenStoryLog.value = true;
+  showSummary.value = false;
+  showStoryLog.value = false;
   hiddenMenu.value = true;
 });
 eventBus.on("showStoryLog", () => {
-  hiddenStoryLog.value = false;
+  showStoryLog.value = true;
 });
-watch(hiddenStoryLog, () => {
-  eventBus.emit("isStoryLogShow", !hiddenStoryLog.value);
+watch(showStoryLog, () => {
+  eventBus.emit("isStoryLogShow", showStoryLog.value);
 });
 eventBus.on("hidemenu", () => {
   hiddenMenu.value = true;
@@ -54,7 +54,7 @@ function handleBtnFullScreen() {
 function handleBtnChatLog() {
   eventBus.emit("playOtherSounds", "select");
   refreshBtnMenuTimer();
-  hiddenStoryLog.value = false;
+  showStoryLog.value = true;
   autoMode.value = false;
   eventBus.emit("stopAuto");
 }
@@ -62,7 +62,7 @@ function handleBtnSkipSummary() {
   eventBus.emit("playOtherSounds", "select");
   refreshBtnMenuTimer();
   autoMode.value = false;
-  hiddenSummary.value = false;
+  showSummary.value = true;
   eventBus.emit("stopAuto");
 }
 
@@ -133,7 +133,7 @@ let cursorTimer: number = window.setTimeout(() => {
 document.addEventListener("mousemove", () => {
   cursorStyle.value = "auto";
   clearTimeout(cursorTimer);
-  if (hiddenSummary.value && hiddenStoryLog.value && props.fullScreen) {
+  if (!showSummary.value && !showStoryLog.value && props.fullScreen) {
     cursorTimer = window.setTimeout(() => {
       cursorStyle.value = "none";
     }, hideCursorDelay);
@@ -251,8 +251,7 @@ function getI18n(key: string) {
     <BaDialog
       id="ba-story-summary"
       :title="getI18n('summary')"
-      :show="!hiddenSummary"
-      @close="hiddenSummary = true"
+      v-model:show="showSummary"
       width="70%"
       height="85%"
     >
@@ -265,7 +264,7 @@ function getI18n(key: string) {
           <BaButton
             size="middle"
             class="polylight button-close-summary"
-            @click="hiddenSummary = true"
+            @click="showSummary = true"
             style="width: 96%"
           >
             {{ getI18n("close") }}
@@ -279,10 +278,9 @@ function getI18n(key: string) {
       :title="getI18n('log')"
       width="min(1080px, 80%)"
       height="min(650px, 86%)"
-      :show="!hiddenStoryLog"
-      @close="hiddenStoryLog = !hiddenStoryLog"
+      v-model:show="showStoryLog"
     >
-      <BaChatLog :show="!hiddenStoryLog" />
+      <BaChatLog :show="!showStoryLog" />
     </BaDialog>
   </div>
 </template>
