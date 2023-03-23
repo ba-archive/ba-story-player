@@ -10,6 +10,7 @@ import { effectBtnMouseDown, effectBtnMouseUp } from "./utils";
 import { ShowOption } from "@/types/events";
 import { usePlayerStore } from "@/stores";
 import { useThrottleFn } from "@vueuse/core";
+import { storyHandler } from "@/index";
 
 let showSummary = ref(false);
 let showStoryLog = ref(false);
@@ -77,6 +78,7 @@ function handleBtnSkipSummary() {
 // 处理选项
 function handleBaSelector(selectionGroup: number) {
   hiddenSubMenu.value = true;
+  eventBus.emit("playOtherSounds", "select");
   eventBus.emit("select", selectOptions.value[selectionGroup].SelectionGroup);
   usePlayerStore().updateLogText(selectOptions.value[selectionGroup]);
 
