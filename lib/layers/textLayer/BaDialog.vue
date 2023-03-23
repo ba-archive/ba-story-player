@@ -94,7 +94,7 @@
           class="title-border"
           :style="{ '--side-padding': `${titleBorderPadding}px` }"
         >
-          <img src="./assets/title-border.png" />
+          <img src="./assets/title-border.png" alt="border"/>
           <div
             ref="titleContain"
             class="title-contain"
@@ -151,13 +151,13 @@
 
 <script setup lang="ts">
 import {
-  onMounted,
-  ref,
-  computed,
   Ref,
+  computed,
   nextTick,
+  onMounted,
   onUnmounted,
   reactive,
+  ref,
 } from "vue";
 import eventBus from "@/eventBus";
 import Typed, { TypedExtend, TypedOptions } from "typed.js";
@@ -229,7 +229,7 @@ function endPlay() {
  * 单击屏幕后触发效果 next或者立即显示当前对话
  */
 function moveToNext() {
-  if (!showDialog) return; // 显示st期间不允许跳过
+  if (!showDialog.value) return; // 显示st期间不允许跳过
   // 没打过任何一行字(初始化)或者对话已经显示完成, 点击屏幕代表继续
   if (!typingInstance || typingComplete.value) {
     eventBus.emit("next");
@@ -240,7 +240,7 @@ function moveToNext() {
       typingInstance.stop();
       typingInstance.destroy();
       setTypingComplete(true, typingInstance);
-      typewriterOutput.value!.innerHTML = typingInstance.strings.pop() || "";
+      typewriterOutput.value.innerHTML = typingInstance.strings.pop() || "";
       eventBus.emit("textDone");
     }
   }
@@ -279,17 +279,22 @@ function proxyShowCoverTitle(
   onElUpdate?: (el: HTMLElement) => void
 ) {
   return new Promise<void>(resolve => {
+    if (!el.value) {
+      resolve();
+      return;
+    }
+    const elValue = el.value as HTMLElement;
     proxy.value = value;
     nextTick(() => {
-      onElUpdate && onElUpdate(el.value!);
+      onElUpdate && el.value && onElUpdate(el.value);
       const timeline = gsap.timeline();
-      timeline.to(el.value!, {
+      timeline.to(elValue, {
         opacity: 1,
         duration: 0.75,
       });
       if (!onElUpdate) {
         timeline.to(
-          el.value!,
+          elValue,
           {
             opacity: 0,
             duration: 0.75,
@@ -316,7 +321,7 @@ function handleClearSt() {
     typingInstance?.stop();
     typingInstance?.destroy();
     if (stOutput.value) {
-      stOutput.value!.innerHTML = "";
+      stOutput.value.innerHTML = "";
     }
   }
 }
@@ -338,20 +343,13 @@ function handleShowStEvent(e: StText) {
     const stPos = e.stArgs[0];
     // st显示类型
     const stType = e.stArgs[1];
-    // st坐标系映射视口坐标系
-    const x = Math.floor(
-      (stWidth / 2 + stPos[0]) * stPositionBounds.value.width
-    );
-    const y = Math.floor(
-      (stHeight / 2 - stPos[1]) * stPositionBounds.value.height
-    );
     // st样式
     let extendStyle = `;position: absolute; --st-x: ${stPos[0]}; width: auto;--st-y: ${stPos[1]};`;
     // 居中显示特殊样式
     if (e.middle) {
       extendStyle =
         extendStyle +
-        `;text-align: center; left: 50%; transform: translateX(-50%)`;
+        ";text-align: center; left: 50%; transform: translateX(-50%)";
     }
     const fontSize = e.stArgs[2]; // st的字号
     extendStyle = extendStyle + `;--param-font-size: ${fontSize}`;
@@ -369,16 +367,18 @@ function handleShowStEvent(e: StText) {
  * 處理三種st特效的fn
  */
 type StType = StArgs[1];
-type StMap = {
+type IStMap = {
   [key in StType]: (e: StText, parsedStyle: string) => void;
 };
-const StMap: StMap = {
+const StMap: IStMap = {
   instant(e: StText, parsedStyle: string): void {
-    stOutput.value!.innerHTML =
-      stOutput.value!.innerHTML + parseStInnerHtml(e, parsedStyle).content;
+    const _stOutput = stOutput.value as HTMLElement;
+    _stOutput.innerHTML =
+      _stOutput.innerHTML + parseStInnerHtml(e, parsedStyle).content;
     eventBus.emit("stDone");
   },
   serial(e: StText, parsedStyle: string): void {
+    const _stOutput = stOutput.value as HTMLElement;
     showTextDialog(
       e.text
         .map(text => {
@@ -387,7 +387,7 @@ const StMap: StMap = {
           return text;
         })
         .map(text => parseTextEffect(text)),
-      stOutput.value!,
+      _stOutput,
       content => {
         return `<div style="${parsedStyle}">${content}</div>`;
       },
@@ -400,11 +400,12 @@ const StMap: StMap = {
     typingInstance.isSt = true;
   },
   smooth(e: StText, parsedStyle: string): void {
+    const _stOutput = stOutput.value as HTMLElement;
     parsedStyle = parsedStyle + ";opacity: 0";
-    stOutput.value!.innerHTML =
-      stOutput.value!.innerHTML + parseStInnerHtml(e, parsedStyle).content;
-    const el = stOutput.value!.children.item(
-      stOutput.value!.children.length - 1
+    _stOutput.innerHTML =
+      _stOutput.innerHTML + parseStInnerHtml(e, parsedStyle).content;
+    const el = _stOutput.children.item(
+      _stOutput.children.length - 1
     );
     const timeline = gsap.timeline();
     timeline
@@ -455,10 +456,11 @@ function handleShowTextEvent(e: ShowText) {
     typingInstance?.stop();
     typingInstance?.destroy();
     typingInstance && (typingInstance.isSt = false);
+    const _typewriterOutput = typewriterOutput.value as HTMLElement;
     // 显示
     showTextDialog(
       e.text.map(text => parseTextEffect(text)),
-      typewriterOutput.value!
+      _typewriterOutput
     ).then(() => {
       eventBus.emit("textDone");
     });
@@ -492,7 +494,6 @@ function parseTextEffect(text: Text, extendStyle = "", tag = "span"): Text {
         return `color: ${value}`;
       } else if (name === "fontsize") {
         return `--param-font-size: ${value}`;
-        // `font-size: ${unityFontSizeToHTMLSize(Number(value))}rem;--font-size: ${unityFontSizeToHTMLSize(Number(value))}rem`
       }
       // 暂时废弃, 没办法处理字体自适应
       return (StyleEffectTemplate[effect.name] || "").replace(
@@ -503,6 +504,7 @@ function parseTextEffect(text: Text, extendStyle = "", tag = "span"): Text {
     .join(";");
   // 如果有注解就用ruby标签实现
   if (rt) {
+    // eslint-disable-next-line max-len
     text.content = `<${tag} style="${style};${extendStyle}" class="ruby" data-content="${rt}"><span class="rb">${text.content}</span><span class="rt">${rt}</span></${tag}>`;
   } else {
     text.content = `<${tag} style="${style};${extendStyle}">${text.content}</${tag}>`;
@@ -571,7 +573,8 @@ function showTextDialog(
     }
     // st的续约, 因为不能两个Typed同时持有一个对象, 所以采用将之前的内容作为已打印内容拼接的形式
     function continueSt() {
-      lastStOutput = stOutput.value!.innerHTML;
+      const _stOutput = stOutput.value as HTMLElement;
+      lastStOutput = _stOutput.innerHTML;
       setTypingComplete(false, typingInstance);
       typingInstance.pause.status = true;
       typingInstance.pause.typewrite = true;
@@ -628,18 +631,21 @@ function handleToBeContinued() {
   hideMenu();
   showToBeContinue.value = true;
   nextTick(() => {
-    const style = getComputedStyle(toBeContinuedText.value!);
+    const _toBeContinuedText = toBeContinuedText.value as HTMLElement;
+    const _toBeContinuedBg0 = toBeContinuedBg0.value as HTMLElement;
+    const _toBeContinuedBg1 = toBeContinuedBg1.value as HTMLElement;
+    const style = getComputedStyle(_toBeContinuedText);
     const w = Number(style.width.replace("px", ""));
-    toBeContinuedText.value!.style.right = `${-w - 10}px`;
-    toBeContinuedText.value!.style.opacity = "1";
+    _toBeContinuedText.style.right = `${-w - 10}px`;
+    _toBeContinuedText.style.opacity = "1";
     const timeline = gsap.timeline();
     timeline
-      .to(toBeContinuedBg0.value!, {
+      .to(_toBeContinuedBg0, {
         opacity: 1,
         duration: 0.3,
       })
       .to(
-        toBeContinuedBg1.value!,
+        _toBeContinuedBg1,
         {
           opacity: 1,
           duration: 0.4,
@@ -647,7 +653,7 @@ function handleToBeContinued() {
         "-=0.15"
       )
       .to(
-        toBeContinuedText.value!,
+        _toBeContinuedText,
         {
           right: 20,
           duration: 0.3,
@@ -655,7 +661,7 @@ function handleToBeContinued() {
         "<"
       )
       .to(
-        toBeContinuedText.value!,
+        _toBeContinuedText,
         {
           opacity: 0,
           duration: 0.6,
@@ -677,7 +683,7 @@ function handleNextEpisode(e: ShowTitleOption) {
   showNextEpisode.value = true;
   hideMenu();
   nextTick(() => {
-    const container = nextEpisodeContainer.value!;
+    const container = nextEpisodeContainer.value as HTMLElement;
     const topChild = container.children[0];
     const bottomChild = container.children[1];
     let flag = false;
@@ -764,9 +770,6 @@ function onPopupVideoEnd() {
 function hideMenu() {
   eventBus.emit("hidemenu");
 }
-function showMenu() {
-  eventBus.emit("showmenu");
-}
 function handlePopupClose() {
   popupSrc.image = "";
   videoComponent.value?.pause();
@@ -828,9 +831,9 @@ const standardUnityFontSize = 64;
  * 以64作为标准st字体大小?
  * @param size
  */
-function unityFontSizeToHTMLSize(size: number) {
-  return (size / standardUnityFontSize) * standardFontSize.value;
-}
+// function unityFontSizeToHTMLSize(size: number) {
+//   return (size / standardUnityFontSize) * standardFontSize.value;
+// }
 
 /**
  * typingInstance不能被代理且自身的typingComplete也有意义
@@ -856,9 +859,6 @@ const overrideTitleStyle = computed(() => {
 });
 // 文本框总高度
 const dialogHeight = computed(() => props.playerHeight * 0.37);
-// 选择框位置
-const standardDialogHeight = 550;
-const standardDialogTopOffset = 100;
 // 计算title的padding以让其符合边框第二边线
 const titleBorderWidth = 2280;
 const standardBorderWidth = 26;
