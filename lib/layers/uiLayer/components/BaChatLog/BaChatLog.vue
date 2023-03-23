@@ -4,12 +4,12 @@ import { usePlayerStore } from "@/stores";
 import { ref, watch } from "vue";
 
 const props = defineProps<{
-  show: boolean,
+  show: boolean;
 }>();
 
 watch(
   () => props.show,
-  (newValue) => {
+  newValue => {
     if (newValue) {
       setTimeout(() => {
         let elem = content.value;
@@ -19,13 +19,13 @@ watch(
         }
       }, 300);
     }
-  }, {immediate: true}  // Why it's works when add `immediate: true`
+  },
+  { immediate: true } // Why it's works when add `immediate: true`
 );
 
 const content = ref<HTMLElement | null>(null);
 let store = usePlayerStore();
 let chatMessages = store.logText;
-
 </script>
 
 <template>
