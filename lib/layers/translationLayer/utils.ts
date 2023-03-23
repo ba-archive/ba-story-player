@@ -42,18 +42,18 @@ export function isOption(s: string) {
  * @returns
  */
 export function generateText(rawStoryUnit: StoryRawUnit, stm?: boolean) {
-  let rawText = getText(rawStoryUnit, playerStore.language);
-  rawText = rawText.replaceAll("[USERNAME]", playerStore.userName);
-  rawText = rawText.replaceAll("#n", "\n");
-  let result: Text[] = [];
+  const rawText = getText(rawStoryUnit, playerStore.language)
+    .replaceAll("[USERNAME]", playerStore.userName)
+    .replaceAll("#n", "\n");
+  const result: Text[] = [];
   if (rawText.includes("[wa")) {
     //原始文字示例: "― （いや[wa:200]いや、[wa:900]いくら[wa:300]そういう[wa:300]状況だからって"
     //根据[wa分开
-    let strs = rawText.split("[wa:");
-    for (let str of strs) {
-      let spiltIndex = str.indexOf("]");
-      let waitTime = Number(str.slice(0, spiltIndex));
-      let textUnit = str.slice(spiltIndex + 1);
+    const strList = rawText.split("[wa:");
+    for (const str of strList) {
+      const spiltIndex = str.indexOf("]");
+      const waitTime = Number(str.slice(0, spiltIndex));
+      const textUnit = str.slice(spiltIndex + 1);
       result.push({ content: textUnit, waitTime, effects: [] });
     }
     return result;
@@ -126,10 +126,20 @@ export function splitStScript(rawText: string): string[] {
  */
 export function parseCustomTag(rawText: string): Text {
   let raw = rawText;
-  const effects = Object.keys(ICustomTagParserMap)
+  const effects = Object.keys(CustomTagParserMap)
     .map(key => {
-      const fn = Reflect.get(ICustomTagParserMap, key) as CustomTagParserFn;
-      const res = fn(raw);
+      const parseConfig = Reflect.get(
+        CustomTagParserMap,
+        key
+      ) as CustomTagParserFnConfig;
+      if (!parseConfig) {
+        return undefined;
+      }
+      const match = parseConfig.reg.exec(raw);
+      if (!match) {
+        return undefined;
+      }
+      const res = parseConfig.fn(raw, match);
       if (res) {
         raw = res.remain;
       }
@@ -142,44 +152,48 @@ export function parseCustomTag(rawText: string): Text {
   };
 }
 
-type CustomTagParserFn = (rawText: string) => { effect: TextEffect; remain: string } | undefined;
+type CustomTagParserFnConfig = {
+  reg: RegExp;
+  fn: (
+    rawText: string,
+    match: RegExpExecArray
+  ) => { effect: TextEffect; remain: string } | undefined;
+} | null;
 
-type CustomTagParserMap = {
-  [key in TextEffectName]: CustomTagParserFn;
+type ICustomTagParserMap = {
+  [key in TextEffectName]: CustomTagParserFnConfig;
 };
 
-const ICustomTagParserMap: CustomTagParserMap = {
-  ruby(rawText) {
-    const exec = /\[ruby=(.+?)](.+)\[\/ruby]/.exec(rawText);
-    if (!exec) {
-      return undefined;
-    }
-    const effect: TextEffect = {
-      name: "ruby",
-      value: [exec[1]],
-    };
-    return {
-      effect: effect,
-      remain: rawText.replace(`[ruby=${exec[1]}]`, "").replace("[/ruby]", ""),
-    };
+const CustomTagParserMap: ICustomTagParserMap = {
+  ruby: {
+    reg: /\[ruby=(.+?)](.+)\[\/ruby]/,
+    fn(rawText: string, match: RegExpExecArray) {
+      const effect: TextEffect = {
+        name: "ruby",
+        value: [match[1]],
+      };
+      return {
+        effect: effect,
+        remain: rawText
+          .replace(`[ruby=${match[1]}]`, "")
+          .replace("[/ruby]", ""),
+      };
+    },
   },
-  color(rawText) {
-    const exec = /\[([A-Fa-f0-9]{6})](.+?)\[-]/.exec(rawText);
-    if (!exec) {
-      return undefined;
-    }
-    const effect: TextEffect = {
-      name: "color",
-      value: [`#${exec[1]}`],
-    };
-    return {
-      effect: effect,
-      remain: rawText.replace(`[${exec[1]}]`, "").replace("[-]", ""),
-    };
+  color: {
+    reg: /\[([A-Fa-f0-9]{6})](.+?)\[-]/,
+    fn(rawText: string, match: RegExpExecArray) {
+      const effect: TextEffect = {
+        name: "color",
+        value: [`#${match[1]}`],
+      };
+      return {
+        effect: effect,
+        remain: rawText.replace(`[${match[1]}]`, "").replace("[-]", ""),
+      };
+    },
   },
-  fontsize() {
-    return undefined;
-  },
+  fontsize: null,
 };
 
 /**

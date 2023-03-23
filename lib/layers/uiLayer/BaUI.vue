@@ -10,7 +10,6 @@ import { effectBtnMouseDown, effectBtnMouseUp } from "./utils";
 import { ShowOption } from "@/types/events";
 import { usePlayerStore } from "@/stores";
 import { useThrottleFn } from "@vueuse/core";
-import "./userInteract";
 
 let showSummary = ref(false);
 let showStoryLog = ref(false);
@@ -34,8 +33,8 @@ eventBus.on("hide", () => {
   showStoryLog.value = false;
   hiddenMenu.value = true;
 });
-eventBus.on("showStoryLog", () => {
-  showStoryLog.value = true;
+eventBus.on("showStoryLog", e => {
+  showStoryLog.value = e;
 });
 watch(showStoryLog, () => {
   eventBus.emit("isStoryLogShow", showStoryLog.value);
@@ -47,7 +46,16 @@ eventBus.on("showmenu", () => {
   hiddenMenu.value = false;
 });
 eventBus.on("option", e => (selectOptions.value = [...e]));
-
+eventBus.on("next", () => {
+  // 如果用跳转之类的事件跳过后, 此时关闭显示 选项
+  if (!selectOptions.value.length) return;
+  const find = selectOptions.value.find(
+    i => i.index === storyHandler.currentStoryIndex
+  );
+  if (!find) {
+    selectOptions.value = [];
+  }
+});
 function handleBtnFullScreen() {
   emitter("update:fullScreen", !props.fullScreen);
 }
