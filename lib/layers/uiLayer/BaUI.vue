@@ -1,22 +1,24 @@
 <script lang="ts" setup>
 import BaButton from "@/layers/uiLayer/components/BaButton.vue";
-import { Ref, computed, ref, watch } from "vue";
+import { computed, nextTick, onMounted, ref, watch } from "vue";
 import BaDialog from "./components/BaDialog.vue";
 import BaChatLog from "./components/BaChatLog/BaChatLog.vue";
 import BaSelector from "./components/BaSelector.vue";
 import eventBus from "@/eventBus";
 import { Language, StorySummary } from "@/types/store";
-import { effectBtnMouseDown, effectBtnMouseUp } from "./utils";
 import { ShowOption } from "@/types/events";
 import { usePlayerStore } from "@/stores";
 import { useThrottleFn } from "@vueuse/core";
 import { storyHandler } from "@/index";
+import gsap from "gsap";
 
-let showSummary = ref(false);
-let showStoryLog = ref(false);
-let autoMode = ref(false);
-let showMenu = ref(false);
-let showSubMenu = ref(true);
+const showSummary = ref(false);
+const showStoryLog = ref(false);
+const autoMode = ref(false);
+const showMenu = ref(false);
+const forceShowMenu = ref(false);
+const showSubMenu = ref(false);
+const disableMenuButton = ref(false);
 
 let props = defineProps<{
   storySummary: StorySummary;
@@ -120,8 +122,23 @@ function refreshBtnMenuTimer() {
 }
 
 // 子菜单按钮动画
-let handleBtnMouseDown = effectBtnMouseDown();
-let handleBtnMouseUp = effectBtnMouseUp();
+let handleBtnMouseDown = function (ev: Event) {
+  if (!showMenu.value && forceShowMenu.value) return;
+  gsap.to(ev.currentTarget, {
+    duration: 0.15,
+    scale: 0.94,
+    ease: "power3.out",
+    force3D: true,
+  });
+};
+let handleBtnMouseUp = function (ev: Event) {
+  if (!showMenu.value && forceShowMenu.value) return;
+  gsap.to(ev.currentTarget, {
+    duration: 0.3,
+    scale: 1,
+    force3D: true,
+  });
+};
 
 // baui em value, 根据height width计算
 const bauiem = computed(() => {
@@ -195,27 +212,53 @@ function getI18n(key: string) {
 }
 
 // #97 UI层接收到隐藏UI事件后无法操作菜单
-const rightTop = ref<HTMLElement | null>(null);
-if (rightTop.value) {
-  const el = rightTop.value;
-  var mouseEnter = function mouseEnter() {
-    showMenu.value = true;
-  };
-  var mouseLeave = function mouseLeave() {
-    showMenu.value = false;
-  };
-  el.addEventListener("mouseenter", mouseEnter);
-  el.addEventListener("mouseleave", mouseLeave);
-  // el.addEventListener("click", enter)
-}
+const rightTop = ref<HTMLElement | null>();
+onMounted(() => {
+  if (rightTop.value) {
+    const el = rightTop.value;
+    let timeout: number | undefined;
+
+    let mouseEnter = function mouseEnter() {
+      forceShowMenu.value = true;
+    };
+    let mouseLeave = function mouseLeave() {
+      if (timeout) clearTimeout(timeout);
+      timeout = window.setTimeout(() => {
+        forceShowMenu.value = false;
+        timeout = undefined;
+      }, 1800);
+    };
+
+    el.addEventListener("mouseover", mouseEnter);
+    el.addEventListener("mouseleave", mouseLeave);
+    el.addEventListener(
+      "click",
+      () => {
+        mouseEnter();
+        mouseLeave();
+      },
+      { capture: true }
+    );
+  }
+});
 </script>
 
 <template>
   <div class="baui" :style="{ 'font-size': `${bauiem}px`, cursor: cursorStyle }" tabindex="0">
-    <div class="right-top" v-show="showMenu" ref="rightTop">
+    <div class="right-top" :style="{ opacity: showMenu || forceShowMenu ? 1 : 0 }" ref="rightTop">
       <div class="baui-button-group">
-        <BaButton @click="handleBtnAutoMode" :class="{ 'ba-button-auto': true, activated: autoMode }"> AUTO </BaButton>
-        <BaButton @click="handleBtnMenuDebounced" :class="{ 'ba-button-menu': true, activated: showSubMenu }">
+        <BaButton
+          @click="handleBtnAutoMode"
+          :class="{ 'ba-button-auto': true, activated: autoMode }"
+          :disabled="disableMenuButton"
+        >
+          AUTO
+        </BaButton>
+        <BaButton
+          @click="handleBtnMenuDebounced"
+          :class="{ 'ba-button-menu': true, activated: showSubMenu }"
+          :disabled="disableMenuButton"
+        >
           MENU
         </BaButton>
       </div>
@@ -321,6 +364,7 @@ if (rightTop.value) {
   padding: 1.5%;
   user-select: none;
   z-index: 120;
+  transition: opacity 0.3s ease-in-out;
 }
 
 .baui {
@@ -348,16 +392,16 @@ if (rightTop.value) {
     grid-template-columns: repeat(2, 1fr);
 
     .ba-button {
-      &:hover {
+      &:hover:enabled {
         background-color: #c7c8c9;
       }
     }
 
-    .ba-button-auto.activated {
+    .ba-button-auto:enabled.activated {
       background: no-repeat right -17% bottom/contain url(./assets/Common_Btn_Normal_Y_S_Pt.webp) #efe34b;
     }
 
-    .ba-button-menu.activated {
+    .ba-button-menu:enabled.activated {
       color: #e7e8e9;
       background-color: #707580b1;
     }
