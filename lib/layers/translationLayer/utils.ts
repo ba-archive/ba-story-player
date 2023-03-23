@@ -128,10 +128,7 @@ export function parseCustomTag(rawText: string): Text {
   let raw = rawText;
   const effects = Object.keys(CustomTagParserMap)
     .map(key => {
-      const parseConfig = Reflect.get(
-        CustomTagParserMap,
-        key
-      ) as CustomTagParserFnConfig;
+      const parseConfig = Reflect.get(CustomTagParserMap, key) as CustomTagParserFnConfig;
       if (!parseConfig) {
         return undefined;
       }
@@ -154,10 +151,7 @@ export function parseCustomTag(rawText: string): Text {
 
 type CustomTagParserFnConfig = {
   reg: RegExp;
-  fn: (
-    rawText: string,
-    match: RegExpExecArray
-  ) => { effect: TextEffect; remain: string } | undefined;
+  fn: (rawText: string, match: RegExpExecArray) => { effect: TextEffect; remain: string } | undefined;
 } | null;
 
 type ICustomTagParserMap = {
@@ -174,9 +168,7 @@ const CustomTagParserMap: ICustomTagParserMap = {
       };
       return {
         effect: effect,
-        remain: rawText
-          .replace(`[ruby=${match[1]}]`, "")
-          .replace("[/ruby]", ""),
+        remain: rawText.replace(`[ruby=${match[1]}]`, "").replace("[/ruby]", ""),
       };
     },
   },

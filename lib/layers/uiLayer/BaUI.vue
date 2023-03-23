@@ -49,9 +49,7 @@ eventBus.on("option", e => (selectOptions.value = [...e]));
 eventBus.on("next", () => {
   // 如果用跳转之类的事件跳过后, 此时关闭显示 选项
   if (!selectOptions.value.length) return;
-  const find = selectOptions.value.find(
-    i => i.index === storyHandler.currentStoryIndex
-  );
+  const find = selectOptions.value.find(i => i.index === storyHandler.currentStoryIndex);
   if (!find) {
     selectOptions.value = [];
   }

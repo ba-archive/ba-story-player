@@ -26,10 +26,7 @@ const StoryRawUnitParserUnit: IStoryRawUnitParserUnit = {
     reg: /#title;([^;\n]+);?([^;\n]+)?;?/,
     fn(match: RegExpExecArray, unit: StoryUnit, rawUnit: StoryRawUnit) {
       unit.type = "title";
-      unit.textAbout.titleInfo = utils.generateTitleInfo(
-        rawUnit,
-        usePlayerStore().language
-      );
+      unit.textAbout.titleInfo = utils.generateTitleInfo(rawUnit, usePlayerStore().language);
       return unit;
     },
   },
@@ -45,10 +42,7 @@ const StoryRawUnitParserUnit: IStoryRawUnitParserUnit = {
     reg: /#nextepisode;([^;\n]+);([^;\n]+);?/,
     fn(match: RegExpExecArray, unit: StoryUnit, rawUnit: StoryRawUnit) {
       unit.type = "nextEpisode";
-      unit.textAbout.titleInfo = utils.generateTitleInfo(
-        rawUnit,
-        usePlayerStore().language
-      );
+      unit.textAbout.titleInfo = utils.generateTitleInfo(rawUnit, usePlayerStore().language);
       return unit;
     },
   },
@@ -77,11 +71,7 @@ const StoryRawUnitParserUnit: IStoryRawUnitParserUnit = {
     fn(match: RegExpExecArray, unit: StoryUnit, rawUnit: StoryRawUnit) {
       unit.type = "st";
       unit.textAbout.st = { middle: false };
-      unit.textAbout.st.stArgs = [
-        JSON.parse(match[1]) as number[],
-        match[2] as StArgs[1],
-        Number(match[3]),
-      ];
+      unit.textAbout.st.stArgs = [JSON.parse(match[1]) as number[], match[2] as StArgs[1], Number(match[3])];
       if (match[4]) {
         unit.textAbout.showText.text = utils.generateText(rawUnit);
       }
@@ -93,11 +83,7 @@ const StoryRawUnitParserUnit: IStoryRawUnitParserUnit = {
     fn(match: RegExpExecArray, unit: StoryUnit, rawUnit: StoryRawUnit) {
       unit.type = "st";
       unit.textAbout.st = { middle: true };
-      unit.textAbout.st.stArgs = [
-        JSON.parse(match[1]) as number[],
-        match[2] as StArgs[1],
-        Number(match[3]),
-      ];
+      unit.textAbout.st.stArgs = [JSON.parse(match[1]) as number[], match[2] as StArgs[1], Number(match[3])];
       unit.textAbout.showText.text = utils.generateText(rawUnit, true);
       return unit;
     },
@@ -198,18 +184,11 @@ const StoryRawUnitParserUnit: IStoryRawUnitParserUnit = {
     ) {
       const playerStore = usePlayerStore();
       const CharacterName = utils.getCharacterName(match[2]);
-      const characterInfo =
-        playerStore.CharacterNameExcelTable.get(CharacterName);
+      const characterInfo = playerStore.CharacterNameExcelTable.get(CharacterName);
       if (characterInfo) {
         //添加人物spineUrl
-        const spineUrl = getResourcesUrl(
-          "characterSpine",
-          characterInfo.SpinePrefabName
-        );
-        const avatarUrl = getResourcesUrl(
-          "avatar",
-          characterInfo?.SmallPortrait
-        );
+        const spineUrl = getResourcesUrl("characterSpine", characterInfo.SpinePrefabName);
+        const avatarUrl = getResourcesUrl("avatar", characterInfo?.SmallPortrait);
         const speaker = utils.getSpeaker(characterInfo);
         //人物有对话
         if (match[4]) {
@@ -247,19 +226,11 @@ const StoryRawUnitParserUnit: IStoryRawUnitParserUnit = {
       parseUnitResult: StoryUnit[],
       currentIndex: number
     ) {
-      const characterIndex = utils.getCharacterIndex(
-        unit,
-        Number(match[1]),
-        parseUnitResult,
-        currentIndex
-      );
+      const characterIndex = utils.getCharacterIndex(unit, Number(match[1]), parseUnitResult, currentIndex);
       if (match[5] && utils.compareCaseInsensive(match[4], "em")) {
         const emotionName = utils.getEmotionName(match[5]);
         if (!emotionName) {
-          console.error(
-            `查询不到${match[3]}的emotionName中, 当前rawStoryUnit: `,
-            rawUnit
-          );
+          console.error(`查询不到${match[3]}的emotionName中, 当前rawStoryUnit: `, rawUnit);
         } else {
           unit.characters[characterIndex].effects.push({
             type: "emotion",
@@ -287,9 +258,7 @@ const StoryRawUnitParserUnit: IStoryRawUnitParserUnit = {
     reg: /\[n?s(\d{0,2})?]([^;\n]+)/,
     fn(match: RegExpExecArray, unit: StoryUnit, rawUnit: StoryRawUnit) {
       unit.type = "option";
-      unit.textAbout.options = String(
-        getText(rawUnit, usePlayerStore().language)
-      )
+      unit.textAbout.options = String(getText(rawUnit, usePlayerStore().language))
         .split("\n")
         .map((it, index) => {
           const parseResult = /\[n?s(\d{0,2})?](.+)/.exec(it);
@@ -320,9 +289,7 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
     const unit: StoryUnit = {
       GroupId,
       SelectionGroup,
-      PopupFileName: PopupFileName
-        ? getResourcesUrl("popupImage", PopupFileName)
-        : "",
+      PopupFileName: PopupFileName ? getResourcesUrl("popupImage", PopupFileName) : "",
       type: "text",
       characters: [],
       textAbout: {
@@ -340,9 +307,7 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
       soundUrl: utils.getSoundUrl(rawStoryUnit.Sound),
       voiceJPUrl: utils.getVoiceJPUrl(rawStoryUnit.VoiceJp),
     };
-    unit.transition = playerStore.TransitionExcelTable.get(
-      rawStoryUnit.Transition
-    );
+    unit.transition = playerStore.TransitionExcelTable.get(rawStoryUnit.Transition);
     if (rawStoryUnit.BGName) {
       const BGItem = playerStore.BGNameExcelTable.get(rawStoryUnit.BGName);
       if (BGItem) {
@@ -354,9 +319,7 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
         } else if (BGItem.BGType === "Spine") {
           // 取第一次出现的 l2d 作为配置
           const l2dInfo = utils.getL2DUrlAndName(BGItem.BGFileName);
-          playerStore.setL2DConfig(
-            playerStore.curL2dConfig || l2dConfig[l2dInfo.name]
-          );
+          playerStore.setL2DConfig(playerStore.curL2dConfig || l2dConfig[l2dInfo.name]);
           unit.l2d = {
             spineUrl: l2dInfo.url,
             animationName: BGItem.AnimationName,
@@ -364,9 +327,7 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
         }
       }
     }
-    unit.effect.BGEffect = playerStore.BGEffectExcelTable.get(
-      rawStoryUnit.BGEffect
-    );
+    unit.effect.BGEffect = playerStore.BGEffectExcelTable.get(rawStoryUnit.BGEffect);
     //当没有文字时初步判断为effectOnly类型
     if (!rawStoryUnit.TextJp || !rawStoryUnit.TextJp) {
       unit.type = "effectOnly";
@@ -374,10 +335,7 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
     const ScriptKr = String(rawStoryUnit.ScriptKr);
     ScriptKr.split("\n").forEach(scriptUnit => {
       Object.keys(StoryRawUnitParserUnit).map(key => {
-        const parseConfig = Reflect.get(
-          StoryRawUnitParserUnit,
-          key
-        ) as IStoryRawUnitParserFn;
+        const parseConfig = Reflect.get(StoryRawUnitParserUnit, key) as IStoryRawUnitParserFn;
         if (!parseConfig) {
           return undefined;
         }
@@ -432,9 +390,7 @@ function switchBaseTranslator(rawStory: StoryRawUnit[]): StoryUnit[] {
         break;
       }
     }
-    unit.transition = playerStore.TransitionExcelTable.get(
-      rawStoryUnit.Transition
-    );
+    unit.transition = playerStore.TransitionExcelTable.get(rawStoryUnit.Transition);
     if (rawStoryUnit.BGName) {
       let BGItem = playerStore.BGNameExcelTable.get(rawStoryUnit.BGName);
       if (BGItem) {

@@ -62,16 +62,8 @@
           '--st-pos-bounds-y': `${stPositionBounds.height}`,
         }"
       />
-      <div
-        ref="titleEL"
-        class="title-container absolute-container"
-        :style="overrideTitleStyle"
-        v-if="titleContent"
-      >
-        <div
-          class="title-border"
-          :style="{ '--side-padding': `${titleBorderPadding}px` }"
-        >
+      <div ref="titleEL" class="title-container absolute-container" :style="overrideTitleStyle" v-if="titleContent">
+        <div class="title-border" :style="{ '--side-padding': `${titleBorderPadding}px` }">
           <img src="./assets/title-border.png" />
           <div ref="titleContain" class="title-contain" :style="{ '--font-size': `${fontSize(4)}rem` }">
             <div class="sub-title" v-if="subTitleContent">
@@ -926,12 +918,7 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
   margin-top: 1.5%;
   color: white;
   :deep(span) {
-    --font-size: calc(
-      (
-          var(--param-font-size) / var(--standard-unity-font-size) *
-            var(--standard-font-size)
-        ) * 1rem
-    );
+    --font-size: calc((var(--param-font-size) / var(--standard-unity-font-size) * var(--standard-font-size)) * 1rem);
     font-size: var(--font-size);
   }
   line-height: 1.5em;
@@ -1072,18 +1059,9 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
     color: white;
     text-shadow: $text-outline;
     :deep(div) {
-      --font-size: calc(
-        (
-            var(--param-font-size) / var(--standard-unity-font-size) *
-              var(--standard-font-size)
-          ) * 1rem
-      );
-      --left: calc(
-        (var(--st-width-half) + var(--st-x)) * var(--st-pos-bounds-x) * 1px
-      );
-      --top: calc(
-        (var(--st-height-half) - var(--st-y)) * var(--st-pos-bounds-y) * 1px
-      );
+      --font-size: calc((var(--param-font-size) / var(--standard-unity-font-size) * var(--standard-font-size)) * 1rem);
+      --left: calc((var(--st-width-half) + var(--st-x)) * var(--st-pos-bounds-x) * 1px);
+      --top: calc((var(--st-height-half) - var(--st-y)) * var(--st-pos-bounds-y) * 1px);
       line-height: var(--font-size);
       display: inline-block;
       top: calc(var(--top) - var(--font-size) / 2);

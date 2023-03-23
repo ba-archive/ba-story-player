@@ -57,8 +57,7 @@ const wheelEvent = (e: WheelEvent & { [key: string]: any }) => {
   }
   if (
     delta < 0 &&
-    (uiScrollElem?.scrollTop || 0) + (uiScrollElem?.clientHeight || 0) >=
-      (uiScrollElem?.scrollHeight || 0) - 6
+    (uiScrollElem?.scrollTop || 0) + (uiScrollElem?.clientHeight || 0) >= (uiScrollElem?.scrollHeight || 0) - 6
   ) {
     // 避免滑到底部就立刻关了, 再滚一次才生效
     if (isScrollBottom) {
@@ -81,16 +80,12 @@ const wheelEvent = (e: WheelEvent & { [key: string]: any }) => {
 eventBus.on("loaded", () => {
   document.addEventListener("keydown", keyEvent);
   document.addEventListener("keyup", keyUpEvent);
-  document
-    .querySelector("#player")
-    ?.addEventListener("wheel", wheelEvent as any);
+  document.querySelector("#player")?.addEventListener("wheel", wheelEvent as any);
 });
 eventBus.on("dispose", () => {
   document.removeEventListener("keydown", keyEvent);
   document.removeEventListener("keyup", keyUpEvent);
-  document
-    .querySelector("#player")
-    ?.addEventListener("wheel", wheelEvent as any);
+  document.querySelector("#player")?.addEventListener("wheel", wheelEvent as any);
 });
 
 function getLastDataFromIndex(index: number) {
@@ -141,8 +136,7 @@ export const changeStoryIndex = (index?: number) => {
   const isSameCharacter =
     JSON.stringify(lastCharacter?.characters?.map(i => i.CharacterName)) ===
     JSON.stringify(curCharacter?.characters?.map(i => i.CharacterName));
-  const isSameBgm =
-    JSON.stringify(lastBgm?.audio?.bgm) === JSON.stringify(curBgm?.audio?.bgm);
+  const isSameBgm = JSON.stringify(lastBgm?.audio?.bgm) === JSON.stringify(curBgm?.audio?.bgm);
   // 如果和跳转前相同就不去除了, 避免闪动
   if (!isSameCharacter) {
     eventBus.emit("hideCharacter");
