@@ -13,6 +13,7 @@ let chatMesasages = store.logText;
 watch(
   () => props.show,
   newValue => {
+    console.log("show log")
     if (newValue) {
       setTimeout(() => {
         let elem = content.value;

@@ -277,7 +277,7 @@ function getI18n(key: string) {
       height="min(650px, 86%)"
       v-model:show="showStoryLog"
     >
-      <BaChatLog :show="!showStoryLog" />
+      <BaChatLog :show="showStoryLog" />
     </BaDialog>
   </div>
 </template>
