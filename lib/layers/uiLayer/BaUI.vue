@@ -125,7 +125,6 @@ function refreshBtnMenuTimer() {
 
 // 子菜单按钮动画
 let handleBtnMouseDown = function (ev: Event) {
-  if (!showMenu.value && forceShowMenu.value) return;
   gsap.to(ev.currentTarget, {
     duration: 0.15,
     scale: 0.94,
@@ -134,7 +133,6 @@ let handleBtnMouseDown = function (ev: Event) {
   });
 };
 let handleBtnMouseUp = function (ev: Event) {
-  if (!showMenu.value && forceShowMenu.value) return;
   gsap.to(ev.currentTarget, {
     duration: 0.3,
     scale: 1,
