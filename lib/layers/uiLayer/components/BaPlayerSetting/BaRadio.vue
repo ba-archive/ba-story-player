@@ -3,7 +3,7 @@ import { ref } from "vue";
 import { BaRadioData } from "./BaPlayerSetting";
 
 const props = defineProps<{
-  data: BaRadioData
+  data: BaRadioData;
 }>();
 </script>
 
