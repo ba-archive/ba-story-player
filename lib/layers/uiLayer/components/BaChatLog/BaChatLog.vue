@@ -61,6 +61,7 @@ let chatMessages = store.logText;
     margin: 0;
     padding: 0;
     overflow-y: scroll;
+    scroll-behavior: smooth;
 
     // hide scrollbar
     scrollbar-width: none;
