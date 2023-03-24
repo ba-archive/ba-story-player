@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import BaButton from "@/layers/uiLayer/components/BaButton.vue";
-import { computed, nextTick, onMounted, ref, watch } from "vue";
+import BaPlayerSetting from "@/layers/uiLayer/components/BaPlayerSetting/BaPlayerSetting.vue"
+import { computed, onMounted, ref, watch } from "vue";
 import BaDialog from "./components/BaDialog.vue";
 import BaChatLog from "./components/BaChatLog/BaChatLog.vue";
 import BaSelector from "./components/BaSelector.vue";
@@ -337,6 +338,10 @@ onMounted(() => {
     >
       <BaChatLog :show="showStoryLog" />
     </BaDialog>
+
+    <BaDialog id="ba-player-setting" :show="true" width="min(1080px, 80%)" height="min(650px, 86%)">
+      <BaPlayerSetting />
+    </BaDialog>
   </div>
 </template>
 
@@ -490,6 +495,11 @@ onMounted(() => {
         width: 50%;
       }
     }
+  }
+
+  #ba-player-setting {
+    color: #32363c;
+    z-index: 140;
   }
 }
 </style>
