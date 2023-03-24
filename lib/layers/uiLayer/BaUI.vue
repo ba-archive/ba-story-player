@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import BaButton from "@/layers/uiLayer/components/BaButton.vue";
-import BaPlayerSetting from "@/layers/uiLayer/components/BaPlayerSetting/BaPlayerSetting.vue"
+import BaPlayerSetting from "@/layers/uiLayer/components/BaPlayerSetting/BaPlayerSetting.vue";
 import { computed, onMounted, ref, watch } from "vue";
 import BaDialog from "./components/BaDialog.vue";
 import BaChatLog from "./components/BaChatLog/BaChatLog.vue";
