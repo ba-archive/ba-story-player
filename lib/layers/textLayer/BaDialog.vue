@@ -1019,7 +1019,7 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
     );
     font-size: var(--font-size);
   }
-  line-height: 1.5em;
+  line-height: calc(1.5 * var(--font-size));
 }
 
 .container {
