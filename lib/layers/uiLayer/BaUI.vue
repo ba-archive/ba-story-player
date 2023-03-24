@@ -1,6 +1,6 @@
 <script lang="ts" setup>
+import "./userInteract";
 import BaButton from "@/layers/uiLayer/components/BaButton.vue";
-import BaPlayerSetting from "@/layers/uiLayer/components/BaPlayerSetting/BaPlayerSetting.vue";
 import { computed, onMounted, ref, watch } from "vue";
 import BaDialog from "./components/BaDialog.vue";
 import BaChatLog from "./components/BaChatLog/BaChatLog.vue";
@@ -43,6 +43,7 @@ eventBus.on("showStoryLog", e => {
 watch(showStoryLog, () => {
   eventBus.emit("isStoryLogShow", showStoryLog.value);
 });
+
 eventBus.on("hidemenu", () => {
   showMenu.value = false;
 });
