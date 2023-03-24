@@ -339,9 +339,9 @@ onMounted(() => {
       <BaChatLog :show="showStoryLog" />
     </BaDialog>
 
-    <BaDialog id="ba-player-setting" :show="true" width="min(1080px, 80%)" height="min(650px, 86%)">
+    <!-- <BaDialog id="ba-player-setting" :show="true" width="min(1080px, 80%)" height="min(650px, 86%)">
       <BaPlayerSetting />
-    </BaDialog>
+    </BaDialog> -->
   </div>
 </template>
 
