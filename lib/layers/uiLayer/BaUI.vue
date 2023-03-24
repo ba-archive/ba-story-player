@@ -11,6 +11,7 @@ import { ShowOption } from "@/types/events";
 import { usePlayerStore } from "@/stores";
 import "./userInteract.ts";
 import { useThrottleFn } from "@vueuse/core";
+import { storyHandler } from "@/index";
 
 let hiddenSummary = ref(true);
 let hiddenStoryLog = ref(true);
@@ -35,8 +36,8 @@ eventBus.on("hide", () => {
   hiddenStoryLog.value = true;
   hiddenMenu.value = true;
 });
-eventBus.on("showStoryLog", () => {
-  hiddenStoryLog.value = false;
+eventBus.on("showStoryLog", e => {
+  hiddenStoryLog.value = !e;
 });
 watch(hiddenStoryLog, () => {
   eventBus.emit("isStoryLogShow", !hiddenStoryLog.value);
@@ -48,7 +49,16 @@ eventBus.on("showmenu", () => {
   hiddenMenu.value = false;
 });
 eventBus.on("option", e => (selectOptions.value = [...e]));
-
+eventBus.on("next", () => {
+  // 如果用跳转之类的事件跳过后, 此时关闭显示 选项
+  if (!selectOptions.value.length) return;
+  const find = selectOptions.value.find(
+    i => i.index === storyHandler.currentStoryIndex
+  );
+  if (!find) {
+    selectOptions.value = [];
+  }
+});
 function handleBtnFullScreen() {
   emitter("update:fullScreen", !props.fullScreen);
 }

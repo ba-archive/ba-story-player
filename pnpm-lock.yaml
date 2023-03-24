@@ -30,7 +30,6 @@ specifiers:
   typed.js: ^2.0.12
   typescript: ^4.6.4
   vite: ^3.2.3
-  vite-plugin-clear-console: ^0.2.2
   vue: ^3.2.41
   vue-responsive-video-background-player: ^2.3.1
   vue-tsc: ^1.0.9
@@ -51,7 +50,6 @@ dependencies:
   pixi-spine: 3.1.2_6dpldpqwemekwjqzv7kjxmfh6u
   pixi.js: 6.5.9
   typed.js: 2.0.12
-  vite-plugin-clear-console: 0.2.2
   vue: 3.2.47
   vue-responsive-video-background-player: 2.3.1
   xxhashjs: 0.2.2
@@ -2944,10 +2942,6 @@ packages:
   /util-deprecate/1.0.2:
     resolution: {integrity: sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==}
     dev: true
-
-  /vite-plugin-clear-console/0.2.2:
-    resolution: {integrity: sha512-2CjpF2hod0DOVSgeUtmGv8kljp3PBx/Tyec85qi8rjrLLopjvJ8Lvvb0FbcwguD3cyjVK2QYZRjh5ZtjXKzROQ==}
-    dev: false
 
   /vue-demi/0.13.11_vue@3.2.47:
     resolution: {integrity: sha512-IR8HoEEGM65YY3ZJYAjMlKygDQn25D5ajNFNoKh9RSDMQtlzCxtfQjdQgv9jjK+m3377SsJXY8ysq8kLCZL25A==}
