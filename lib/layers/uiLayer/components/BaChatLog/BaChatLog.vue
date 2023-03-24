@@ -7,15 +7,13 @@ const props = defineProps<{
   show: boolean;
 }>();
 
-onMounted(
-  () => {
-    let elem = content.value;
-    if (elem) {
-      let scrollHeight = elem.scrollHeight;
-      elem.scrollTo(0, scrollHeight);
-    }
+onMounted(() => {
+  let elem = content.value;
+  if (elem) {
+    let scrollHeight = elem.scrollHeight;
+    elem.scrollTo(0, scrollHeight);
   }
-);
+});
 
 const content = ref<HTMLElement | null>(null);
 let store = usePlayerStore();
