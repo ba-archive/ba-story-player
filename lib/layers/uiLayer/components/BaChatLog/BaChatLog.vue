@@ -1,26 +1,20 @@
 <script lang="ts" setup>
 import BaChatMessage from "./BaChatMessage.vue";
 import { usePlayerStore } from "@/stores";
-import { ref, watch } from "vue";
+import { onMounted, ref, watch } from "vue";
 
 const props = defineProps<{
   show: boolean;
 }>();
 
-watch(
-  () => props.show,
-  newValue => {
-    if (newValue) {
-      setTimeout(() => {
-        let elem = content.value;
-        if (elem) {
-          let scrollHeight = elem.scrollHeight;
-          elem.scrollTo(0, scrollHeight);
-        }
-      }, 300);
+onMounted(
+  () => {
+    let elem = content.value;
+    if (elem) {
+      let scrollHeight = elem.scrollHeight;
+      elem.scrollTo(0, scrollHeight);
     }
-  },
-  { immediate: true } // Why it's works when add `immediate: true`
+  }
 );
 
 const content = ref<HTMLElement | null>(null);
