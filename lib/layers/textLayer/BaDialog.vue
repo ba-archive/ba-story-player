@@ -279,13 +279,9 @@ function proxyShowCoverTitle(
   onElUpdate?: (el: HTMLElement) => void
 ) {
   return new Promise<void>(resolve => {
-    if (!el.value) {
-      resolve();
-      return;
-    }
-    const elValue = el.value as HTMLElement;
     proxy.value = value;
     nextTick(() => {
+      const elValue = el.value as HTMLElement;
       onElUpdate && el.value && onElUpdate(el.value);
       const timeline = gsap.timeline();
       timeline.to(elValue, {
