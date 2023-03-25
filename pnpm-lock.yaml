@@ -21,12 +21,14 @@ specifiers:
   eslint-plugin-sort-exports: ^0.8.0
   eslint-plugin-vue: ^9.9.0
   gsap: ^3.11.3
+  husky: ^8.0.3
   mitt: ^3.0.0
   pixi-spine: ^3.1.0
   pixi.js: ^6.0.0
   prettier: ^2.8.4
   rollup-plugin-node-externals: ^5.1.2
   sass: ^1.57.1
+  staged: ^0.0.0
   typed.js: ^2.0.12
   typescript: ^4.6.4
   vite: ^3.2.3
@@ -65,9 +67,11 @@ devDependencies:
   eslint-plugin-import: 2.27.5_a7er6olmtneep4uytpot6gt7wu
   eslint-plugin-sort-exports: 0.8.0_eslint@8.36.0
   eslint-plugin-vue: 9.9.0_eslint@8.36.0
+  husky: 8.0.3
   prettier: 2.8.4
   rollup-plugin-node-externals: 5.1.2_rollup@2.79.1
   sass: 1.57.1
+  staged: 0.0.0
   typescript: registry.npmmirror.com/typescript/4.8.4
   vite: registry.npmmirror.com/vite/3.2.3_pftdh3zqu4qevmbqg2nu3a7f3e
   vue-tsc: registry.npmmirror.com/vue-tsc/1.0.9_typescript@4.8.4
@@ -2143,6 +2147,12 @@ packages:
       function-bind: 1.1.1
     dev: true
 
+  /husky/8.0.3:
+    resolution: {integrity: sha512-+dQSyqPh4x1hlO1swXBiNb2HzTDN1I2IGLQx1GrBuiqFJfoMrnZWwVmatvSiO+Iz8fBUnf+lekwNo4c2LlXItg==}
+    engines: {node: '>=14'}
+    hasBin: true
+    dev: true
+
   /ignore/5.2.4:
     resolution: {integrity: sha512-MAb38BcSbH0eHNBxn7ql2NH/kX33OkB3lZ1BNdh7ENeRChHTYsTvWrMubiIAMNS2llXEEgZ1MUOBtXChP3kaFQ==}
     engines: {node: '>= 4'}
@@ -2800,6 +2810,11 @@ packages:
   /sourcemap-codec/1.4.8:
     resolution: {integrity: sha512-9NykojV5Uih4lgo5So5dtw+f0JgJX30KCNI8gwhz2J9A15wD0Ml6tjHKwf6fTSa6fAdVBdZeNOs9eJ71qCk8vA==}
     deprecated: Please use @jridgewell/sourcemap-codec instead
+
+  /staged/0.0.0:
+    resolution: {integrity: sha512-MpWyKR+3ThiTFithN0H0xyeauOCToQ7o6H2CUZZCZUffEsI04pfHSFcHPtZPZ8xPPEGPolvmNf4nv2SB8vA1XQ==}
+    hasBin: true
+    dev: true
 
   /string.prototype.trim/1.2.7:
     resolution: {integrity: sha512-p6TmeT1T3411M8Cgg9wBTMRtY2q9+PNy9EV1i2lIXUN/btt763oIfxwN3RR8VU6wHX8j/1CFy0L+YuThm6bgOg==}
