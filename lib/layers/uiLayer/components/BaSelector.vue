@@ -150,6 +150,7 @@ function parseTextEffect(_text: Text) {
   width: 100%;
   height: 100%;
   user-select: none;
+  z-index: 110;
 
   .ba-selector {
     display: flex;

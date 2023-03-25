@@ -59,7 +59,6 @@ function handleClose() {
   width: 100%;
   height: 100%;
   background: rgba(63, 63, 63, 0.4);
-  z-index: 120;
   display: flex;
   justify-content: center;
   align-items: center;

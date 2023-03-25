@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { init, dispose, stop, continuePlay } from "@/index";
-import BaDialog from "@/layers/textLayer/BaDialog.vue";
+import BaDialog from "@/layers/textLayer/BaChatDialog.vue";
 import BaUI from "@/layers/uiLayer/BaUI.vue";
 import { StoryRawUnit } from "@/types/common";
 import { Language, StorySummary } from "@/types/store";

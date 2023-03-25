@@ -9,6 +9,7 @@ const props = defineProps({
     type: String as PropType<"large" | "middle" | "small">,
     default: "small",
   },
+  disabled: Boolean,
 });
 
 const emit = defineEmits<{
@@ -28,7 +29,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <button :class="['ba-button', size]" ref="button" @click="handleClick" tabindex="-1">
+  <button :class="['ba-button', size]" ref="button" @click="handleClick" tabindex="-1" :disabled="disabled">
     <slot></slot>
   </button>
 </template>
