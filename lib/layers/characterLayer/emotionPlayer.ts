@@ -806,6 +806,42 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
 
     return timelinePromise(tl, [smallTearImage, largeTearImage]);
   },
+  Zzz(instance, options, sprites) {
+    const { container } = prepareEmotionContainer(instance.instance, options);
+    const zImages: Sprite[] = [];
+    for (let index = 0; index < 3; ++index) {
+      const imageSetting = options.zImageSettings[index];
+      const zImage = Sprite.from(sprites[0].texture);
+      zImage.scale.set(imageSetting.scale);
+      zImage.position = imageSetting.position;
+      zImage.angle = imageSetting.rotate;
+      zImage.visible = false;
+      zImages.push(zImage);
+      container.addChild(zImage);
+    }
+
+    const tl = gsap.timeline();
+    tl.to(container, {
+      onStart: () => {
+        zImages[0].visible = true;
+      },
+      duration: frameToS(53),
+    })
+      .to(container, {
+        onStart: () => {
+          zImages[1].visible = true;
+        },
+        duration: frameToS(48),
+      })
+      .to(container, {
+        onStart: () => {
+          zImages[2].visible = true;
+        },
+        duration: frameToS(40),
+      });
+
+    return timelinePromise(tl, zImages);
+  },
 };
 
 /**
@@ -899,6 +935,14 @@ function timelinePromise(timeLine: gsap.core.Timeline, destroyImgs: Sprite[]) {
       })
       .catch(reason => reject(reason));
   });
+}
+
+/**
+ * 将帧数转化为秒, 在每秒60帧的前提下计算
+ * @param frameNumber
+ */
+function frameToS(frameNumber: number) {
+  return frameNumber / 60;
 }
 
 export default CharacterEmotionPlayerInstance;

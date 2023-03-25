@@ -41,6 +41,7 @@ let emotionResourcesTable = {
   Sigh: ["Emoji_Sigh.png"],
   Bulb: ["Emoticon_Balloon_N.png", "Emoji_Bulb_1.png", "Emoji_Bulb_2.png"],
   Tear: ["Emoji_Tear_1.png", "Emoji_Tear_2.png"],
+  Zzz: ["Emoji_Zzz.png"],
   // TODO: Upset, Music, Think, Bulb, Sigh, Steam, Zzz, Tear
 };
 

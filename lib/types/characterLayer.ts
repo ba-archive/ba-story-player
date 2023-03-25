@@ -234,7 +234,8 @@ export type EmotionWord =
   | "Steam"
   | "Sigh"
   | "Bulb"
-  | "Tear";
+  | "Tear"
+  | "Zzz";
 
 /**
  * 人物特效定义
@@ -462,6 +463,13 @@ export interface BasicEmotionOptions extends BaseOptions<EmotionWord> {
     positions: PositionOffset[];
     scaleAnimations: ScaleAnimation[];
     anchors: PositionOffset[];
+  };
+  Zzz: {
+    zImageSettings: {
+      position: PositionOffset;
+      scale: number;
+      rotate: number;
+    }[];
   };
 }
 
