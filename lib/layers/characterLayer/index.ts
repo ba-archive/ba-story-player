@@ -367,6 +367,9 @@ export const CharacterLayerInstance: CharacterLayer = {
     //处理人物高光
     if (!data.highlight) {
       colorFilter.alpha = 0.3;
+    } else if (data.effects.some(effect => effect.effect === "black")) {
+      data.effects = data.effects.filter(effect => effect.effect !== "black");
+      colorFilter.alpha = 1;
     }
     if (
       data.effects.some(
