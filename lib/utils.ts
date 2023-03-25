@@ -6,6 +6,7 @@ let otherSoundMap: OtherSoundsUrls;
  * ogg类型的音频是否用其他音频类型代替
  */
 let oggAudioType = "ogg";
+let superSampling = "";
 
 /**
  * 设置数据站点
@@ -26,6 +27,11 @@ export function setDataUrl(url: string): void {
 export function setOggAudioType(audioType: "mp3") {
   oggAudioType = audioType;
 }
+
+export function setSuperSampling(type: string) {
+  superSampling = `-${type}x`;
+}
+
 
 /**
  * 获取其他特效音资源, 用于本体资源加载
@@ -75,8 +81,18 @@ export function getResourcesUrl(type: ResourcesTypes, arg: string): string {
       let id = temp.pop();
       id = id?.replace("CharacterSpine_", "");
       let filename = `${id}_spr`; //hasumi_spr
+      if(superSampling){
+        return `${dataUrl}/spine/${filename}/${filename}${superSampling}/${filename}.skel`;
+      }
       return `${dataUrl}/spine/${filename}/${filename}.skel`;
     case "bg":
+      // UIs/03_Scenario/01_Background/BG_WinterRoad.jpg
+      if(superSampling && /01_Background/.test(arg)){
+        const pathArr = arg.split("/");
+        const lastFileName = pathArr.pop()
+        const dir = pathArr.join("/")
+        return `${dataUrl}/${dir}/01_Background${superSampling}/${lastFileName}.png`;
+      }
       return `${dataUrl}/${arg}.jpg`;
     case "otherSound":
       return Reflect.get(otherSoundMap, arg) || "";

@@ -29,14 +29,13 @@ export type PlayerProps = {
   storySummary: StorySummary;
   startFullScreen?: boolean;
   useMp3?: boolean;
-  useSuperSampling?: boolean;
+  useSuperSampling?: "2" | "4" | "";
   /** 跳转至传入的 index */
   changeIndex?: number;
 };
 const props = withDefaults(defineProps<PlayerProps>(), {
   startFullScreen: false,
   useMp3: false,
-  useSuperSampling: false,
 });
 const storySummary = ref(props.storySummary);
 storySummary.value.summary = storySummary.value.summary.replace(

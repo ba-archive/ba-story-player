@@ -123,6 +123,7 @@ useResizeObserver(
         language="Cn"
         userName="testUser"
         :story-summary="storySummary"
+        use-super-sampling="2"
         style="resize: both; overflow: hidden"
         ref="player"
       />
