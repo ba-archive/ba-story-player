@@ -1195,7 +1195,7 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
     .rt {
       position: absolute;
       left: 0;
-      top: calc(-1 * var(--font-size) * 0.5 - 6px);
+      top: calc(-1 * var(--font-size) * 0.5 - 1px);
       font-size: calc(var(--font-size) * 0.5);
       width: 100%;
       text-align: center;
