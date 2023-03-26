@@ -31,6 +31,10 @@
     "lib/**/*.{ts,js,vue}": [
       "prettier --config .prettierrc.json --write",
       "git add"
+    ],
+    "src/**/*.{ts,js,vue}": [
+      "prettier --config .prettierrc.json --write",
+      "git add"
     ]
   },
   "dependencies": {
