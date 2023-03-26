@@ -32,7 +32,6 @@ export function setSuperSampling(type: string) {
   superSampling = `-${type}x`;
 }
 
-
 /**
  * 获取其他特效音资源, 用于本体资源加载
  * @returns
@@ -81,16 +80,16 @@ export function getResourcesUrl(type: ResourcesTypes, arg: string): string {
       let id = temp.pop();
       id = id?.replace("CharacterSpine_", "");
       let filename = `${id}_spr`; //hasumi_spr
-      if(superSampling){
+      if (superSampling) {
         return `${dataUrl}/spine/${filename}/${filename}${superSampling}/${filename}.skel`;
       }
       return `${dataUrl}/spine/${filename}/${filename}.skel`;
     case "bg":
       // UIs/03_Scenario/01_Background/BG_WinterRoad.jpg
-      if(superSampling && /01_Background/.test(arg)){
+      if (superSampling && /01_Background/.test(arg)) {
         const pathArr = arg.split("/");
-        const lastFileName = pathArr.pop()
-        const dir = pathArr.join("/")
+        const lastFileName = pathArr.pop();
+        const dir = pathArr.join("/");
         return `${dataUrl}/${dir}/01_Background${superSampling}/${lastFileName}.png`;
       }
       return `${dataUrl}/${arg}.jpg`;
