@@ -386,7 +386,9 @@ export const CharacterLayerInstance: CharacterLayer = {
         const { x } = calcSpineStagePosition(chara, data.position);
         chara.x = x;
         chara.zIndex = Reflect.get(POS_INDEX_MAP, data.position);
-        chara.state.setAnimation(AnimationIdleTrack, "Idle_01", true);
+        if (chara.state.hasAnimation("Idle_01")) {
+          chara.state.setAnimation(AnimationIdleTrack, "Idle_01", true);
+        }
       }
       chara.alpha = 1;
       chara.visible = true;
