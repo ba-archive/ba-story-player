@@ -15,11 +15,6 @@ import { L2DInit } from "./layers/l2dLayer/L2D";
 
 let playerStore: ReturnType<typeof usePlayerStore>;
 let privateState: ReturnType<typeof initPrivateState>;
-let l2dVoiceExcelTable = {
-  CH0184_MemorialLobby: [...Array(10).keys()]
-    .slice(1, 11)
-    .map(value => value.toString()),
-} as { [index: string]: string[] };
 
 /**
  * 调用各层的初始化函数
@@ -32,9 +27,9 @@ export async function init(
   //缓解图片缩放失真
   settings.MIPMAP_TEXTURES = 2;
 
-  if (props.useMp3) {
-    utils.setOggAudioType("mp3");
-  }
+  const { useMp3, useSuperSampling } = props;
+  useMp3 && utils.setOggAudioType("mp3");
+  useSuperSampling && utils.setSuperSampling(useSuperSampling);
   storyHandler.endCallback = endCallback;
   playerStore = usePlayerStore();
   privateState = initPrivateState();
