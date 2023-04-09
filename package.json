@@ -38,7 +38,7 @@
     ]
   },
   "dependencies": {
-    "@pixi-spine/base": "^3.1.0",
+    "@pixi-spine/base": "3.1.2",
     "@pixi/filter-adjustment": "^4.0.0",
     "@pixi/filter-color-overlay": "^4.0.0",
     "@pixi/filter-crt": "^4.0.0",
@@ -48,8 +48,8 @@
     "@vueuse/core": "^9.13.0",
     "gsap": "^3.11.3",
     "mitt": "^3.0.0",
-    "pixi-spine": "^3.1.0",
-    "pixi.js": "^6.0.0",
+    "pixi-spine": "3.1.2",
+    "pixi.js": "6.5.9",
     "typed.js": "^2.0.12",
     "vue-responsive-video-background-player": "^2.3.1",
     "xxhashjs": "^0.2.2"
