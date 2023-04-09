@@ -88,7 +88,6 @@ export async function clickEffect(app: Application, x: number, y: number) {
       ring.endFill();
       const ringTexture = app.renderer.generateTexture(ring as any);
       ringSprite.texture = ringTexture;
-      ringSprite.tint = 0x02d5fa
     }, 1000 * 10 * baseDuration);
     ringSprite.texture = ringTexture;
     ringSprite.alpha = 0.8;

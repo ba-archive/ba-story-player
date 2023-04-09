@@ -165,12 +165,13 @@ function parseTextEffect(_text: Text) {
   width: 100%;
   height: 100%;
   user-select: none;
-
+  pointer-events: none;
   .ba-selector {
     display: flex;
     gap: 1em;
     flex-direction: column;
     width: 80%;
+    pointer-events: auto;
 
     $font-size: 1.5em;
     .ba-selector-item {

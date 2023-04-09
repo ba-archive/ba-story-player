@@ -19,7 +19,7 @@ const topEffectApp = new Application({
 });
 setTimeout(() => {
   document.querySelector(`#top_effect`)?.appendChild(topEffectApp.view);
-  (globalThis as any).__PIXI_APP__ = topEffectApp
+  // (globalThis as any).__PIXI_APP__ = topEffectApp
 }, 4);
 
 const trigger = (e: MouseEvent | TouchEvent) => {

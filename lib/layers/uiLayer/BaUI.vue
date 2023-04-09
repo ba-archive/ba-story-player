@@ -157,6 +157,10 @@ function handleBaUIClick() {
     hiddenSubMenu.value = true;
     return;
   }
+  const currentStoryUnit = storyHandler.currentStoryUnit;
+  if (currentStoryUnit?.textAbout?.options) {
+    return;
+  }
   eventBus.emit("click");
 }
 
@@ -204,11 +208,10 @@ function getI18n(key: string) {
 <template>
   <div
     class="baui"
-    @click="handleBaUIClick"
     :style="{ 'font-size': `${bauiem}px`, cursor: cursorStyle }"
     tabindex="0"
   >
-    <TopEffect :height="height" :width="width"/>
+    <TopEffect :height="height" :width="width" @click="handleBaUIClick" />
     <div class="right-top" v-show="!hiddenMenu">
       <div class="baui-button-group">
         <BaButton
