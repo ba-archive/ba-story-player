@@ -42,7 +42,7 @@ storySummary.value.summary = storySummary.value.summary.replace(
   "[USERNAME]",
   props.userName
 );
-const emit = defineEmits(["end"]);
+const emit = defineEmits(["end", "error"]);
 
 const playerHeight = ref(props.height);
 const playerWidth = ref(props.width);
@@ -206,7 +206,12 @@ function handleFullScreenChange() {
  */
 let firstMount = false;
 onMounted(() => {
-  init("player__main__canvas", pixiConfig, () => emit("end"));
+  init(
+    "player__main__canvas",
+    pixiConfig,
+    () => emit("end"),
+    () => emit("error")
+  );
   if (props.startFullScreen) {
     updateFullScreenState();
   }
