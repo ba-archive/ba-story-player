@@ -9,9 +9,10 @@ import { Language, StorySummary } from "@/types/store";
 import { effectBtnMouseDown, effectBtnMouseUp } from "./utils";
 import { ShowOption } from "@/types/events";
 import { usePlayerStore } from "@/stores";
-import "./userInteract.ts";
+import "./userInteract";
 import { useThrottleFn } from "@vueuse/core";
 import { storyHandler } from "@/index";
+import TopEffect from "./top-effect/index.vue";
 
 let hiddenSummary = ref(true);
 let hiddenStoryLog = ref(true);
@@ -156,6 +157,10 @@ function handleBaUIClick() {
     hiddenSubMenu.value = true;
     return;
   }
+  const currentStoryUnit = storyHandler.currentStoryUnit;
+  if (currentStoryUnit?.textAbout?.options) {
+    return;
+  }
   eventBus.emit("click");
 }
 
@@ -203,10 +208,10 @@ function getI18n(key: string) {
 <template>
   <div
     class="baui"
-    @click.self="handleBaUIClick"
     :style="{ 'font-size': `${bauiem}px`, cursor: cursorStyle }"
     tabindex="0"
   >
+    <TopEffect :height="height" :width="width" @click="handleBaUIClick" />
     <div class="right-top" v-show="!hiddenMenu">
       <div class="baui-button-group">
         <BaButton

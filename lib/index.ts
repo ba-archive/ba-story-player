@@ -759,6 +759,7 @@ export let resourcesLoader = {
     this.addFXResources();
     this.addOtherSounds();
     this.addBGEffectImgs();
+    this.addTopEffect();
     const audioUrls: string[] = [];
     for (let unit of playerStore.allStoryUnit) {
       //添加人物spine
@@ -928,7 +929,13 @@ export let resourcesLoader = {
       }
     }
   },
-
+  /**
+   * 添加顶层特效图像资源, 如点击特效
+   */
+  addTopEffect(){
+    const imgs = ["FX_TEX_Triangle_02_a.png"]
+    imgs.forEach(i=>this.loader.add(i, utils.getResourcesUrl("bgEffectImgs", i)))
+  },
   /**
    * 加载原始数据资源
    */
