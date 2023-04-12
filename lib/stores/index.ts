@@ -76,7 +76,12 @@ let bgEffectImgTable: BGEffectImgTable = {
   BG_WaveShort_F: [],
   BG_SandStorm_L: ["FX_TEX_Smoke_10a.png"],
   "BG_ScrollT_1.5": [],
-  BG_Shining_L: [],
+  BG_Shining_L: [
+    "FX_TEX_SCN_Ring_02.png",
+    "FX_TEX_Flare_23.png",
+    "FX_TEX_SCN_Circle_Love.png",
+    "Gacha/FX_TEX_GT_Circle_Blur_inv.png",
+  ],
   "BG_ScrollB_1.0": [],
   BG_Love_L_BGOff: [
     "FX_TEX_Img_Heart_01.png",
