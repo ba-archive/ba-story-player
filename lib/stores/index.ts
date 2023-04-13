@@ -93,7 +93,7 @@ let bgEffectImgTable: BGEffectImgTable = {
   "BG_ScrollL_1.0": [],
   BG_Ash_Black: [],
   BG_Mist_L: [],
-  BG_Flash_Sound: [],
+  BG_Flash_Sound: ["FX_TEX_Lightning_Line_16.png"],
   "BG_ScrollL_1.5": [],
   BG_FocusLine: ["FX_TEX_SCN_FocusLine5.png"],
   "BG_ScrollR_1.5": [],
