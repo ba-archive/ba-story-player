@@ -60,9 +60,9 @@
     {
       "type": "rotationStatic",
       "config": {
-           "min": 45,
-           "max": 45
+        "min": 45,
+        "max": 45
       }
-  }
+    }
   ]
 }

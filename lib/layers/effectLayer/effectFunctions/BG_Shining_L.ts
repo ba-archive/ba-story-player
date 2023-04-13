@@ -61,7 +61,7 @@ export default async function BG_Shining_L(resources: Sprite[]) {
   return async () => {
     await ringRemover();
     await flareRemover();
-    app.stage.removeChild(backSprite)
-    app.stage.removeChild(backPurpleSprite)
+    app.stage.removeChild(backSprite);
+    app.stage.removeChild(backPurpleSprite);
   };
 }
