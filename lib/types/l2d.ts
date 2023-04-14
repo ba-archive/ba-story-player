@@ -2,6 +2,7 @@ export type IL2dPlayQue = {
   name: string;
   animation: string;
   fadeTime?: number;
+  secondFadeTime?: number;
   /** 和后一个动画是否fade */
   fade?: boolean;
 };
