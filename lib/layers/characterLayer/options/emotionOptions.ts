@@ -100,6 +100,9 @@ export const emotionDescriptions: OptionDescriptions["emotion"] = {
     anchors: "图片anchor",
     scaleAnimations: "图片缩放动画",
   },
+  Zzz: {
+    zImageSettings: "每个z图片的设置",
+  },
 };
 
 const emotionOptions: EmotionOptions = {
@@ -508,6 +511,40 @@ const emotionOptions: EmotionOptions = {
       {
         x: 1,
         y: 0,
+      },
+    ],
+  },
+  Zzz: {
+    startPositionOffset: {
+      x: 0.45,
+      y: 0.1,
+    },
+    scale: 0.1,
+    fadeOutDuration: 0.3,
+    zImageSettings: [
+      {
+        position: {
+          x: 0,
+          y: 0,
+        },
+        scale: 0.8,
+        rotate: 15,
+      },
+      {
+        position: {
+          x: -80,
+          y: -30,
+        },
+        scale: 0.9,
+        rotate: 5,
+      },
+      {
+        position: {
+          x: -190,
+          y: 7,
+        },
+        scale: 1,
+        rotate: -15,
       },
     ],
   },

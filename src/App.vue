@@ -77,7 +77,7 @@ const showPlayer = ref(false);
 const storyJsonName = ref("0");
 const storyCacheKey = "storyJson";
 const jsonName = localStorage.getItem(storyCacheKey);
-if (jsonName) {
+if (jsonName && jsonName !== "0") {
   axios
     .get(`https://yuuka.cdn.diyigemt.com/image/story/vol3/${jsonName}.json`)
     .then(response => {

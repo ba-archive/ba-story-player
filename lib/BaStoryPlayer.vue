@@ -29,21 +29,20 @@ export type PlayerProps = {
   storySummary: StorySummary;
   startFullScreen?: boolean;
   useMp3?: boolean;
-  useSuperSampling?: boolean;
+  useSuperSampling?: "2" | "4" | "";
   /** 跳转至传入的 index */
   changeIndex?: number;
 };
 const props = withDefaults(defineProps<PlayerProps>(), {
   startFullScreen: false,
   useMp3: false,
-  useSuperSampling: false,
 });
 const storySummary = ref(props.storySummary);
 storySummary.value.summary = storySummary.value.summary.replace(
   "[USERNAME]",
   props.userName
 );
-const emit = defineEmits(["end"]);
+const emit = defineEmits(["end", "error"]);
 
 const playerHeight = ref(props.height);
 const playerWidth = ref(props.width);
@@ -207,7 +206,12 @@ function handleFullScreenChange() {
  */
 let firstMount = false;
 onMounted(() => {
-  init("player__main__canvas", pixiConfig, () => emit("end"));
+  init(
+    "player__main__canvas",
+    pixiConfig,
+    () => emit("end"),
+    () => emit("error")
+  );
   if (props.startFullScreen) {
     updateFullScreenState();
   }

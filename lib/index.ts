@@ -15,11 +15,6 @@ import { L2DInit } from "./layers/l2dLayer/L2D";
 
 let playerStore: ReturnType<typeof usePlayerStore>;
 let privateState: ReturnType<typeof initPrivateState>;
-let l2dVoiceExcelTable = {
-  CH0184_MemorialLobby: [...Array(10).keys()]
-    .slice(1, 11)
-    .map(value => value.toString()),
-} as { [index: string]: string[] };
 
 /**
  * 调用各层的初始化函数
@@ -27,15 +22,22 @@ let l2dVoiceExcelTable = {
 export async function init(
   elementID: string,
   props: PlayerConfigs,
-  endCallback: () => void
+  endCallback: () => void,
+  errorCallback: () => void
 ) {
   //缓解图片缩放失真
   settings.MIPMAP_TEXTURES = 2;
 
-  if (props.useMp3) {
-    utils.setOggAudioType("mp3");
+  if (props.story.length === 0) {
+    errorCallback();
+    return;
   }
+
+  const { useMp3, useSuperSampling } = props;
+  useMp3 && utils.setOggAudioType("mp3");
+  useSuperSampling && utils.setSuperSampling(useSuperSampling);
   storyHandler.endCallback = endCallback;
+  storyHandler.errorCallback = errorCallback;
   playerStore = usePlayerStore();
   privateState = initPrivateState();
   utils.setDataUrl(props.dataUrl);
@@ -68,6 +70,7 @@ export async function init(
   });
   app.loader.onError.add((err, _, resource) => {
     console.error(err);
+    errorCallback();
     eventBus.emit("oneResourceLoaded", {
       type: "fail",
       resourceName: resource.name,
@@ -141,6 +144,7 @@ export function continuePlay() {
 export let storyHandler = {
   currentStoryIndex: 0,
   endCallback: () => {},
+  errorCallback: () => {},
   unitPlaying: false,
   auto: false,
   isEnd: false,
@@ -266,17 +270,21 @@ export let storyHandler = {
           return ["text", "option"];
         }
       };
-      while (
-        !playCondition().includes(storyHandler.currentStoryUnit.type) &&
-        !this.isEnd
-      ) {
-        await eventEmitter.emitEvents();
-        storyHandler.storyIndexIncrement();
+      try {
+        while (
+          !playCondition().includes(storyHandler.currentStoryUnit.type) &&
+          !this.isEnd
+        ) {
+          await eventEmitter.emitEvents();
+          storyHandler.storyIndexIncrement();
+        }
+        if (!this.isEnd) {
+          await eventEmitter.emitEvents();
+        }
+        this.unitPlaying = false;
+      } catch (error) {
+        this.errorCallback();
       }
-      if (!this.isEnd) {
-        await eventEmitter.emitEvents();
-      }
-      this.unitPlaying = false;
     }
   },
 
@@ -539,9 +547,10 @@ export let eventEmitter = {
               }
             }
           }
-          reject(
+          console.warn(
             `故事节点 index: ${storyHandler.currentStoryIndex},object:${storyHandler.currentStoryUnit}长时间未完成`
           );
+          reject();
           clearInterval(interval);
         }
       });

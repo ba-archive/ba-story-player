@@ -8,7 +8,23 @@ import {
   StArgs,
 } from "./events";
 import { TransitionTableItem } from "./excels";
-import { PlayerProps } from "@/BaStoryPlayer.vue";
+import { Language, StorySummary } from "./store";
+
+export type PlayerProps = {
+  story: StoryRawUnit[];
+  dataUrl: string;
+  width: number;
+  height: number;
+  language: Language;
+  userName: string;
+  storySummary: StorySummary;
+  startFullScreen?: boolean;
+  useMp3?: boolean;
+  useSuperSampling?: "2" | "4" | "";
+  /** 跳转至传入的 index */
+  changeIndex?: number;
+};
+
 export type StoryType =
   | "title"
   | "place"

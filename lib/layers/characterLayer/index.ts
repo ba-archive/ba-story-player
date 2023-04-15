@@ -367,6 +367,9 @@ export const CharacterLayerInstance: CharacterLayer = {
     //处理人物高光
     if (!data.highlight) {
       colorFilter.alpha = 0.3;
+    } else if (data.effects.some(effect => effect.effect === "black")) {
+      data.effects = data.effects.filter(effect => effect.effect !== "black");
+      colorFilter.alpha = 1;
     }
     if (
       data.effects.some(
@@ -383,7 +386,9 @@ export const CharacterLayerInstance: CharacterLayer = {
         const { x } = calcSpineStagePosition(chara, data.position);
         chara.x = x;
         chara.zIndex = Reflect.get(POS_INDEX_MAP, data.position);
-        chara.state.setAnimation(AnimationIdleTrack, "Idle_01", true);
+        if (chara.state.hasAnimation("Idle_01")) {
+          chara.state.setAnimation(AnimationIdleTrack, "Idle_01", true);
+        }
       }
       chara.alpha = 1;
       chara.visible = true;
