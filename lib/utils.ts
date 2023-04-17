@@ -79,6 +79,9 @@ export function getResourcesUrl(type: ResourcesTypes, arg: string): string {
       let temp = String(arg).split("/");
       let id = temp.pop();
       id = id?.replace("CharacterSpine_", "");
+      if (id?.endsWith("ND")) {
+        id = id.slice(0, id.length - 2);
+      }
       let filename = `${id}_spr`; //hasumi_spr
       if (superSampling) {
         return `${dataUrl}/spine/${filename}/${filename}${superSampling}/${filename}.skel`;
