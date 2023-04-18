@@ -118,7 +118,6 @@
         </div>
       </div>
       <div
-        v-if="showDialog"
         :style="{
           padding: `0 ${fontSize(8)}rem ${fontSize(3)}rem`,
           height: `${dialogHeight}px`,
@@ -141,7 +140,15 @@
             ref="typewriterOutput"
             :style="{ '--font-size': `${standardFontSize}rem` }"
             class="content"
-          />
+          >
+            <TypingUnit
+              v-for="(e, index) in dialogPaddingList"
+              :content="e[0]"
+              :sub-content="e[1]"
+              :key="index"
+              :index="index"
+            />
+          </div>
           <div class="next-image-btn" v-if="typingComplete">&zwj;</div>
         </div>
       </div>
@@ -150,6 +157,8 @@
 </template>
 
 <script setup lang="ts">
+import emitter from "@/layers/textLayer/event";
+import TypingUnit from "@/layers/textLayer/TypingUnit.vue";
 import {
   Ref,
   computed,
@@ -185,6 +194,18 @@ const nextEpisodeContainer = ref<HTMLElement>(); // 下一章的el
 const titleContain = ref<HTMLElement>(); // 标题内容的el, 为了实现scale效果
 const overrideTitleZIndex = ref<number>();
 const videoComponent = ref();
+
+const dialogPaddingList = ref<string[][]>([
+  [
+    "这是一个打字测试, 这是一个打字测试",
+    "this is a typing test, this is a typing test",
+  ],
+]);
+
+window.onStart = function () {
+  emitter.emit("start", 0);
+};
+
 // 外部传入播放器高度,用于动态计算字体等数值
 const props = withDefaults(defineProps<TextLayerProps>(), {
   playerHeight: 0,
@@ -869,7 +890,7 @@ const mapLoadLog = computed(() =>
 onMounted(() => {
   eventBus.on("showTitle", handleShowTitle);
   eventBus.on("showPlace", handleShowPlace);
-  eventBus.on("showText", handleShowTextEvent);
+  // eventBus.on("showText", handleShowTextEvent);
   eventBus.on("st", handleShowStEvent);
   eventBus.on("clearSt", handleClearSt);
   eventBus.on("hide", handleHideDialog);
