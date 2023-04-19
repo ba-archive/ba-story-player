@@ -9,10 +9,18 @@ export default async function BG_Shining_L_BGOff(resources: Sprite[]) {
   const { app } = usePlayerStore();
   const appWidth = app.view.width;
   const appHeight = app.view.height;
+  // 紫色覆盖
+  const alphaFilter = new filters.AlphaFilter(0.4);
+  const backPurpleSprite = resources[2];
+  backPurpleSprite.tint = 0xd59ffb;
+  backPurpleSprite.width = appWidth;
+  backPurpleSprite.height = appHeight;
+  backPurpleSprite.filters = [alphaFilter];
+  backPurpleSprite.zIndex = -1;
+  app.stage.addChild(backPurpleSprite);
   // 波纹特效
   let emitterContainer = new Container();
   app.stage.addChild(emitterContainer);
-  emitterContainer.zIndex = -1;
   let ringConfig: EmitterConfigV3 = {
     ...(emitterConfigs("shining_ring") as EmitterConfigV3),
   };
@@ -27,9 +35,22 @@ export default async function BG_Shining_L_BGOff(resources: Sprite[]) {
   const ringScaleConfig = getEmitterType(ringConfig, "scale").config;
   ringScaleConfig.scale.list[0].value = ringBaseRatio * 0.9;
   ringScaleConfig.scale.list[1].value = ringBaseRatio;
+  // 闪光
+  const flareSprite = sprite2TransParent(resources[1]);
+  const flareConfig: EmitterConfigV3 = {
+    ...(emitterConfigs("shining_flare") as EmitterConfigV3),
+  };
+  getEmitterType(flareConfig, "textureRandom").config.textures.push(
+    flareSprite.texture
+  );
+  getEmitterType(flareConfig, "spawnShape").config.data.w = appWidth;
+  getEmitterType(flareConfig, "spawnShape").config.data.h = appHeight;
+  const flareEmitter = new Emitter(emitterContainer, flareConfig);
+  const flareRemover = emitterStarter(flareEmitter);
   const ringEmitter = new Emitter(emitterContainer, ringConfig);
   const ringRemover = emitterStarter(ringEmitter);
   return async () => {
     await ringRemover();
+    await flareRemover();
   };
 }
