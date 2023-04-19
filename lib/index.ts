@@ -12,6 +12,7 @@ import axios from "axios";
 import { SpineParser, IEventData } from "pixi-spine";
 import { Application, Loader, settings, utils as pixiUtils } from "pixi.js";
 import { L2DInit } from "./layers/l2dLayer/L2D";
+import { version } from "../package.json";
 
 let playerStore: ReturnType<typeof usePlayerStore>;
 let privateState: ReturnType<typeof initPrivateState>;
@@ -27,6 +28,12 @@ export async function init(
 ) {
   //缓解图片缩放失真
   settings.MIPMAP_TEXTURES = 2;
+  console.log(
+    `%c ba-bug-player %c ${version} %c`,
+    "background:#35495e ; padding: 1px; border-radius: 3px 0 0 3px;  color: #fff",
+    "background:#41b883 ; padding: 1px; border-radius: 0 3px 3px 0;  color: #fff",
+    "background:transparent"
+  );
 
   if (props.story.length === 0) {
     errorCallback();
