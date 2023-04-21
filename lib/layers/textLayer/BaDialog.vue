@@ -99,6 +99,7 @@
             ref="titleContain"
             class="title-contain"
             :style="{ '--font-size': `${fontSize(4)}rem` }"
+            :data-translator="titleTranslatorContent"
           >
             <div class="sub-title" v-if="subTitleContent">
               <span class="sub-title-inner">{{ subTitleContent }}</span>
@@ -115,6 +116,16 @@
       >
         <div class="round-place">
           <span class="place-content">{{ placeContent }}</span>
+        </div>
+      </div>
+      <div
+        ref="placeTranslatorEL"
+        class="place-translator-container place-container"
+        :style="{ '--font-size': `${fontSize(2) * 0.6}rem` }"
+        v-if="placeTranslatorContent"
+      >
+        <div class="round-place">
+          <span class="place-content">{{ placeTranslatorContent }}</span>
         </div>
       </div>
       <div
@@ -181,6 +192,7 @@ const toBeContinuedBg1 = ref<HTMLElement>(); // to be continued的背景
 const toBeContinuedText = ref<HTMLElement>(); // to be continued的字
 const titleEL = ref<HTMLElement>(); // 大标题的el
 const placeEL = ref<HTMLElement>(); // place的el
+const placeTranslatorEL = ref<HTMLElement>(); // 译者的el
 const nextEpisodeContainer = ref<HTMLElement>(); // 下一章的el
 const titleContain = ref<HTMLElement>(); // 标题内容的el, 为了实现scale效果
 const overrideTitleZIndex = ref<number>();
@@ -194,8 +206,12 @@ const props = withDefaults(defineProps<TextLayerProps>(), {
 const titleContent = ref<string>("");
 // 副标题
 const subTitleContent = ref<string>("");
+// 标题下的译者信息
+const titleTranslatorContent = ref<string>("");
 // 位置
 const placeContent = ref<string>("");
+// 位置下的译者信息
+const placeTranslatorContent = ref<string>("译者: @碧蓝档案剧情站/MarkChen");
 // 昵称
 const name = ref<string>();
 // 所属(昵称右边)
@@ -250,6 +266,7 @@ function moveToNext() {
  */
 function handleShowTitle(e: ShowTitleOption) {
   subTitleContent.value = e.subtitle || "";
+  titleTranslatorContent.value = e.translator || "";
   proxyShowCoverTitle(titleEL, titleContent, parseTitle(e.title)).then(() => {
     subTitleContent.value = "";
     eventBus.emit("titleDone");
@@ -266,6 +283,13 @@ function handleShowPlace(e: string) {
 }
 
 /**
+ * 展示左上角位置标题下面的译者信息
+ */
+function handleShowPlaceTranslator(e: string) {
+  proxyShowCoverTitle(placeTranslatorEL, placeTranslatorContent, e);
+}
+
+/**
  * 统一方法, 淡入淡出el
  * @param el 要操作的el
  * @param proxy 要操作的el显示的内容
@@ -279,6 +303,10 @@ function proxyShowCoverTitle(
   onElUpdate?: (el: HTMLElement) => void
 ) {
   return new Promise<void>(resolve => {
+    if (!value) {
+      resolve();
+      return;
+    }
     proxy.value = value;
     nextTick(() => {
       const elValue = el.value as HTMLElement;
@@ -869,6 +897,7 @@ const mapLoadLog = computed(() =>
 onMounted(() => {
   eventBus.on("showTitle", handleShowTitle);
   eventBus.on("showPlace", handleShowPlace);
+  eventBus.on("showPlaceTranslator", handleShowPlaceTranslator);
   eventBus.on("showText", handleShowTextEvent);
   eventBus.on("st", handleShowStEvent);
   eventBus.on("clearSt", handleClearSt);
@@ -887,6 +916,7 @@ onMounted(() => {
 onUnmounted(() => {
   eventBus.off("showTitle", handleShowTitle);
   eventBus.off("showPlace", handleShowPlace);
+  eventBus.off("showPlaceTranslator", handleShowPlaceTranslator);
   eventBus.off("showText", handleShowTextEvent);
   eventBus.off("st", handleShowStEvent);
   eventBus.off("clearSt", handleClearSt);
@@ -1077,11 +1107,10 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
             rgba(240, 240, 240, 0.1) 100%
           ),
           url("./assets/poli-light.png") rgb(164 216 237) no-repeat 0 30%;
-
+        --sub-title-font-size: calc(var(--font-size) * 0.6);
         .sub-title {
-          font-size: calc(var(--font-size) * 0.6);
+          font-size: var(--sub-title-font-size);
           margin-bottom: calc(var(--font-size) * 0.52);
-
           .sub-title-inner {
             padding: 0 5px;
             background: linear-gradient(
@@ -1093,9 +1122,20 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
               0 calc(var(--font-size) * -0.12);
           }
         }
-
         .main-title {
           color: #4a609a;
+        }
+        // 译者信息
+        &:after {
+          width: 100%;
+          content: attr(data-translator);
+          position: absolute;
+          left: 0;
+          bottom: calc(-16px - var(--sub-title-font-size));
+          font-size: var(--sub-title-font-size);
+          font-weight: 400;
+          color: white;
+          text-shadow: $text-outline;
         }
       }
     }
@@ -1107,6 +1147,10 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
     }
   }
 
+  .place-translator-container {
+    top: calc(10% + 16px + var(--padding-size) * 4 / 0.6) !important;
+  }
+
   .place-container {
     --font-size: 1rem;
     position: absolute;
@@ -1115,11 +1159,11 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
     top: 10%;
     color: white;
     z-index: $text-layer-z-index + $place-z-index;
-
+    --padding-size: calc(var(--font-size) / 2);
     .round-place {
       position: relative;
       line-height: var(--font-size);
-      padding: calc(var(--font-size) / 2) 3rem calc(var(--font-size) / 2) 1rem;
+      padding: var(--padding-size) 3rem var(--padding-size) 1rem;
 
       &:after {
         content: "";
@@ -1138,16 +1182,16 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
         padding-left: 10px;
         color: white;
         font-style: var(--font-size);
+        font-size: var(--font-size);
 
         &:after {
           content: "";
           width: 3px;
           display: block;
-          height: var(--font-size);
+          height: calc(100% - var(--font-size));
           background-color: rgba(255, 255, 255, 0.3);
           position: absolute;
-          top: 0;
-          transform: translateY(50%);
+          top: var(--padding-size);
         }
       }
     }
