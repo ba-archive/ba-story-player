@@ -211,7 +211,7 @@ const titleTranslatorContent = ref<string>("");
 // 位置
 const placeContent = ref<string>("");
 // 位置下的译者信息
-const placeTranslatorContent = ref<string>("译者: @碧蓝档案剧情站/MarkChen");
+const placeTranslatorContent = ref<string>("");
 // 昵称
 const name = ref<string>();
 // 所属(昵称右边)
