@@ -120,6 +120,7 @@ let privateState: PrivateStates = {
   app: null,
   l2dSpineUrl: "",
   curL2dConfig: null,
+  translator: "",
   storySummary: {
     chapterName: "",
     summary: "",
@@ -248,6 +249,9 @@ let actions: Actions = {
   },
   setL2DConfig(val) {
     privateState.curL2dConfig = val;
+  },
+  setTranslator(translator: string) {
+    privateState.translator = translator;
   },
 };
 

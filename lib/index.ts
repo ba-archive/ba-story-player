@@ -190,6 +190,10 @@ export const eventEmitter = {
           index: storyHandler.currentStoryIndex,
         });
         eventBus.emit("showmenu");
+        if (usePlayerStore().translator) {
+          eventBus.emit("showPlaceTranslator", usePlayerStore().translator);
+          usePlayerStore().setTranslator("");
+        }
         break;
       case "option":
         if (currentStoryUnit.textAbout.options) {
@@ -205,7 +209,7 @@ export const eventEmitter = {
         this.stDone = false;
         if (currentStoryUnit.textAbout.st) {
           if (currentStoryUnit.textAbout.st.stArgs) {
-            const middle = currentStoryUnit.textAbout.st.middle ? true : false;
+            const middle = !!currentStoryUnit.textAbout.st.middle;
             eventBus.emit("st", {
               text: currentStoryUnit.textAbout.showText.text,
               stArgs: currentStoryUnit.textAbout.st.stArgs,
@@ -303,7 +307,7 @@ export const eventEmitter = {
    */
   showCharacter(currentStoryUnit?: StoryUnit) {
     currentStoryUnit = currentStoryUnit || storyHandler.currentStoryUnit;
-    if (storyHandler.currentStoryUnit.characters.length != 0) {
+    if (storyHandler.currentStoryUnit.characters.length !== 0) {
       this.characterDone = false;
       eventBus.emit("showCharacter", {
         characters: storyHandler.currentStoryUnit.characters,
@@ -513,7 +517,6 @@ export async function init(
   //加载初始化资源以便翻译层进行翻译
   await resourcesLoader.init(app.loader);
   privateState.allStoryUnit = translate(props.story);
-
   bgInit();
   characterInit();
   soundInit();

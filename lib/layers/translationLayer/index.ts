@@ -425,25 +425,8 @@ export function translate(rawStory: TranslatedStoryUnit): StoryUnit[] {
     if (possiblePlace && possiblePlace.textAbout.titleInfo) {
       possiblePlace.textAbout.titleInfo.translator = rawStory.translator;
     } else {
-      // 没有title 没有place 只能直接加个新storyUnit了
-      parseResult.splice(index, 0, {
-        type: "place",
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        textAbout: {
-          titleInfo: {
-            title: [],
-            translator: rawStory.translator,
-          },
-        },
-        GroupId: parseResult[0].GroupId,
-        SelectionGroup: 0,
-        PopupFileName: "",
-        characters: [],
-        effect: {
-          otherEffect: [],
-        },
-      });
+      // 没有title 没有place 只能存privateStore里了
+      usePlayerStore().setTranslator(rawStory.translator);
     }
   }
   return parseResult;
