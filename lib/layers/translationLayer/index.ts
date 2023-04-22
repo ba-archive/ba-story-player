@@ -28,7 +28,7 @@ type IStoryRawUnitParserUnit = {
 // [\u2E80-\u9FFF]
 const StoryRawUnitParserUnit: IStoryRawUnitParserUnit = {
   title: {
-    reg: /#title;([^;\n]+);?([^;\n]+)?;?/,
+    reg: /#title;([^;\n]+);?([^;\n]+)?;?/i,
     fn(match: RegExpExecArray, unit: StoryUnit, rawUnit: StoryRawUnit) {
       unit.type = "title";
       unit.textAbout.titleInfo = utils.generateTitleInfo(
@@ -39,7 +39,7 @@ const StoryRawUnitParserUnit: IStoryRawUnitParserUnit = {
     },
   },
   place: {
-    reg: /#place;([^;\n]+);?/,
+    reg: /#place;([^;\n]+);?/i,
     fn(match: RegExpExecArray, unit: StoryUnit, rawUnit: StoryRawUnit) {
       unit.type = "place";
       unit.textAbout.titleInfo = {
@@ -50,7 +50,7 @@ const StoryRawUnitParserUnit: IStoryRawUnitParserUnit = {
     },
   },
   nextEpisode: {
-    reg: /#nextepisode;([^;\n]+);([^;\n]+);?/,
+    reg: /#nextepisode;([^;\n]+);([^;\n]+);?/i,
     fn(match: RegExpExecArray, unit: StoryUnit, rawUnit: StoryRawUnit) {
       unit.type = "nextEpisode";
       unit.textAbout.titleInfo = utils.generateTitleInfo(
@@ -61,14 +61,14 @@ const StoryRawUnitParserUnit: IStoryRawUnitParserUnit = {
     },
   },
   continued: {
-    reg: /#continued;?/,
+    reg: /#continued;?/i,
     fn(match: RegExpExecArray, unit: StoryUnit) {
       unit.type = "continue";
       return unit;
     },
   },
   na: {
-    reg: /#na;([^;\n]+);?([^;\n]+)?;?/,
+    reg: /#na;([^;\n]+);?([^;\n]+)?;?/i,
     fn(match: RegExpExecArray, unit: StoryUnit, rawUnit: StoryRawUnit) {
       unit.type = "text";
       unit.textAbout.showText.text = utils.generateText(rawUnit);
@@ -81,7 +81,7 @@ const StoryRawUnitParserUnit: IStoryRawUnitParserUnit = {
     },
   },
   st: {
-    reg: /#st;(\[-?\d+,-?\d+]);(serial|instant|smooth);(\d+);?(.+)?/,
+    reg: /#st;(\[-?\d+,-?\d+]);(serial|instant|smooth);(\d+);?(.+)?/i,
     fn(match: RegExpExecArray, unit: StoryUnit, rawUnit: StoryRawUnit) {
       unit.type = "st";
       unit.textAbout.st = { middle: false };
@@ -97,7 +97,7 @@ const StoryRawUnitParserUnit: IStoryRawUnitParserUnit = {
     },
   },
   stm: {
-    reg: /#stm;(\[0,-?\d+]);(serial|instant|smooth);(\d+);([^;\n]+);?/,
+    reg: /#stm;(\[0,-?\d+]);(serial|instant|smooth);(\d+);([^;\n]+);?/i,
     fn(match: RegExpExecArray, unit: StoryUnit, rawUnit: StoryRawUnit) {
       unit.type = "st";
       unit.textAbout.st = { middle: true };
@@ -111,7 +111,7 @@ const StoryRawUnitParserUnit: IStoryRawUnitParserUnit = {
     },
   },
   clearSt: {
-    reg: /#clearST;?/,
+    reg: /#clearST;?/i,
     fn(match: RegExpExecArray, unit: StoryUnit) {
       unit.textAbout.st = {};
       unit.textAbout.st.clearSt = true;
@@ -119,14 +119,14 @@ const StoryRawUnitParserUnit: IStoryRawUnitParserUnit = {
     },
   },
   wait: {
-    reg: /#wait;(\d+);?/,
+    reg: /#wait;(\d+);?/i,
     fn(match: RegExpExecArray, unit: StoryUnit) {
       unit.effect.otherEffect.push({ type: "wait", args: Number(match[1]) });
       return unit;
     },
   },
   fontsize: {
-    reg: /#fontsize;(\d+);?/,
+    reg: /#fontsize;(\d+);?/i,
     fn(match: RegExpExecArray, unit: StoryUnit) {
       unit.textAbout.showText.text.forEach(it => {
         it.effects.push({ name: "fontsize", value: [match[1]] });
@@ -137,7 +137,7 @@ const StoryRawUnitParserUnit: IStoryRawUnitParserUnit = {
   all: {
     // TODO #all;dl
     // #all;hide
-    reg: /#all;([^;\n]+);?/,
+    reg: /#all;([^;\n]+);?/i,
     fn(match: RegExpExecArray, unit: StoryUnit) {
       if (utils.compareCaseInsensive(match[1], "hide")) {
         unit.hide = "all";
@@ -146,21 +146,21 @@ const StoryRawUnitParserUnit: IStoryRawUnitParserUnit = {
     },
   },
   hideMenu: {
-    reg: /#hidemenu;?/,
+    reg: /#hidemenu;?/i,
     fn(match: RegExpExecArray, unit: StoryUnit) {
       unit.hide = "menu";
       return unit;
     },
   },
   showMenu: {
-    reg: /#showmenu;?/,
+    reg: /#showmenu;?/i,
     fn(match: RegExpExecArray, unit: StoryUnit) {
       unit.show = "menu";
       return unit;
     },
   },
   zmc: {
-    reg: /#zmc;(instant|instnat|move);(-?\d+,-?\d+);(\d+);?(\d+)?;?/,
+    reg: /#zmc;(instant|instnat|move);(-?\d+,-?\d+);(\d+);?(\d+)?;?/i,
     fn(match: RegExpExecArray, unit: StoryUnit) {
       const args: ZmcArgs = {
         type: match[1] as "instant",
@@ -176,14 +176,14 @@ const StoryRawUnitParserUnit: IStoryRawUnitParserUnit = {
     },
   },
   bgShake: {
-    reg: /#bgshake;?/,
+    reg: /#bgshake;?/i,
     fn(match: RegExpExecArray, unit: StoryUnit) {
       unit.effect.otherEffect.push({ type: "bgshake" });
       return unit;
     },
   },
   video: {
-    reg: /#video;([^;\n]+);([^;\n]+);?/,
+    reg: /#video;([^;\n]+);([^;\n]+);?/i,
     //处理情况为 #video;Scenario/Main/22000_MV_Video;Scenario/Main/22000_MV_Sound
     fn(match: RegExpExecArray, unit: StoryUnit) {
       unit.video = {
