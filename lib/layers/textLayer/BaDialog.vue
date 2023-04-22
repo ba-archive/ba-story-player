@@ -939,7 +939,10 @@ onUnmounted(() => {
   eventBus.off("loaded", handleEndLoading);
 });
 function buildTranslatorInfo(translator: string) {
-  return "翻译：" + translator;
+  if (translator) {
+    return "翻译：" + translator;
+  }
+  return translator;
 }
 // 暂时用不上了, 比如font-size还需要根据屏幕进行适配
 type StyleEffectTemplateMap = {

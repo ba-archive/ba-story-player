@@ -177,10 +177,12 @@ export const eventEmitter = {
             currentStoryUnit.textAbout.titleInfo.subtitle || ""
           );
           // 如有有译者信息 顺便发送
-          eventBus.emit(
-            "showPlaceTranslator",
-            currentStoryUnit.textAbout.titleInfo.translator || ""
-          );
+          if (currentStoryUnit.textAbout.titleInfo.translator) {
+            eventBus.emit(
+              "showPlaceTranslator",
+              currentStoryUnit.textAbout.titleInfo.translator
+            );
+          }
         }
         break;
       case "text":
