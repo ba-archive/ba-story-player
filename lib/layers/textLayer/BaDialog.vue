@@ -266,7 +266,9 @@ function moveToNext() {
  */
 function handleShowTitle(e: ShowTitleOption) {
   subTitleContent.value = e.subtitle || "";
-  titleTranslatorContent.value = e.translator || "";
+  if (e.translator) {
+    titleTranslatorContent.value = buildTranslatorInfo(e.translator);
+  }
   proxyShowCoverTitle(titleEL, titleContent, parseTitle(e.title)).then(() => {
     subTitleContent.value = "";
     eventBus.emit("titleDone");
@@ -286,7 +288,11 @@ function handleShowPlace(e: string) {
  * 展示左上角位置标题下面的译者信息
  */
 function handleShowPlaceTranslator(e: string) {
-  proxyShowCoverTitle(placeTranslatorEL, placeTranslatorContent, e);
+  proxyShowCoverTitle(
+    placeTranslatorEL,
+    placeTranslatorContent,
+    buildTranslatorInfo(e)
+  );
 }
 
 /**
@@ -932,6 +938,9 @@ onUnmounted(() => {
   eventBus.off("oneResourceLoaded", handleOneResourceLoaded);
   eventBus.off("loaded", handleEndLoading);
 });
+function buildTranslatorInfo(translator: string) {
+  return "翻译：" + translator;
+}
 // 暂时用不上了, 比如font-size还需要根据屏幕进行适配
 type StyleEffectTemplateMap = {
   [key in TextEffectName]: string;
