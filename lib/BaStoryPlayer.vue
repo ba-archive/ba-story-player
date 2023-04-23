@@ -1,8 +1,8 @@
 <script lang="ts" setup>
-import { init, dispose, stop, continuePlay } from "@/index";
+import { continuePlay, dispose, init, stop } from "@/index";
 import BaDialog from "@/layers/textLayer/BaDialog.vue";
 import BaUI from "@/layers/uiLayer/BaUI.vue";
-import { StoryRawUnit } from "@/types/common";
+import { TranslatedStoryUnit } from "@/types/common";
 import { Language, StorySummary } from "@/types/store";
 import {
   computed,
@@ -10,8 +10,8 @@ import {
   onBeforeMount,
   onBeforeUnmount,
   onDeactivated,
-  onUnmounted,
   onMounted,
+  onUnmounted,
   ref,
   watch,
 } from "vue";
@@ -19,8 +19,8 @@ import eventBus from "./eventBus";
 import { changeStoryIndex } from "./layers/uiLayer/userInteract";
 import { usePlayerStore } from "./stores";
 
-export type PlayerProps = {
-  story: StoryRawUnit[];
+type PlayerProps = {
+  story: TranslatedStoryUnit;
   dataUrl: string;
   width: number;
   height: number;
@@ -33,6 +33,7 @@ export type PlayerProps = {
   /** 跳转至传入的 index */
   changeIndex?: number;
 };
+
 const props = withDefaults(defineProps<PlayerProps>(), {
   startFullScreen: false,
   useMp3: false,

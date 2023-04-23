@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import BaStoryPlayer from "../lib/BaStoryPlayer.vue";
+import { TranslatedStoryUnit } from "../lib/types/common";
 import yuuka from "./data/yuuka.json";
 import prologue from "./data/prologue1.1.json";
 import eventBus from "../lib/eventBus";
@@ -72,7 +73,7 @@ function setStartIndex() {
   localStorage.setItem(indexCacheKey, currentStoryIndex.value.toString());
 }
 
-const story = ref(yuuka);
+const story = ref<TranslatedStoryUnit>(yuuka);
 const showPlayer = ref(false);
 const storyJsonName = ref("0");
 const storyCacheKey = "storyJson";
@@ -82,7 +83,7 @@ if (jsonName && jsonName !== "0") {
     .get(`https://yuuka.cdn.diyigemt.com/image/story/vol3/${jsonName}.json`)
     .then(response => {
       if (response.status === 200) {
-        story.value = response.data.content;
+        story.value = response.data;
         storyJsonName.value = jsonName;
       }
       showPlayer.value = true;
