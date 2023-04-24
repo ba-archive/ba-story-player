@@ -1173,13 +1173,13 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
           color: #4a609a;
         }
         // 译者信息
-        &:after {
+        &::after {
           width: 100%;
           content: attr(data-translator);
           position: absolute;
           left: 0;
-          bottom: calc(-16px - var(--sub-title-font-size));
-          font-size: var(--sub-title-font-size);
+          bottom: calc(-8px - min(var(--font-size, 2rem), 16px));
+          font-size: min(var(--font-size), 16px);
           font-weight: 400;
           color: white;
           text-shadow: $text-outline;
