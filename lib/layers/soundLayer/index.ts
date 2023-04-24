@@ -59,6 +59,7 @@ export function soundInit() {
   let bgm: Sound | undefined = undefined;
   let sfx: Sound | undefined = undefined;
   let voice: Sound | undefined = undefined;
+  let emotionSound: Sound | undefined = undefined;
 
   /**
    * 声音层的全局设置, 包括BGM音量, 效果音量和语音音量
@@ -140,16 +141,22 @@ export function soundInit() {
   });
 
   eventBus.on("playEmotionAudio", (emotype: string) => {
-    let url = usePlayerStore().emotionSoundUrl(emotype);
-    console.log(`Get emoAudio URL: ${url}`);
-    playAudio({
-      soundUrl: url,
+    if (emotionSound) {
+      emotionSound.stop();
+    }
+    emotionSound = getAudio(usePlayerStore().emotionSoundUrl(emotype));
+    emotionSound.play({
+      volume: soundSettings.SFXvolume,
     });
   });
 
   eventBus.on("playOtherSounds", sound => {
     console.log("Play Select Sound!");
     playAudio({ soundUrl: usePlayerStore().otherSoundUrl(sound) });
+  });
+
+  eventBus.on("playBgEffectSound", bgEffect => {
+    playAudio({ soundUrl: usePlayerStore().bgEffectSoundUrl(bgEffect) });
   });
 
   eventBus.on("dispose", () => soundDispose());

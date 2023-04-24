@@ -1,3 +1,4 @@
+import eventBus from "@/eventBus";
 import { usePlayerStore } from "@/stores";
 import { Emitter, EmitterConfigV3, Particle } from "@pixi/particle-emitter";
 import { BehaviorOrder } from "@pixi/particle-emitter/lib/behaviors";
@@ -7,6 +8,7 @@ import { getEmitterType, sprite2TransParent } from "../resourcesUtils";
 
 export default async function BG_FocusLine(resources: Sprite[]) {
   // 原理是线条 emitter
+  eventBus.emit("playBgEffectSound", "BG_FocusLine");
   const { app } = usePlayerStore();
   const appWidth = app.view.width;
   const appHeight = app.view.height;

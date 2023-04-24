@@ -1,6 +1,7 @@
 import { Character, Effect, Speaker, Text } from "./common";
 import {
   BGEffectExcelTableItem,
+  BGEffectType,
   BGMExcelTableItem,
   TransitionTableItem,
 } from "./excels";
@@ -25,7 +26,7 @@ export type Events = {
    */
   stop: undefined;
   /**
-   * 继续
+   * 继续播放bgm
    */
   continue: undefined;
 
@@ -85,6 +86,7 @@ export type Events = {
    * 播放选项选择特效音
    */
   playOtherSounds: OtherSounds;
+  playBgEffectSound: BGEffectType;
   /**
    * 播放voiceJP结束提示
    */
@@ -112,9 +114,10 @@ export type Events = {
   hidemenu: undefined;
   showmenu: undefined;
   // 显示历史
-  showStoryLog: undefined;
+  showStoryLog: boolean;
   // 当前历史log是否显示
   isStoryLogShow: boolean;
+
   //文字层
   /**
    * 展示标题
@@ -128,6 +131,10 @@ export type Events = {
    * 展示地点
    */
   showPlace: string;
+  /**
+   * 展示在地点下方的译者信息
+   */
+  showPlaceTranslator: string;
   /**
    * 显示普通对话框文字
    */
@@ -304,6 +311,7 @@ export interface PlayEffect {
 export interface ShowTitleOption {
   title: Text[];
   subtitle?: string;
+  translator?: string;
 }
 
 export interface ResourceLoadState {

@@ -8,7 +8,23 @@ import {
   StArgs,
 } from "./events";
 import { TransitionTableItem } from "./excels";
-import { PlayerProps } from "@/BaStoryPlayer.vue";
+import { Language, StorySummary } from "./store";
+
+export type PlayerProps = {
+  story: TranslatedStoryUnit;
+  dataUrl: string;
+  width: number;
+  height: number;
+  language: Language;
+  userName: string;
+  storySummary: StorySummary;
+  startFullScreen?: boolean;
+  useMp3?: boolean;
+  useSuperSampling?: "2" | "4" | "";
+  /** 跳转至传入的 index */
+  changeIndex?: number;
+};
+
 export type StoryType =
   | "title"
   | "place"
@@ -138,6 +154,12 @@ export type Effect =
       type: "bgshake";
     };
 
+export type TranslatedStoryUnit = {
+  GroupId: number;
+  translator: string;
+  content: StoryRawUnit[];
+};
+
 export interface StoryRawUnit {
   GroupId: number;
   SelectionGroup: number;
@@ -189,9 +211,8 @@ export interface StoryUnit {
   textAbout: {
     options?: ShowOption[];
     /**
-     * 当内容为一个单词时填入, 如地点, 标题, 章节名
+     * 地点, 标题, 章节名, 第一个地点下面的译者信息(如果有)
      */
-    word?: string;
     titleInfo?: ShowTitleOption;
     /**
      * 显示的对话文字

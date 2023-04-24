@@ -14,17 +14,23 @@ jobs:
 
     steps:
       - uses: actions/checkout@master
+      - name: get-npm-version
+        id: package-version
+        uses: martinbeentjes/npm-get-version-action@v1.3.1
 
       - uses: pnpm/action-setup@v2
+        if: ${{ contains(steps.package-version.outputs.current-version,'beta')}}
         with:
           version: 7.21.0
 
       - name: Install and Build
+        if: ${{ contains(steps.package-version.outputs.current-version,'beta')}}
         run: |
           pnpm install
           pnpm run build # 这是我的项目的打包命令，你也可以改成你的
 
       - name: "Publish to the npm registry"
+        if: ${{ contains(steps.package-version.outputs.current-version,'beta')}}
         uses: JS-DevTools/npm-publish@v1
         with:
           token: ${{ secrets.NPM_TOKEN }}

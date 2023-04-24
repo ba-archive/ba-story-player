@@ -1,10 +1,10 @@
 {
   "lifetime": {
-    "min": 4,
-    "max": 5
+    "min": 1,
+    "max": 1.5
   },
-  "frequency": 1.5,
-  "maxParticles": 3,
+  "frequency": 0.2,
+  "maxParticles": 8,
   "addAtBack": false,
   "pos": {
     "x": 0,
@@ -17,11 +17,15 @@
         "scale": {
           "list": [
             {
-              "value": 1,
+              "value": 0.1,
               "time": 0
             },
             {
-              "value": 1.2,
+              "value": 1,
+              "time": 0.5
+            },
+            {
+              "value": 0,
               "time": 1
             }
           ]
@@ -33,19 +37,6 @@
       "type": "textureRandom",
       "config": {
         "textures": []
-      }
-    },
-    {
-      "type": "alpha",
-      "config": {
-        "alpha": {
-          "list": [
-            { "value": 0, "time": 0 },
-            { "value": 0.7, "time": 0.1 },
-            { "value": 1, "time": 0.4 },
-            { "value": 0, "time": 1 }
-          ]
-        }
       }
     },
     {
@@ -64,6 +55,13 @@
       "type": "colorStatic",
       "config": {
         "color": "#ffffff"
+      }
+    },
+    {
+      "type": "rotationStatic",
+      "config": {
+        "min": 45,
+        "max": 45
       }
     }
   ]

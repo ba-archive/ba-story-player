@@ -4,6 +4,7 @@ import { CharacterInstance, StoryUnit } from "./common";
 import { ShowOption, ShowText } from "./events";
 import {
   BGEffectExcelTableItem,
+  BGEffectType,
   BGMExcelTableItem,
   BGNameExcelTableItem,
   CharacterNameExcelTableItem,
@@ -41,6 +42,11 @@ export interface PrivateStates {
   l2dSpineUrl: string;
   /** 当前剧情下的 l2d 特殊播放配置 */
   curL2dConfig: null | IL2dConfig[keyof IL2dConfig];
+
+  /**
+   * 译者信息, 仅在无title且无place的情况下有值
+   */
+  translator: string;
 
   //背景层
   /**
@@ -129,6 +135,7 @@ export interface BasicGetters {
    * @returns
    */
   otherSoundUrl: (type: OtherSounds) => string;
+  bgEffectSoundUrl: (bgEffect: BGEffectType) => string;
   /**
    * 获取L2D资源
    */
@@ -160,6 +167,12 @@ export interface Actions {
    * @returns
    */
   setL2DConfig: (val: IL2dConfig[keyof IL2dConfig]) => void;
+
+  /**
+   * 设置译者信息, 仅在无title且无place的情况下调用
+   * @param translator
+   */
+  setTranslator(translator: string): void;
 }
 
 export interface LogText {

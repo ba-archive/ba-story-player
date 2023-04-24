@@ -1,5 +1,12 @@
 <template>
-  <div class="container" :style="{ height: `${playerHeight}px` }">
+  <div
+    class="container"
+    :style="{
+      height: `${playerHeight}px`,
+      '--standard-font-size': standardFontSize,
+      '--standard-unity-font-size': standardUnityFontSize,
+    }"
+  >
     <div class="container-inner">
       <div class="loading-container absolute-container" v-if="showLoading">
         <img
@@ -70,7 +77,12 @@
       <div
         class="st-container absolute-container"
         ref="stOutput"
-        :style="{ fontSize: `${standardFontSize}rem` }"
+        :style="{
+          '--st-width-half': `${stWidth / 2}`,
+          '--st-height-half': `${stHeight / 2}`,
+          '--st-pos-bounds-x': `${stPositionBounds.width}`,
+          '--st-pos-bounds-y': `${stPositionBounds.height}`,
+        }"
       />
       <div
         ref="titleEL"
@@ -90,6 +102,7 @@
             ref="titleContain"
             class="title-contain"
             :style="{ '--font-size': `${fontSize(4)}rem` }"
+            :data-translator="titleTranslatorContent"
           >
             <div class="sub-title" v-if="subTitleContent">
               <span class="sub-title-inner">{{ subTitleContent }}</span>
@@ -106,6 +119,16 @@
       >
         <div class="round-place">
           <span class="place-content">{{ placeContent }}</span>
+        </div>
+      </div>
+      <div
+        ref="placeTranslatorEL"
+        class="place-translator-container place-container"
+        :style="{ '--font-size': `${fontSize(2) * 0.6}rem` }"
+        v-if="placeTranslatorContent"
+      >
+        <div class="round-place">
+          <span class="place-content">{{ placeTranslatorContent }}</span>
         </div>
       </div>
       <div
@@ -142,13 +165,13 @@
 
 <script setup lang="ts">
 import {
-  onMounted,
-  ref,
-  computed,
   Ref,
+  computed,
   nextTick,
+  onMounted,
   onUnmounted,
   reactive,
+  ref,
 } from "vue";
 import eventBus from "@/eventBus";
 import Typed, { TypedExtend, TypedOptions } from "typed.js";
@@ -172,6 +195,7 @@ const toBeContinuedBg1 = ref<HTMLElement>(); // to be continued的背景
 const toBeContinuedText = ref<HTMLElement>(); // to be continued的字
 const titleEL = ref<HTMLElement>(); // 大标题的el
 const placeEL = ref<HTMLElement>(); // place的el
+const placeTranslatorEL = ref<HTMLElement>(); // 译者的el
 const nextEpisodeContainer = ref<HTMLElement>(); // 下一章的el
 const titleContain = ref<HTMLElement>(); // 标题内容的el, 为了实现scale效果
 const overrideTitleZIndex = ref<number>();
@@ -185,8 +209,12 @@ const props = withDefaults(defineProps<TextLayerProps>(), {
 const titleContent = ref<string>("");
 // 副标题
 const subTitleContent = ref<string>("");
+// 标题下的译者信息
+const titleTranslatorContent = ref<string>("");
 // 位置
 const placeContent = ref<string>("");
+// 位置下的译者信息
+const placeTranslatorContent = ref<string>("");
 // 昵称
 const name = ref<string>();
 // 所属(昵称右边)
@@ -220,7 +248,7 @@ function endPlay() {
  * 单击屏幕后触发效果 next或者立即显示当前对话
  */
 function moveToNext() {
-  if (!showDialog) return; // 显示st期间不允许跳过
+  if (!showDialog.value) return; // 显示st期间不允许跳过
   // 没打过任何一行字(初始化)或者对话已经显示完成, 点击屏幕代表继续
   if (!typingInstance || typingComplete.value) {
     eventBus.emit("next");
@@ -231,7 +259,7 @@ function moveToNext() {
       typingInstance.stop();
       typingInstance.destroy();
       setTypingComplete(true, typingInstance);
-      typewriterOutput.value!.innerHTML = typingInstance.strings.pop() || "";
+      typewriterOutput.value.innerHTML = typingInstance.strings.pop() || "";
       eventBus.emit("textDone");
     }
   }
@@ -241,6 +269,9 @@ function moveToNext() {
  */
 function handleShowTitle(e: ShowTitleOption) {
   subTitleContent.value = e.subtitle || "";
+  if (e.translator) {
+    titleTranslatorContent.value = buildTranslatorInfo(e.translator);
+  }
   proxyShowCoverTitle(titleEL, titleContent, parseTitle(e.title)).then(() => {
     subTitleContent.value = "";
     eventBus.emit("titleDone");
@@ -257,6 +288,17 @@ function handleShowPlace(e: string) {
 }
 
 /**
+ * 展示左上角位置标题下面的译者信息
+ */
+function handleShowPlaceTranslator(e: string) {
+  proxyShowCoverTitle(
+    placeTranslatorEL,
+    placeTranslatorContent,
+    buildTranslatorInfo(e)
+  );
+}
+
+/**
  * 统一方法, 淡入淡出el
  * @param el 要操作的el
  * @param proxy 要操作的el显示的内容
@@ -270,17 +312,22 @@ function proxyShowCoverTitle(
   onElUpdate?: (el: HTMLElement) => void
 ) {
   return new Promise<void>(resolve => {
+    if (!value) {
+      resolve();
+      return;
+    }
     proxy.value = value;
     nextTick(() => {
-      onElUpdate && onElUpdate(el.value!);
+      const elValue = el.value as HTMLElement;
+      onElUpdate && el.value && onElUpdate(el.value);
       const timeline = gsap.timeline();
-      timeline.to(el.value!, {
+      timeline.to(elValue, {
         opacity: 1,
         duration: 0.75,
       });
       if (!onElUpdate) {
         timeline.to(
-          el.value!,
+          elValue,
           {
             opacity: 0,
             duration: 0.75,
@@ -307,7 +354,7 @@ function handleClearSt() {
     typingInstance?.stop();
     typingInstance?.destroy();
     if (stOutput.value) {
-      stOutput.value!.innerHTML = "";
+      stOutput.value.innerHTML = "";
     }
   }
 }
@@ -329,25 +376,16 @@ function handleShowStEvent(e: StText) {
     const stPos = e.stArgs[0];
     // st显示类型
     const stType = e.stArgs[1];
-    // st坐标系映射视口坐标系
-    const x = Math.floor(
-      (stWidth / 2 + stPos[0]) * stPositionBounds.value.width
-    );
-    const y = Math.floor(
-      (stHeight / 2 - stPos[1]) * stPositionBounds.value.height
-    );
     // st样式
-    let extendStyle = `;position: absolute; --top: ${y}px; width: auto;left: ${x}px;`;
+    let extendStyle = `;position: absolute; --st-x: ${stPos[0]}; width: auto;--st-y: ${stPos[1]};`;
     // 居中显示特殊样式
     if (e.middle) {
       extendStyle =
         extendStyle +
-        `;text-align: center; left: 50%; transform: translateX(-50%)`;
+        ";text-align: center; left: 50%; transform: translateX(-50%)";
     }
     const fontSize = e.stArgs[2]; // st的字号
-    extendStyle =
-      extendStyle +
-      `;--font-size: ${unityFontSizeToHTMLSize(Number(fontSize))}rem`;
+    extendStyle = extendStyle + `;--param-font-size: ${fontSize}`;
     // 立即显示, 跳过打字机
     const fn = Reflect.get(StMap, stType);
     if (fn) {
@@ -362,16 +400,18 @@ function handleShowStEvent(e: StText) {
  * 處理三種st特效的fn
  */
 type StType = StArgs[1];
-type StMap = {
+type IStMap = {
   [key in StType]: (e: StText, parsedStyle: string) => void;
 };
-const StMap: StMap = {
+const StMap: IStMap = {
   instant(e: StText, parsedStyle: string): void {
-    stOutput.value!.innerHTML =
-      stOutput.value!.innerHTML + parseStInnerHtml(e, parsedStyle).content;
+    const _stOutput = stOutput.value as HTMLElement;
+    _stOutput.innerHTML =
+      _stOutput.innerHTML + parseStInnerHtml(e, parsedStyle).content;
     eventBus.emit("stDone");
   },
   serial(e: StText, parsedStyle: string): void {
+    const _stOutput = stOutput.value as HTMLElement;
     showTextDialog(
       e.text
         .map(text => {
@@ -380,7 +420,7 @@ const StMap: StMap = {
           return text;
         })
         .map(text => parseTextEffect(text)),
-      stOutput.value!,
+      _stOutput,
       content => {
         return `<div style="${parsedStyle}">${content}</div>`;
       },
@@ -393,12 +433,11 @@ const StMap: StMap = {
     typingInstance.isSt = true;
   },
   smooth(e: StText, parsedStyle: string): void {
+    const _stOutput = stOutput.value as HTMLElement;
     parsedStyle = parsedStyle + ";opacity: 0";
-    stOutput.value!.innerHTML =
-      stOutput.value!.innerHTML + parseStInnerHtml(e, parsedStyle).content;
-    const el = stOutput.value!.children.item(
-      stOutput.value!.children.length - 1
-    );
+    _stOutput.innerHTML =
+      _stOutput.innerHTML + parseStInnerHtml(e, parsedStyle).content;
+    const el = _stOutput.children.item(_stOutput.children.length - 1);
     const timeline = gsap.timeline();
     timeline
       .fromTo(
@@ -448,10 +487,11 @@ function handleShowTextEvent(e: ShowText) {
     typingInstance?.stop();
     typingInstance?.destroy();
     typingInstance && (typingInstance.isSt = false);
+    const _typewriterOutput = typewriterOutput.value as HTMLElement;
     // 显示
     showTextDialog(
       e.text.map(text => parseTextEffect(text)),
-      typewriterOutput.value!
+      _typewriterOutput
     ).then(() => {
       eventBus.emit("textDone");
     });
@@ -484,10 +524,7 @@ function parseTextEffect(text: Text, extendStyle = "", tag = "span"): Text {
       if (name === "color") {
         return `color: ${value}`;
       } else if (name === "fontsize") {
-        return;
-        `font-size: ${unityFontSizeToHTMLSize(
-          Number(value)
-        )}rem;--font-size: ${unityFontSizeToHTMLSize(Number(value))}rem`;
+        return `--param-font-size: ${value}`;
       }
       // 暂时废弃, 没办法处理字体自适应
       return (StyleEffectTemplate[effect.name] || "").replace(
@@ -498,6 +535,7 @@ function parseTextEffect(text: Text, extendStyle = "", tag = "span"): Text {
     .join(";");
   // 如果有注解就用ruby标签实现
   if (rt) {
+    // eslint-disable-next-line max-len
     text.content = `<${tag} style="${style};${extendStyle}" class="ruby" data-content="${rt}"><span class="rb">${text.content}</span><span class="rt">${rt}</span></${tag}>`;
   } else {
     text.content = `<${tag} style="${style};${extendStyle}">${text.content}</${tag}>`;
@@ -566,7 +604,8 @@ function showTextDialog(
     }
     // st的续约, 因为不能两个Typed同时持有一个对象, 所以采用将之前的内容作为已打印内容拼接的形式
     function continueSt() {
-      lastStOutput = stOutput.value!.innerHTML;
+      const _stOutput = stOutput.value as HTMLElement;
+      lastStOutput = _stOutput.innerHTML;
       setTypingComplete(false, typingInstance);
       typingInstance.pause.status = true;
       typingInstance.pause.typewrite = true;
@@ -623,18 +662,21 @@ function handleToBeContinued() {
   hideMenu();
   showToBeContinue.value = true;
   nextTick(() => {
-    const style = getComputedStyle(toBeContinuedText.value!);
+    const _toBeContinuedText = toBeContinuedText.value as HTMLElement;
+    const _toBeContinuedBg0 = toBeContinuedBg0.value as HTMLElement;
+    const _toBeContinuedBg1 = toBeContinuedBg1.value as HTMLElement;
+    const style = getComputedStyle(_toBeContinuedText);
     const w = Number(style.width.replace("px", ""));
-    toBeContinuedText.value!.style.right = `${-w - 10}px`;
-    toBeContinuedText.value!.style.opacity = "1";
+    _toBeContinuedText.style.right = `${-w - 10}px`;
+    _toBeContinuedText.style.opacity = "1";
     const timeline = gsap.timeline();
     timeline
-      .to(toBeContinuedBg0.value!, {
+      .to(_toBeContinuedBg0, {
         opacity: 1,
         duration: 0.3,
       })
       .to(
-        toBeContinuedBg1.value!,
+        _toBeContinuedBg1,
         {
           opacity: 1,
           duration: 0.4,
@@ -642,7 +684,7 @@ function handleToBeContinued() {
         "-=0.15"
       )
       .to(
-        toBeContinuedText.value!,
+        _toBeContinuedText,
         {
           right: 20,
           duration: 0.3,
@@ -650,7 +692,7 @@ function handleToBeContinued() {
         "<"
       )
       .to(
-        toBeContinuedText.value!,
+        _toBeContinuedText,
         {
           opacity: 0,
           duration: 0.6,
@@ -672,7 +714,7 @@ function handleNextEpisode(e: ShowTitleOption) {
   showNextEpisode.value = true;
   hideMenu();
   nextTick(() => {
-    const container = nextEpisodeContainer.value!;
+    const container = nextEpisodeContainer.value as HTMLElement;
     const topChild = container.children[0];
     const bottomChild = container.children[1];
     let flag = false;
@@ -759,9 +801,6 @@ function onPopupVideoEnd() {
 function hideMenu() {
   eventBus.emit("hidemenu");
 }
-function showMenu() {
-  eventBus.emit("showmenu");
-}
 function handlePopupClose() {
   popupSrc.image = "";
   videoComponent.value?.pause();
@@ -823,9 +862,9 @@ const standardUnityFontSize = 64;
  * 以64作为标准st字体大小?
  * @param size
  */
-function unityFontSizeToHTMLSize(size: number) {
-  return (size / standardUnityFontSize) * standardFontSize.value;
-}
+// function unityFontSizeToHTMLSize(size: number) {
+//   return (size / standardUnityFontSize) * standardFontSize.value;
+// }
 
 /**
  * typingInstance不能被代理且自身的typingComplete也有意义
@@ -851,9 +890,6 @@ const overrideTitleStyle = computed(() => {
 });
 // 文本框总高度
 const dialogHeight = computed(() => props.playerHeight * 0.37);
-// 选择框位置
-const standardDialogHeight = 550;
-const standardDialogTopOffset = 100;
 // 计算title的padding以让其符合边框第二边线
 const titleBorderWidth = 2280;
 const standardBorderWidth = 26;
@@ -870,6 +906,7 @@ const mapLoadLog = computed(() =>
 onMounted(() => {
   eventBus.on("showTitle", handleShowTitle);
   eventBus.on("showPlace", handleShowPlace);
+  eventBus.on("showPlaceTranslator", handleShowPlaceTranslator);
   eventBus.on("showText", handleShowTextEvent);
   eventBus.on("st", handleShowStEvent);
   eventBus.on("clearSt", handleClearSt);
@@ -888,6 +925,7 @@ onMounted(() => {
 onUnmounted(() => {
   eventBus.off("showTitle", handleShowTitle);
   eventBus.off("showPlace", handleShowPlace);
+  eventBus.off("showPlaceTranslator", handleShowPlaceTranslator);
   eventBus.off("showText", handleShowTextEvent);
   eventBus.off("st", handleShowStEvent);
   eventBus.off("clearSt", handleClearSt);
@@ -903,6 +941,12 @@ onUnmounted(() => {
   eventBus.off("oneResourceLoaded", handleOneResourceLoaded);
   eventBus.off("loaded", handleEndLoading);
 });
+function buildTranslatorInfo(translator: string) {
+  if (translator) {
+    return "翻译：" + translator;
+  }
+  return translator;
+}
 // 暂时用不上了, 比如font-size还需要根据屏幕进行适配
 type StyleEffectTemplateMap = {
   [key in TextEffectName]: string;
@@ -1001,11 +1045,20 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
 }
 
 .content {
-  --font-size: 2rem;
+  //--font-size: 2rem;
+  --param-font-size: 64;
   margin-top: 1.5%;
   color: white;
-  font-size: var(--font-size);
-  line-height: 1.5em;
+  :deep(span) {
+    --font-size: calc(
+      (
+          var(--param-font-size) / var(--standard-unity-font-size) *
+            var(--standard-font-size)
+        ) * 1rem
+    );
+    font-size: var(--font-size);
+  }
+  line-height: calc(1.5 * var(--font-size));
 }
 
 .container {
@@ -1103,9 +1156,8 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
             no-repeat 0 30%;
         background-size: 100%, 100%;
         .sub-title {
-          font-size: calc(var(--font-size) * 0.6);
+          font-size: var(--sub-title-font-size);
           margin-bottom: calc(var(--font-size) * 0.52);
-
           .sub-title-inner {
             padding: 0 5px;
             background: linear-gradient(
@@ -1117,9 +1169,20 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
               0 calc(var(--font-size) * -0.12);
           }
         }
-
         .main-title {
           color: #4a609a;
+        }
+        // 译者信息
+        &:after {
+          width: 100%;
+          content: attr(data-translator);
+          position: absolute;
+          left: 0;
+          bottom: calc(-16px - var(--sub-title-font-size));
+          font-size: var(--sub-title-font-size);
+          font-weight: 400;
+          color: white;
+          text-shadow: $text-outline;
         }
       }
     }
@@ -1131,6 +1194,10 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
     }
   }
 
+  .place-translator-container {
+    top: calc(10% + 16px + var(--padding-size) * 4 / 0.6) !important;
+  }
+
   .place-container {
     --font-size: 1rem;
     position: absolute;
@@ -1139,11 +1206,11 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
     top: 10%;
     color: white;
     z-index: $text-layer-z-index + $place-z-index;
-
+    --padding-size: calc(var(--font-size) / 2);
     .round-place {
       position: relative;
       line-height: var(--font-size);
-      padding: calc(var(--font-size) / 2) 3rem calc(var(--font-size) / 2) 1rem;
+      padding: var(--padding-size) 3rem var(--padding-size) 1rem;
 
       &:after {
         content: "";
@@ -1162,16 +1229,16 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
         padding-left: 10px;
         color: white;
         font-style: var(--font-size);
+        font-size: var(--font-size);
 
         &:after {
           content: "";
           width: 3px;
           display: block;
-          height: var(--font-size);
+          height: calc(100% - var(--font-size));
           background-color: rgba(255, 255, 255, 0.3);
           position: absolute;
-          top: 0;
-          transform: translateY(50%);
+          top: var(--padding-size);
         }
       }
     }
@@ -1182,9 +1249,22 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
     color: white;
     text-shadow: $text-outline;
     :deep(div) {
+      --font-size: calc(
+        (
+            var(--param-font-size) / var(--standard-unity-font-size) *
+              var(--standard-font-size)
+          ) * 1rem
+      );
+      --left: calc(
+        (var(--st-width-half) + var(--st-x)) * var(--st-pos-bounds-x) * 1px
+      );
+      --top: calc(
+        (var(--st-height-half) - var(--st-y)) * var(--st-pos-bounds-y) * 1px
+      );
       line-height: var(--font-size);
       display: inline-block;
       top: calc(var(--top) - var(--font-size) / 2);
+      left: var(--left);
       font-size: var(--font-size);
     }
   }
@@ -1206,7 +1286,7 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
     .rt {
       position: absolute;
       left: 0;
-      top: calc(-1 * var(--font-size) * 0.5 - 6px);
+      top: calc(-1 * var(--font-size) * 0.5 - 1px);
       font-size: calc(var(--font-size) * 0.5);
       width: 100%;
       text-align: center;

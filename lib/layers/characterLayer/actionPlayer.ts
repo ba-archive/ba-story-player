@@ -43,7 +43,9 @@ const CharacterEffectPlayerInstance: CharacterEffectPlayer = {
     const { x } = calcSpineStagePosition(characterInstance, instance.position);
     characterInstance.x = x;
     characterInstance.zIndex = Reflect.get(POS_INDEX_MAP, instance.position);
-    characterInstance.state.setAnimation(AnimationIdleTrack, "Idle_01", true);
+    if (characterInstance.state.hasAnimation("Idle_01")) {
+      characterInstance.state.setAnimation(AnimationIdleTrack, "Idle_01", true);
+    }
     characterInstance.alpha = 1;
     const colorFilter = characterInstance.filters![
       characterInstance.filters!.length - 1
@@ -348,7 +350,7 @@ export function calcSpineStagePosition(
  */
 async function timeLinePromise(tl: gsap.core.Timeline, callBack?: () => any) {
   try {
-    await tl.then();
+    await tl;
   } catch (e) {
     throw e;
   }
@@ -369,7 +371,9 @@ function initCharacter(instance: CharacterEffectInstance) {
   characterInstance.x = x;
   characterInstance.y = y;
   characterInstance.zIndex = Reflect.get(POS_INDEX_MAP, instance.position);
-  characterInstance.state.setAnimation(AnimationIdleTrack, "Idle_01", true);
+  if (characterInstance.state.hasAnimation("Idle_01")) {
+    characterInstance.state.setAnimation(AnimationIdleTrack, "Idle_01", true);
+  }
   characterInstance.visible = true;
   characterInstance.alpha = 1;
 }

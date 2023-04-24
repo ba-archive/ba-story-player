@@ -1,8 +1,8 @@
 <script lang="ts" setup>
-import { init, dispose, stop, continuePlay } from "@/index";
+import { continuePlay, dispose, init, stop } from "@/index";
 import BaDialog from "@/layers/textLayer/BaDialog.vue";
 import BaUI from "@/layers/uiLayer/BaUI.vue";
-import { StoryRawUnit } from "@/types/common";
+import { TranslatedStoryUnit } from "@/types/common";
 import { Language, StorySummary } from "@/types/store";
 import {
   computed,
@@ -10,8 +10,8 @@ import {
   onBeforeMount,
   onBeforeUnmount,
   onDeactivated,
-  onUnmounted,
   onMounted,
+  onUnmounted,
   ref,
   watch,
 } from "vue";
@@ -19,8 +19,8 @@ import eventBus from "./eventBus";
 import { changeStoryIndex } from "./layers/uiLayer/userInteract";
 import { usePlayerStore } from "./stores";
 
-export type PlayerProps = {
-  story: StoryRawUnit[];
+type PlayerProps = {
+  story: TranslatedStoryUnit;
   dataUrl: string;
   width: number;
   height: number;
@@ -29,21 +29,21 @@ export type PlayerProps = {
   storySummary: StorySummary;
   startFullScreen?: boolean;
   useMp3?: boolean;
-  useSuperSampling?: boolean;
+  useSuperSampling?: "2" | "4" | "";
   /** 跳转至传入的 index */
   changeIndex?: number;
 };
+
 const props = withDefaults(defineProps<PlayerProps>(), {
   startFullScreen: false,
   useMp3: false,
-  useSuperSampling: false,
 });
 const storySummary = ref(props.storySummary);
 storySummary.value.summary = storySummary.value.summary.replace(
   "[USERNAME]",
   props.userName
 );
-const emit = defineEmits(["end"]);
+const emit = defineEmits(["end", "error"]);
 
 const playerHeight = ref(props.height);
 const playerWidth = ref(props.width);
@@ -207,7 +207,12 @@ function handleFullScreenChange() {
  */
 let firstMount = false;
 onMounted(() => {
-  init("player__main__canvas", pixiConfig, () => emit("end"));
+  init(
+    "player__main__canvas",
+    pixiConfig,
+    () => emit("end"),
+    () => emit("error")
+  );
   if (props.startFullScreen) {
     updateFullScreenState();
   }

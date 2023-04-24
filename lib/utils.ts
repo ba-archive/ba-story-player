@@ -6,6 +6,7 @@ let otherSoundMap: OtherSoundsUrls;
  * ogg类型的音频是否用其他音频类型代替
  */
 let oggAudioType = "ogg";
+let superSampling = "";
 
 /**
  * 设置数据站点
@@ -25,6 +26,10 @@ export function setDataUrl(url: string): void {
  */
 export function setOggAudioType(audioType: "mp3") {
   oggAudioType = audioType;
+}
+
+export function setSuperSampling(type: string) {
+  superSampling = `-${type}x`;
 }
 
 /**
@@ -52,7 +57,7 @@ export function getResourcesUrl(type: ResourcesTypes, arg: string): string {
     case "l2dVoice":
       //arg "sound/CH0184_MemorialLobby_1_1"
       const voiceDirectory = arg.replace(
-        /sound\/([A-Z0-9]*)_MemorialLobby.*/i,
+        /.*\/([A-Z0-9]*)_MemorialLobby.*/i,
         "JP_$1"
       );
       const voiceFilename = arg.split("/").pop();
@@ -74,14 +79,29 @@ export function getResourcesUrl(type: ResourcesTypes, arg: string): string {
       let temp = String(arg).split("/");
       let id = temp.pop();
       id = id?.replace("CharacterSpine_", "");
+      if (id?.endsWith("ND")) {
+        id = id.slice(0, id.length - 2);
+      }
       let filename = `${id}_spr`; //hasumi_spr
+      if (superSampling) {
+        return `${dataUrl}/spine/${filename}/${filename}${superSampling}/${filename}.skel`;
+      }
       return `${dataUrl}/spine/${filename}/${filename}.skel`;
     case "bg":
+      // UIs/03_Scenario/01_Background/BG_WinterRoad.jpg
+      if (superSampling && /01_Background/.test(arg)) {
+        const pathArr = arg.split("/");
+        const lastFileName = pathArr.pop();
+        const dir = pathArr.join("/");
+        return `${dataUrl}/${dir}/01_Background${superSampling}/${lastFileName}.png`;
+      }
       return `${dataUrl}/${arg}.jpg`;
     case "otherSound":
       return Reflect.get(otherSoundMap, arg) || "";
     case "bgEffectImgs":
       return `${dataUrl}/effectTexture/${arg}`;
+    case "bgEffectSounds":
+      return `${dataUrl}/Audio/Sound/UI_FX_${arg}.wav`;
     case "avatar":
       //arg: UIs/01_Common/01_Character/Student_Portrait_Hasumi
       return `${dataUrl}/${arg}.png`;
