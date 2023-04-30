@@ -163,10 +163,12 @@ export function L2DInit() {
     mainItem = new Spine(l2dSpineData!);
     mainItem.state.addListener({
       event(entry, event) {
-        if (event.data.name !== "Talk")
+        console.log(event.data.name);
+        if (event.data.name !== "Talk") {
           eventBus.emit("playAudio", {
             voiceJPUrl: getResourcesUrl("l2dVoice", event.data.name),
           });
+        }
       },
     });
 
