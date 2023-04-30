@@ -192,6 +192,67 @@ const CharacterEffectPlayerInstance: CharacterEffectPlayer = {
       instance.instance.y = originY;
     });
   },
+  falldownL(instance, options) {
+    let tl = gsap.timeline();
+    let pivotOffset = {
+      x:
+        (instance.instance.width * options.anchor.x) /
+        instance.instance.scale.x,
+      y:
+        (instance.instance.height * options.anchor.y) /
+        instance.instance.scale.y,
+    };
+    let orginPivot = instance.instance.pivot.clone();
+    let originY = instance.instance.y;
+    instance.instance.pivot.x += pivotOffset.x;
+    instance.instance.pivot.y += pivotOffset.y;
+    instance.instance.position.set(
+      instance.instance.x + pivotOffset.x * instance.instance.scale.x,
+      instance.instance.y + pivotOffset.y * instance.instance.scale.x
+    );
+    let finalY =
+      instance.instance.y + instance.instance.height * (options.anchor.y + 0.1);
+    tl.to(instance.instance, {
+      pixi: { angle: options.leftAngle },
+      duration: options.firstRotateDuration,
+      repeat: 1,
+      yoyo: true,
+    })
+      .to(instance.instance, {
+        pixi: { y: finalY },
+        duration: options.falldownDuration,
+      })
+      .to(
+        instance.instance,
+        {
+          pixi: { angle: options.rightAngle },
+          duration: options.falldownDuration * options.leftRotationPercent,
+          repeat: 1,
+          yoyo: true,
+        },
+        "<-=0.1"
+      )
+      .to(
+        instance.instance,
+        {
+          pixi: { angle: options.leftAngle },
+          duration: options.firstRotateDuration,
+        },
+        ">"
+      )
+      .to(
+        instance.instance,
+        { pixi: { x: `+=${options.xOffset * instance.instance.width}` } },
+        0
+      );
+
+    return timeLinePromise(tl, () => {
+      instance.instance.angle = 0;
+      instance.instance.pivot = orginPivot;
+      instance.instance.visible = false;
+      instance.instance.y = originY;
+    });
+  },
   greeting(instance: CharacterEffectInstance, options): Promise<void> {
     let tl = gsap.timeline();
     let yOffset = options.yOffset * instance.instance.height;
