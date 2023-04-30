@@ -102,4 +102,19 @@ export const l2dConfig: IL2dConfig = {
       },
     },
   },
+  CH0200_home: {
+    name: "CH0200_home",
+    playQue: [
+      {
+        name: "CH0200_home",
+        animation: "Start_Idle_01",
+        fadeTime: 4.3,
+        fade: true,
+      },
+      {
+        name: "CH0200_home",
+        animation: "Idle_01",
+      },
+    ],
+  },
 };
