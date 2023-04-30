@@ -274,6 +274,7 @@ function handleShowTitle(e: ShowTitleOption) {
   }
   proxyShowCoverTitle(titleEL, titleContent, parseTitle(e.title)).then(() => {
     subTitleContent.value = "";
+    titleTranslatorContent.value = "";
     eventBus.emit("titleDone");
   });
 }
@@ -1155,6 +1156,7 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
           url(../uiLayer/assets/UITex_BGPoliLight_1.svg) rgb(164 216 237)
             no-repeat 0 30%;
         background-size: 100%, 100%;
+        --sub-title-font-size: calc(var(--font-size) * 0.6);
         .sub-title {
           font-size: var(--sub-title-font-size);
           margin-bottom: calc(var(--font-size) * 0.52);
