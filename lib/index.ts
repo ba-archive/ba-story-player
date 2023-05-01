@@ -16,6 +16,10 @@ import { version } from "../package.json";
 
 let playerStore: ReturnType<typeof usePlayerStore>;
 let privateState: ReturnType<typeof initPrivateState>;
+/**
+ * 多余的不能识别出l2d音频的事件名
+ */
+const unexistL2dSoundEvent = ["sound/Nonomi_MemorialLobby_3_3"];
 
 /**
  * 继续播放
@@ -705,7 +709,10 @@ export const resourcesLoader = {
    */
   loadL2dVoice(audioEvents: IEventData[]) {
     for (const event of audioEvents) {
-      if (event.name.includes("MemorialLobby")) {
+      if (
+        event.name.includes("MemorialLobby") &&
+        !unexistL2dSoundEvent.includes(event.name)
+      ) {
         const voiceUrl = utils.getResourcesUrl("l2dVoice", event.name);
         this.loader.add(voiceUrl, voiceUrl);
       }

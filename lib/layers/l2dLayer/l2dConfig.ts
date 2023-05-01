@@ -168,4 +168,19 @@ export const l2dConfig: IL2dConfig = {
       },
     },
   },
+  Nonomi_home: {
+    name: "Nonomi_home",
+    playQue: [
+      {
+        name: "Nonomi_home",
+        animation: "Start_Idle_01",
+        fadeTime: 3.8,
+        fade: true,
+      },
+      {
+        name: "Nonomi_home",
+        animation: "Idle_01",
+      },
+    ],
+  },
 };
