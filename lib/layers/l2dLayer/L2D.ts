@@ -31,14 +31,20 @@ export function L2DInit() {
   // 接收动画消息
   eventBus.on("changeAnimation", e => {
     const temAnimation = e.replace(/_(A|M)/, "");
-    const devAnimation = mainItem.spineData.animations.find(i =>
+    const talkAnimations = mainItem.spineData.animations.filter(i =>
       i.name.includes(temAnimation)
     );
+    const devAnimation = talkAnimations.find(i => /dev/i.test(i.name));
     if (devAnimation) {
+      console.log("dev animation name: ", devAnimation.name);
       mainItem.state.setAnimation(1, devAnimation.name, false);
     } else {
-      console.error("不存在对应dev动画");
-      mainItem.state.setAnimation(1, e, false);
+      console.warn("不存在对应dev动画");
+      console.log("current animation: ", talkAnimations);
+      let animationTrack = 1;
+      for (const animation of talkAnimations) {
+        mainItem.state.setAnimation(animationTrack++, animation.name, false);
+      }
     }
   });
   // 停止
@@ -163,7 +169,6 @@ export function L2DInit() {
     mainItem = new Spine(l2dSpineData!);
     mainItem.state.addListener({
       event(entry, event) {
-        console.log(event.data.name);
         if (event.data.name !== "Talk") {
           eventBus.emit("playAudio", {
             voiceJPUrl: getResourcesUrl("l2dVoice", event.data.name),
