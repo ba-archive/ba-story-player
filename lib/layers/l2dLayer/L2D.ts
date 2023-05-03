@@ -46,12 +46,12 @@ export function L2DInit() {
     const devAnimation = talkAnimations.find(i => /dev/i.test(i.name));
     talkAnimations = talkAnimations.filter(i => !/dev/i.test(i.name));
     console.log(e, ": ", talkAnimations);
-    let animationTrack = 1;
+    let animationTrack = 2;
     for (const animation of talkAnimations) {
       mainItem.state.setAnimation(animationTrack++, animation.name, false);
     }
     if (devAnimation) {
-      devAnimationItem.state.setAnimation(1, devAnimation.name, false);
+      mainItem.state.setAnimation(0, devAnimation.name, false);
     }
   });
   // 停止
@@ -139,7 +139,7 @@ export function L2DInit() {
             timeOutArray.push(
               setTimeout(() => {
                 let e = curStartAnimations.spine.state.setAnimation(
-                  0,
+                  1,
                   curStartAnimations.animation,
                   !startAnimations[currentIndex] // 最后一个待机动作循环
                 );
@@ -174,7 +174,6 @@ export function L2DInit() {
       });
     }
     mainItem = new Spine(l2dSpineData!);
-    devAnimationItem = new Spine(l2dSpineData!);
     function playL2dVoice(entry: ITrackEntry, event: IEvent) {
       if (event.data.name !== "Talk") {
         voicePlaying = true;
@@ -184,9 +183,6 @@ export function L2DInit() {
       }
     }
     mainItem.state.addListener({
-      event: playL2dVoice,
-    });
-    devAnimationItem.state.addListener({
       event: playL2dVoice,
     });
 
@@ -235,8 +231,6 @@ export function L2DInit() {
     try {
       const curStartAnimations = startAnimations[currentIndex]!;
       currentIndex += 1;
-      devAnimationItem.alpha = 0;
-      app.stage.addChild(devAnimationItem);
       app.stage.addChild(curStartAnimations.spine);
       curStartAnimations.spine.state.setAnimation(
         0,
