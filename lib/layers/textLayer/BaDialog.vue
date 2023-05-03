@@ -244,6 +244,7 @@ function endPlay() {
   }
   eventBus.emit("next");
 }
+let currentDialogHtml = "";
 /**
  * 单击屏幕后触发效果 next或者立即显示当前对话
  */
@@ -259,7 +260,7 @@ function moveToNext() {
       typingInstance.stop();
       typingInstance.destroy();
       setTypingComplete(true, typingInstance);
-      typewriterOutput.value.innerHTML = typingInstance.strings.pop() || "";
+      typewriterOutput.value.innerHTML = currentDialogHtml;
       eventBus.emit("textDone");
     }
   }
@@ -558,6 +559,8 @@ function showTextDialog(
   onParseContent?: (source: string) => string,
   override?: TypedOptions
 ) {
+  currentDialogHtml = "";
+  text.forEach(textItem => (currentDialogHtml += textItem.content));
   return new Promise<void>(resolve => {
     if (text.length === 0) {
       setTypingComplete(true);
