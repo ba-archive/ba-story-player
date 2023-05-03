@@ -32,6 +32,10 @@ type PlayerProps = {
   useSuperSampling?: "2" | "4" | "";
   /** 跳转至传入的 index */
   changeIndex?: number;
+  /**
+   * 播放结束等待多久后退出全屏操作
+   */
+  exitFullscreenTimeOut?: number;
 };
 
 const props = withDefaults(defineProps<PlayerProps>(), {
@@ -210,7 +214,13 @@ onMounted(() => {
   init(
     "player__main__canvas",
     pixiConfig,
-    () => emit("end"),
+    () => {
+      setTimeout(
+        () => (fullScreen.value = false),
+        props.exitFullscreenTimeOut || 1000
+      );
+      emit("end");
+    },
     () => emit("error")
   );
   if (props.startFullScreen) {

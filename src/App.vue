@@ -125,6 +125,7 @@ useResizeObserver(
         userName="testUser"
         :story-summary="storySummary"
         style="resize: both; overflow: hidden"
+        :exit-fullscreen-time-out="2000"
         ref="player"
       />
       <!--其实在左边的剧情json里填入11000就能测试序章, 不需要改动这里-->
