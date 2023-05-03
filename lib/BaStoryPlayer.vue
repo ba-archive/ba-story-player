@@ -370,7 +370,7 @@ onDeactivated(() => {
 </style>
 <style lang="scss">
 .pseudo-fullscreen {
-  .container,
+  .text-container,
   .baui {
     animation: fuck-safari 999999s alternate infinite;
   }

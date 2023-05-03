@@ -1,6 +1,6 @@
 <template>
   <div
-    class="container"
+    class="text-container"
     :style="{
       height: `${playerHeight}px`,
       '--standard-font-size': standardFontSize,
@@ -244,6 +244,7 @@ function endPlay() {
   }
   eventBus.emit("next");
 }
+let currentDialogHtml = "";
 /**
  * 单击屏幕后触发效果 next或者立即显示当前对话
  */
@@ -259,7 +260,7 @@ function moveToNext() {
       typingInstance.stop();
       typingInstance.destroy();
       setTypingComplete(true, typingInstance);
-      typewriterOutput.value.innerHTML = typingInstance.strings.pop() || "";
+      typewriterOutput.value.innerHTML = currentDialogHtml;
       eventBus.emit("textDone");
     }
   }
@@ -536,8 +537,10 @@ function parseTextEffect(text: Text, extendStyle = "", tag = "span"): Text {
     .join(";");
   // 如果有注解就用ruby标签实现
   if (rt) {
+    // 替换掉重点符号
+    const prettyRt = rt.replace(/^．$/, "・");
     // eslint-disable-next-line max-len
-    text.content = `<${tag} style="${style};${extendStyle}" class="ruby" data-content="${rt}"><span class="rb">${text.content}</span><span class="rt">${rt}</span></${tag}>`;
+    text.content = `<${tag} style="${style};${extendStyle}" class="ruby" data-content="${prettyRt}"><span class="rb">${text.content}</span><span class="rt">${prettyRt}</span></${tag}>`;
   } else {
     text.content = `<${tag} style="${style};${extendStyle}">${text.content}</${tag}>`;
   }
@@ -556,6 +559,8 @@ function showTextDialog(
   onParseContent?: (source: string) => string,
   override?: TypedOptions
 ) {
+  currentDialogHtml = "";
+  text.forEach(textItem => (currentDialogHtml += textItem.content));
   return new Promise<void>(resolve => {
     if (text.length === 0) {
       setTypingComplete(true);
@@ -1062,7 +1067,7 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
   line-height: calc(1.5 * var(--font-size));
 }
 
-.container {
+.text-container {
   font-family: "TJL", "Microsoft YaHei", "PingFang SC", -apple-system, system-ui,
     "Segoe UI", Roboto, Ubuntu, Cantarell, "Noto Sans", BlinkMacSystemFont,
     "Helvetica Neue", "Hiragino Sans GB", Arial, sans-serif;
