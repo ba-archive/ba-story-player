@@ -1,4 +1,4 @@
-import { Spine } from "pixi-spine";
+import { IEvent, ITrackEntry, Spine } from "pixi-spine";
 import eventBus from "@/eventBus";
 import { usePlayerStore } from "@/stores";
 import { getResourcesUrl } from "@/utils";
@@ -12,6 +12,14 @@ export function L2DInit() {
   const { app } = usePlayerStore();
   // 主要播放 spine
   let mainItem: Spine;
+  /**
+   * 用来获取dev animation event信息的spine
+   */
+  let devAnimationItem: Spine;
+  /**
+   * 用来防止dev动画和普通动画都有event时的冲突
+   */
+  let voicePlaying = false;
   // 背景混合或者其他播放 spine, 如普通星野和运动邮箱
   let otherItems: Spine[] = [];
   // 当前顶层的spine index
@@ -30,21 +38,20 @@ export function L2DInit() {
   });
   // 接收动画消息
   eventBus.on("changeAnimation", e => {
+    voicePlaying = false;
     const temAnimation = e.replace(/_(A|M)/, "");
-    const talkAnimations = mainItem.spineData.animations.filter(i =>
+    let talkAnimations = mainItem.spineData.animations.filter(i =>
       i.name.includes(temAnimation)
     );
     const devAnimation = talkAnimations.find(i => /dev/i.test(i.name));
+    talkAnimations = talkAnimations.filter(i => !/dev/i.test(i.name));
+    console.log(e, ": ", talkAnimations);
+    let animationTrack = 1;
+    for (const animation of talkAnimations) {
+      mainItem.state.setAnimation(animationTrack++, animation.name, false);
+    }
     if (devAnimation) {
-      console.log("dev animation name: ", devAnimation.name);
-      mainItem.state.setAnimation(1, devAnimation.name, false);
-    } else {
-      console.warn("不存在对应dev动画");
-      console.log("current animation: ", talkAnimations);
-      let animationTrack = 1;
-      for (const animation of talkAnimations) {
-        mainItem.state.setAnimation(animationTrack++, animation.name, false);
-      }
+      devAnimationItem.state.setAnimation(1, devAnimation.name, false);
     }
   });
   // 停止
@@ -167,14 +174,20 @@ export function L2DInit() {
       });
     }
     mainItem = new Spine(l2dSpineData!);
+    devAnimationItem = new Spine(l2dSpineData!);
+    function playL2dVoice(entry: ITrackEntry, event: IEvent) {
+      if (event.data.name !== "Talk") {
+        voicePlaying = true;
+        eventBus.emit("playAudio", {
+          voiceJPUrl: getResourcesUrl("l2dVoice", event.data.name),
+        });
+      }
+    }
     mainItem.state.addListener({
-      event(entry, event) {
-        if (event.data.name !== "Talk") {
-          eventBus.emit("playAudio", {
-            voiceJPUrl: getResourcesUrl("l2dVoice", event.data.name),
-          });
-        }
-      },
+      event: playL2dVoice,
+    });
+    devAnimationItem.state.addListener({
+      event: playL2dVoice,
     });
 
     // 设置名字区分
@@ -222,6 +235,8 @@ export function L2DInit() {
     try {
       const curStartAnimations = startAnimations[currentIndex]!;
       currentIndex += 1;
+      devAnimationItem.alpha = 0;
+      app.stage.addChild(devAnimationItem);
       app.stage.addChild(curStartAnimations.spine);
       curStartAnimations.spine.state.setAnimation(
         0,
