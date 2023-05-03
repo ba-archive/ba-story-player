@@ -1,6 +1,6 @@
 <template>
   <div
-    class="container"
+    class="text-container"
     :style="{
       height: `${playerHeight}px`,
       '--standard-font-size': standardFontSize,
@@ -536,8 +536,10 @@ function parseTextEffect(text: Text, extendStyle = "", tag = "span"): Text {
     .join(";");
   // 如果有注解就用ruby标签实现
   if (rt) {
+    // 替换掉重点符号
+    const prettyRt = rt.replace(/．/g, "・");
     // eslint-disable-next-line max-len
-    text.content = `<${tag} style="${style};${extendStyle}" class="ruby" data-content="${rt}"><span class="rb">${text.content}</span><span class="rt">${rt}</span></${tag}>`;
+    text.content = `<${tag} style="${style};${extendStyle}" class="ruby" data-content="${prettyRt}"><span class="rb">${text.content}</span><span class="rt">${prettyRt}</span></${tag}>`;
   } else {
     text.content = `<${tag} style="${style};${extendStyle}">${text.content}</${tag}>`;
   }
@@ -1062,7 +1064,7 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
   line-height: calc(1.5 * var(--font-size));
 }
 
-.container {
+.text-container {
   font-family: "TJL", "Microsoft YaHei", "PingFang SC", -apple-system, system-ui,
     "Segoe UI", Roboto, Ubuntu, Cantarell, "Noto Sans", BlinkMacSystemFont,
     "Helvetica Neue", "Hiragino Sans GB", Arial, sans-serif;
