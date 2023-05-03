@@ -19,7 +19,7 @@ import eventBus from "./eventBus";
 import { changeStoryIndex } from "./layers/uiLayer/userInteract";
 import { usePlayerStore } from "./stores";
 
-type PlayerProps = {
+export type PlayerProps = {
   story: TranslatedStoryUnit;
   dataUrl: string;
   width: number;
