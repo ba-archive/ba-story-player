@@ -537,7 +537,7 @@ function parseTextEffect(text: Text, extendStyle = "", tag = "span"): Text {
   // 如果有注解就用ruby标签实现
   if (rt) {
     // 替换掉重点符号
-    const prettyRt = rt.replace(/．/g, "・");
+    const prettyRt = rt.replace(/^．$/, "・");
     // eslint-disable-next-line max-len
     text.content = `<${tag} style="${style};${extendStyle}" class="ruby" data-content="${prettyRt}"><span class="rb">${text.content}</span><span class="rt">${prettyRt}</span></${tag}>`;
   } else {
