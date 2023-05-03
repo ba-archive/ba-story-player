@@ -1,8 +1,8 @@
 <script lang="ts" setup>
-import { init, dispose, stop, continuePlay } from "@/index";
+import { continuePlay, dispose, init, stop } from "@/index";
 import BaDialog from "@/layers/textLayer/BaDialog.vue";
 import BaUI from "@/layers/uiLayer/BaUI.vue";
-import { StoryRawUnit } from "@/types/common";
+import { TranslatedStoryUnit } from "@/types/common";
 import { Language, StorySummary } from "@/types/store";
 import {
   computed,
@@ -10,8 +10,8 @@ import {
   onBeforeMount,
   onBeforeUnmount,
   onDeactivated,
-  onUnmounted,
   onMounted,
+  onUnmounted,
   ref,
   watch,
 } from "vue";
@@ -20,7 +20,7 @@ import { changeStoryIndex } from "./layers/uiLayer/userInteract";
 import { usePlayerStore } from "./stores";
 
 export type PlayerProps = {
-  story: StoryRawUnit[];
+  story: TranslatedStoryUnit;
   dataUrl: string;
   width: number;
   height: number;
@@ -32,7 +32,12 @@ export type PlayerProps = {
   useSuperSampling?: "2" | "4" | "";
   /** 跳转至传入的 index */
   changeIndex?: number;
+  /**
+   * 播放结束等待多久后退出全屏操作
+   */
+  exitFullscreenTimeOut?: number;
 };
+
 const props = withDefaults(defineProps<PlayerProps>(), {
   startFullScreen: false,
   useMp3: false,
@@ -209,7 +214,13 @@ onMounted(() => {
   init(
     "player__main__canvas",
     pixiConfig,
-    () => emit("end"),
+    () => {
+      setTimeout(
+        () => (fullScreen.value = false),
+        props.exitFullscreenTimeOut || 1000
+      );
+      emit("end");
+    },
     () => emit("error")
   );
   if (props.startFullScreen) {
@@ -359,7 +370,7 @@ onDeactivated(() => {
 </style>
 <style lang="scss">
 .pseudo-fullscreen {
-  .container,
+  .text-container,
   .baui {
     animation: fuck-safari 999999s alternate infinite;
   }

@@ -259,6 +259,7 @@ export type CharacterEffectWord =
   | "closeup"
   | "jump"
   | "falldownR"
+  | "falldownL"
   | "hide";
 
 /**
@@ -542,6 +543,15 @@ export interface ActionOptions extends BaseOptions<CharacterEffectWord> {
     duration: number;
   };
   falldownR: {
+    anchor: PositionOffset;
+    rightAngle: number;
+    leftAngle: number;
+    firstRotateDuration: number;
+    leftRotationPercent: number;
+    falldownDuration: number;
+    xOffset: number;
+  };
+  falldownL: {
     anchor: PositionOffset;
     rightAngle: number;
     leftAngle: number;

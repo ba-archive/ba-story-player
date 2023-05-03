@@ -43,6 +43,11 @@ export interface PrivateStates {
   /** 当前剧情下的 l2d 特殊播放配置 */
   curL2dConfig: null | IL2dConfig[keyof IL2dConfig];
 
+  /**
+   * 译者信息, 仅在无title且无place的情况下有值
+   */
+  translator: string;
+
   //背景层
   /**
    * 背景实例
@@ -162,6 +167,12 @@ export interface Actions {
    * @returns
    */
   setL2DConfig: (val: IL2dConfig[keyof IL2dConfig]) => void;
+
+  /**
+   * 设置译者信息, 仅在无title且无place的情况下调用
+   * @param translator
+   */
+  setTranslator(translator: string): void;
 }
 
 export interface LogText {

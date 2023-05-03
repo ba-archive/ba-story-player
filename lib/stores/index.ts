@@ -97,7 +97,11 @@ let bgEffectImgTable: BGEffectImgTable = {
   "BG_ScrollL_1.5": [],
   BG_FocusLine: ["FX_TEX_SCN_FocusLine5.png"],
   "BG_ScrollR_1.5": [],
-  BG_Shining_L_BGOff: ["FX_TEX_SCN_Ring_02.png"],
+  BG_Shining_L_BGOff: [
+    "FX_TEX_SCN_Ring_02.png",
+    "FX_TEX_Flare_23.png",
+    "Gacha/FX_TEX_GT_Circle_Blur_inv.png",
+  ],
   "BG_ScrollT_1.0": [],
   "BG_ScrollB_1.5": [],
   BG_Filter_Red_BG: [],
@@ -116,6 +120,7 @@ let privateState: PrivateStates = {
   app: null,
   l2dSpineUrl: "",
   curL2dConfig: null,
+  translator: "",
   storySummary: {
     chapterName: "",
     summary: "",
@@ -244,6 +249,9 @@ let actions: Actions = {
   },
   setL2DConfig(val) {
     privateState.curL2dConfig = val;
+  },
+  setTranslator(translator: string) {
+    privateState.translator = translator;
   },
 };
 

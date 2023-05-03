@@ -1,6 +1,6 @@
 <template>
   <div
-    class="container"
+    class="text-container"
     :style="{
       height: `${playerHeight}px`,
       '--standard-font-size': standardFontSize,
@@ -94,11 +94,15 @@
           class="title-border"
           :style="{ '--side-padding': `${titleBorderPadding}px` }"
         >
-          <img src="./assets/title-border.png" alt="border" />
+          <img src="./assets/title_border__upper_left.svg" alt="upper-left" />
+          <img src="./assets/title_border__upper_right.svg" alt="upper-right" />
+          <img src="./assets/title_border__lower_right.svg" alt="lower-right" />
+          <img src="./assets/title_border__lower_left.svg" alt="lower-left" />
           <div
             ref="titleContain"
             class="title-contain"
             :style="{ '--font-size': `${fontSize(4)}rem` }"
+            :data-translator="titleTranslatorContent"
           >
             <div class="sub-title" v-if="subTitleContent">
               <span class="sub-title-inner">{{ subTitleContent }}</span>
@@ -115,6 +119,16 @@
       >
         <div class="round-place">
           <span class="place-content">{{ placeContent }}</span>
+        </div>
+      </div>
+      <div
+        ref="placeTranslatorEL"
+        class="place-translator-container place-container"
+        :style="{ '--font-size': `${fontSize(2) * 0.6}rem` }"
+        v-if="placeTranslatorContent"
+      >
+        <div class="round-place">
+          <span class="place-content">{{ placeTranslatorContent }}</span>
         </div>
       </div>
       <div
@@ -181,6 +195,7 @@ const toBeContinuedBg1 = ref<HTMLElement>(); // to be continued的背景
 const toBeContinuedText = ref<HTMLElement>(); // to be continued的字
 const titleEL = ref<HTMLElement>(); // 大标题的el
 const placeEL = ref<HTMLElement>(); // place的el
+const placeTranslatorEL = ref<HTMLElement>(); // 译者的el
 const nextEpisodeContainer = ref<HTMLElement>(); // 下一章的el
 const titleContain = ref<HTMLElement>(); // 标题内容的el, 为了实现scale效果
 const overrideTitleZIndex = ref<number>();
@@ -194,8 +209,12 @@ const props = withDefaults(defineProps<TextLayerProps>(), {
 const titleContent = ref<string>("");
 // 副标题
 const subTitleContent = ref<string>("");
+// 标题下的译者信息
+const titleTranslatorContent = ref<string>("");
 // 位置
 const placeContent = ref<string>("");
+// 位置下的译者信息
+const placeTranslatorContent = ref<string>("");
 // 昵称
 const name = ref<string>();
 // 所属(昵称右边)
@@ -225,6 +244,7 @@ function endPlay() {
   }
   eventBus.emit("next");
 }
+let currentDialogHtml = "";
 /**
  * 单击屏幕后触发效果 next或者立即显示当前对话
  */
@@ -240,7 +260,7 @@ function moveToNext() {
       typingInstance.stop();
       typingInstance.destroy();
       setTypingComplete(true, typingInstance);
-      typewriterOutput.value.innerHTML = typingInstance.strings.pop() || "";
+      typewriterOutput.value.innerHTML = currentDialogHtml;
       eventBus.emit("textDone");
     }
   }
@@ -250,8 +270,12 @@ function moveToNext() {
  */
 function handleShowTitle(e: ShowTitleOption) {
   subTitleContent.value = e.subtitle || "";
+  if (e.translator) {
+    titleTranslatorContent.value = buildTranslatorInfo(e.translator);
+  }
   proxyShowCoverTitle(titleEL, titleContent, parseTitle(e.title)).then(() => {
     subTitleContent.value = "";
+    titleTranslatorContent.value = "";
     eventBus.emit("titleDone");
   });
 }
@@ -263,6 +287,17 @@ function parseTitle(item: Text[]): string {
  */
 function handleShowPlace(e: string) {
   proxyShowCoverTitle(placeEL, placeContent, e);
+}
+
+/**
+ * 展示左上角位置标题下面的译者信息
+ */
+function handleShowPlaceTranslator(e: string) {
+  proxyShowCoverTitle(
+    placeTranslatorEL,
+    placeTranslatorContent,
+    buildTranslatorInfo(e)
+  );
 }
 
 /**
@@ -279,6 +314,10 @@ function proxyShowCoverTitle(
   onElUpdate?: (el: HTMLElement) => void
 ) {
   return new Promise<void>(resolve => {
+    if (!value) {
+      resolve();
+      return;
+    }
     proxy.value = value;
     nextTick(() => {
       const elValue = el.value as HTMLElement;
@@ -498,8 +537,10 @@ function parseTextEffect(text: Text, extendStyle = "", tag = "span"): Text {
     .join(";");
   // 如果有注解就用ruby标签实现
   if (rt) {
+    // 替换掉重点符号
+    const prettyRt = rt.replace(/^．$/, "・");
     // eslint-disable-next-line max-len
-    text.content = `<${tag} style="${style};${extendStyle}" class="ruby" data-content="${rt}"><span class="rb">${text.content}</span><span class="rt">${rt}</span></${tag}>`;
+    text.content = `<${tag} style="${style};${extendStyle}" class="ruby" data-content="${prettyRt}"><span class="rb">${text.content}</span><span class="rt">${prettyRt}</span></${tag}>`;
   } else {
     text.content = `<${tag} style="${style};${extendStyle}">${text.content}</${tag}>`;
   }
@@ -518,6 +559,8 @@ function showTextDialog(
   onParseContent?: (source: string) => string,
   override?: TypedOptions
 ) {
+  currentDialogHtml = "";
+  text.forEach(textItem => (currentDialogHtml += textItem.content));
   return new Promise<void>(resolve => {
     if (text.length === 0) {
       setTypingComplete(true);
@@ -869,6 +912,7 @@ const mapLoadLog = computed(() =>
 onMounted(() => {
   eventBus.on("showTitle", handleShowTitle);
   eventBus.on("showPlace", handleShowPlace);
+  eventBus.on("showPlaceTranslator", handleShowPlaceTranslator);
   eventBus.on("showText", handleShowTextEvent);
   eventBus.on("st", handleShowStEvent);
   eventBus.on("clearSt", handleClearSt);
@@ -887,6 +931,7 @@ onMounted(() => {
 onUnmounted(() => {
   eventBus.off("showTitle", handleShowTitle);
   eventBus.off("showPlace", handleShowPlace);
+  eventBus.off("showPlaceTranslator", handleShowPlaceTranslator);
   eventBus.off("showText", handleShowTextEvent);
   eventBus.off("st", handleShowStEvent);
   eventBus.off("clearSt", handleClearSt);
@@ -902,6 +947,12 @@ onUnmounted(() => {
   eventBus.off("oneResourceLoaded", handleOneResourceLoaded);
   eventBus.off("loaded", handleEndLoading);
 });
+function buildTranslatorInfo(translator: string) {
+  if (translator) {
+    return "翻译：" + translator;
+  }
+  return translator;
+}
 // 暂时用不上了, 比如font-size还需要根据屏幕进行适配
 type StyleEffectTemplateMap = {
   [key in TextEffectName]: string;
@@ -979,7 +1030,7 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
     bottom: 1rem;
     width: 10px;
     height: 10px;
-    background: url("./assets/text-next.png");
+    background: url("./assets/text-next.webp");
     background-size: $size $size;
     animation: next-btn 0.6s linear alternate infinite;
   }
@@ -1016,7 +1067,7 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
   line-height: calc(1.5 * var(--font-size));
 }
 
-.container {
+.text-container {
   font-family: "TJL", "Microsoft YaHei", "PingFang SC", -apple-system, system-ui,
     "Segoe UI", Roboto, Ubuntu, Cantarell, "Noto Sans", BlinkMacSystemFont,
     "Helvetica Neue", "Hiragino Sans GB", Arial, sans-serif;
@@ -1039,26 +1090,57 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
     opacity: 0;
     color: white;
     z-index: $text-layer-z-index + $title-z-index;
-    // $padding: 10px;
-    // padding: $padding;
-
+    $padding: 20px;
+    padding: $padding;
     .title-border {
       position: relative;
       --side-padding: 0px;
+      $border-svg-size: 32px;
+      $border-opacity: 0.5;
+      $border-color: rgba(255, 255, 255, $border-opacity);
+      border: 2px solid $border-color;
+      border-radius: 8px;
       // width: calc(100% - 2 * #{$padding} - 2 * var(--side-padding));
-      height: 100%;
-      // background: url("./assets/title-border.png") no-repeat;
-      background-size: 100% 100%;
-      display: inline-flex;
+      width: calc(100% - 2 * #{$padding});
+      height: calc(100% - 2 * #{$padding});
+      background: linear-gradient(to top, white, $border-color),
+        linear-gradient(to left, white, $border-color),
+        linear-gradient(to top, white, $border-color),
+        linear-gradient(to left, white, $border-color);
+      background-size: calc(100% - 62px) 0.5px, 0.5px calc(100% - 65px),
+        calc(100% - 62px) 0.5px, 0.5px calc(100% - 65px);
+      background-position: 31px 12px, 11px 32px, 31px calc(100% - 12px),
+        calc(100% - 12px) 32px;
+      background-repeat: no-repeat;
+      img {
+        position: absolute;
+        width: $border-svg-size;
+        filter: drop-shadow(0 0 0.2px white);
+        opacity: $border-opacity;
+
+        &:nth-child(1) {
+          top: 0;
+          left: 0;
+        }
+        &:nth-child(2) {
+          top: 0;
+          right: 0;
+        }
+        &:nth-child(3) {
+          bottom: 0;
+          right: 0;
+        }
+        &:nth-child(4) {
+          bottom: 0;
+          left: 0;
+        }
+      }
+
+      display: flex;
       align-items: center;
       justify-content: center;
       line-height: 1;
-      padding: var(--side-padding) 0;
       box-sizing: border-box;
-
-      img {
-        height: 95%;
-      }
 
       .title-contain {
         --font-size: 2rem;
@@ -1076,12 +1158,13 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
             rgba(240, 240, 240, 1) 38%,
             rgba(240, 240, 240, 0.1) 100%
           ),
-          url("./assets/poli-light.png") rgb(164 216 237) no-repeat 0 30%;
-
+          url(../uiLayer/assets/UITex_BGPoliLight_1.svg) rgb(164 216 237)
+            no-repeat 0 30%;
+        background-size: 100%, 100%;
+        --sub-title-font-size: calc(var(--font-size) * 0.6);
         .sub-title {
-          font-size: calc(var(--font-size) * 0.6);
+          font-size: var(--sub-title-font-size);
           margin-bottom: calc(var(--font-size) * 0.52);
-
           .sub-title-inner {
             padding: 0 5px;
             background: linear-gradient(
@@ -1093,9 +1176,20 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
               0 calc(var(--font-size) * -0.12);
           }
         }
-
         .main-title {
           color: #4a609a;
+        }
+        // 译者信息
+        &::after {
+          width: 100%;
+          content: attr(data-translator);
+          position: absolute;
+          left: 0;
+          bottom: calc(-8px - min(var(--font-size, 2rem), 16px));
+          font-size: min(var(--font-size), 16px);
+          font-weight: 400;
+          color: white;
+          text-shadow: $text-outline;
         }
       }
     }
@@ -1107,6 +1201,10 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
     }
   }
 
+  .place-translator-container {
+    top: calc(10% + 16px + var(--padding-size) * 4 / 0.6) !important;
+  }
+
   .place-container {
     --font-size: 1rem;
     position: absolute;
@@ -1115,11 +1213,11 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
     top: 10%;
     color: white;
     z-index: $text-layer-z-index + $place-z-index;
-
+    --padding-size: calc(var(--font-size) / 2);
     .round-place {
       position: relative;
       line-height: var(--font-size);
-      padding: calc(var(--font-size) / 2) 3rem calc(var(--font-size) / 2) 1rem;
+      padding: var(--padding-size) 3rem var(--padding-size) 1rem;
 
       &:after {
         content: "";
@@ -1138,16 +1236,16 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
         padding-left: 10px;
         color: white;
         font-style: var(--font-size);
+        font-size: var(--font-size);
 
         &:after {
           content: "";
           width: 3px;
           display: block;
-          height: var(--font-size);
+          height: calc(100% - var(--font-size));
           background-color: rgba(255, 255, 255, 0.3);
           position: absolute;
-          top: 0;
-          transform: translateY(50%);
+          top: var(--padding-size);
         }
       }
     }
