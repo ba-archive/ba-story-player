@@ -3,6 +3,14 @@ export type IL2dPlayQue = {
   animation: string;
   fadeTime?: number;
   secondFadeTime?: number;
+  sounds?: {
+    fileName: string;
+    time: number;
+    /**
+     * 声音大小, 默认为2
+     */
+    volume?: number;
+  }[];
   /** 和后一个动画是否fade */
   fade?: boolean;
 };

@@ -96,6 +96,7 @@ export function L2DInit() {
             fade,
             fadeTime = 0.8,
             secondFadeTime,
+            sounds,
           } = startAnimations[currentIndex - 1] || {};
           if (fade) {
             // 在快结束的时候触发 fade
@@ -105,6 +106,22 @@ export function L2DInit() {
             if (secondFadeTime) {
               timeOutArray.push(
                 setTimeout(fadeEffect, (duration - secondFadeTime) * 1000)
+              );
+            }
+          }
+          if (sounds) {
+            for (const sound of sounds) {
+              timeOutArray.push(
+                setTimeout(
+                  () =>
+                    eventBus.emit("playAudioWithConfig", {
+                      url: getResourcesUrl("sound", sound.fileName),
+                      config: {
+                        volume: sound.volume || 2,
+                      },
+                    }),
+                  sound.time
+                )
               );
             }
           }
