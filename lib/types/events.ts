@@ -1,4 +1,5 @@
 import { Character, Effect, Speaker, Text } from "./common";
+import { PlayOptions } from "@pixi/sound";
 import {
   BGEffectExcelTableItem,
   BGEffectType,
@@ -91,8 +92,15 @@ export type Events = {
    * 播放voiceJP结束提示
    */
   playVoiceJPDone: string;
-  //UI层
+  /**
+   * 根据指定的设置播放sound
+   */
+  playAudioWithConfig: {
+    url: string;
+    config: PlayOptions;
+  };
 
+  //UI层
   /**
    * 跳过剧情
    */

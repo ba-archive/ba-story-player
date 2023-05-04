@@ -377,7 +377,11 @@ export function translate(rawStory: TranslatedStoryUnit): StoryUnit[] {
       rawStoryUnit.BGEffect
     );
     //当没有文字时初步判断为effectOnly类型
-    if (!rawStoryUnit.TextJp || !rawStoryUnit.TextJp) {
+    if (
+      !rawStoryUnit.TextJp ||
+      !rawStoryUnit.TextJp ||
+      rawStoryUnit.TextJp === " "
+    ) {
       unit.type = "effectOnly";
     }
     const ScriptKr = String(rawStoryUnit.ScriptKr);
