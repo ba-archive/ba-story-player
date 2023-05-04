@@ -282,11 +282,17 @@ const StoryRawUnitParserUnit: IStoryRawUnitParserUnit = {
           async: false,
         });
       } else if (!match[3]) {
+        const effect = match[2];
         unit.characters[characterIndex].effects.push({
           type: "action",
           effect: match[2],
           async: false,
         });
+        // 处理写在ScriptKr里的全息特效
+        // 兔女郎时100675:27
+        if (effect === "sig") {
+          unit.characters[characterIndex].signal = true;
+        }
       }
       return unit;
     },
