@@ -9,53 +9,6 @@ import {
 } from "./events";
 import { TransitionTableItem } from "./excels";
 import { Language, StorySummary } from "./store";
-
-export type PlayerProps = {
-  story: TranslatedStoryUnit;
-  dataUrl: string;
-  width: number;
-  height: number;
-  language: Language;
-  userName: string;
-  storySummary: StorySummary;
-  startFullScreen?: boolean;
-  useMp3?: boolean;
-  useSuperSampling?: "2" | "4" | "";
-  /** 跳转至传入的 index */
-  changeIndex?: number;
-};
-
-export type StoryType =
-  | "title"
-  | "place"
-  | "text"
-  | "option"
-  | "st"
-  | "effectOnly"
-  | "continue"
-  | "nextEpisode";
-
-export type Dict<T> = {
-  [key: string]: T;
-};
-
-export type PlayerConfigs = PlayerProps & { height: number };
-
-export interface Text {
-  /**
-   * 文本
-   */
-  content: string;
-  /**
-   * 显示文本前等待的时间
-   */
-  waitTime?: number;
-  /**
-   * 文字特效
-   */
-  effects: TextEffect[];
-}
-
 export interface Character {
   /**
    * 人物位置
@@ -86,58 +39,45 @@ export interface Character {
    */
   effects: CharacterEffect[];
 }
-
-export type CharacterEffectType = "emotion" | "action" | "fx";
-
 export interface CharacterEffect {
   type: CharacterEffectType;
   effect: string;
   async: boolean;
   arg?: string;
 }
-
-export interface Option {
-  SelectionGroup: number;
-  text: {
-    TextJp: string;
-    TextCn?: string;
-    TextTw?: string;
-    TextEn?: string;
-  };
-}
-
-/**
- * 文字特效类型,
- * `color`颜色
- * `fontsize` 字体大小
- * `ruby` 日文注音
- */
-export type TextEffectName = "color" | "fontsize" | "ruby";
-
-export interface TextEffect {
-  name: TextEffectName;
+export type CharacterEffectType = "emotion" | "action" | "fx";
+export interface CharacterInstance {
+  CharacterName: number;
   /**
-   * 特效参数
+   * 角色当前所在位置 1,2,3,4,5
+   *
+   * 会根据m1m2m3m4m5动态更新
    */
-  value: string[];
+  position: number;
+  /**
+   * nx脚本里那个初始位置, 永远不会改变
+   *
+   * 配合CharacterName唯一确定一个spine
+   */
+  initPosition: number;
+  /**
+   * 当前人物表情
+   *
+   * 用来判断是否触发眨眼动画
+   */
+  currentFace: string;
+  /**
+   * 眨眼定时器的handler
+   */
+  winkObject?: WinkObject;
+  instance: Spine;
+  isShow: () => boolean;
+  isOnStage: () => boolean;
+  isHeightLight: () => boolean;
 }
-
-/**
- * zmc参数, 当duration为10时代表是move起始
- */
-export type ZmcArgs =
-  | {
-      type: "move";
-      position: [number, number];
-      size: number;
-      duration: number;
-    }
-  | {
-      type: "instant";
-      position: [number, number];
-      size: number;
-    };
-
+export type Dict<T> = {
+  [key: string]: T;
+};
 export type Effect =
   | {
       type: "wait";
@@ -153,13 +93,40 @@ export type Effect =
   | {
       type: "bgshake";
     };
-
-export type TranslatedStoryUnit = {
-  GroupId: number;
-  translator: string;
-  content: StoryRawUnit[];
+export interface Option {
+  SelectionGroup: number;
+  text: {
+    TextJp: string;
+    TextCn?: string;
+    TextTw?: string;
+    TextEn?: string;
+  };
+}
+export type PlayerConfigs = PlayerProps & { height: number };
+export type PlayerProps = {
+  story: TranslatedStoryUnit;
+  dataUrl: string;
+  width: number;
+  height: number;
+  language: Language;
+  userName: string;
+  storySummary: StorySummary;
+  startFullScreen?: boolean;
+  useMp3?: boolean;
+  useSuperSampling?: "2" | "4" | "";
+  /** 跳转至传入的 index */
+  changeIndex?: number;
 };
-
+export interface Speaker {
+  /**
+   * 人物姓名
+   */
+  name: string;
+  /**
+   * 人物所属
+   */
+  nickName: string;
+}
 export interface StoryRawUnit {
   GroupId: number;
   SelectionGroup: number;
@@ -176,13 +143,20 @@ export interface StoryRawUnit {
   TextEn?: string;
   VoiceJp: string;
 }
-
+export type StoryType =
+  | "title"
+  | "place"
+  | "text"
+  | "option"
+  | "st"
+  | "effectOnly"
+  | "continue"
+  | "nextEpisode";
 export interface StoryUnit {
   //rawUnit中的属性
   GroupId: number;
   SelectionGroup: number;
   PopupFileName: string;
-
   type: StoryType;
   audio?: PlayAudio;
   /**
@@ -232,49 +206,60 @@ export interface StoryUnit {
     soundPath: string;
   };
 }
-
-export interface CharacterInstance {
-  CharacterName: number;
+export interface Text {
   /**
-   * 角色当前所在位置 1,2,3,4,5
-   *
-   * 会根据m1m2m3m4m5动态更新
+   * 文本
    */
-  position: number;
+  content: string;
   /**
-   * 当前人物表情
-   *
-   * 用来判断是否触发眨眼动画
+   * 显示文本前等待的时间
    */
-  currentFace: string;
+  waitTime?: number;
   /**
-   * 眨眼定时器的handler
+   * 文字特效
    */
-  winkObject?: WinkObject;
-  instance: Spine;
-  isShow: () => boolean;
-  isOnStage: () => boolean;
-  isHeightLight: () => boolean;
+  effects: TextEffect[];
 }
-
-export interface WinkObject {
-  handler: number;
-  animationObject?: WinkAnimationObject;
+export interface TextEffect {
+  name: TextEffectName;
+  /**
+   * 特效参数
+   */
+  value: string[];
 }
-
+/**
+ * 文字特效类型,
+ * `color`颜色
+ * `fontsize` 字体大小
+ * `ruby` 日文注音
+ */
+export type TextEffectName = "color" | "fontsize" | "ruby";
+export type TranslatedStoryUnit = {
+  GroupId: number;
+  translator: string;
+  content: StoryRawUnit[];
+};
 export interface WinkAnimationObject {
   _pause: boolean;
   start(): void;
   pause(): void;
 }
-
-export interface Speaker {
-  /**
-   * 人物姓名
-   */
-  name: string;
-  /**
-   * 人物所属
-   */
-  nickName: string;
+export interface WinkObject {
+  handler: number;
+  animationObject?: WinkAnimationObject;
 }
+/**
+ * zmc参数, 当duration为10时代表是move起始
+ */
+export type ZmcArgs =
+  | {
+      type: "move";
+      position: [number, number];
+      size: number;
+      duration: number;
+    }
+  | {
+      type: "instant";
+      position: [number, number];
+      size: number;
+    };
