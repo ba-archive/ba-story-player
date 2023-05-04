@@ -162,6 +162,9 @@ export function soundInit() {
   eventBus.on("dispose", () => soundDispose());
   eventBus.on("stop", () => soundDispose());
   eventBus.on("continue", () => bgm?.play());
+  eventBus.on("playAudioWithConfig", ({ url, config }) => {
+    getAudio(url).play(config);
+  });
 }
 
 export function soundDispose() {
