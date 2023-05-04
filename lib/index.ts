@@ -578,6 +578,13 @@ export const resourcesLoader = {
     this.addOtherSounds();
     this.addBGEffectImgs();
     const audioUrls: string[] = [];
+    if (playerStore.curL2dConfig) {
+      for (const que of playerStore.curL2dConfig.playQue) {
+        for (const sound of que.sounds || []) {
+          audioUrls.push(utils.getResourcesUrl("sound", sound.fileName));
+        }
+      }
+    }
     for (const unit of playerStore.allStoryUnit) {
       //添加人物spine
       if (unit.characters.length !== 0) {

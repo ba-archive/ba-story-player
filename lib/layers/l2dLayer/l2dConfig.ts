@@ -123,7 +123,7 @@ export const l2dConfig: IL2dConfig = {
       {
         name: "CH0203_home",
         animation: "Start_Idle_01",
-        fadeTime: 5.1,
+        fadeTime: 5.2,
         fade: true,
         sounds: [{ fileName: "maidYuzuCat", time: 0 }],
       },
