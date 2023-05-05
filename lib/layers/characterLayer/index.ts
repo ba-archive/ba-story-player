@@ -28,8 +28,8 @@ import { PixiPlugin } from "gsap/PixiPlugin";
 import { IAnimationState, ISkeletonData, Spine } from "pixi-spine";
 import * as PIXI from "pixi.js";
 import CharacterEffectPlayerInstance, {
-  calcSpineStagePosition,
   POS_INDEX_MAP,
+  calcSpineStagePosition,
 } from "./actionPlayer";
 import CharacterEmotionPlayerInstance from "./emotionPlayer";
 import CharacterFXPlayerInstance from "./fxPlayer";
@@ -50,37 +50,9 @@ const EffectPlayerMap: IEffectPlayerMap = {
   fx: CharacterFXPlayerInstance,
 };
 
-/**
- * 角色初始的pivot相对与长宽的比例, 当前值代表左上角
- */
-export const Character_Initial_Pivot_Proportion = { x: 0, y: -1 / 2 };
-/**
- * 标准宽度基于的播放器宽度的相对值
- * 标准宽度用于计算图片缩放比例
- */
-const Standard_Width_Relative = 0.3;
-
-/**
- * 获取用于计算图片缩放比例的标准宽度
- */
-export function getStandardWidth() {
-  return usePlayerStore().app.screen.width * Standard_Width_Relative;
-}
-
-PixiPlugin.registerPIXI(PIXI);
-gsap.registerPlugin(PixiPlugin);
-
-export function characterInit(): boolean {
-  return CharacterLayerInstance.init();
-}
-
-function showCharacter(data: ShowCharacter) {
-  CharacterLayerInstance.showCharacter(data);
-}
-
 export const CharacterLayerInstance: CharacterLayer = {
   init() {
-    const { app } = usePlayerStore();
+    const { app, currentCharacterMap } = usePlayerStore();
     // 将stage的sort设置为true,此时sprite将按照zIndex属性进行显示的排序,而是不按照children array的顺序
     app.stage.sortableChildren = true;
     document.addEventListener("resize", this.onWindowResize);
@@ -90,7 +62,7 @@ export const CharacterLayerInstance: CharacterLayer = {
       Reflect.apply(this.hideCharacter, this, [])
     );
     eventBus.on("resize", originWidth => {
-      this.characterSpineCache.forEach(character => {
+      characterMapListForeach(character => {
         const instance = character.instance;
         if (instance.visible) {
           instance.x *= app.screen.width / originWidth;
@@ -110,35 +82,38 @@ export const CharacterLayerInstance: CharacterLayer = {
     document.removeEventListener("resize", this.onWindowResize);
     eventBus.off("showCharacter", showCharacter);
     // 删除眨眼的handler
-    this.characterSpineCache.forEach(it => clearWinkHandler(it.winkObject));
+    characterMapListForeach(it => clearWinkHandler(it.winkObject));
     //TODO 销毁各种sprite,spine实体
     return true;
   },
-  hasCharacterInstance(characterNumber: number): boolean {
-    const { currentCharacterMap } = usePlayerStore();
-    return Boolean(currentCharacterMap.get(characterNumber));
-  },
-  hasCharacterInstanceCache(characterNumber: number): boolean {
-    return Boolean(this.characterSpineCache.get(characterNumber));
-  },
-  getCharacterInstance(characterNumber: number): CharacterInstance | undefined {
-    const { currentCharacterMap } = usePlayerStore();
-    return (
-      currentCharacterMap.get(characterNumber) ??
-      this.characterSpineCache.get(characterNumber)
+  hasCharacterInstance(characterNumber: number, initPosition: number): boolean {
+    return Boolean(
+      getCharacterInstanceByCharacterNameAndInitPosition(
+        characterNumber,
+        initPosition
+      )
     );
   },
-  getCharacterSpineInstance(characterNumber: number): Spine | undefined {
-    return (
-      this.getCharacterInstance(characterNumber)?.instance ??
-      this.characterSpineCache.get(characterNumber)?.instance
+  getCharacterInstance(
+    characterNumber: number,
+    initPosition: number
+  ): CharacterInstance | undefined {
+    return getCharacterInstanceByCharacterNameAndInitPosition(
+      characterNumber,
+      initPosition
     );
+  },
+  getCharacterSpineInstance(
+    characterNumber: number,
+    initPosition: number
+  ): Spine | undefined {
+    return this.getCharacterInstance(characterNumber, initPosition)?.instance;
   },
   beforeProcessShowCharacterAction(characterMap: Character[]): boolean {
     const { characterSpineData } = usePlayerStore();
     for (const item of characterMap) {
       const characterName = item.CharacterName;
-      if (!this.hasCharacterInstanceCache(characterName)) {
+      if (!this.hasCharacterInstance(characterName, item.position)) {
         const spineData = characterSpineData(characterName);
         if (!spineData) {
           return false;
@@ -155,29 +130,35 @@ export const CharacterLayerInstance: CharacterLayer = {
   ): Spine {
     const instance = new Spine(spineData);
     instance.sortableChildren = true;
+    const id = character.CharacterName;
     const { currentCharacterMap } = usePlayerStore();
     const characterInstance: CharacterInstance = {
-      CharacterName: character.CharacterName,
+      CharacterName: id,
       position: character.position,
+      initPosition: character.position,
       currentFace: character.face,
       instance,
       isOnStage() {
         return Boolean(instance.parent);
       },
       isShow() {
-        return this.isOnStage() && instance.alpha != 0;
+        return this.isOnStage() && instance.alpha !== 0;
       },
       isHeightLight() {
-        return this.isOnStage() && instance.alpha != 0;
+        return this.isOnStage() && instance.alpha !== 0;
       },
     };
-    currentCharacterMap.set(character.CharacterName, characterInstance);
-    this.characterSpineCache.set(character.CharacterName, characterInstance);
+    const existList = currentCharacterMap.get(id) || [];
+    existList.push(characterInstance);
+    currentCharacterMap.set(id, existList);
     return instance;
   },
   putCharacterOnStage(character: Character): boolean {
     const { app } = usePlayerStore();
-    const instance = this.getCharacterInstance(character.CharacterName)!;
+    const instance = this.getCharacterInstance(
+      character.CharacterName,
+      character.position
+    )!;
     instance.position = character.position;
     instance.currentFace = character.face;
     wink(instance);
@@ -218,7 +199,10 @@ export const CharacterLayerInstance: CharacterLayer = {
     return row.characters.map(item => {
       return {
         ...item,
-        instance: this.getCharacterSpineInstance(item.CharacterName)!,
+        instance: this.getCharacterSpineInstance(
+          item.CharacterName,
+          item.position
+        )!,
         isCloseUp() {
           // 供特效使用
           const { scale } = calcCharacterYAndScale(this.instance);
@@ -228,8 +212,7 @@ export const CharacterLayerInstance: CharacterLayer = {
     });
   },
   hideCharacter() {
-    const { currentCharacterMap } = usePlayerStore();
-    currentCharacterMap.forEach(character => {
+    characterMapListForeach(character => {
       character.instance.visible = false;
       character.instance.scale.set(1);
       // 设置锚点到左上角
@@ -248,16 +231,17 @@ export const CharacterLayerInstance: CharacterLayer = {
     if (!this.beforeProcessShowCharacterAction(data.characters)) {
       return false;
     }
+    const { currentCharacterMap } = usePlayerStore();
     let mapList = this.buildCharacterEffectInstance(data);
     //将data没有但显示着的角色取消highlight
-    this.characterSpineCache.forEach(character => {
+    characterMapListForeach(character => {
       if (
         character.instance.visible &&
         !data.characters.some(
           value => value.CharacterName === character.CharacterName
         )
       ) {
-        let colorFilter = character.instance.filters![
+        const colorFilter = character.instance.filters![
           character.instance.filters!.length - 1
         ] as ColorOverlayFilter;
         colorFilter.alpha = 0.3;
@@ -270,7 +254,7 @@ export const CharacterLayerInstance: CharacterLayer = {
     );
     const showName = filterEmotion.map(it => it.CharacterName);
     const showPosition = data.characters.map(it => it.position);
-    const filterHide = [...this.characterSpineCache.values()].filter(it => {
+    const filterHide = characterMapFlatList().filter(it => {
       return (
         it.isOnStage() &&
         it.isShow() &&
@@ -287,14 +271,17 @@ export const CharacterLayerInstance: CharacterLayer = {
     });
 
     //处理角色替换了初始位置的情况, 移除掉hide放置角色错误隐藏
-    const groupBy = <T, K extends keyof any>(arr: T[], key: (i: T) => K) =>
+    const groupBy = (
+      arr: CharacterEffectInstance[],
+      key: (i: CharacterEffectInstance) => number
+    ) =>
       arr.reduce((groups, item) => {
         (groups[key(item)] ||= []).push(item);
         return groups;
-      }, {} as Record<K, T[]>);
+      }, {} as { [key: string]: CharacterEffectInstance[] });
     //将角色按CharacterName分组
-    let CharacterNameGroup = groupBy(mapList, value => value.CharacterName);
-    for (let [key, group] of Object.entries(CharacterNameGroup)) {
+    const CharacterNameGroup = groupBy(mapList, value => value.CharacterName);
+    for (const [key, group] of Object.entries(CharacterNameGroup)) {
       if (group.length !== 1) {
         //通过CharacterName出现两次则移除掉hide effect
         mapList = mapList.map(value => {
@@ -333,20 +320,20 @@ export const CharacterLayerInstance: CharacterLayer = {
 
     //处理全息状态
     if (data.signal) {
-      let crtFilter = new CRTFilter({
+      const crtFilter = new CRTFilter({
         lineWidth: data.instance.width * 0.005,
         time: 0,
       });
-      let adjustmentFilter = new AdjustmentFilter({
+      const adjustmentFilter = new AdjustmentFilter({
         gamma: 1.3,
         red: 1,
         green: 1.1,
         blue: 1.15,
       });
-      let motionBlurFilter = new MotionBlurFilter();
+      const motionBlurFilter = new MotionBlurFilter();
       data.instance.filters.push(crtFilter, adjustmentFilter, motionBlurFilter);
       loopCRtAnimation(crtFilter);
-      let tl = gsap.timeline();
+      const tl = gsap.timeline();
       tl.to(motionBlurFilter.velocity, {
         x: 5,
         duration: 0.1,
@@ -402,7 +389,7 @@ export const CharacterLayerInstance: CharacterLayer = {
       }
 
       const reasons: any[] = [];
-      let effectPromise: Array<Promise<void>> = [];
+      const effectPromise: Array<Promise<void>> = [];
       for (const index in data.effects) {
         const effect = data.effects[index];
         const effectPlayer = getEffectPlayer(effect.type);
@@ -430,7 +417,7 @@ export const CharacterLayerInstance: CharacterLayer = {
         }
       }
       const results = await Promise.allSettled(effectPromise);
-      for (let result of results) {
+      for (const result of results) {
         if (result.status === "rejected") {
           reasons.push(result.reason);
         }
@@ -447,8 +434,38 @@ export const CharacterLayerInstance: CharacterLayer = {
   },
   //TODO 根据角色是否已经缩放(靠近老师)分类更新
   onWindowResize() {},
-  characterSpineCache: new Map<number, CharacterInstance>(),
 };
+/**
+ * 标准宽度基于的播放器宽度的相对值
+ * 标准宽度用于计算图片缩放比例
+ */
+const Standard_Width_Relative = 0.3;
+
+/**
+ * 角色初始的pivot相对与长宽的比例, 当前值代表左上角
+ */
+export const Character_Initial_Pivot_Proportion = { x: 0, y: -1 / 2 };
+
+PixiPlugin.registerPIXI(PIXI);
+gsap.registerPlugin(PixiPlugin);
+
+export function calcCharacterYAndScale(spine: Spine) {
+  const { screenHeight } = getStageSize();
+  const scale = (screenHeight / PlayerHeight) * CharacterScale;
+  const spineHeight = (spine.height / spine.scale.y) * scale;
+  return {
+    scale,
+    y: screenHeight - spineHeight * (1 - spineHideRate),
+  };
+}
+
+function showCharacter(data: ShowCharacter) {
+  CharacterLayerInstance.showCharacter(data);
+}
+
+export function characterInit(): boolean {
+  return CharacterLayerInstance.init();
+}
 
 function loopCRtAnimation(crtFilter: CRTFilter) {
   gsap
@@ -564,15 +581,6 @@ const PlayerHeight = 550;
 const CharacterScale = 0.34;
 // spine在播放器之下的部分;
 const spineHideRate = 0.49;
-export function calcCharacterYAndScale(spine: Spine) {
-  const { screenHeight } = getStageSize();
-  const scale = (screenHeight / PlayerHeight) * CharacterScale;
-  const spineHeight = (spine.height / spine.scale.y) * scale;
-  return {
-    scale,
-    y: screenHeight - spineHeight * (1 - spineHideRate),
-  };
-}
 
 /**
  * 获取显示区域的大小
@@ -587,4 +595,36 @@ export function getStageSize() {
     screenWidth,
     screenHeight,
   };
+}
+
+/**
+ * 获取用于计算图片缩放比例的标准宽度
+ */
+export function getStandardWidth() {
+  return usePlayerStore().app.screen.width * Standard_Width_Relative;
+}
+
+function characterMapFlatList() {
+  const { currentCharacterMap } = usePlayerStore();
+  return [...currentCharacterMap.values()].flat();
+}
+
+function characterMapListForeach(
+  block: (character: CharacterInstance) => void
+) {
+  const { currentCharacterMap } = usePlayerStore();
+  currentCharacterMap.forEach(list => list.forEach(it => block(it)));
+}
+
+function getCharacterMapListByCharacterName(characterName: number) {
+  const { currentCharacterMap } = usePlayerStore();
+  return currentCharacterMap.get(characterName);
+}
+
+function getCharacterInstanceByCharacterNameAndInitPosition(
+  characterName: number,
+  initPosition: number
+) {
+  const list = getCharacterMapListByCharacterName(characterName);
+  return (list || []).filter(it => it.initPosition === initPosition)[0];
 }
