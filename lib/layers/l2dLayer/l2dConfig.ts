@@ -102,4 +102,86 @@ export const l2dConfig: IL2dConfig = {
       },
     },
   },
+  CH0200_home: {
+    name: "CH0200_home",
+    playQue: [
+      {
+        name: "CH0200_home",
+        animation: "Start_Idle_01",
+        fadeTime: 4.3,
+        fade: true,
+      },
+      {
+        name: "CH0200_home",
+        animation: "Idle_01",
+      },
+    ],
+  },
+  CH0203_home: {
+    name: "CH0203_home",
+    playQue: [
+      {
+        name: "CH0203_home",
+        animation: "Start_Idle_01",
+        fadeTime: 5.2,
+        fade: true,
+        sounds: [{ fileName: "maidYuzuCat", time: 0 }],
+      },
+      {
+        name: "CH0203_home",
+        animation: "Idle_01",
+      },
+    ],
+  },
+  CH0211_home: {
+    name: "CH0211_home",
+    playQue: [
+      {
+        name: "CH0211_home",
+        animation: "Start_Idle_01",
+        fadeTime: 5.1,
+        fade: true,
+      },
+      {
+        name: "CH0211_home",
+        animation: "Idle_01",
+      },
+    ],
+  },
+  CH0092_home: {
+    name: "CH0092_home",
+    playQue: [
+      {
+        name: "CH0092_home",
+        animation: "Start_Idle_01",
+        fadeTime: 5.1,
+        secondFadeTime: 14.7,
+        fade: true,
+      },
+      {
+        name: "CH0092_home",
+        animation: "Idle_01",
+      },
+    ],
+    spineSettings: {
+      CH0092_home: {
+        scale: 1.7,
+      },
+    },
+  },
+  Nonomi_home: {
+    name: "Nonomi_home",
+    playQue: [
+      {
+        name: "Nonomi_home",
+        animation: "Start_Idle_01",
+        fadeTime: 3.8,
+        fade: true,
+      },
+      {
+        name: "Nonomi_home",
+        animation: "Idle_01",
+      },
+    ],
+  },
 };

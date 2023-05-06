@@ -282,11 +282,17 @@ const StoryRawUnitParserUnit: IStoryRawUnitParserUnit = {
           async: false,
         });
       } else if (!match[3]) {
+        const effect = match[2];
         unit.characters[characterIndex].effects.push({
           type: "action",
           effect: match[2],
           async: false,
         });
+        // 处理写在ScriptKr里的全息特效
+        // 兔女郎时100675:27
+        if (effect === "sig") {
+          unit.characters[characterIndex].signal = true;
+        }
       }
       return unit;
     },
@@ -377,7 +383,11 @@ export function translate(rawStory: TranslatedStoryUnit): StoryUnit[] {
       rawStoryUnit.BGEffect
     );
     //当没有文字时初步判断为effectOnly类型
-    if (!rawStoryUnit.TextJp || !rawStoryUnit.TextJp) {
+    if (
+      !rawStoryUnit.TextJp ||
+      !rawStoryUnit.TextJp ||
+      rawStoryUnit.TextJp === " "
+    ) {
       unit.type = "effectOnly";
     }
     const ScriptKr = String(rawStoryUnit.ScriptKr);
