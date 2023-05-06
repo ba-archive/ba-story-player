@@ -157,11 +157,10 @@
             class="content"
           >
             <TypingUnit
-              v-for="(e, index) in dialogPaddingList"
-              :content="e[0]"
-              :sub-content="e[1]"
-              :key="index"
+              v-for="(e, index) in dialogText"
               :index="index"
+              :key="index"
+              :text="e"
             />
           </div>
           <div class="next-image-btn" v-if="typingComplete">&zwj;</div>
@@ -211,16 +210,15 @@ const titleContain = ref<HTMLElement>(); // 标题内容的el, 为了实现scale
 const overrideTitleZIndex = ref<number>();
 const videoComponent = ref();
 
-const dialogPaddingList = ref<string[][]>([
-  [
-    "这是一个打字测试, 这是一个打字测试",
-    "this is a typing test, this is a typing test",
-  ],
-]);
+const dialogText = ref<Text[]>([]);
+const stText = ref<StText[]>([]);
 
-window.onStart = function () {
-  TypingEmitter.emit("start", 0);
-};
+function getStIndex(stIndex: number) {
+  return stText.value
+    .slice(0, stIndex)
+    .map(it => it.text.length)
+    .reduce((a, b) => a + b, 0);
+}
 
 // 外部传入播放器高度,用于动态计算字体等数值
 const props = withDefaults(defineProps<TextLayerProps>(), {
@@ -266,25 +264,17 @@ function endPlay() {
   }
   eventBus.emit("next");
 }
-let currentDialogHtml = "";
 /**
  * 单击屏幕后触发效果 next或者立即显示当前对话
  */
 function moveToNext() {
   if (!showDialog.value) return; // 显示st期间不允许跳过
   // 没打过任何一行字(初始化)或者对话已经显示完成, 点击屏幕代表继续
-  if (!typingInstance || typingComplete.value) {
+  if (typingComplete.value) {
     eventBus.emit("next");
   } else {
     // 否则立即显示所有对话
-    if (typewriterOutput.value) {
-      // 过滤live2d播放
-      typingInstance.stop();
-      typingInstance.destroy();
-      setTypingComplete(true, typingInstance);
-      typewriterOutput.value.innerHTML = currentDialogHtml;
-      eventBus.emit("textDone");
-    }
+    TypingEmitter.emit("skip");
   }
 }
 /**
@@ -391,32 +381,33 @@ function handleShowStEvent(e: StText) {
     console.error("st特效参数不足", e);
     return;
   }
-  e = deepCopyObject(e);
+  // e = deepCopyObject(e);
   // 显示st时隐藏对话框
   showDialog.value = false;
   // 因为是vdom操作所以等生效后继续
   nextTick(() => {
     // st坐标系位置
-    const stPos = e.stArgs[0];
-    // st显示类型
-    const stType = e.stArgs[1];
-    // st样式
-    let extendStyle = `;position: absolute; --st-x: ${stPos[0]}; width: auto;--st-y: ${stPos[1]};`;
-    // 居中显示特殊样式
-    if (e.middle) {
-      extendStyle =
-        extendStyle +
-        ";text-align: center; left: 50%; transform: translateX(-50%)";
-    }
-    const fontSize = e.stArgs[2]; // st的字号
-    extendStyle = extendStyle + `;--param-font-size: ${fontSize}`;
-    // 立即显示, 跳过打字机
-    const fn = Reflect.get(StMap, stType);
-    if (fn) {
-      fn(e, extendStyle);
-    } else {
-      console.error(`st type handler: ${stType} not found!`);
-    }
+    // const stPos = e.stArgs[0];
+    // // st显示类型
+    // const stType = e.stArgs[1];
+    // // st样式
+    // let extendStyle = `;position: absolute; --st-x: ${stPos[0]}; width: auto;--st-y: ${stPos[1]};`;
+    // // 居中显示特殊样式
+    // if (e.middle) {
+    //   extendStyle =
+    //     extendStyle +
+    //     ";text-align: center; left: 50%; transform: translateX(-50%)";
+    // }
+    // const fontSize = e.stArgs[2]; // st的字号
+    // extendStyle = extendStyle + `;--param-font-size: ${fontSize}`;
+    // // 立即显示, 跳过打字机
+    // const fn = Reflect.get(StMap, stType);
+    // if (fn) {
+    //   fn(e, extendStyle);
+    // } else {
+    //   console.error(`st type handler: ${stType} not found!`);
+    // }
+    TypingEmitter.emit("start", 0);
   });
 }
 
@@ -502,24 +493,28 @@ function handleShowTextEvent(e: ShowText) {
   usePlayerStore().updateLogText(e);
   showDialog.value = true;
   e = deepCopyObject(e);
+  // 清除上次输入
+  dialogText.value = [];
+  typingComplete.value = false;
   nextTick(() => {
     // 设置昵称
     name.value = e.speaker?.name;
     // 设置次级标题
     nickName.value = e.speaker?.nickName;
-    // 清除上次输入
-    typingInstance?.stop();
-    typingInstance?.destroy();
-    typingInstance && (typingInstance.isSt = false);
-    const _typewriterOutput = typewriterOutput.value as HTMLElement;
-    // 显示
-    showTextDialog(
-      e.text.map(text => parseTextEffect(text)),
-      _typewriterOutput
-    ).then(() => {
-      eventBus.emit("textDone");
+    dialogText.value = e.text;
+    function observer(index: number) {
+      if (index !== e.text.length - 1) {
+        TypingEmitter.emit("start", index + 1);
+      } else {
+        TypingEmitter.off("complete", observer);
+        eventBus.emit("textDone");
+        typingComplete.value = true;
+      }
+    }
+    nextTick(() => {
+      TypingEmitter.on("complete", observer);
+      TypingEmitter.emit("start", 0);
     });
-    typingInstance && (typingInstance.isSt = false);
   });
 }
 
@@ -581,8 +576,6 @@ function showTextDialog(
   onParseContent?: (source: string) => string,
   override?: TypedOptions
 ) {
-  currentDialogHtml = "";
-  text.forEach(textItem => (currentDialogHtml += textItem.content));
   return new Promise<void>(resolve => {
     if (text.length === 0) {
       setTypingComplete(true);

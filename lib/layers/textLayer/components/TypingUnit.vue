@@ -1,68 +1,99 @@
 <template>
-  <span :data-sub="internalSubContent" class="unit">{{ internalContent }}</span>
+  <span :data-sub="internalSubContent" class="unit" :style="effectCSS">{{
+    internalContent
+  }}</span>
 </template>
 
 <script setup lang="ts">
+import { BaseTypingEvent, IEventHandlerMap } from "@/layers/textLayer/types";
+import { parseTextEffectToCss } from "@/layers/textLayer/utils";
 import TypingEmitter from "@/layers/textLayer/utils/typingEmitter";
 import { Text } from "@/types/common";
-import { Ref, onMounted, onUnmounted, ref } from "vue";
+import { Ref, computed, onMounted, onUnmounted, ref, nextTick } from "vue";
 
 const props = withDefaults(defineProps<IProp>(), {
   index: -1,
-  speed: 30,
+  speed: 1000,
   text: () => ({
     content: "",
     effects: [],
   }),
+  instant: false,
 });
-const internalContent = ref("");
-const internalSubContent = ref("");
-let contentHandler = ref(0);
-let subContentHandler = ref(0);
+const propText = ref(props.text);
+const currentContent = ref(propText.value.content);
+const filterRuby = props.text.effects.filter(it => it.name === "ruby")[0] || {
+  value: [],
+};
+const currentSubContent = ref(filterRuby.value.join(""));
+const contentPointer = ref(-1);
+const subContentPointer = ref(-1);
+const effectCSS = parseTextEffectToCss(props.text.effects);
+
+const contentHandler = ref(0);
+const subContentHandler = ref(0);
+
 let isTypingComplete = false;
 
+const internalContent = computed(
+  () => currentContent.value.substring(0, contentPointer.value) || ""
+);
+const internalSubContent = computed(
+  () => currentSubContent.value.substring(0, subContentPointer.value) || ""
+);
+
+const contentTypingSpeed = [
+  0,
+  ...Array.from({ length: currentContent.value.length }).map(() => humanizer()),
+];
+const subContentTypingSpeed = [0];
+
+if (currentSubContent.value) {
+  const contentSpeedSum = contentTypingSpeed.reduce((a, b) => a + b);
+  const average = contentSpeedSum / currentContent.value.length;
+  subContentTypingSpeed.push(
+    ...Array.from({ length: currentSubContent.value.length }).map(() =>
+      humanizer(average)
+    )
+  );
+}
+
 function doTyping() {
-  if (!props.content) {
+  if (props.instant) {
+    skipTyping();
+    return;
+  }
+  if (!currentContent.value) {
     typingComplete();
     return;
   }
-  const content = props.content.split("");
-  const subContent = props.subContent.split("");
-  const contentSpeed = [0, ...content.map(() => humanizer())];
-  const contentSpeedSum = contentSpeed.reduce((a, b) => a + b);
-  const subContentSpeed = [
-    0,
-    ...content.map(() => humanizer(contentSpeedSum / subContent.length)),
-  ];
-  console.log(contentSpeed, subContentSpeed);
-  internalContent.value = "";
-  internalSubContent.value = "";
-  doTyping0(internalContent, content, contentSpeed, contentHandler);
-  doTyping0(internalSubContent, subContent, subContentSpeed, subContentHandler);
+  doTyping0(contentPointer, currentContent, contentTypingSpeed, contentHandler);
+  if (currentSubContent.value) {
+    doTyping0(
+      subContentPointer,
+      currentSubContent,
+      subContentTypingSpeed,
+      subContentHandler,
+      true
+    );
+  }
 }
 
 function doTyping0(
-  proxy: Ref<string>,
-  content: string[],
+  pointer: Ref<number>,
+  content: Ref<string>,
   speed: number[],
-  handler: Ref<number>
+  handler: Ref<number>,
+  skipComplete = false
 ) {
-  if (!content.length) {
+  if (pointer.value === content.value.length - 1 && !skipComplete) {
     typingComplete();
     return;
   }
-  const ch = content.shift();
-  const timeout = speed.shift();
+  pointer.value = pointer.value + 1;
   handler.value = window.setTimeout(() => {
-    proxy.value = proxy.value + ch;
-    doTyping0(proxy, content, speed, handler);
-  }, timeout);
-}
-
-function onStartTyping(target: number) {
-  if (target === props.index) {
-    doTyping();
-  }
+    doTyping0(pointer, content, speed, handler, skipComplete);
+  }, speed[pointer.value]);
 }
 
 function humanizer(speed = props.speed) {
@@ -70,15 +101,37 @@ function humanizer(speed = props.speed) {
 }
 
 function typingComplete() {
-  if (!isTypingComplete) {
-    isTypingComplete = true;
-    return;
-  }
+  isTypingComplete = true;
   TypingEmitter.emit("complete", props.index);
 }
 
+function skipTyping() {
+  doClearInterval();
+  contentPointer.value = currentContent.value.length;
+  subContentPointer.value = currentSubContent.value.length;
+  nextTick(() => {
+    TypingEmitter.emit("complete", props.index);
+  });
+}
+
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+const EventHandlerMap: IEventHandlerMap = {
+  start: doTyping,
+  skip: skipTyping,
+};
+
+function eventFilter(type: BaseTypingEvent, index?: number) {
+  if (!index || index === props.index) {
+    const fn = EventHandlerMap[type];
+    if (fn) {
+      fn();
+    }
+  }
+}
+
 onMounted(() => {
-  TypingEmitter.on("start", onStartTyping);
+  TypingEmitter.on("*", eventFilter);
 });
 
 onUnmounted(() => {
@@ -86,13 +139,20 @@ onUnmounted(() => {
 });
 
 function dispose() {
-  TypingEmitter.off("start", onStartTyping);
+  TypingEmitter.off("*", eventFilter);
+  doClearInterval();
+}
+
+function doClearInterval() {
+  clearInterval(contentHandler.value);
+  clearInterval(subContentHandler.value);
 }
 
 type IProp = {
   index: number;
-  speed?: number;
   text: Text;
+  speed?: number;
+  instant?: boolean;
 };
 </script>
 

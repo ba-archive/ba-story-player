@@ -1,20 +1,10 @@
+import { BaseTypingEvent } from "@/layers/textLayer/types";
 import mitt from "mitt";
 
 type BaseEvent = {
-  start: number;
-  pause: number;
-  stop: number;
-  destroy: number;
+  [key in BaseTypingEvent]: number | undefined;
 };
 
-type CommonEvent = BaseEvent & {
-  [key in keyof BaseEvent as key extends "no" ? "no" : `${key}All`]: undefined;
-};
-
-type TypingEmitter = CommonEvent & {
-  complete: number;
-};
-
-const TypingEmitter = mitt<TypingEmitter>();
+const TypingEmitter = mitt<BaseEvent>();
 
 export default TypingEmitter;

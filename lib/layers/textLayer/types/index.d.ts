@@ -1,4 +1,5 @@
-import { StArgs } from "@/types/events";
+import { Text, TextEffect, TextEffectName } from "@/types/common";
+import { ShowText, StArgs, StText } from "@/types/events";
 import Typed from "typed.js";
 declare module "typed.js" {
   declare interface TypedExtend extends Typed {
@@ -137,6 +138,20 @@ declare module "typed.js" {
   }
 }
 
-export type TypingUnitConfig = {
-  type: StArgs[1];
+export type BaseTypingEvent =
+  | "start"
+  | "pause"
+  | "stop"
+  | "destroy"
+  | "skip"
+  | "complete";
+
+export type IEventHandlerMap = {
+  [key in BaseTypingEvent]: () => void;
 };
+
+export type IEffectToCSSMap = {
+  [key in TextEffectName]?: (param: TextEffect["value"]) => PartialCSS;
+};
+
+export type PartialCSS = Partial<CSSStyleDeclaration>;
