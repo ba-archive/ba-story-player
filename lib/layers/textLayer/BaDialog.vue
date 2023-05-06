@@ -327,22 +327,22 @@ function proxyShowCoverTitle(
         opacity: 1,
         duration: 0.75,
       });
-      if (!onElUpdate) {
-        timeline.to(
-          elValue,
-          {
-            opacity: 0,
-            duration: 0.75,
-          },
-          "+=1.5"
-        );
-      }
-      timeline.then(() => {
-        if (!onElUpdate) {
-          proxy.value = "";
-        }
-        resolve();
-      });
+      // if (!onElUpdate) {
+      //   timeline.to(
+      //     elValue,
+      //     {
+      //       opacity: 0,
+      //       duration: 0.75,
+      //     },
+      //     "+=1.5"
+      //   );
+      // }
+      // timeline.then(() => {
+      //   if (!onElUpdate) {
+      //     proxy.value = "";
+      //   }
+      //   resolve();
+      // });
     });
   });
 }
@@ -990,7 +990,9 @@ $next-episode-z-index: 201;
 $loading-z-index: 202;
 $st-z-index: 10;
 $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
-
+* {
+  box-sizing: border-box;
+}
 .name {
   font-size: 3.5rem;
   color: white;
