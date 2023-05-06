@@ -172,8 +172,8 @@
 </template>
 
 <script setup lang="ts">
-import emitter from "@/layers/textLayer/event";
-import TypingUnit from "@/layers/textLayer/TypingUnit.vue";
+import TypingEmitter from "@/layers/textLayer/utils/typingEmitter";
+import TypingUnit from "@/layers/textLayer/components/TypingUnit.vue";
 import {
   Ref,
   computed,
@@ -219,7 +219,7 @@ const dialogPaddingList = ref<string[][]>([
 ]);
 
 window.onStart = function () {
-  emitter.emit("start", 0);
+  TypingEmitter.emit("start", 0);
 };
 
 // 外部传入播放器高度,用于动态计算字体等数值

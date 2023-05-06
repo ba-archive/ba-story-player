@@ -11,10 +11,10 @@ type CommonEvent = BaseEvent & {
   [key in keyof BaseEvent as key extends "no" ? "no" : `${key}All`]: undefined;
 };
 
-type Event = CommonEvent & {
+type TypingEmitter = CommonEvent & {
   complete: number;
 };
 
-const emitter = mitt<Event>();
+const TypingEmitter = mitt<TypingEmitter>();
 
-export default emitter;
+export default TypingEmitter;

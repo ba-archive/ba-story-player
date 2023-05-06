@@ -3,14 +3,17 @@
 </template>
 
 <script setup lang="ts">
-import emitter from "@/layers/textLayer/event";
+import TypingEmitter from "@/layers/textLayer/utils/typingEmitter";
+import { Text } from "@/types/common";
 import { Ref, onMounted, onUnmounted, ref } from "vue";
 
 const props = withDefaults(defineProps<IProp>(), {
   index: -1,
   speed: 30,
-  content: "",
-  subContent: "",
+  text: () => ({
+    content: "",
+    effects: [],
+  }),
 });
 const internalContent = ref("");
 const internalSubContent = ref("");
@@ -71,22 +74,25 @@ function typingComplete() {
     isTypingComplete = true;
     return;
   }
-  emitter.emit("complete", props.index);
+  TypingEmitter.emit("complete", props.index);
 }
 
 onMounted(() => {
-  emitter.on("start", onStartTyping);
+  TypingEmitter.on("start", onStartTyping);
 });
 
 onUnmounted(() => {
-  emitter.off("start", onStartTyping);
+  dispose();
 });
+
+function dispose() {
+  TypingEmitter.off("start", onStartTyping);
+}
 
 type IProp = {
   index: number;
   speed?: number;
-  content: string;
-  subContent: string;
+  text: Text;
 };
 </script>
 

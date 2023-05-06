@@ -1,3 +1,4 @@
+import { StArgs } from "@/types/events";
 import Typed from "typed.js";
 declare module "typed.js" {
   declare interface TypedExtend extends Typed {
@@ -135,3 +136,7 @@ declare module "typed.js" {
     onDestroy?(self: Typed): void;
   }
 }
+
+export type TypingUnitConfig = {
+  type: StArgs[1];
+};
