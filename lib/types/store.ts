@@ -43,6 +43,11 @@ export interface PrivateStates {
   /** 当前剧情下的 l2d 特殊播放配置 */
   curL2dConfig: null | IL2dConfig[keyof IL2dConfig];
 
+  /**
+   * 译者信息, 仅在无title且无place的情况下有值
+   */
+  translator: string;
+
   //背景层
   /**
    * 背景实例
@@ -97,8 +102,14 @@ export interface PrivateStates {
  * 可直接修改的state
  */
 export interface PublicStates {
-  //人物层
-  currentCharacterMap: Map<number, CharacterInstance>;
+  /**
+   * 人物层用于保存所有已创建的spine数据的map
+   *
+   * 注意, CharacterName只能唯一确定一个spine对象, 但是不能确定一个显示在player上的spine
+   *
+   * 在存在量产杂鱼的情况下, 需要结合initPosition来确定
+   */
+  currentCharacterMap: Map<number, CharacterInstance[]>;
 }
 
 export interface BasicGetters {
@@ -162,6 +173,12 @@ export interface Actions {
    * @returns
    */
   setL2DConfig: (val: IL2dConfig[keyof IL2dConfig]) => void;
+
+  /**
+   * 设置译者信息, 仅在无title且无place的情况下调用
+   * @param translator
+   */
+  setTranslator(translator: string): void;
 }
 
 export interface LogText {

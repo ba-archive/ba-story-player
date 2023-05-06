@@ -57,6 +57,15 @@ export let actionDescriptions: OptionDescriptions["action"] = {
     xOffset: "在x轴方向移动的距离",
     leftRotationPercent: "左转动画在下降动画中的时间比例",
   },
+  falldownL: {
+    rightAngle: "向右旋转的角度",
+    leftAngle: "向左旋转的角度",
+    firstRotateDuration: "第一个向右旋转的时间",
+    falldownDuration: "向下移动的时间",
+    anchor: "旋转原点",
+    xOffset: "在x轴方向移动的距离",
+    leftRotationPercent: "左转动画在下降动画中的时间比例",
+  },
   hide: {},
 };
 
@@ -123,6 +132,18 @@ let actionOptions: ActionOptions = {
     firstRotateDuration: 0.4,
     falldownDuration: 0.55,
     xOffset: 0.13,
+    leftRotationPercent: 0.2,
+  },
+  falldownL: {
+    rightAngle: 3,
+    leftAngle: -10,
+    anchor: {
+      x: 0.4,
+      y: 0.5,
+    },
+    firstRotateDuration: 0.4,
+    falldownDuration: 0.55,
+    xOffset: -0.13,
     leftRotationPercent: 0.2,
   },
   hide: {},

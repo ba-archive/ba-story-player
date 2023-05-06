@@ -1,5 +1,10 @@
 import { usePlayerStore } from "@/stores";
-import { StoryRawUnit, StoryUnit, TextEffect, ZmcArgs } from "@/types/common";
+import {
+  StoryRawUnit,
+  StoryUnit,
+  TranslatedStoryUnit,
+  ZmcArgs,
+} from "@/types/common";
 import { ShowOption, StArgs } from "@/types/events";
 import { deepCopyObject, getResourcesUrl } from "@/utils";
 import { l2dConfig } from "../l2dLayer/l2dConfig";
@@ -23,7 +28,7 @@ type IStoryRawUnitParserUnit = {
 // [\u2E80-\u9FFF]
 const StoryRawUnitParserUnit: IStoryRawUnitParserUnit = {
   title: {
-    reg: /#title;([^;\n]+);?([^;\n]+)?;?/,
+    reg: /#title;([^;\n]+);?([^;\n]+)?;?/i,
     fn(match: RegExpExecArray, unit: StoryUnit, rawUnit: StoryRawUnit) {
       unit.type = "title";
       unit.textAbout.titleInfo = utils.generateTitleInfo(
@@ -34,15 +39,18 @@ const StoryRawUnitParserUnit: IStoryRawUnitParserUnit = {
     },
   },
   place: {
-    reg: /#place;([^;\n]+);?/,
+    reg: /#place;([^;\n]+);?/i,
     fn(match: RegExpExecArray, unit: StoryUnit, rawUnit: StoryRawUnit) {
       unit.type = "place";
-      unit.textAbout.word = utils.generateText(rawUnit)[0].content;
+      unit.textAbout.titleInfo = {
+        title: [],
+        subtitle: utils.generateText(rawUnit)[0].content,
+      };
       return unit;
     },
   },
   nextEpisode: {
-    reg: /#nextepisode;([^;\n]+);([^;\n]+);?/,
+    reg: /#nextepisode;([^;\n]+);([^;\n]+);?/i,
     fn(match: RegExpExecArray, unit: StoryUnit, rawUnit: StoryRawUnit) {
       unit.type = "nextEpisode";
       unit.textAbout.titleInfo = utils.generateTitleInfo(
@@ -53,14 +61,14 @@ const StoryRawUnitParserUnit: IStoryRawUnitParserUnit = {
     },
   },
   continued: {
-    reg: /#continued;?/,
+    reg: /#continued;?/i,
     fn(match: RegExpExecArray, unit: StoryUnit) {
       unit.type = "continue";
       return unit;
     },
   },
   na: {
-    reg: /#na;([^;\n]+);?([^;\n]+)?;?/,
+    reg: /#na;([^;\n]+);?([^;\n]+)?;?/i,
     fn(match: RegExpExecArray, unit: StoryUnit, rawUnit: StoryRawUnit) {
       unit.type = "text";
       unit.textAbout.showText.text = utils.generateText(rawUnit);
@@ -73,7 +81,7 @@ const StoryRawUnitParserUnit: IStoryRawUnitParserUnit = {
     },
   },
   st: {
-    reg: /#st;(\[-?\d+,-?\d+]);(serial|instant|smooth);(\d+);?(.+)?/,
+    reg: /#st;(\[-?\d+,-?\d+]);(serial|instant|smooth);(\d+);?(.+)?/i,
     fn(match: RegExpExecArray, unit: StoryUnit, rawUnit: StoryRawUnit) {
       unit.type = "st";
       unit.textAbout.st = { middle: false };
@@ -89,7 +97,7 @@ const StoryRawUnitParserUnit: IStoryRawUnitParserUnit = {
     },
   },
   stm: {
-    reg: /#stm;(\[0,-?\d+]);(serial|instant|smooth);(\d+);([^;\n]+);?/,
+    reg: /#stm;(\[0,-?\d+]);(serial|instant|smooth);(\d+);([^;\n]+);?/i,
     fn(match: RegExpExecArray, unit: StoryUnit, rawUnit: StoryRawUnit) {
       unit.type = "st";
       unit.textAbout.st = { middle: true };
@@ -103,22 +111,22 @@ const StoryRawUnitParserUnit: IStoryRawUnitParserUnit = {
     },
   },
   clearSt: {
-    reg: /#clearST;?/,
-    fn(match: RegExpExecArray, unit: StoryUnit, rawUnit: StoryRawUnit) {
+    reg: /#clearST;?/i,
+    fn(match: RegExpExecArray, unit: StoryUnit) {
       unit.textAbout.st = {};
       unit.textAbout.st.clearSt = true;
       return unit;
     },
   },
   wait: {
-    reg: /#wait;(\d+);?/,
+    reg: /#wait;(\d+);?/i,
     fn(match: RegExpExecArray, unit: StoryUnit) {
       unit.effect.otherEffect.push({ type: "wait", args: Number(match[1]) });
       return unit;
     },
   },
   fontsize: {
-    reg: /#fontsize;(\d+);?/,
+    reg: /#fontsize;(\d+);?/i,
     fn(match: RegExpExecArray, unit: StoryUnit) {
       unit.textAbout.showText.text.forEach(it => {
         it.effects.push({ name: "fontsize", value: [match[1]] });
@@ -129,7 +137,7 @@ const StoryRawUnitParserUnit: IStoryRawUnitParserUnit = {
   all: {
     // TODO #all;dl
     // #all;hide
-    reg: /#all;([^;\n]+);?/,
+    reg: /#all;([^;\n]+);?/i,
     fn(match: RegExpExecArray, unit: StoryUnit) {
       if (utils.compareCaseInsensive(match[1], "hide")) {
         unit.hide = "all";
@@ -138,22 +146,22 @@ const StoryRawUnitParserUnit: IStoryRawUnitParserUnit = {
     },
   },
   hideMenu: {
-    reg: /#hidemenu;?/,
-    fn(match: RegExpExecArray, unit: StoryUnit, rawUnit: StoryRawUnit) {
+    reg: /#hidemenu;?/i,
+    fn(match: RegExpExecArray, unit: StoryUnit) {
       unit.hide = "menu";
       return unit;
     },
   },
   showMenu: {
-    reg: /#showmenu;?/,
-    fn(match: RegExpExecArray, unit: StoryUnit, rawUnit: StoryRawUnit) {
+    reg: /#showmenu;?/i,
+    fn(match: RegExpExecArray, unit: StoryUnit) {
       unit.show = "menu";
       return unit;
     },
   },
   zmc: {
-    reg: /#zmc;(instant|instnat|move);(-?\d+,-?\d+);(\d+);?(\d+)?;?/,
-    fn(match: RegExpExecArray, unit: StoryUnit, rawUnit: StoryRawUnit) {
+    reg: /#zmc;(instant|instnat|move);(-?\d+,-?\d+);(\d+);?(\d+)?;?/i,
+    fn(match: RegExpExecArray, unit: StoryUnit) {
       const args: ZmcArgs = {
         type: match[1] as "instant",
         position: match[2].split(",").map(Number) as [number, number],
@@ -168,14 +176,14 @@ const StoryRawUnitParserUnit: IStoryRawUnitParserUnit = {
     },
   },
   bgShake: {
-    reg: /#bgshake;?/,
+    reg: /#bgshake;?/i,
     fn(match: RegExpExecArray, unit: StoryUnit) {
       unit.effect.otherEffect.push({ type: "bgshake" });
       return unit;
     },
   },
   video: {
-    reg: /#video;([^;\n]+);([^;\n]+);?/,
+    reg: /#video;([^;\n]+);([^;\n]+);?/i,
     //处理情况为 #video;Scenario/Main/22000_MV_Video;Scenario/Main/22000_MV_Sound
     fn(match: RegExpExecArray, unit: StoryUnit) {
       unit.video = {
@@ -274,11 +282,17 @@ const StoryRawUnitParserUnit: IStoryRawUnitParserUnit = {
           async: false,
         });
       } else if (!match[3]) {
+        const effect = match[2];
         unit.characters[characterIndex].effects.push({
           type: "action",
           effect: match[2],
           async: false,
         });
+        // 处理写在ScriptKr里的全息特效
+        // 兔女郎时100675:27
+        if (effect === "sig") {
+          unit.characters[characterIndex].signal = true;
+        }
       }
       return unit;
     },
@@ -291,7 +305,7 @@ const StoryRawUnitParserUnit: IStoryRawUnitParserUnit = {
         getText(rawUnit, usePlayerStore().language)
       )
         .split("\n")
-        .map((it, index) => {
+        .map(it => {
           const parseResult = /\[n?s(\d{0,2})?](.+)/.exec(it);
           if (!parseResult) {
             console.error("在处理选项文本时遇到严重错误");
@@ -312,10 +326,11 @@ const StoryRawUnitParserUnit: IStoryRawUnitParserUnit = {
  * 将原始剧情结构翻译成标准剧情结构
  * @param rawStory: 原始剧情
  */
-export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
+export function translate(rawStory: TranslatedStoryUnit): StoryUnit[] {
+  const content = rawStory.content;
   const playerStore = usePlayerStore();
   const parseResult: StoryUnit[] = [];
-  for (const [index, rawStoryUnit] of deepCopyObject(rawStory).entries()) {
+  for (const [index, rawStoryUnit] of deepCopyObject(content).entries()) {
     const { GroupId, SelectionGroup, PopupFileName } = rawStoryUnit;
     const unit: StoryUnit = {
       GroupId,
@@ -368,7 +383,11 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
       rawStoryUnit.BGEffect
     );
     //当没有文字时初步判断为effectOnly类型
-    if (!rawStoryUnit.TextJp || !rawStoryUnit.TextJp) {
+    if (
+      !rawStoryUnit.TextJp ||
+      !rawStoryUnit.TextJp ||
+      rawStoryUnit.TextJp === " "
+    ) {
       unit.type = "effectOnly";
     }
     const ScriptKr = String(rawStoryUnit.ScriptKr);
@@ -396,16 +415,40 @@ export function translate(rawStory: StoryRawUnit[]): StoryUnit[] {
     }
     parseResult.push(unit);
   }
+  // 处理译者
+  const unit = parseResult[0];
+  if (unit.type === "title" && unit.textAbout.titleInfo) {
+    unit.textAbout.titleInfo.translator = rawStory.translator;
+  } else {
+    // 如果没有title 塞到place里
+    // 查找开头至第一次出现TextJp之间里有没有place
+    let index = 0;
+    for (const _index in content) {
+      if (content[_index].TextJp) {
+        index = Number(_index);
+        break;
+      }
+    }
+    const possiblePlace = parseResult
+      .slice(0, index)
+      .find(it => it.type === "place");
+    if (possiblePlace && possiblePlace.textAbout.titleInfo) {
+      possiblePlace.textAbout.titleInfo.translator = rawStory.translator;
+    } else {
+      // 没有title 没有place 只能存privateStore里了
+      usePlayerStore().setTranslator(rawStory.translator);
+    }
+  }
   return parseResult;
 }
 
 function switchBaseTranslator(rawStory: StoryRawUnit[]): StoryUnit[] {
   const playerStore = usePlayerStore();
-  let result: StoryUnit[] = [];
-  for (let [rawIndex, rawStoryUnit] of rawStory.entries()) {
+  const result: StoryUnit[] = [];
+  for (const [rawIndex, rawStoryUnit] of rawStory.entries()) {
     //初始化unit, 将需要的原始属性填入unit, 同时查表填入其他属性
-    let { GroupId, SelectionGroup, PopupFileName } = rawStoryUnit;
-    let unit: StoryUnit = {
+    const { GroupId, SelectionGroup, PopupFileName } = rawStoryUnit;
+    const unit: StoryUnit = {
       GroupId,
       SelectionGroup,
       PopupFileName: !PopupFileName
@@ -423,12 +466,12 @@ function switchBaseTranslator(rawStory: StoryRawUnit[]): StoryUnit[] {
         otherEffect: [],
       },
     };
-    let audio = {
+    const audio = {
       bgm: utils.getBgm(rawStoryUnit.BGMId),
       soundUrl: utils.getSoundUrl(rawStoryUnit.Sound),
       voiceJPUrl: utils.getVoiceJPUrl(rawStoryUnit.VoiceJp),
     };
-    for (let key of Object.keys(audio) as Array<keyof typeof audio>) {
+    for (const key of Object.keys(audio) as Array<keyof typeof audio>) {
       if (audio[key] !== undefined) {
         unit.audio = audio;
         break;
@@ -438,7 +481,7 @@ function switchBaseTranslator(rawStory: StoryRawUnit[]): StoryUnit[] {
       rawStoryUnit.Transition
     );
     if (rawStoryUnit.BGName) {
-      let BGItem = playerStore.BGNameExcelTable.get(rawStoryUnit.BGName);
+      const BGItem = playerStore.BGNameExcelTable.get(rawStoryUnit.BGName);
       if (BGItem) {
         if (BGItem.BGType === "Image") {
           unit.bg = {
@@ -469,16 +512,16 @@ function switchBaseTranslator(rawStory: StoryRawUnit[]): StoryUnit[] {
       unit.type = "effectOnly";
     }
     //解析scriptkr
-    let ScriptKr = String(rawStoryUnit.ScriptKr);
-    let scripts = ScriptKr.split("\n");
+    const ScriptKr = String(rawStoryUnit.ScriptKr);
+    const scripts = ScriptKr.split("\n");
     let optionIndex = 0;
-    for (let script of scripts) {
+    for (const script of scripts) {
       //根据';'将script分为更小的单元
-      let scriptUnits = script.split(";");
+      const scriptUnits = script.split(";");
       /**
        * 当前script类型, 小写字母
        */
-      let scriptType = scriptUnits[0].toLocaleLowerCase();
+      const scriptType = scriptUnits[0].toLocaleLowerCase();
       switch (scriptType) {
         case "#title":
           unit.type = "title";
@@ -499,14 +542,17 @@ function switchBaseTranslator(rawStory: StoryRawUnit[]): StoryUnit[] {
           break;
         case "#place":
           unit.type = "place";
-          unit.textAbout.word = utils.generateText(rawStoryUnit)[0].content;
+          unit.textAbout.titleInfo = {
+            title: [],
+            subtitle: utils.generateText(rawStoryUnit)[0].content,
+          };
           break;
         case "#na":
           //无立绘时的对话框对话, 可能有名字
           unit.type = "text";
           unit.textAbout.showText.text = utils.generateText(rawStoryUnit);
-          let characterInfo = utils.getCharacterInfo(scriptUnits[1]);
           if (scriptUnits.length === 3) {
+            const characterInfo = utils.getCharacterInfo(scriptUnits[1]);
             unit.textAbout.showText.speaker = characterInfo?.speaker;
             unit.textAbout.showText.avatarUrl = characterInfo?.avatarUrl;
           }
@@ -568,6 +614,7 @@ function switchBaseTranslator(rawStory: StoryRawUnit[]): StoryUnit[] {
           unit.show = "menu";
           break;
         case "#zmc":
+          // eslint-disable-next-line no-case-declarations
           let args: ZmcArgs;
           if (scriptUnits.length === 5) {
             args = {
@@ -603,9 +650,9 @@ function switchBaseTranslator(rawStory: StoryRawUnit[]): StoryUnit[] {
           break;
         default:
           if (utils.isCharacter(scriptType)) {
-            let CharacterName = utils.getCharacterName(scriptUnits[1]);
+            const CharacterName = utils.getCharacterName(scriptUnits[1]);
             let signal = false;
-            let characterInfo =
+            const characterInfo =
               playerStore.CharacterNameExcelTable.get(CharacterName);
             if (characterInfo) {
               //添加全息人物特效
@@ -613,15 +660,15 @@ function switchBaseTranslator(rawStory: StoryRawUnit[]): StoryUnit[] {
                 signal = true;
               }
               //添加人物spineUrl
-              let spineUrl = getResourcesUrl(
+              const spineUrl = getResourcesUrl(
                 "characterSpine",
                 characterInfo.SpinePrefabName
               );
-              let avatarUrl = getResourcesUrl(
+              const avatarUrl = getResourcesUrl(
                 "avatar",
                 characterInfo?.SmallPortrait
               );
-              let speaker = utils.getSpeaker(characterInfo);
+              const speaker = utils.getSpeaker(characterInfo);
               //人物有对话
               if (scriptUnits.length === 4) {
                 unit.type = "text";
@@ -647,7 +694,7 @@ function switchBaseTranslator(rawStory: StoryRawUnit[]): StoryUnit[] {
             }
           } else if (utils.isCharacterEffect(scriptType)) {
             if (scriptUnits.length === 2) {
-              let characterIndex = utils.getCharacterIndex(
+              const characterIndex = utils.getCharacterIndex(
                 unit,
                 Number(scriptType[1]),
                 result,
@@ -679,7 +726,7 @@ function switchBaseTranslator(rawStory: StoryRawUnit[]): StoryUnit[] {
                 });
               }
             } else if (utils.compareCaseInsensive(scriptUnits[1], "fx")) {
-              let characterIndex = utils.getCharacterIndex(
+              const characterIndex = utils.getCharacterIndex(
                 unit,
                 Number(scriptType[1]),
                 result,
@@ -720,7 +767,7 @@ function switchBaseTranslator(rawStory: StoryRawUnit[]): StoryUnit[] {
       }
     }
     //没人highlight则默认所有人highlight
-    if (!unit.characters.some(character => character.highlight === true)) {
+    if (!unit.characters.some(character => character.highlight)) {
       unit.characters = unit.characters.map(character => {
         character.highlight = true;
         return character;

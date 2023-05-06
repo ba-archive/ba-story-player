@@ -259,6 +259,7 @@ let zmcPlayer = {
           const timeline = gsap.timeline({
             defaults: {
               duration: args.duration / 1000,
+              ease: "none",
             },
           });
           await timeline

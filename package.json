@@ -1,6 +1,6 @@
 {
   "name": "ba-story-player",
-  "version": "0.6.0",
+  "version": "0.7.1",
   "license": "GPL-3.0",
   "type": "module",
   "files": [
@@ -8,7 +8,7 @@
   ],
   "main": "./dist/ba-story-player.umd.cjs",
   "module": "./dist/ba-story-player.js",
-  "types": "./dist/main.d.ts",
+  "types": "./dist/lib/main.d.ts",
   "repository": {
     "url": "https://github.com/ba-archive/ba-story-player"
   },
