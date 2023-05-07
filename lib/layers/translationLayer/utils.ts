@@ -108,6 +108,9 @@ export function getCharacterIndex(
   let tempIndex = rawIndex;
   while (characterIndex === -1) {
     tempIndex--;
+    if (tempIndex < 0) {
+      throw new Error(`未找到包含该人物的story unit,当前rawIndex:${rawIndex}`);
+    }
     characterIndex = result[tempIndex].characters.findIndex(
       value => value.position === initPosition
     );
