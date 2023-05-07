@@ -9,13 +9,14 @@ import { BaseTypingEvent, IEventHandlerMap } from "@/layers/textLayer/types";
 import { parseTextEffectToCss } from "@/layers/textLayer/utils";
 import TypingEmitter from "@/layers/textLayer/utils/typingEmitter";
 import { Text } from "@/types/common";
-import { Ref, computed, onMounted, onUnmounted, ref, nextTick } from "vue";
+import { Ref, computed, nextTick, onMounted, onUnmounted, ref } from "vue";
 
 const props = withDefaults(defineProps<IProp>(), {
-  index: -1,
-  speed: 1000,
+  index: "-1",
+  speed: 20,
   text: () => ({
     content: "",
+    waitTime: 0,
     effects: [],
   }),
   instant: false,
@@ -67,16 +68,23 @@ function doTyping() {
     typingComplete();
     return;
   }
-  doTyping0(contentPointer, currentContent, contentTypingSpeed, contentHandler);
-  if (currentSubContent.value) {
+  setTimeout(() => {
     doTyping0(
-      subContentPointer,
-      currentSubContent,
-      subContentTypingSpeed,
-      subContentHandler,
-      true
+      contentPointer,
+      currentContent,
+      contentTypingSpeed,
+      contentHandler
     );
-  }
+    if (currentSubContent.value) {
+      doTyping0(
+        subContentPointer,
+        currentSubContent,
+        subContentTypingSpeed,
+        subContentHandler,
+        true
+      );
+    }
+  }, props.text.waitTime);
 }
 
 function doTyping0(
@@ -114,14 +122,12 @@ function skipTyping() {
   });
 }
 
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
 const EventHandlerMap: IEventHandlerMap = {
   start: doTyping,
   skip: skipTyping,
 };
 
-function eventFilter(type: BaseTypingEvent, index?: number) {
+function eventFilter(type: BaseTypingEvent, index?: string) {
   if (!index || index === props.index) {
     const fn = EventHandlerMap[type];
     if (fn) {
@@ -149,7 +155,7 @@ function doClearInterval() {
 }
 
 type IProp = {
-  index: number;
+  index: string;
   text: Text;
   speed?: number;
   instant?: boolean;

@@ -1,9 +1,9 @@
 <template>
-  <div :style="effectCSS">
+  <div :style="effectCSS" ref="stOutput">
     <TypingUnit
-      v-for="(e, index) in textList"
-      :index="index"
-      :key="index"
+      v-for="(e, i) in textList"
+      :index="index + '-' + i"
+      :key="i"
       :text="e"
       :instant="instant"
     />
@@ -16,10 +16,11 @@ import { BaseTypingEvent, IEventHandlerMap } from "@/layers/textLayer/types";
 import { parseStEffectToCss } from "@/layers/textLayer/utils";
 import TypingEmitter from "@/layers/textLayer/utils/typingEmitter";
 import { StText } from "@/types/events";
-import { computed, onMounted, onUnmounted } from "vue";
+import { computed, onMounted, onUnmounted, ref } from "vue";
+import gsap from "gsap";
 
 const props = withDefaults(defineProps<IProps>(), {
-  index: -1,
+  index: "-1",
   config: () => ({
     text: [],
     stArgs: [[0, 0], "instant", 0],
@@ -29,16 +30,62 @@ const props = withDefaults(defineProps<IProps>(), {
 const effectCSS = parseStEffectToCss(props.config);
 const textList = computed(() => props.config.text);
 const instant = computed(() => props.config.stArgs[1] !== "serial");
+const maxIndex = computed(
+  () => `${props.index}-${Math.max(0, props.config.text.length - 1)}`
+);
+const stOutput = ref<HTMLElement>();
+function doTyping(index?: string) {
+  if (index && index !== props.index) {
+    return;
+  }
+  const type = props.config.stArgs[1];
+  if (type === "smooth") {
+    const _stOutput = stOutput.value as HTMLElement;
+    const timeline = gsap.timeline();
+    timeline
+      .fromTo(
+        _stOutput,
+        {
+          opacity: 0,
+        },
+        {
+          opacity: 1,
+          duration: 1.5,
+        }
+      )
+      .then(() => {
+        notifyComplete();
+      });
+  }
+  TypingEmitter.emit("start", props.index + "-0");
+}
 
-function doTyping() {}
+function onChildrenComplete(index = "-1") {
+  if (index === maxIndex.value && props.config.stArgs[1] !== "smooth") {
+    notifyComplete();
+  } else {
+    TypingEmitter.emit(
+      "start",
+      props.index + "-" + (Number(index.split("-")[1] || 0) + 1)
+    );
+  }
+}
 
-function eventFilter(type: BaseTypingEvent, index?: number) {
-  if (!index || index === props.index) {
+function eventFilter(type: BaseTypingEvent, index?: string) {
+  if (
+    !index ||
+    (index >= props.index && index <= maxIndex.value) ||
+    index === props.index
+  ) {
     const fn = EventHandlerMap[type];
     if (fn) {
-      fn();
+      fn(index);
     }
   }
+}
+
+function notifyComplete() {
+  TypingEmitter.emit("stComplete", props.index);
 }
 
 function dispose() {
@@ -53,14 +100,13 @@ onUnmounted(() => {
   dispose();
 });
 
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
 const EventHandlerMap: IEventHandlerMap = {
   start: doTyping,
+  complete: onChildrenComplete,
 };
 
 type IProps = {
-  index: number;
+  index: string;
   config: StText;
 };
 </script>

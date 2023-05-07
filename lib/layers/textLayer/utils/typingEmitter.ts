@@ -2,7 +2,7 @@ import { BaseTypingEvent } from "@/layers/textLayer/types";
 import mitt from "mitt";
 
 type BaseEvent = {
-  [key in BaseTypingEvent]: number | undefined;
+  [key in BaseTypingEvent]: string | undefined;
 };
 
 const TypingEmitter = mitt<BaseEvent>();

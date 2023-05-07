@@ -83,7 +83,15 @@
           '--st-pos-bounds-x': `${stPositionBounds.width}`,
           '--st-pos-bounds-y': `${stPositionBounds.height}`,
         }"
-      />
+      >
+        <StUnit
+          v-for="(e, index) in stText"
+          :index="String(index)"
+          :config="e"
+          :key="index"
+          :base-index="index"
+        />
+      </div>
       <div
         ref="titleEL"
         class="title-container absolute-container"
@@ -158,7 +166,7 @@
           >
             <TypingUnit
               v-for="(e, index) in dialogText"
-              :index="index"
+              :index="String(index)"
               :key="index"
               :text="e"
             />
@@ -196,6 +204,8 @@ import { deepCopyObject } from "@/utils";
 import { usePlayerStore } from "@/stores";
 import gsap from "gsap";
 import VideoBackground from "vue-responsive-video-background-player";
+import StUnit from "@/layers/textLayer/components/StUnit.vue";
+import { types } from "sass";
 
 const typewriterOutput = ref<HTMLElement>(); // 对话框el
 const stOutput = ref<HTMLElement>(); // st特效字el
@@ -365,11 +375,7 @@ function handleClearSt() {
   // 清除上次输入
   // 显示st时dialog必定是隐藏的
   if (!showDialog.value) {
-    typingInstance?.stop();
-    typingInstance?.destroy();
-    if (stOutput.value) {
-      stOutput.value.innerHTML = "";
-    }
+    stText.value = [];
   }
 }
 /**
@@ -384,8 +390,18 @@ function handleShowStEvent(e: StText) {
   // e = deepCopyObject(e);
   // 显示st时隐藏对话框
   showDialog.value = false;
+  stText.value.push(e);
   // 因为是vdom操作所以等生效后继续
   nextTick(() => {
+    if (
+      e.stArgs[1] === "instant" &&
+      e.text.length === 0 &&
+      e.stArgs[0][0] === 0 &&
+      e.stArgs[0][1] === 0
+    ) {
+      eventBus.emit("stDone");
+      return;
+    }
     // st坐标系位置
     // const stPos = e.stArgs[0];
     // // st显示类型
@@ -407,7 +423,14 @@ function handleShowStEvent(e: StText) {
     // } else {
     //   console.error(`st type handler: ${stType} not found!`);
     // }
-    TypingEmitter.emit("start", 0);
+    function observer(index = "0") {
+      if (index === String(stText.value.length - 1)) {
+        TypingEmitter.off("stComplete", observer);
+        eventBus.emit("stDone");
+      }
+    }
+    TypingEmitter.on("stComplete", observer);
+    TypingEmitter.emit("start", String(stText.value.length - 1));
   });
 }
 
@@ -502,9 +525,9 @@ function handleShowTextEvent(e: ShowText) {
     // 设置次级标题
     nickName.value = e.speaker?.nickName;
     dialogText.value = e.text;
-    function observer(index: number) {
-      if (index !== e.text.length - 1) {
-        TypingEmitter.emit("start", index + 1);
+    function observer(index = "0") {
+      if (index !== String(e.text.length - 1)) {
+        TypingEmitter.emit("start", String(Number(index) + 1));
       } else {
         TypingEmitter.off("complete", observer);
         eventBus.emit("textDone");
@@ -513,7 +536,7 @@ function handleShowTextEvent(e: ShowText) {
     }
     nextTick(() => {
       TypingEmitter.on("complete", observer);
-      TypingEmitter.emit("start", 0);
+      TypingEmitter.emit("start", "0");
     });
   });
 }

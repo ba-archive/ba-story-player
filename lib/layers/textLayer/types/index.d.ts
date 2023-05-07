@@ -144,14 +144,15 @@ export type BaseTypingEvent =
   | "stop"
   | "destroy"
   | "skip"
-  | "complete";
-
-export type IEventHandlerMap = {
-  [key in BaseTypingEvent]: () => void;
-};
+  | "complete"
+  | "stComplete";
 
 export type IEffectToCSSMap = {
   [key in TextEffectName]?: (param: TextEffect["value"]) => PartialCSS;
+};
+
+export type IEventHandlerMap = {
+  [key in BaseTypingEvent]?: (index?: string) => void;
 };
 
 export type PartialCSS = Partial<CSSStyleDeclaration>;
