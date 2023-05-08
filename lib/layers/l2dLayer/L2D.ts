@@ -6,6 +6,9 @@ import gsap from "gsap";
 import { IL2dPlayQue } from "@/types/l2d";
 
 let disposed = true;
+const IDLE_TRACK = 1;
+const DEV_TRACK = 0;
+const TALK_START_TRACK = 2;
 
 export function L2DInit() {
   disposed = false;
@@ -13,13 +16,9 @@ export function L2DInit() {
   // 主要播放 spine
   let mainItem: Spine;
   /**
-   * 用来获取dev animation event信息的spine
-   */
-  let devAnimationItem: Spine;
-  /**
    * 用来防止dev动画和普通动画都有event时的冲突
    */
-  let voicePlaying = false;
+  let currentVoice = "";
   // 背景混合或者其他播放 spine, 如普通星野和运动邮箱
   let otherItems: Spine[] = [];
   // 当前顶层的spine index
@@ -38,7 +37,6 @@ export function L2DInit() {
   });
   // 接收动画消息
   eventBus.on("changeAnimation", e => {
-    voicePlaying = false;
     const temAnimation = e.replace(/_(A|M)/, "");
     let talkAnimations = mainItem.spineData.animations.filter(i =>
       i.name.includes(temAnimation)
@@ -46,12 +44,12 @@ export function L2DInit() {
     const devAnimation = talkAnimations.find(i => /dev/i.test(i.name));
     talkAnimations = talkAnimations.filter(i => !/dev/i.test(i.name));
     console.log(e, ": ", talkAnimations);
-    let animationTrack = 2;
+    let animationTrack = TALK_START_TRACK;
     for (const animation of talkAnimations) {
       mainItem.state.setAnimation(animationTrack++, animation.name, false);
     }
     if (devAnimation) {
-      mainItem.state.setAnimation(0, devAnimation.name, false);
+      mainItem.state.setAnimation(DEV_TRACK, devAnimation.name, false);
     }
   });
   // 停止
@@ -156,7 +154,7 @@ export function L2DInit() {
             timeOutArray.push(
               setTimeout(() => {
                 let e = curStartAnimations.spine.state.setAnimation(
-                  1,
+                  IDLE_TRACK,
                   curStartAnimations.animation,
                   !startAnimations[currentIndex] // 最后一个待机动作循环
                 );
@@ -192,8 +190,9 @@ export function L2DInit() {
     }
     mainItem = new Spine(l2dSpineData!);
     function playL2dVoice(entry: ITrackEntry, event: IEvent) {
-      if (event.data.name !== "Talk") {
-        voicePlaying = true;
+      const eventName = event.data.name;
+      if (eventName !== "Talk" && eventName != currentVoice) {
+        currentVoice = eventName;
         eventBus.emit("playAudio", {
           voiceJPUrl: getResourcesUrl("l2dVoice", event.data.name),
         });
@@ -250,7 +249,7 @@ export function L2DInit() {
       currentIndex += 1;
       app.stage.addChild(curStartAnimations.spine);
       curStartAnimations.spine.state.setAnimation(
-        0,
+        IDLE_TRACK,
         curStartAnimations.animation,
         false
       );
