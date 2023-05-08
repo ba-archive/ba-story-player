@@ -270,31 +270,6 @@ export const CharacterLayerInstance: CharacterLayer = {
       chara.instance.scale.set(scale);
     });
 
-    //处理角色替换了初始位置的情况, 移除掉hide放置角色错误隐藏
-    const groupBy = (
-      arr: CharacterEffectInstance[],
-      key: (i: CharacterEffectInstance) => number
-    ) =>
-      arr.reduce((groups, item) => {
-        (groups[key(item)] ||= []).push(item);
-        return groups;
-      }, {} as { [key: string]: CharacterEffectInstance[] });
-    //将角色按CharacterName分组
-    const CharacterNameGroup = groupBy(mapList, value => value.CharacterName);
-    for (const [key, group] of Object.entries(CharacterNameGroup)) {
-      if (group.length !== 1) {
-        //通过CharacterName出现两次则移除掉hide effect
-        mapList = mapList.map(value => {
-          if (value.CharacterName === Number(key)) {
-            value.effects = value.effects.filter(
-              effect => effect.effect !== "hide"
-            );
-          }
-          return value;
-        });
-      }
-    }
-
     // 处理sync情况
     Promise.all(mapList.map(character => this.showOneCharacter(character)))
       .then(this.characterDone)
