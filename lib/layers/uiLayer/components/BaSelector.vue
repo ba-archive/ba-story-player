@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import eventBus from "@/eventBus";
 import { computed, ref, withDefaults } from "vue";
 import { ShowOption } from "@/types/events";
 import { useElementSize } from "@vueuse/core";
@@ -70,6 +71,7 @@ function handleSelectMouseLeave() {
 function handleSelect(select: number) {
   selectionCandidate.value = -1;
   selectedOption.value = select;
+  eventBus.emit("playOtherSounds", "select");
 
   setTimeout(() => {
     selectedOption.value = -1;
