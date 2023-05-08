@@ -1,5 +1,5 @@
 <template>
-  <div :style="effectCSS" ref="stOutput">
+  <div :style="effectCSS" ref="stOutput" class="st-text-container">
     <TypingUnit
       v-for="(e, i) in textList"
       :index="index + '-' + i"
@@ -111,4 +111,24 @@ type IProps = {
 };
 </script>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+.st-text-container {
+  --font-size: calc(
+    (
+        var(--param-font-size) / var(--standard-unity-font-size) *
+          var(--standard-font-size)
+      ) * 1rem
+  );
+  --left: calc(
+    (var(--st-width-half) + var(--st-x)) * var(--st-pos-bounds-x) * 1px
+  );
+  --top: calc(
+    (var(--st-height-half) - var(--st-y)) * var(--st-pos-bounds-y) * 1px
+  );
+  line-height: var(--font-size);
+  display: inline-block;
+  top: calc(var(--top) - var(--font-size) / 2);
+  left: var(--left);
+  font-size: var(--font-size);
+}
+</style>

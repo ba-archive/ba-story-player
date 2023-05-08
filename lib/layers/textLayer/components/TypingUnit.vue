@@ -1,7 +1,10 @@
 <template>
-  <span :data-sub="internalSubContent" class="unit" :style="effectCSS">{{
-    internalContent
-  }}</span>
+  <span class="unit" :style="effectCSS"
+    >{{ internalContent
+    }}<span class="rt" v-if="internalSubContent">{{
+      internalSubContent
+    }}</span></span
+  >
 </template>
 
 <script setup lang="ts">
@@ -20,6 +23,7 @@ const props = withDefaults(defineProps<IProp>(), {
     effects: [],
   }),
   instant: false,
+  title: false,
 });
 const propText = ref(props.text);
 const currentContent = ref(propText.value.content);
@@ -29,7 +33,18 @@ const filterRuby = props.text.effects.filter(it => it.name === "ruby")[0] || {
 const currentSubContent = ref(filterRuby.value.join(""));
 const contentPointer = ref(-1);
 const subContentPointer = ref(-1);
-const effectCSS = parseTextEffectToCss(props.text.effects);
+const subPadding = ref(0);
+const subContainTop = computed(() => (props.title ? "-0.45" : "-1.5"));
+const effectCSS = computed(() => ({
+  ...parseTextEffectToCss(props.text.effects),
+  "--padding": subPadding.value,
+  "--top-offset": subContainTop.value,
+}));
+
+if (props.instant) {
+  contentPointer.value = currentContent.value.length;
+  subContentPointer.value = currentSubContent.value.length;
+}
 
 const contentHandler = ref(0);
 const subContentHandler = ref(0);
@@ -94,7 +109,7 @@ function doTyping0(
   handler: Ref<number>,
   skipComplete = false
 ) {
-  if (pointer.value === content.value.length - 1 && !skipComplete) {
+  if (pointer.value === content.value.length && !skipComplete) {
     typingComplete();
     return;
   }
@@ -159,19 +174,27 @@ type IProp = {
   text: Text;
   speed?: number;
   instant?: boolean;
+  // 在title情况下(大字体)控制ruby的位置不要太过分
+  title?: boolean;
 };
 </script>
 
 <style scoped lang="scss">
 .unit {
   position: relative;
-  &:before {
-    content: attr(data-sub);
+  line-height: var(--font-size);
+  height: var(--font-size);
+  font-size: var(--font-size);
+  .rt {
     position: absolute;
-    left: 0;
     --local-font-size: calc(var(--font-size) * 0.6);
     font-size: var(--local-font-size);
-    top: calc(var(--local-font-size) * -1.5);
+    top: calc(var(--local-font-size) * var(--top-offset));
+    text-align: center;
+    left: 50%;
+    min-width: 100%;
+    transform: translateX(-50%);
+    line-height: 1;
   }
 }
 </style>

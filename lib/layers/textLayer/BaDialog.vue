@@ -76,7 +76,6 @@
       </div>
       <div
         class="st-container absolute-container"
-        ref="stOutput"
         :style="{
           '--st-width-half': `${stWidth / 2}`,
           '--st-height-half': `${stHeight / 2}`,
@@ -96,7 +95,7 @@
         ref="titleEL"
         class="title-container absolute-container"
         :style="overrideTitleStyle"
-        v-if="titleContent"
+        v-if="titleText.length"
       >
         <div
           class="title-border"
@@ -115,7 +114,16 @@
             <div class="sub-title" v-if="subTitleContent">
               <span class="sub-title-inner">{{ subTitleContent }}</span>
             </div>
-            <div class="main-title" v-html="titleContent" />
+            <div class="main-title">
+              <TypingUnit
+                v-for="(e, index) in titleText"
+                :index="'title-' + index"
+                :key="index"
+                :text="e"
+                instant
+                title
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -160,7 +168,6 @@
           </div>
           <hr />
           <div
-            ref="typewriterOutput"
             :style="{ '--font-size': `${standardFontSize}rem` }"
             class="content"
           >
@@ -191,24 +198,19 @@ import {
   ref,
 } from "vue";
 import eventBus from "@/eventBus";
-import Typed, { TypedExtend, TypedOptions } from "typed.js";
 import {
   ResourceLoadState,
   ShowText,
   ShowTitleOption,
-  StArgs,
   StText,
 } from "@/types/events";
-import { Text, TextEffectName } from "@/types/common";
+import { Text } from "@/types/common";
 import { deepCopyObject } from "@/utils";
 import { usePlayerStore } from "@/stores";
 import gsap from "gsap";
 import VideoBackground from "vue-responsive-video-background-player";
 import StUnit from "@/layers/textLayer/components/StUnit.vue";
-import { types } from "sass";
 
-const typewriterOutput = ref<HTMLElement>(); // 对话框el
-const stOutput = ref<HTMLElement>(); // st特效字el
 const toBeContinuedBg0 = ref<HTMLElement>(); // to be continued的背景
 const toBeContinuedBg1 = ref<HTMLElement>(); // to be continued的背景
 const toBeContinuedText = ref<HTMLElement>(); // to be continued的字
@@ -220,23 +222,18 @@ const titleContain = ref<HTMLElement>(); // 标题内容的el, 为了实现scale
 const overrideTitleZIndex = ref<number>();
 const videoComponent = ref();
 
+// 对话
 const dialogText = ref<Text[]>([]);
+// st
 const stText = ref<StText[]>([]);
-
-function getStIndex(stIndex: number) {
-  return stText.value
-    .slice(0, stIndex)
-    .map(it => it.text.length)
-    .reduce((a, b) => a + b, 0);
-}
+// 标题
+const titleText = ref<Text[]>([]);
 
 // 外部传入播放器高度,用于动态计算字体等数值
 const props = withDefaults(defineProps<TextLayerProps>(), {
   playerHeight: 0,
   playerWidth: 0,
 });
-// 标题
-const titleContent = ref<string>("");
 // 副标题
 const subTitleContent = ref<string>("");
 // 标题下的译者信息
@@ -267,7 +264,6 @@ const loadingImageSrc = ref<string>("");
 let showNextEpisodeLock = false;
 // 打印完成
 const typingComplete = ref<boolean>(false);
-let typingInstance: TypedExtend; // 全局打字机实例 因为不能有两个实例同时持有一个el
 function endPlay() {
   if (showNextEpisodeLock) {
     return;
@@ -295,14 +291,11 @@ function handleShowTitle(e: ShowTitleOption) {
   if (e.translator) {
     titleTranslatorContent.value = buildTranslatorInfo(e.translator);
   }
-  proxyShowCoverTitle(titleEL, titleContent, parseTitle(e.title)).then(() => {
+  proxyShowCoverTitle(titleEL, titleText, e.title).then(() => {
     subTitleContent.value = "";
     titleTranslatorContent.value = "";
     eventBus.emit("titleDone");
   });
-}
-function parseTitle(item: Text[]): string {
-  return item.map(it => parseTextEffect(it).content).join("");
 }
 /**
  * 展示左上角位置标题
@@ -329,10 +322,10 @@ function handleShowPlaceTranslator(e: string) {
  * @param value 要显示的内容
  * @param onElUpdate 在el显示后的回调, 给next episode用的
  */
-function proxyShowCoverTitle(
+function proxyShowCoverTitle<T extends string | unknown[]>(
   el: Ref<HTMLElement | undefined>,
-  proxy: Ref<string>,
-  value: string,
+  proxy: Ref<T>,
+  value: T,
   onElUpdate?: (el: HTMLElement) => void
 ) {
   return new Promise<void>(resolve => {
@@ -361,7 +354,11 @@ function proxyShowCoverTitle(
       }
       timeline.then(() => {
         if (!onElUpdate) {
-          proxy.value = "";
+          if (Array.isArray(value)) {
+            (proxy.value as unknown[]) = [];
+          } else {
+            (proxy.value as string) = "";
+          }
         }
         resolve();
       });
@@ -402,27 +399,6 @@ function handleShowStEvent(e: StText) {
       eventBus.emit("stDone");
       return;
     }
-    // st坐标系位置
-    // const stPos = e.stArgs[0];
-    // // st显示类型
-    // const stType = e.stArgs[1];
-    // // st样式
-    // let extendStyle = `;position: absolute; --st-x: ${stPos[0]}; width: auto;--st-y: ${stPos[1]};`;
-    // // 居中显示特殊样式
-    // if (e.middle) {
-    //   extendStyle =
-    //     extendStyle +
-    //     ";text-align: center; left: 50%; transform: translateX(-50%)";
-    // }
-    // const fontSize = e.stArgs[2]; // st的字号
-    // extendStyle = extendStyle + `;--param-font-size: ${fontSize}`;
-    // // 立即显示, 跳过打字机
-    // const fn = Reflect.get(StMap, stType);
-    // if (fn) {
-    //   fn(e, extendStyle);
-    // } else {
-    //   console.error(`st type handler: ${stType} not found!`);
-    // }
     function observer(index = "0") {
       if (index === String(stText.value.length - 1)) {
         TypingEmitter.off("stComplete", observer);
@@ -434,81 +410,6 @@ function handleShowStEvent(e: StText) {
   });
 }
 
-/**
- * 處理三種st特效的fn
- */
-type StType = StArgs[1];
-type IStMap = {
-  [key in StType]: (e: StText, parsedStyle: string) => void;
-};
-const StMap: IStMap = {
-  instant(e: StText, parsedStyle: string): void {
-    const _stOutput = stOutput.value as HTMLElement;
-    _stOutput.innerHTML =
-      _stOutput.innerHTML + parseStInnerHtml(e, parsedStyle).content;
-    eventBus.emit("stDone");
-  },
-  serial(e: StText, parsedStyle: string): void {
-    const _stOutput = stOutput.value as HTMLElement;
-    showTextDialog(
-      e.text
-        .map(text => {
-          // 为啥要这样, 因为这个库在空字符时会删除当前的内容重新打印, 导致一句话出现两次的bug
-          text.content = text.content || "&zwj;";
-          return text;
-        })
-        .map(text => parseTextEffect(text)),
-      _stOutput,
-      content => {
-        return `<div style="${parsedStyle}">${content}</div>`;
-      },
-      {
-        typeSpeed: 10,
-      }
-    ).then(() => {
-      eventBus.emit("stDone");
-    });
-    typingInstance.isSt = true;
-  },
-  smooth(e: StText, parsedStyle: string): void {
-    const _stOutput = stOutput.value as HTMLElement;
-    parsedStyle = parsedStyle + ";opacity: 0";
-    _stOutput.innerHTML =
-      _stOutput.innerHTML + parseStInnerHtml(e, parsedStyle).content;
-    const el = _stOutput.children.item(_stOutput.children.length - 1);
-    const timeline = gsap.timeline();
-    timeline
-      .fromTo(
-        el,
-        {
-          opacity: 0,
-        },
-        {
-          opacity: 1,
-          duration: 1.5,
-        }
-      )
-      .then(() => {
-        eventBus.emit("stDone");
-      });
-  },
-};
-
-/**
- * 處理st特效 instant和smooth
- *
- * 將e.text全部包裹在div中
- */
-function parseStInnerHtml(e: StText, parsedStyle: string) {
-  return parseTextEffect(
-    {
-      content: e.text.map(text => parseTextEffect(text).content).join(""),
-      effects: [],
-    },
-    parsedStyle,
-    "div"
-  );
-}
 /**
  * 处理dialog对话事件
  */
@@ -538,157 +439,6 @@ function handleShowTextEvent(e: ShowText) {
       TypingEmitter.on("complete", observer);
       TypingEmitter.emit("start", "0");
     });
-  });
-}
-
-/**
- * 将字体特效处理成html标签
- * @param text 文字特效
- * @param extendStyle 额外append到style里的内容, 目前用来控制st的位置
- * @param tag 包裹的标签, 默认是span让他们可以拼接在一起
- */
-function parseTextEffect(text: Text, extendStyle = "", tag = "span"): Text {
-  const effects = text.effects;
-  // 解决typedjs对&的特殊处理
-  text.content = text.content
-    .replace(/&(\w{3,4};)/g, "{{escape-$1}}")
-    .replace(/&/g, "&amp;")
-    .replace(/{{escape-(\w{3,4};)}}/g, "&$1");
-  // 注解
-  const rt = (
-    effects.filter(effect => effect.name === "ruby")[0] || { value: [] }
-  ).value.join("");
-  const style = effects
-    .filter(effect => effect.name !== "ruby")
-    .map(effect => {
-      const value = effect.value.join("");
-      const name = effect.name;
-      if (name === "color") {
-        return `color: ${value}`;
-      } else if (name === "fontsize") {
-        return `--param-font-size: ${value}`;
-      }
-      // 暂时废弃, 没办法处理字体自适应
-      return (StyleEffectTemplate[effect.name] || "").replace(
-        "${value}",
-        effect.value.join("")
-      );
-    })
-    .join(";");
-  // 如果有注解就用ruby标签实现
-  if (rt) {
-    // 替换掉重点符号
-    const prettyRt = rt.replace(/^．$/, "・");
-    // eslint-disable-next-line max-len
-    text.content = `<${tag} style="${style};${extendStyle}" class="ruby" data-content="${prettyRt}"><span class="rb">${text.content}</span><span class="rt">${prettyRt}</span></${tag}>`;
-  } else {
-    text.content = `<${tag} style="${style};${extendStyle}">${text.content}</${tag}>`;
-  }
-  return text;
-}
-/**
- * 打字机主方法, 将处理好的文字标签插入dom中
- * @param text 处理好的特效
- * @param output 输出到的dom
- * @param onParseContent 二次处理内容, 目前用于将st用div整体包裹实现定位
- * @param override 覆蓋默認typing配置内容
- */
-function showTextDialog(
-  text: Text[],
-  output: HTMLElement,
-  onParseContent?: (source: string) => string,
-  override?: TypedOptions
-) {
-  return new Promise<void>(resolve => {
-    if (text.length === 0) {
-      setTypingComplete(true);
-      resolve();
-      return;
-    }
-    setTypingComplete(false);
-    function parseContent(content: string) {
-      if (onParseContent) {
-        return onParseContent(content);
-      }
-      return content;
-    }
-    let index = 1;
-    let last = text[0].content;
-    let firstContent = parseContent(text[0].content);
-    let lastStOutput = "";
-    /**
-     * 实现分段打印的核心函数
-     * 原理是每段打印完成后修改 pause 里的内容让打字机认为自己并没有完成打印而是暂停, 于是继续把替换进去的下一段文字打印出来
-     */
-    function onComplete(self: TypedExtend) {
-      if (index >= text.length) {
-        setTimeout(() => {
-          setTypingComplete(true);
-          resolve();
-        }, 100);
-        return;
-      }
-      self.pause.status = true;
-      self.pause.typewrite = true;
-      const next = last + text[index].content;
-      if (onParseContent) {
-        const parse = lastStOutput + parseContent(next);
-        self.pause.curString = parse;
-        self.pause.curStrPos = parse.indexOf(last) + last.length;
-      } else {
-        self.pause.curStrPos = last.length;
-        self.pause.curString = lastStOutput + next;
-      }
-      last = next;
-      self.timeout = setTimeout(() => {
-        setTypingComplete(false, self);
-        self.start();
-      }, text[index].waitTime || 0);
-      index++;
-    }
-    // st的续约, 因为不能两个Typed同时持有一个对象, 所以采用将之前的内容作为已打印内容拼接的形式
-    function continueSt() {
-      const _stOutput = stOutput.value as HTMLElement;
-      lastStOutput = _stOutput.innerHTML;
-      setTypingComplete(false, typingInstance);
-      typingInstance.pause.status = true;
-      typingInstance.pause.typewrite = true;
-      typingInstance.pause.curString = lastStOutput + firstContent;
-      typingInstance.pause.curStrPos = lastStOutput.length;
-      typingInstance.options.onComplete = onComplete;
-      typingInstance.startDelay = 0;
-      setTimeout(() => {
-        typingInstance.start();
-      }, text[0].waitTime || 0);
-    }
-    if (typingInstance && typingInstance.isSt) {
-      continueSt();
-    } else {
-      // 如果之前st是instant也会走到这里, 因此判断代理的el是不是st的container
-      if (output === stOutput.value) {
-        typingInstance = new Typed(output, {
-          ...DefaultTypedOptions,
-          ...override,
-          startDelay: 99999,
-          strings: [""],
-        }) as TypedExtend;
-        typingInstance.isSt = true;
-        typingInstance.stop();
-        continueSt();
-      } else {
-        // 全新清空
-        typingInstance?.stop && typingInstance?.stop();
-        typingInstance?.destroy && typingInstance?.destroy();
-        output.innerHTML = "";
-        typingInstance = new Typed(output, {
-          ...DefaultTypedOptions,
-          ...override,
-          startDelay: text[0].waitTime || 0,
-          strings: [lastStOutput + firstContent],
-          onComplete: onComplete,
-        }) as TypedExtend;
-      }
-    }
   });
 }
 
@@ -803,24 +553,19 @@ function handleNextEpisode(e: ShowTitleOption) {
               ) > 100
             ) {
               subTitleContent.value = e.subtitle || "";
-              proxyShowCoverTitle(
-                titleEL,
-                titleContent,
-                parseTitle(e.title),
-                el => {
-                  const tl = gsap.timeline();
-                  tl.fromTo(
-                    el,
-                    {
-                      scaleY: 0.8,
-                    },
-                    {
-                      scaleY: 1,
-                      duration: 0.2,
-                    }
-                  );
-                }
-              );
+              proxyShowCoverTitle(titleEL, titleText, e.title, el => {
+                const tl = gsap.timeline();
+                tl.fromTo(
+                  el,
+                  {
+                    scaleY: 0.8,
+                  },
+                  {
+                    scaleY: 1,
+                    duration: 0.2,
+                  }
+                );
+              });
               flag = true;
             }
           },
@@ -902,25 +647,7 @@ function fontSize(multi: number) {
 }
 const standardFontSize = computed(() => fontSize(2.5));
 const standardUnityFontSize = 64;
-/**
- * 以64作为标准st字体大小?
- * @param size
- */
-// function unityFontSizeToHTMLSize(size: number) {
-//   return (size / standardUnityFontSize) * standardFontSize.value;
-// }
 
-/**
- * typingInstance不能被代理且自身的typingComplete也有意义
- * @param complete 是否完成
- * @param instance 如果有,同时设
- */
-function setTypingComplete(complete: boolean, instance?: TypedExtend) {
-  typingComplete.value = complete;
-  if (instance) {
-    instance.typingComplete = complete;
-  }
-}
 const overrideTitleStyle = computed(() => {
   if (overrideTitleZIndex.value) {
     return {
@@ -991,22 +718,7 @@ function buildTranslatorInfo(translator: string) {
   }
   return translator;
 }
-// 暂时用不上了, 比如font-size还需要根据屏幕进行适配
-type StyleEffectTemplateMap = {
-  [key in TextEffectName]: string;
-};
-const StyleEffectTemplate: StyleEffectTemplateMap = {
-  color: "color: ${value}",
-  fontsize: "font-size: ${value}px",
-  ruby: "",
-};
-// 默认的打字机效果
-const DefaultTypedOptions: TypedOptions = {
-  typeSpeed: 20, // 每个字速度 单位是ms
-  showCursor: false, // 是否显示虚拟光标
-  fadeOut: true,
-  contentType: "html", // 内容类型 显然是html
-};
+
 /**
  * 用来算比例的
  */
@@ -1231,12 +943,6 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
         }
       }
     }
-    :deep(.ruby) {
-      position: relative;
-      .rt {
-        top: calc(-1 * var(--font-size) * 0.45);
-      }
-    }
   }
 
   .place-translator-container {
@@ -1293,50 +999,10 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
     z-index: $text-layer-z-index + $st-z-index;
     color: white;
     text-shadow: $text-outline;
-    :deep(div) {
-      --font-size: calc(
-        (
-            var(--param-font-size) / var(--standard-unity-font-size) *
-              var(--standard-font-size)
-          ) * 1rem
-      );
-      --left: calc(
-        (var(--st-width-half) + var(--st-x)) * var(--st-pos-bounds-x) * 1px
-      );
-      --top: calc(
-        (var(--st-height-half) - var(--st-y)) * var(--st-pos-bounds-y) * 1px
-      );
-      line-height: var(--font-size);
-      display: inline-block;
-      top: calc(var(--top) - var(--font-size) / 2);
-      left: var(--left);
-      font-size: var(--font-size);
-    }
   }
 
   .fade-in-out {
     animation: fade-in-out 3s;
-  }
-
-  :deep(.ruby) {
-    position: relative;
-    display: inline-block;
-    line-height: var(--font-size);
-    height: var(--font-size);
-    .rb {
-      display: inline-block;
-      line-height: var(--font-size);
-      height: var(--font-size);
-    }
-    .rt {
-      position: absolute;
-      left: 0;
-      top: calc(-1 * var(--font-size) * 0.5 - 1px);
-      font-size: calc(var(--font-size) * 0.5);
-      width: 100%;
-      text-align: center;
-      line-height: 1;
-    }
   }
 }
 
