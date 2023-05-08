@@ -1,4 +1,5 @@
 import { usePlayerStore } from "@/stores";
+import { CharacterEffectWord } from "@/types/characterLayer";
 import {
   StoryRawUnit,
   StoryUnit,
@@ -285,7 +286,7 @@ const StoryRawUnitParserUnit: IStoryRawUnitParserUnit = {
         const effect = match[2];
         unit.characters[characterIndex].effects.push({
           type: "action",
-          effect: match[2],
+          effect: CharacterActionMpping[effect] || effect,
           async: false,
         });
         // 处理写在ScriptKr里的全息特效
@@ -777,3 +778,7 @@ function switchBaseTranslator(rawStory: StoryRawUnit[]): StoryUnit[] {
   }
   return result;
 }
+
+const CharacterActionMpping: { [key: string]: CharacterEffectWord } = {
+  h: "hide",
+};
