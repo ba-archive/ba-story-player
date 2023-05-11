@@ -285,7 +285,7 @@ const StoryRawUnitParserUnit: IStoryRawUnitParserUnit = {
         const effect = match[2];
         unit.characters[characterIndex].effects.push({
           type: "action",
-          effect: match[2],
+          effect: effect,
           async: false,
         });
         // 处理写在ScriptKr里的全息特效

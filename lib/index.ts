@@ -262,7 +262,8 @@ export const eventEmitter = {
             }
           }
           console.warn(
-            `故事节点 index: ${storyHandler.currentStoryIndex},object:${storyHandler.currentStoryUnit}长时间未完成`
+            `故事节点 index: ${storyHandler.currentStoryIndex}长时间未完成`,
+            storyHandler.currentStoryUnit
           );
           reject();
           clearInterval(interval);
