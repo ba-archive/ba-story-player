@@ -5,6 +5,12 @@ const keyStatus = {} as any;
 
 // 进行下一步的定时器
 let nexting: any;
+function clearNextInterval() {
+  if (nexting) {
+    clearInterval(nexting);
+    storyHandler.isSkip = false;
+  }
+}
 const keyEvent = (e: KeyboardEvent) => {
   keyStatus[e.key] = true;
   if (Object.values(keyStatus).filter(i => i).length >= 2) {
@@ -81,6 +87,7 @@ const wheelEvent = (e: WheelEvent & { [key: string]: any }) => {
 eventBus.on("loaded", () => {
   document.addEventListener("keydown", keyEvent);
   document.addEventListener("keyup", keyUpEvent);
+  document.addEventListener("focusout", clearNextInterval);
   document
     .querySelector("#player")
     ?.addEventListener("wheel", wheelEvent as any);
@@ -88,6 +95,7 @@ eventBus.on("loaded", () => {
 eventBus.on("dispose", () => {
   document.removeEventListener("keydown", keyEvent);
   document.removeEventListener("keyup", keyUpEvent);
+  document.removeEventListener("focusout", clearNextInterval);
   document
     .querySelector("#player")
     ?.addEventListener("wheel", wheelEvent as any);
@@ -161,7 +169,8 @@ function interactNext() {
   const currentStoryUnit = storyHandler.currentStoryUnit;
   if (
     currentStoryUnit?.textAbout?.options ||
-    currentStoryUnit?.textAbout?.titleInfo ||
+    (currentStoryUnit?.textAbout?.titleInfo &&
+      currentStoryUnit.type !== "place") ||
     eventEmitter.l2dPlaying ||
     currentStoryUnit.l2d
   ) {
