@@ -740,7 +740,9 @@ $next-episode-z-index: 201;
 $loading-z-index: 202;
 $st-z-index: 10;
 $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
-
+* {
+  box-sizing: border-box;
+}
 .name {
   font-size: 3.5rem;
   color: white;
@@ -851,8 +853,8 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
       border: 2px solid $border-color;
       border-radius: 8px;
       // width: calc(100% - 2 * #{$padding} - 2 * var(--side-padding));
-      width: calc(100% - 2 * #{$padding});
-      height: calc(100% - 2 * #{$padding});
+      width: 100%;
+      height: 100%;
       background: linear-gradient(to top, white, $border-color),
         linear-gradient(to left, white, $border-color),
         linear-gradient(to top, white, $border-color),
