@@ -7,6 +7,7 @@ import eventBus from "../lib/eventBus";
 import { storyHandler, resourcesLoader, eventEmitter } from "../lib/index";
 import ModifyEmotionOption from "./components/ModifyEmotionOption.vue";
 import TestEffect from "./components/TestEffect.vue";
+import UnitTest from "./components/UnitTest.vue";
 import { ref, watch } from "vue";
 import * as PIXI from "pixi.js";
 import { usePlayerStore } from "../lib/stores";
@@ -144,6 +145,7 @@ useResizeObserver(
       <select v-model="toolType">
         <option value="emotion">人物特效测试</option>
         <option value="effect">特效层特效</option>
+        <option value="test">单元测试</option>
         <option value="null">无</option>
       </select>
       <label>storyIndex</label>
@@ -164,6 +166,7 @@ useResizeObserver(
     <Suspense>
       <TestEffect class="absolute-right-center" v-if="toolType === 'effect'" />
     </Suspense>
+    <UnitTest class="absolute-right-center" />
   </div>
 </template>
 
