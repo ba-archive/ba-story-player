@@ -166,7 +166,7 @@ useResizeObserver(
     <Suspense>
       <TestEffect class="absolute-right-center" v-if="toolType === 'effect'" />
     </Suspense>
-    <UnitTest class="absolute-right-center" />
+    <UnitTest class="absolute-right-center" v-if="toolType === 'test'" />
   </div>
 </template>
 

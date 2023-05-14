@@ -24,16 +24,16 @@ const unitTestCollections: UnitTestCollection[] = [
                 effects: [
                   {
                     name: "fontsize",
-                    value: [100],
+                    value: ["100"],
                   },
                 ],
               },
               {
-                content: "樂園",
+                content: "樂園乐园乐园乐园",
                 effects: [
                   {
                     name: "ruby",
-                    value: ["ruby"],
+                    value: ["ruby and ruby"],
                   },
                 ],
               },
@@ -42,12 +42,12 @@ const unitTestCollections: UnitTestCollection[] = [
                 effects: [
                   {
                     name: "fontsize",
-                    value: [30],
+                    value: ["30"],
                   },
                 ],
               },
               {
-                content: "。不存在於任何地方，也無跡可尋的場所。",
+                content: "不存在於任何地方，也無跡可尋的場所。",
                 effects: [
                   {
                     name: "color",
