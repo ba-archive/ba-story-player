@@ -1,5 +1,5 @@
 <template>
-  <span class="unit" :style="effectCSS"
+  <span class="unit" :style="effectCSS" :class="{ ruby: internalSubContent }"
     >{{ internalContent
     }}<span class="rt" v-if="internalSubContent">{{
       internalSubContent
@@ -66,12 +66,16 @@ const subContentTypingSpeed = [0];
 
 if (currentSubContent.value) {
   const contentSpeedSum = contentTypingSpeed.reduce((a, b) => a + b);
-  const average = contentSpeedSum / currentContent.value.length;
+  const average = (contentSpeedSum / currentSubContent.value.length) * (2 / 3); // 因为humanizer结果均值是1.5倍 所以缩回去
   subContentTypingSpeed.push(
     ...Array.from({ length: currentSubContent.value.length }).map(() =>
       humanizer(average)
     )
   );
+  console.log(contentTypingSpeed);
+  console.log(contentSpeedSum);
+  console.log(subContentTypingSpeed);
+  console.log(subContentTypingSpeed.reduce((a, b) => a + b));
 }
 
 function doTyping() {

@@ -773,6 +773,11 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
     width: 100%;
     height: 100%;
     position: relative;
+    .content {
+      :deep(span.ruby) {
+        display: inline-block;
+      }
+    }
   }
 
   .next-image-btn {
