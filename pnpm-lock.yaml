@@ -43,9 +43,6 @@ dependencies:
   pixi.js:
     specifier: ^6.0.0
     version: 6.5.9
-  typed.js:
-    specifier: ^2.0.12
-    version: 2.0.12
   vue:
     specifier: ^3.2.41
     version: 3.2.47
@@ -3020,10 +3017,6 @@ packages:
       for-each: 0.3.3
       is-typed-array: 1.1.10
     dev: true
-
-  /typed.js@2.0.12:
-    resolution: {integrity: sha512-lyACZh1cu+vpfYY3DG/bvsGLXXbdoDDpWxmqta10IQUdMXisMXOEyl+jos+YT9uBbzK4QaKYBjT3R0kTJO0Slw==}
-    dev: false
 
   /unbox-primitive@1.0.2:
     resolution: {integrity: sha512-61pPlCD9h51VoreyJ0BReideM3MDKMKnh6+V9L08331ipq6Q8OFXZYiqP6n/tbHx4s5I9uRhcye6BrbkizkBDw==}

@@ -30,12 +30,12 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
       return Promise.reject(`不支持的特效类型: ${type}`);
     }
     const { emotionResources, app } = usePlayerStore();
-    let emotionImageSprites: Sprite[] = [];
-    let emotionImgs = emotionResources(type);
+    const emotionImageSprites: Sprite[] = [];
+    const emotionImgs = emotionResources(type);
     if (!emotionImgs) {
       return Promise.reject(`${type}没有对应的图像资源`);
     }
-    for (let imageResource of emotionImgs) {
+    for (const imageResource of emotionImgs) {
       const tempSprite = Sprite.from(imageResource);
       tempSprite.visible = false;
       app.stage.addChild(tempSprite);
@@ -43,7 +43,7 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
     }
     eventBus.emit("playEmotionAudio", type);
     return fn(instance, emotionOptions[type], emotionImageSprites)?.then(() => {
-      for (let sprite of emotionImageSprites) {
+      for (const sprite of emotionImageSprites) {
         sprite.destroy();
       }
     }) as Promise<void>;
@@ -99,7 +99,7 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
     chatImage.pivot.x = chatImage.width * (1 + options.rotatePivot.x);
     chatImage.pivot.y = chatImage.height * (1 + options.rotatePivot.y);
     chatImage.zIndex = 10;
-    let tl = gsap.timeline();
+    const tl = gsap.timeline();
     tl.to(chatImage, {
       angle: options.rotateAngle,
       duration: options.rotateTime / 2,
@@ -327,7 +327,7 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
     const scale = getRelativeScale(sprites[0], options);
 
     for (let i = 0; i < 3; ++i) {
-      let respondImg = spine.newSprite(sprites[0].texture);
+      const respondImg = spine.newSprite(sprites[0].texture);
       respondImg.angle = options.perImgSetting[i].angle;
       respondImg.anchor.set(
         options.perImgSetting[i].anchor.x,
@@ -339,7 +339,7 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
     container.zIndex = 10;
     container.alpha = 1;
     container.visible = true;
-    let tl = gsap.timeline();
+    const tl = gsap.timeline();
     return timelinePromise(
       tl
         .to(container, {
@@ -566,7 +566,7 @@ const CharacterEmotionPlayerInstance: CharacterEmotionPlayer = {
       starImgScales.push(scale * options.starImgs.scale[i]);
     }
     for (let i = 0; i < 3; ++i) {
-      let starImg = Sprite.from(sprites[0].texture);
+      const starImg = Sprite.from(sprites[0].texture);
       starImgs.push(starImg);
       starImg.anchor.set(0.5);
       starImg.scale.set(starImgScales[i]);
@@ -929,7 +929,7 @@ function timelinePromise(timeLine: gsap.core.Timeline, destroyImgs: Sprite[]) {
     timeLine
       .then(() => {
         resolve();
-        for (let img of destroyImgs) {
+        for (const img of destroyImgs) {
           img.destroy();
         }
       })
