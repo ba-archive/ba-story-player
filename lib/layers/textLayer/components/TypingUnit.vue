@@ -72,10 +72,6 @@ if (currentSubContent.value) {
       humanizer(average)
     )
   );
-  console.log(contentTypingSpeed);
-  console.log(contentSpeedSum);
-  console.log(subContentTypingSpeed);
-  console.log(subContentTypingSpeed.reduce((a, b) => a + b));
 }
 
 function doTyping() {
