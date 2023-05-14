@@ -137,6 +137,8 @@ function getLastDataFromIndex(index: number) {
 export const changeStoryIndex = (index?: number) => {
   index = parseInt(index + "");
   if (typeof index !== "number") return;
+  // 不允许跳到最后
+  if (index >= usePlayerStore().allStoryUnit.length - 1) return;
   index -= 1;
   if (index < 0) index = 0;
   eventBus.emit("removeEffect");
