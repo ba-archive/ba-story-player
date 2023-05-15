@@ -1,10 +1,12 @@
 <template>
   <span class="unit" :style="effectCSS" :class="{ ruby: internalSubContent }"
     ><span class="body" v-html="internalContent" />
-    <span class="rt" v-if="internalSubContent">{{
-      internalSubContent
-    }}</span></span
-  >
+    <span
+      class="rt"
+      v-if="internalSubContent"
+      v-html="internalSubContent"
+    ></span
+  ></span>
 </template>
 
 <script setup lang="ts">
@@ -12,15 +14,7 @@ import { BaseTypingEvent, IEventHandlerMap } from "@/layers/textLayer/types";
 import { parseTextEffectToCss } from "@/layers/textLayer/utils";
 import TypingEmitter from "@/layers/textLayer/utils/typingEmitter";
 import { Text } from "@/types/common";
-import {
-  Ref,
-  computed,
-  nextTick,
-  onMounted,
-  onUnmounted,
-  ref,
-  watch,
-} from "vue";
+import { Ref, computed, nextTick, onMounted, onUnmounted, ref } from "vue";
 
 const props = withDefaults(defineProps<IProp>(), {
   index: "-1",
@@ -35,7 +29,6 @@ const props = withDefaults(defineProps<IProp>(), {
 });
 const propText = ref(props.text);
 const currentContent = ref(propText.value.content);
-const currentContentLength = computed(() => currentContent.value.length);
 const filterRuby = props.text.effects.filter(it => it.name === "ruby")[0] || {
   value: [],
 };
@@ -59,20 +52,27 @@ if (props.instant) {
 const contentHandler = ref(0);
 const subContentHandler = ref(0);
 
-let isTypingComplete = false;
+const isTypingComplete = ref(false);
 
 const internalContent = computed(() => {
   const current = currentContent.value.substring(0, contentPointer.value);
   return rubyMode.value
-    ? current +
-        Array.from({ length: currentContentLength.value - current.length })
-          .map(() => "&emsp;")
-          .join("")
+    ? current + mapToSpace(currentContent.value.substring(contentPointer.value))
     : current;
 });
-const internalSubContent = computed(
-  () => currentSubContent.value.substring(0, subContentPointer.value) || ""
-);
+const internalSubContent = computed(() => {
+  // const current = currentSubContent.value.substring(0, subContentPointer.value);
+  // const after = currentSubContent.value.substring(subContentPointer.value);
+  // return (current || "") + mapToSpace(after);
+  return isTypingComplete.value ? currentSubContent.value : "";
+});
+
+function mapToSpace(str: string) {
+  return str
+    .replace(/\w/g, "&ensp;")
+    .replace(/[\u2E80-\u9FFF]/g, "&emsp;")
+    .replace(/\s/g, "&nbsp;");
+}
 
 const contentTypingSpeed = [
   0,
@@ -106,15 +106,6 @@ function doTyping() {
       contentTypingSpeed,
       contentHandler
     );
-    if (currentSubContent.value) {
-      doTyping0(
-        subContentPointer,
-        currentSubContent,
-        subContentTypingSpeed,
-        subContentHandler,
-        true
-      );
-    }
   }, props.text.waitTime);
 }
 
@@ -140,7 +131,16 @@ function humanizer(speed = props.speed) {
 }
 
 function typingComplete() {
-  isTypingComplete = true;
+  isTypingComplete.value = true;
+  if (currentSubContent.value) {
+    doTyping0(
+      subContentPointer,
+      currentSubContent,
+      subContentTypingSpeed,
+      subContentHandler,
+      true
+    );
+  }
   TypingEmitter.emit("complete", props.index);
 }
 
@@ -211,6 +211,15 @@ type IProp = {
     min-width: 100%;
     transform: translateX(-50%);
     line-height: 1;
+    animation: fade-in 0.25s ease-in-out;
+  }
+  @keyframes fade-in {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
   }
 }
 .unit.ruby {
