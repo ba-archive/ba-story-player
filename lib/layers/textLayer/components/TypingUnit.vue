@@ -1,7 +1,7 @@
 <template>
   <span class="unit" :style="effectCSS" :class="{ ruby: internalSubContent }"
-    >{{ internalContent
-    }}<span class="rt" v-if="internalSubContent">{{
+    ><span class="body" v-html="internalContent" />
+    <span class="rt" v-if="internalSubContent">{{
       internalSubContent
     }}</span></span
   >
@@ -12,7 +12,15 @@ import { BaseTypingEvent, IEventHandlerMap } from "@/layers/textLayer/types";
 import { parseTextEffectToCss } from "@/layers/textLayer/utils";
 import TypingEmitter from "@/layers/textLayer/utils/typingEmitter";
 import { Text } from "@/types/common";
-import { Ref, computed, nextTick, onMounted, onUnmounted, ref } from "vue";
+import {
+  Ref,
+  computed,
+  nextTick,
+  onMounted,
+  onUnmounted,
+  ref,
+  watch,
+} from "vue";
 
 const props = withDefaults(defineProps<IProp>(), {
   index: "-1",
@@ -27,14 +35,16 @@ const props = withDefaults(defineProps<IProp>(), {
 });
 const propText = ref(props.text);
 const currentContent = ref(propText.value.content);
+const currentContentLength = computed(() => currentContent.value.length);
 const filterRuby = props.text.effects.filter(it => it.name === "ruby")[0] || {
   value: [],
 };
 const currentSubContent = ref(filterRuby.value.join(""));
+const rubyMode = computed(() => currentSubContent.value !== "");
 const contentPointer = ref(-1);
 const subContentPointer = ref(-1);
 const subPadding = ref(0);
-const subContainTop = computed(() => (props.title ? "-0.45" : "-1.5"));
+const subContainTop = computed(() => (props.title ? "-0.45" : "-1.1"));
 const effectCSS = computed(() => ({
   ...parseTextEffectToCss(props.text.effects),
   "--padding": subPadding.value,
@@ -51,9 +61,15 @@ const subContentHandler = ref(0);
 
 let isTypingComplete = false;
 
-const internalContent = computed(
-  () => currentContent.value.substring(0, contentPointer.value) || ""
-);
+const internalContent = computed(() => {
+  const current = currentContent.value.substring(0, contentPointer.value);
+  return rubyMode.value
+    ? current +
+        Array.from({ length: currentContentLength.value - current.length })
+          .map(() => "&emsp;")
+          .join("")
+    : current;
+});
 const internalSubContent = computed(
   () => currentSubContent.value.substring(0, subContentPointer.value) || ""
 );
@@ -189,12 +205,18 @@ type IProp = {
     position: absolute;
     --local-font-size: calc(var(--font-size) * 0.6);
     font-size: var(--local-font-size);
-    top: calc(var(--local-font-size) * var(--top-offset));
+    top: min(calc(var(--local-font-size) * var(--top-offset)), -12px);
     text-align: center;
     left: 50%;
     min-width: 100%;
     transform: translateX(-50%);
     line-height: 1;
+  }
+}
+.unit.ruby {
+  display: inline-block;
+  .body {
+    display: inline-block;
   }
 }
 </style>

@@ -773,11 +773,6 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
     width: 100%;
     height: 100%;
     position: relative;
-    .content {
-      :deep(span.ruby) {
-        display: inline-block;
-      }
-    }
   }
 
   .next-image-btn {
@@ -813,11 +808,14 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
   margin-top: 1.5%;
   color: white;
   :deep(span) {
-    --font-size: calc(
-      (
-          var(--param-font-size) / var(--standard-unity-font-size) *
-            var(--standard-font-size)
-        ) * 1rem
+    --font-size: max(
+      calc(
+        (
+            var(--param-font-size) / var(--standard-unity-font-size) *
+              var(--standard-font-size)
+          ) * 1rem
+      ),
+      12px
     );
     font-size: var(--font-size);
   }
