@@ -1,5 +1,4 @@
 import eventBus from "@/eventBus";
-import { getStageSize } from "@/layers/characterLayer";
 import { usePlayerStore } from "@/stores";
 import { ZmcArgs } from "@/types/common";
 import { wait } from "@/utils";
@@ -33,7 +32,7 @@ export function effectInit() {
         const swipe =
           SwipeTransitionDirectionMap[transition.TransitionInResource || ""];
         if (swipe) {
-          await playHorSwipeTransition(duration, swipe);
+          await playHorSwipeTransition(duration, swipe, "in");
         }
       }
     }
@@ -52,6 +51,13 @@ export function effectInit() {
       case "fade_white":
         await playTransition("white", duration, "out");
         break;
+      default: {
+        const swipe =
+          SwipeTransitionDirectionMap[transition.TransitionInResource || ""];
+        if (swipe) {
+          await playHorSwipeTransition(duration, swipe, "out");
+        }
+      }
     }
     eventBus.emit("transitionOutDone");
   });
@@ -148,14 +154,24 @@ const SwipeTransitionDirectionMap: { [key: string]: SwipeTransitionDirection } =
     "Effect/UI/BGFX/UI_FX_HorSwipe_RtoL_Out": SwipeTransitionDirection.R_TO_L,
     "Effect/UI/BGFX/UI_FX_VerSwipe_BtoT_Out": SwipeTransitionDirection.B_TO_T,
     "Effect/UI/BGFX/UI_FX_VerSwipe_TtoB_Out": SwipeTransitionDirection.T_TO_B,
+    "Effect/UI/BGFX/UI_FX_HorSwipe_LtoR_In": SwipeTransitionDirection.L_TO_R,
+    "Effect/UI/BGFX/UI_FX_HorSwipe_RtoL_In": SwipeTransitionDirection.R_TO_L,
+    "Effect/UI/BGFX/UI_FX_VerSwipe_BtoT_In": SwipeTransitionDirection.B_TO_T,
+    "Effect/UI/BGFX/UI_FX_VerSwipe_TtoB_In": SwipeTransitionDirection.T_TO_B,
   };
 
 function playHorSwipeTransition(
   duration: number,
-  direction: SwipeTransitionDirection
+  direction: SwipeTransitionDirection,
+  type: "in" | "out"
 ): Promise<void> {
   return new Promise<void>(resolve => {
-    const { screenWidth, screenHeight } = getStageSize();
+    const background = document.querySelector(
+      "#player__background"
+    ) as HTMLDivElement;
+    const backgroundStyle = getComputedStyle(background);
+    const screenWidth = Number(backgroundStyle.width.replace("px", ""));
+    const screenHeight = Number(backgroundStyle.height.replace("px", ""));
     const param = {
       x1: 0, // sprite起始x
       y1: 0, // sprite起始y
@@ -171,34 +187,55 @@ function playHorSwipeTransition(
     switch (direction) {
       case SwipeTransitionDirection.L_TO_R: {
         param.w = screenWidth + width01;
-        param.x1 = -param.w;
+        if (type === "in") {
+          param.x1 = -param.w;
+        } else {
+          param.x1 = -width01;
+          param.x2 = screenWidth;
+        }
         break;
       }
       case SwipeTransitionDirection.R_TO_L: {
         param.w = screenWidth + width01;
-        param.x1 = screenWidth;
-        param.x2 = -width01;
+        if (type === "in") {
+          param.x1 = screenWidth;
+          param.x2 = -width01;
+        } else {
+          param.x2 = -param.w;
+        }
         break;
       }
       case SwipeTransitionDirection.T_TO_B: {
         param.h = screenHeight + height01;
-        param.y1 = -param.h;
+        if (type === "in") {
+          param.y1 = -param.h;
+        } else {
+          param.y1 = -height01;
+          param.y2 = screenHeight;
+        }
         break;
       }
       case SwipeTransitionDirection.B_TO_T: {
         param.h = screenHeight + height01;
-        param.y1 = screenHeight;
-        param.y2 = -height01;
+        if (type === "in") {
+          param.y1 = screenHeight;
+          param.y2 = -height01;
+        } else {
+          param.y2 = -param.h;
+        }
         break;
       }
     }
-    const texture = Texture.from(
-      createLinearGradientImageFromCanvas(param.w, param.h, direction)
+    const cover = createLinearGradientImageFromCanvas(
+      param.w,
+      param.h,
+      direction
     );
-    const sprite = new Sprite(texture);
-    sprite.position.set(param.x1, param.y1);
-    sprite.zIndex = 999;
-    usePlayerStore().app.stage.addChild(sprite);
+    cover.style.left = String(param.x1) + "px";
+    cover.style.top = String(param.y1) + "px";
+    cover.classList.add("transition-cover");
+    cover.classList.add(type);
+    background.appendChild(cover);
     const timeline = gsap.timeline({
       defaults: {
         ease: "none",
@@ -206,18 +243,21 @@ function playHorSwipeTransition(
       },
     });
     timeline
-      .to(sprite.position, {
-        x: param.x2,
+      .to(cover, {
+        left: param.x2,
       })
       .to(
-        sprite.position,
+        cover,
         {
-          y: param.y2,
+          top: param.y2,
         },
         "<"
       )
       .then(() => {
-        sprite.destroy(true);
+        // 延长一下, 等其他效果生效?
+        setTimeout(() => {
+          background.removeChild(cover);
+        }, 50);
         resolve();
       });
   });
@@ -258,7 +298,7 @@ function createLinearGradientImageFromCanvas(
     }
   }
   linearGradient.addColorStop(0, "transparent");
-  linearGradient.addColorStop(0.1, "black");
+  linearGradient.addColorStop(0.09, "black");
   linearGradient.addColorStop(1, "black");
   ctx.fillStyle = linearGradient;
   ctx.fillRect(0, 0, width, height);
