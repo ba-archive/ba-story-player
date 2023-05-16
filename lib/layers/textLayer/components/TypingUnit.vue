@@ -1,12 +1,10 @@
 <template>
   <span class="unit" :style="effectCSS" :class="{ ruby: internalSubContent }"
     ><span class="body" v-html="internalContent" />
-    <span
-      class="rt"
-      v-if="internalSubContent"
-      v-html="internalSubContent"
-    ></span
-  ></span>
+    <span class="rt" v-if="internalSubContent">{{
+      internalSubContent
+    }}</span></span
+  >
 </template>
 
 <script setup lang="ts">
@@ -18,7 +16,7 @@ import { Ref, computed, nextTick, onMounted, onUnmounted, ref } from "vue";
 
 const props = withDefaults(defineProps<IProp>(), {
   index: "-1",
-  speed: 20,
+  speed: 1000,
   text: () => ({
     content: "",
     waitTime: 0,
@@ -33,7 +31,7 @@ const filterRuby = props.text.effects.filter(it => it.name === "ruby")[0] || {
   value: [],
 };
 const currentSubContent = ref(filterRuby.value.join(""));
-const rubyMode = computed(() => currentSubContent.value !== "");
+// const rubyMode = computed(() => currentSubContent.value !== "");
 const contentPointer = ref(-1);
 const subContentPointer = ref(-1);
 const subPadding = ref(0);
@@ -54,25 +52,19 @@ const subContentHandler = ref(0);
 
 const isTypingComplete = ref(false);
 
-const internalContent = computed(() => {
-  const current = currentContent.value.substring(0, contentPointer.value);
-  return rubyMode.value
-    ? current + mapToSpace(currentContent.value.substring(contentPointer.value))
-    : current;
-});
+const internalContent = computed(() =>
+  currentContent.value.substring(0, contentPointer.value)
+);
 const internalSubContent = computed(() => {
-  // const current = currentSubContent.value.substring(0, subContentPointer.value);
-  // const after = currentSubContent.value.substring(subContentPointer.value);
-  // return (current || "") + mapToSpace(after);
   return isTypingComplete.value ? currentSubContent.value : "";
 });
 
-function mapToSpace(str: string) {
-  return str
-    .replace(/\w/g, "&ensp;")
-    .replace(/[\u2E80-\u9FFF]/g, "&emsp;")
-    .replace(/\s/g, "&nbsp;");
-}
+// function mapToSpace(str: string) {
+//   return str
+//     .replace(/\w/g, "&ensp;")
+//     .replace(/[\u2E80-\u9FFF]/g, "&emsp;")
+//     .replace(/\s/g, "&emsp;");
+// }
 
 const contentTypingSpeed = [
   0,
@@ -132,15 +124,6 @@ function humanizer(speed = props.speed) {
 
 function typingComplete() {
   isTypingComplete.value = true;
-  if (currentSubContent.value) {
-    doTyping0(
-      subContentPointer,
-      currentSubContent,
-      subContentTypingSpeed,
-      subContentHandler,
-      true
-    );
-  }
   TypingEmitter.emit("complete", props.index);
 }
 
