@@ -1,7 +1,7 @@
 <template>
   <span class="unit" :style="effectCSS" :class="{ ruby: internalSubContent }"
-    >{{ internalContent
-    }}<span class="rt" v-if="internalSubContent">{{
+    ><span class="body" v-html="internalContent" />
+    <span class="rt" v-if="internalSubContent">{{
       internalSubContent
     }}</span></span
   >
@@ -16,7 +16,7 @@ import { Ref, computed, nextTick, onMounted, onUnmounted, ref } from "vue";
 
 const props = withDefaults(defineProps<IProp>(), {
   index: "-1",
-  speed: 20,
+  speed: 1000,
   text: () => ({
     content: "",
     waitTime: 0,
@@ -31,10 +31,11 @@ const filterRuby = props.text.effects.filter(it => it.name === "ruby")[0] || {
   value: [],
 };
 const currentSubContent = ref(filterRuby.value.join(""));
+// const rubyMode = computed(() => currentSubContent.value !== "");
 const contentPointer = ref(-1);
 const subContentPointer = ref(-1);
 const subPadding = ref(0);
-const subContainTop = computed(() => (props.title ? "-0.45" : "-1.5"));
+const subContainTop = computed(() => (props.title ? "-0.45" : "-1.1"));
 const effectCSS = computed(() => ({
   ...parseTextEffectToCss(props.text.effects),
   "--padding": subPadding.value,
@@ -49,14 +50,21 @@ if (props.instant) {
 const contentHandler = ref(0);
 const subContentHandler = ref(0);
 
-let isTypingComplete = false;
+const isTypingComplete = ref(false);
 
-const internalContent = computed(
-  () => currentContent.value.substring(0, contentPointer.value) || ""
+const internalContent = computed(() =>
+  currentContent.value.substring(0, contentPointer.value)
 );
-const internalSubContent = computed(
-  () => currentSubContent.value.substring(0, subContentPointer.value) || ""
-);
+const internalSubContent = computed(() => {
+  return isTypingComplete.value ? currentSubContent.value : "";
+});
+
+// function mapToSpace(str: string) {
+//   return str
+//     .replace(/\w/g, "&ensp;")
+//     .replace(/[\u2E80-\u9FFF]/g, "&emsp;")
+//     .replace(/\s/g, "&emsp;");
+// }
 
 const contentTypingSpeed = [
   0,
@@ -90,15 +98,6 @@ function doTyping() {
       contentTypingSpeed,
       contentHandler
     );
-    if (currentSubContent.value) {
-      doTyping0(
-        subContentPointer,
-        currentSubContent,
-        subContentTypingSpeed,
-        subContentHandler,
-        true
-      );
-    }
   }, props.text.waitTime);
 }
 
@@ -124,7 +123,7 @@ function humanizer(speed = props.speed) {
 }
 
 function typingComplete() {
-  isTypingComplete = true;
+  isTypingComplete.value = true;
   TypingEmitter.emit("complete", props.index);
 }
 
@@ -189,12 +188,27 @@ type IProp = {
     position: absolute;
     --local-font-size: calc(var(--font-size) * 0.6);
     font-size: var(--local-font-size);
-    top: calc(var(--local-font-size) * var(--top-offset));
+    top: min(calc(var(--local-font-size) * var(--top-offset)), -12px);
     text-align: center;
     left: 50%;
     min-width: 100%;
     transform: translateX(-50%);
     line-height: 1;
+    animation: fade-in 0.25s ease-in-out;
+  }
+  @keyframes fade-in {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+}
+.unit.ruby {
+  display: inline-block;
+  .body {
+    display: inline-block;
   }
 }
 </style>
