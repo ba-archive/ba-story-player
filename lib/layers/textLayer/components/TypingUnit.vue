@@ -16,7 +16,7 @@ import { Ref, computed, nextTick, onMounted, onUnmounted, ref } from "vue";
 
 const props = withDefaults(defineProps<IProp>(), {
   index: "-1",
-  speed: 1000,
+  speed: 20,
   text: () => ({
     content: "",
     waitTime: 0,

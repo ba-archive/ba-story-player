@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import eventBus from "@/eventBus";
-import { computed, ref, withDefaults } from "vue";
+import { computed, ref } from "vue";
 import { ShowOption } from "@/types/events";
 import { useElementSize } from "@vueuse/core";
 import { Text } from "@/types/common";
