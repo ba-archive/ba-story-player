@@ -185,6 +185,49 @@ const unitTestCollections: UnitTestCollection[] = [
       },
     ],
   },
+  {
+    name: "背景层测试",
+    tests: [
+      {
+        name: "transition",
+        command: () => {
+          const playQueue = [
+            "HorSwipe_LtoR",
+            "HorSwipe_RtoL",
+            "VerSwipe_BtoT",
+            "VerSwipe_TtoB",
+          ];
+          let index = -1;
+          function buildTransitionData() {
+            return {
+              Name: 1127535352,
+              TransitionOut: "1",
+              TransitionOutDuration: 1000,
+              TransitionOutResource: `Effect/UI/BGFX/UI_FX_${playQueue[index]}_Out`,
+              TransitionIn: "1",
+              TransitionInDuration: 1000,
+              TransitionInResource: `Effect/UI/BGFX/UI_FX_${playQueue[index]}_In`,
+            };
+          }
+          function transitionInDone() {
+            eventBus.emit("transitionOut", buildTransitionData());
+          }
+          function transitionOutDone() {
+            index += 1;
+            if (index > 3) {
+              eventBus.off("transitionInDone", transitionInDone);
+              eventBus.off("transitionOutDone", transitionOutDone);
+              return;
+            }
+            eventBus.emit("transitionIn", buildTransitionData());
+          }
+          eventBus.on("transitionInDone", transitionInDone);
+          eventBus.on("transitionOutDone", transitionOutDone);
+          eventBus.emit("transitionOutDone");
+        },
+      },
+    ],
+  },
 ];
 
 export default unitTestCollections;

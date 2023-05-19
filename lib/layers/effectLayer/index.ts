@@ -31,7 +31,7 @@ export function effectInit() {
       default: {
         const swipe =
           SwipeTransitionDirectionMap[transition.TransitionInResource || ""];
-        if (swipe) {
+        if (typeof swipe === "number") {
           await playHorSwipeTransition(duration, swipe, "in");
         }
       }
@@ -54,7 +54,7 @@ export function effectInit() {
       default: {
         const swipe =
           SwipeTransitionDirectionMap[transition.TransitionInResource || ""];
-        if (swipe) {
+        if (typeof swipe === "number") {
           await playHorSwipeTransition(duration, swipe, "out");
         }
       }
