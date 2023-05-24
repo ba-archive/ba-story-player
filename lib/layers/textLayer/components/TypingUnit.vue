@@ -1,16 +1,25 @@
 <template>
-  <span class="unit" :style="effectCSS" :class="{ ruby: internalSubContent }"
+  <span
+    @click="onUnitClick"
+    class="unit"
+    :style="effectCSS"
+    :class="{ ruby: internalSubContent, 'has-tooltip': tooltip }"
+    v-click-outside="onClickOutside"
     ><span class="body" v-html="internalContent" />
     <span class="rt" v-if="internalSubContent">{{
       internalSubContent
     }}</span></span
   >
+  <div class="tooltip" v-if="showTooltip">
+    <div class="tooltip-inner">{{ tooltip }}</div>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { BaseTypingEvent, IEventHandlerMap } from "@/layers/textLayer/types";
-import { parseTextEffectToCss } from "@/layers/textLayer/utils";
-import TypingEmitter from "@/layers/textLayer/utils/typingEmitter";
+import { ClickOutside as vClickOutside } from "../utils/clickOutside";
+import { BaseTypingEvent, IEventHandlerMap } from "../types";
+import { collapseWhiteSpace, parseTextEffectToCss } from "../utils";
+import TypingEmitter from "../utils/typingEmitter";
 import { Text } from "@/types/common";
 import { Ref, computed, nextTick, onMounted, onUnmounted, ref } from "vue";
 
@@ -25,11 +34,18 @@ const props = withDefaults(defineProps<IProp>(), {
   instant: false,
   title: false,
 });
+const showTooltip = ref(false);
 const propText = ref(props.text);
 const currentContent = ref(propText.value.content);
 const filterRuby = props.text.effects.filter(it => it.name === "ruby")[0] || {
   value: [],
 };
+const filterTooltip = props.text.effects.filter(
+  it => it.name === "tooltip"
+)[0] || {
+  value: [],
+};
+const tooltip = collapseWhiteSpace(filterTooltip.value.join(""));
 const currentSubContent = ref(filterRuby.value.join(""));
 // const rubyMode = computed(() => currentSubContent.value !== "");
 const contentPointer = ref(-1);
@@ -136,6 +152,14 @@ function skipTyping() {
   });
 }
 
+function onUnitClick() {
+  showTooltip.value = true;
+}
+
+function onClickOutside() {
+  showTooltip.value = false;
+}
+
 const EventHandlerMap: IEventHandlerMap = {
   start: doTyping,
   skip: skipTyping,
@@ -210,5 +234,47 @@ type IProp = {
   .body {
     display: inline-block;
   }
+}
+.unit.has-tooltip {
+  background: linear-gradient(transparent 95%, white 95%);
+}
+.tooltip {
+  $bg: #e4e7ed;
+  --arrow-left: 92.93px;
+  --left: 0;
+  --top: 0;
+  width: 200px;
+  left: var(--left);
+  top: var(--top);
+  background: $bg;
+  color: black;
+  padding: 16px;
+  position: absolute;
+  box-shadow: 0 12px 32px 4px rgba(0, 0, 0, 0.04),
+    0 8px 20px rgba(0, 0, 0, 0.08);
+  .tooltip-inner {
+    position: relative;
+    &:before {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      content: " ";
+      border-top-left-radius: 2px;
+      border: 1px solid $bg;
+      border-bottom-color: transparent;
+      border-right-color: transparent;
+      background: $bg;
+      left: var(--arrow-left);
+      top: -3px;
+      z-index: -1;
+      transform: rotate(45deg);
+    }
+  }
+}
+.tooltip.left {
+  left: 16px;
+}
+.tooltip.right {
+  right: 16px;
 }
 </style>

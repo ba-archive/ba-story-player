@@ -11,10 +11,10 @@
 </template>
 
 <script setup lang="ts">
-import TypingUnit from "@/layers/textLayer/components/TypingUnit.vue";
-import { BaseTypingEvent, IEventHandlerMap } from "@/layers/textLayer/types";
-import { parseStEffectToCss } from "@/layers/textLayer/utils";
-import TypingEmitter from "@/layers/textLayer/utils/typingEmitter";
+import TypingUnit from "./TypingUnit.vue";
+import { BaseTypingEvent, IEventHandlerMap } from "../types";
+import { parseStEffectToCss } from "../utils";
+import TypingEmitter from "../utils/typingEmitter";
 import { StText } from "@/types/events";
 import { computed, onMounted, onUnmounted, ref } from "vue";
 import gsap from "gsap";

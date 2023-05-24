@@ -233,7 +233,7 @@ export interface TextEffect {
  * `fontsize` 字体大小
  * `ruby` 日文注音
  */
-export type TextEffectName = "color" | "fontsize" | "ruby";
+export type TextEffectName = "color" | "fontsize" | "ruby" | "tooltip";
 export type TranslatedStoryUnit = {
   GroupId: number;
   translator: string;

@@ -155,7 +155,7 @@
         }"
         class="dialog"
       >
-        <div class="inner-dialog">
+        <div class="inner-dialog" id="player__inner__dialog">
           <div class="title">
             <span :style="{ fontSize: `${fontSize(3.5)}rem` }" class="name">{{
               name ? name : "&emsp;"
@@ -186,8 +186,8 @@
 </template>
 
 <script setup lang="ts">
-import TypingEmitter from "@/layers/textLayer/utils/typingEmitter";
-import TypingUnit from "@/layers/textLayer/components/TypingUnit.vue";
+import TypingEmitter from "./utils/typingEmitter";
+import TypingUnit from "./components/TypingUnit.vue";
 import {
   Ref,
   computed,
@@ -829,6 +829,7 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
   position: absolute;
   user-select: none;
   overflow: hidden;
+  pointer-events: none;
 
   hr {
     border: 0.1px rgba(255, 255, 255, 0.666) solid;

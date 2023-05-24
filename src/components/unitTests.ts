@@ -66,6 +66,50 @@ const unitTestCollections: UnitTestCollection[] = [
           });
         },
       },
+      {
+        name: "tooltip",
+        command() {
+          eventBus.emit("showText", {
+            text: [
+              {
+                content: "左边",
+                effects: [
+                  {
+                    name: "tooltip",
+                    value: ["这是一段很长很长的tooltip以至于它都碰到左边界了"],
+                  },
+                ],
+              },
+              {
+                content: ", 这是用来填充中间的空白的",
+                effects: [],
+              },
+              {
+                content: "中间",
+                effects: [
+                  {
+                    name: "tooltip",
+                    value: ["这是测试中间tooltip的"],
+                  },
+                ],
+              },
+              {
+                content: ", 这是用来填充中间的空白的, ",
+                effects: [],
+              },
+              {
+                content: "这是一段用来测试换行的, 所以它很长很长很长很长",
+                effects: [
+                  {
+                    name: "tooltip",
+                    value: ["这是测试换行tooltip的"],
+                  },
+                ],
+              },
+            ],
+          });
+        },
+      },
     ],
   },
   {
