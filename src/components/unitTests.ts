@@ -94,7 +94,7 @@ const unitTestCollections: UnitTestCollection[] = [
                 ],
               },
               {
-                content: ", 这是用来填充中间的空白的, ",
+                content: ", 这是用来填充中间的空空空空空白白白白白的, ",
                 effects: [],
               },
               {
@@ -102,7 +102,9 @@ const unitTestCollections: UnitTestCollection[] = [
                 effects: [
                   {
                     name: "tooltip",
-                    value: ["这是测试换行tooltip的"],
+                    value: [
+                      "这是测试换行tooltip的, 顺便测试右边界, 所以它也很长长长长",
+                    ],
                   },
                 ],
               },

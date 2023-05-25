@@ -31,6 +31,13 @@ let props = defineProps<{
 const selectOptions = ref<ShowOption[]>([]);
 const emitter = defineEmits(["update:fullScreen"]);
 
+watch(
+  () => hiddenSubMenu.value,
+  cur => {
+    eventBus.emit("uiMenuVisibleChange", !cur);
+  }
+);
+
 eventBus.on("hide", () => {
   hiddenSummary.value = true;
   hiddenStoryLog.value = true;
