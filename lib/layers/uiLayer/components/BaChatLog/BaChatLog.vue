@@ -8,6 +8,39 @@ const props = defineProps({
   show: Boolean,
 });
 const content = ref(null) as unknown as Ref<HTMLElement>;
+
+// 日志记录拖动功能
+const isDraggingDialog = ref(false);
+const dragStartY = ref(0);
+const deltaY = ref(0);
+const startScrollTop = ref(0);
+
+function handleDragStart($event: MouseEvent) {
+  isDraggingDialog.value = true;
+  dragStartY.value = $event.clientY;
+  deltaY.value = 0;
+
+  if (content.value) {
+    startScrollTop.value = content.value.scrollTop;
+  }
+}
+
+function handleDragMove($event: MouseEvent) {
+  if (isDraggingDialog.value) {
+    deltaY.value = $event.clientY - dragStartY.value;
+
+    if (content.value) {
+      content.value.scrollTop = startScrollTop.value - deltaY.value;
+    }
+  }
+}
+
+function handleDragEnd() {
+  setTimeout(() => {
+    isDraggingDialog.value = false;
+  });
+}
+
 let store = usePlayerStore();
 let chatMesasages = store.logText;
 watch(
@@ -28,13 +61,20 @@ watch(
 
 <template>
   <div class="ba-chat-log">
-    <ul class="ba-chat-content" ref="content">
+    <ul
+      class="ba-chat-content"
+      @mousedown.stop="handleDragStart"
+      @mousemove.stop="handleDragMove"
+      @mouseup.stop="handleDragEnd"
+      @mouseleave.stop="handleDragEnd"
+      ref="content"
+    >
       <li
         class="ba-chat-item"
         v-for="(chatMessage, key) in chatMesasages"
         :key="key"
       >
-        <BaChatMessage :chat-message="chatMessage" />
+        <BaChatMessage :deltaY="deltaY" :chat-message="chatMessage" />
       </li>
     </ul>
   </div>
@@ -70,12 +110,19 @@ watch(
     padding: 0;
     overflow-y: scroll;
 
+    cursor: grab;
+
     // hide scrollbar
     scrollbar-width: none;
 
     &::-webkit-scrollbar {
       display: none;
       /* Chrome Safari */
+    }
+
+    &:active {
+      user-select: none;
+      cursor: grabbing;
     }
   }
 }
