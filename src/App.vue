@@ -179,7 +179,7 @@ useResizeObserver(
   flex-direction: column;
   right: 0;
   height: 95vh;
-  overflow-y: scroll;
+  overflow-y: auto;
   z-index: 1000;
 }
 </style>
