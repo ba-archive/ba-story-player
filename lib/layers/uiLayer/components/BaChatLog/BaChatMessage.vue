@@ -1,14 +1,26 @@
 <script lang="ts" setup>
 import { LogText } from "@/types/store";
-import { PropType, ref } from "vue";
+import { PropType, ref, watch } from "vue";
 import avatarBG from "../../assets/Deco_GachaItemBg.webp";
 import { changeStoryIndex } from "../../userInteract";
 const props = defineProps({
+  deltaY: Number,
   chatMessage: Object as PropType<LogText>,
 });
 const avatarBGRef = ref<string>(avatarBG);
 
 const bubbleType = ref<"student" | "teacher" | "narration">("student");
+
+// 日志记录拖动功能
+const delta = ref(props.deltaY);
+
+watch(
+  () => props.deltaY,
+  newVal => {
+    delta.value = newVal;
+  }
+);
+
 switch (props.chatMessage?.type) {
   case "character":
     bubbleType.value = "student";
@@ -28,7 +40,7 @@ switch (props.chatMessage?.type) {
 <template>
   <div
     :class="['ba-chat-message', bubbleType]"
-    @click="changeStoryIndex(chatMessage?.index)"
+    @click="delta ? null : changeStoryIndex(chatMessage?.index)"
   >
     <!-- 设置透明度为0如果没有图片需要显示 -->
     <div
