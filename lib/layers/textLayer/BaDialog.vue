@@ -369,11 +369,8 @@ function proxyShowCoverTitle<T extends string | unknown[]>(
  * 清除特效字
  */
 function handleClearSt() {
-  // 清除上次输入
-  // 显示st时dialog必定是隐藏的
-  if (!showDialog.value) {
-    stText.value = [];
-  }
+  // 清除所有已存在的st
+  stText.value = [];
 }
 /**
  * 处理st显示事件
