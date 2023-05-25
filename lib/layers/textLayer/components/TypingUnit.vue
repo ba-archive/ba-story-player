@@ -12,7 +12,16 @@ import { BaseTypingEvent, IEventHandlerMap } from "@/layers/textLayer/types";
 import { parseTextEffectToCss } from "@/layers/textLayer/utils";
 import TypingEmitter from "@/layers/textLayer/utils/typingEmitter";
 import { Text } from "@/types/common";
-import { Ref, computed, nextTick, onMounted, onUnmounted, ref } from "vue";
+import {
+  Ref,
+  computed,
+  nextTick,
+  onMounted,
+  onUnmounted,
+  ref,
+  ComputedRef,
+  StyleValue,
+} from "vue";
 
 const props = withDefaults(defineProps<IProp>(), {
   index: "-1",
@@ -40,7 +49,7 @@ const effectCSS = computed(() => ({
   ...parseTextEffectToCss(props.text.effects),
   "--padding": subPadding.value,
   "--top-offset": subContainTop.value,
-}));
+})) as unknown as ComputedRef<StyleValue[]>;
 
 if (props.instant) {
   contentPointer.value = currentContent.value.length;
