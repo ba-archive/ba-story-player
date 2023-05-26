@@ -22,9 +22,7 @@
       '--typing-unit-offset-left': selfOffsetLeft,
       '--tooltip-width': tooltipWidth,
       '--tooltip-height': tooltipHeight,
-    }"
-    :class="{
-      'auto-width': tooltipAutoWidth,
+      width: `${tooltipInnerWidth}px`,
     }"
   >
     <div class="tooltip-inner" ref="TooltipInner">
@@ -67,12 +65,13 @@ const TypingContainer = ref<HTMLElement>() as Ref<HTMLElement>;
 const TooltipContainer = ref<HTMLElement>() as Ref<HTMLElement>;
 const TypingTextContainer = ref<HTMLElement>() as Ref<HTMLElement>;
 const TooltipInner = ref<HTMLElement>() as Ref<HTMLElement>;
-const tooltipAutoWidth = ref(false);
+const tooltipInnerWidth = ref(200);
 const tooltipWidth = ref(0);
 const tooltipHeight = ref(0);
 const selfWidth = ref(0);
 const selfOffsetTop = ref(0);
 const selfOffsetLeft = ref(0);
+let lineClickCache = 0; // 用于resize时确定tooltip在换行的哪个位置
 
 const showTooltip = ref(false);
 const propText = ref(props.text);
@@ -186,33 +185,43 @@ function skipTyping() {
   });
 }
 
-function onUnitClick() {
+function onUnitClick(ev: MouseEvent) {
   if (!tooltip) {
     return;
   }
   // 开始计算tooltip的具体位置
   showTooltip.value = true;
-  nextTick(calcTooltipLocationParam);
+  nextTick(() => calcTooltipLocationParam(ev));
 }
 
 function onClickOutside() {
   showTooltip.value = false;
 }
 
-const onResize = useThrottleFn(() => calcTooltipLocationParam(), 20);
+const onResize = useThrottleFn(() => {
+  tooltipInnerWidth.value = 200;
+  nextTick(() => calcTooltipLocationParam(undefined, true));
+}, 20);
 
-function calcTooltipLocationParam() {
+function calcTooltipLocationParam(ev?: MouseEvent, useCache?: boolean) {
   if (!tooltip || !showTooltip.value) {
     return;
   }
   // 为了好看的width样式, 计算渲染的tooltip内容长度是否达到200px
   const outer = TooltipInner.value.getBoundingClientRect();
   const inner = TooltipInner.value.children[0].getBoundingClientRect();
-  const diff = outer.width - inner.width > 25;
+  const diff = outer.width - inner.width > 10;
   if (diff) {
-    tooltipAutoWidth.value = true;
-    nextTick(calcTooltipLocationParam);
-    return;
+    // 判断有没有换行, 如果内部文字换行说明是中英文混排, 不管了
+    const range = document.createRange();
+    const textNode = TooltipInner.value.children[0].childNodes[0];
+    range.setStart(textNode, 0);
+    range.setEnd(textNode, tooltip.length);
+    if (range.getClientRects().length === 1) {
+      tooltipInnerWidth.value = Math.min(200, inner.width + 1);
+      nextTick(() => calcTooltipLocationParam(ev, useCache));
+      return;
+    }
   }
 
   const bounding = TooltipContainer.value.getBoundingClientRect();
@@ -226,13 +235,31 @@ function calcTooltipLocationParam() {
     internalContent.value.length
   );
   const textBounding = range.getClientRects();
-  // 实际渲染的bounding多于1个, 说明换行了 计算换行
+  // 实际渲染的bounding多于1个, 说明换行了 计算鼠标具体点的哪个行
   if (textBounding.length > 1) {
     const dialog = document.querySelector(
       "#player__text_inner_dialog"
     ) as HTMLElement;
     const dialogBounding = dialog.getBoundingClientRect();
-    const actualTextBounding = textBounding[0];
+    let actualTextBounding: DOMRect = null as unknown as DOMRect;
+    if (ev) {
+      for (const index in textBounding) {
+        actualTextBounding = textBounding[index];
+        if (
+          actualTextBounding.x < ev.x &&
+          actualTextBounding.y < ev.y &&
+          actualTextBounding.x + actualTextBounding.width > ev.x &&
+          actualTextBounding.y + actualTextBounding.height > ev.y
+        ) {
+          lineClickCache = Number(index);
+          break;
+        }
+      }
+    } else if (useCache) {
+      actualTextBounding = textBounding[lineClickCache] || textBounding[0];
+    } else {
+      actualTextBounding = textBounding[0];
+    }
     selfWidth.value = actualTextBounding.width;
     selfOffsetTop.value = actualTextBounding.top - dialogBounding.top;
     selfOffsetLeft.value = actualTextBounding.left - dialogBounding.left;
