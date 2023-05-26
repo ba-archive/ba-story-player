@@ -46,7 +46,6 @@ import {
   onMounted,
   onUnmounted,
   ref,
-  watch,
 } from "vue";
 
 const props = withDefaults(defineProps<IProp>(), {
@@ -95,7 +94,7 @@ const effectCSS = computed(() => ({
   ...parseTextEffectToCss(props.text.effects),
   "--padding": subPadding.value,
   "--top-offset": subContainTop.value,
-}));
+})) as unknown as ComputedRef<StyleValue[]>;
 
 if (props.instant) {
   contentPointer.value = currentContent.value.length;

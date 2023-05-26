@@ -16,7 +16,7 @@ import { BaseTypingEvent, IEventHandlerMap } from "../types";
 import { parseStEffectToCss } from "../utils";
 import TypingEmitter from "../utils/typingEmitter";
 import { StText } from "@/types/events";
-import { computed, onMounted, onUnmounted, ref } from "vue";
+import { computed, onMounted, onUnmounted, ref, StyleValue } from "vue";
 import gsap from "gsap";
 
 const props = withDefaults(defineProps<IProps>(), {
@@ -27,7 +27,7 @@ const props = withDefaults(defineProps<IProps>(), {
     middle: false,
   }),
 });
-const effectCSS = parseStEffectToCss(props.config);
+const effectCSS = parseStEffectToCss(props.config) as StyleValue;
 const textList = computed(() => props.config.text);
 const instant = computed(() => props.config.stArgs[1] !== "serial");
 const maxIndex = computed(
