@@ -697,7 +697,7 @@ const updateTextDialogWidth = useThrottleFn(() => {
   }
   const react = TextDialog.value.getBoundingClientRect();
   textDialogWidth.value = react.width;
-}, 20);
+}, 40);
 function doPreventInteract() {
   preventInteract.value = true;
 }

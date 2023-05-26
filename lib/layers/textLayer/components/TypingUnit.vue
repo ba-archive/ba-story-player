@@ -201,7 +201,7 @@ function onClickOutside() {
 const onResize = useThrottleFn(() => {
   tooltipInnerWidth.value = 200;
   nextTick(() => calcTooltipLocationParam(undefined, true));
-}, 20);
+}, 50);
 
 function calcTooltipLocationParam(ev?: MouseEvent, useCache?: boolean) {
   if (!tooltip || !showTooltip.value) {
