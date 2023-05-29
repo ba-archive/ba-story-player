@@ -176,6 +176,10 @@ const pixiScale = computed(
 watch([playerWidth, playerHeight], () => {
   const newWidth = (pixiHeight * playerWidth.value) / playerHeight.value;
   const app = usePlayerStore().app;
+  // 未初始化时放弃resize
+  if (!app || !app.screen) {
+    return;
+  }
   const originWidth = app.screen.width;
   if (newWidth.toFixed(2) !== originWidth.toFixed(2)) {
     app.renderer.resize(newWidth, pixiHeight);

@@ -468,7 +468,6 @@ export async function init(
     "background:#41b883 ; padding: 1px; border-radius: 0 3px 3px 0;  color: #fff",
     "background:transparent"
   );
-
   if (
     !props.story ||
     !props.story.content ||
@@ -530,28 +529,14 @@ export async function init(
   effectInit();
   L2DInit();
 
-  // 记录加载开始时间 优化光速加载的体验
-  const startLoadTime = Date.now();
   eventBus.emit("startLoading", props.dataUrl);
   //加载剩余资源
   await resourcesLoader.addLoadResources();
-  resourcesLoader.load(() => {
-    // 加载时间少于1秒, 延迟一下再开始
-    const loadedTime = Date.now() - startLoadTime;
-    new Promise<void>(resolve => {
-      if (loadedTime < 1000) {
-        setTimeout(() => {
-          resolve();
-        }, 1000 - loadedTime);
-      } else {
-        resolve();
-      }
-    }).then(() => {
-      eventBus.emit("loaded");
-      eventBus.emit("hidemenu");
-      //开始发送事件
-      eventEmitter.init();
-    });
+  resourcesLoader.doLoad();
+  eventBus.on("hotReplaceStory", async story => {
+    privateState.allStoryUnit = translate(story);
+    await resourcesLoader.addLoadResources();
+    resourcesLoader.doLoad();
   });
 }
 
@@ -651,6 +636,29 @@ export const resourcesLoader = {
           }
           callback();
         }
+      });
+    });
+  },
+
+  doLoad() {
+    // 记录加载开始时间 优化光速加载的体验
+    const startLoadTime = Date.now();
+    this.load(() => {
+      // 加载时间少于1秒, 延迟一下再开始
+      const loadedTime = Date.now() - startLoadTime;
+      new Promise<void>(resolve => {
+        if (loadedTime < 1000) {
+          setTimeout(() => {
+            resolve();
+          }, 1000 - loadedTime);
+        } else {
+          resolve();
+        }
+      }).then(() => {
+        eventBus.emit("loaded");
+        eventBus.emit("hidemenu");
+        //开始发送事件
+        eventEmitter.init();
       });
     });
   },

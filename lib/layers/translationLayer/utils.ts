@@ -189,6 +189,10 @@ const CustomTagParserMap: ICustomTagParserMap = {
  * @param krName
  */
 export function getCharacterName(krName: string) {
+  // 用于处理来自剧情播放器的数据
+  if (/^\d+$/.test(krName)) {
+    return Number();
+  }
   return xxhash.h32(krName, 0).toNumber();
 }
 export function getEmotionName(rawName: string): string | undefined {

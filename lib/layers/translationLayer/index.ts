@@ -5,7 +5,7 @@ import {
   TranslatedStoryUnit,
   ZmcArgs,
 } from "@/types/common";
-import { ShowOption, StArgs } from "@/types/events";
+import { PlayAudio, ShowOption, StArgs } from "@/types/events";
 import { deepCopyObject, getResourcesUrl } from "@/utils";
 import { l2dConfig } from "../l2dLayer/l2dConfig";
 import * as utils from "./utils";
@@ -350,11 +350,17 @@ export function translate(rawStory: TranslatedStoryUnit): StoryUnit[] {
         otherEffect: [],
       },
     };
-    unit.audio = {
+    const audio: PlayAudio = {
       bgm: utils.getBgm(rawStoryUnit.BGMId),
       soundUrl: utils.getSoundUrl(rawStoryUnit.Sound),
       voiceJPUrl: utils.getVoiceJPUrl(rawStoryUnit.VoiceJp),
     };
+    for (const key of Object.keys(audio)) {
+      if (audio[key as keyof PlayAudio]) {
+        unit.audio = audio;
+        break;
+      }
+    }
     unit.transition = playerStore.TransitionExcelTable.get(
       rawStoryUnit.Transition
     );

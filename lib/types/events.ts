@@ -1,4 +1,10 @@
-import { Character, Effect, Speaker, Text } from "./common";
+import {
+  Character,
+  Effect,
+  Speaker,
+  Text,
+  TranslatedStoryUnit,
+} from "./common";
 import { PlayOptions } from "@pixi/sound";
 import {
   BGEffectExcelTableItem,
@@ -231,6 +237,10 @@ export type Events = {
    * 所有资源加载完成
    */
   loaded: undefined;
+  /**
+   * 重载剧情内容并加载数据
+   */
+  hotReplaceStory: TranslatedStoryUnit;
 };
 
 export interface BgParams {

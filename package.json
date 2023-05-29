@@ -25,7 +25,9 @@
     "preview": "vite preview",
     "format": "prettier --config .prettierrc.json -uw ./lib/ ./src/",
     "check": "eslint --fix --config ./.eslintrc.json ./lib/ --ext .js,.ts,.vue && vue-tsc --noEmit",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "yalc": "npm run build && yalc push --replace",
+    "watch": "nodemon --ignore node_modules/ --watch lib/ -C -e ts,vue,scss --debug -x npm run yalc"
   },
   "lint-staged": {
     "lib/**/*.{ts,js,vue}": [
