@@ -146,7 +146,7 @@ type CustomTagParserFnConfig = {
   fn: (
     rawText: string,
     match: RegExpExecArray
-  ) => { effect: TextEffect; remain: string } | undefined;
+  ) => { effect?: TextEffect; remain: string } | undefined;
 } | null;
 
 type ICustomTagParserMap = {
@@ -179,6 +179,14 @@ const CustomTagParserMap: ICustomTagParserMap = {
       return {
         effect: effect,
         remain: rawText.replace(`[${match[1]}]`, "").replace("[-]", ""),
+      };
+    },
+  },
+  log: {
+    reg: /\[log=(.+?)](.+)\[\/log]/,
+    fn(rawText: string, match: RegExpExecArray) {
+      return {
+        remain: rawText.replace(`[log=${match[1]}]`, "").replace("[/log]", ""),
       };
     },
   },

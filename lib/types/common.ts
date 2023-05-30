@@ -232,8 +232,9 @@ export interface TextEffect {
  * `color`颜色
  * `fontsize` 字体大小
  * `ruby` 日文注音
+ * `log` 大概没啥用
  */
-export type TextEffectName = "color" | "fontsize" | "ruby" | "tooltip";
+export type TextEffectName = "color" | "fontsize" | "ruby" | "log" | "tooltip";
 export type TranslatedStoryUnit = {
   GroupId: number;
   translator: string;
