@@ -533,11 +533,6 @@ export async function init(
   //加载剩余资源
   await resourcesLoader.addLoadResources();
   resourcesLoader.doLoad();
-  eventBus.on("hotReplaceStory", async story => {
-    privateState.allStoryUnit = translate(story);
-    await resourcesLoader.addLoadResources();
-    resourcesLoader.doLoad();
-  });
 }
 
 /**

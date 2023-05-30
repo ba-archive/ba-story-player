@@ -1,6 +1,7 @@
 <script lang="ts" setup>
-import { continuePlay, dispose, init, stop } from "@/index";
+import { continuePlay, dispose, init, resourcesLoader, stop } from "@/index";
 import BaDialog from "@/layers/textLayer/BaDialog.vue";
+import { translate } from "@/layers/translationLayer";
 import BaUI from "@/layers/uiLayer/BaUI.vue";
 import { TranslatedStoryUnit } from "@/types/common";
 import { Language, StorySummary } from "@/types/store";
@@ -17,7 +18,7 @@ import {
 } from "vue";
 import eventBus from "./eventBus";
 import { changeStoryIndex } from "./layers/uiLayer/userInteract";
-import { usePlayerStore } from "./stores";
+import { initPrivateState, usePlayerStore } from "./stores";
 
 export type PlayerProps = {
   story: TranslatedStoryUnit;
@@ -238,6 +239,19 @@ onMounted(() => {
     );
   });
   firstMount = true;
+  watch(
+    () => props.story,
+    () => {
+      const privateState = initPrivateState();
+      privateState.app?.stage.removeChildren(0);
+      privateState.allStoryUnit = translate(props.story);
+      eventBus.emit("startLoading", props.dataUrl);
+      resourcesLoader.addLoadResources().then(() => {
+        resourcesLoader.doLoad();
+      });
+    },
+    { deep: true }
+  );
 });
 
 onUnmounted(() => {

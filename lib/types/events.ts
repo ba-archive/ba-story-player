@@ -237,10 +237,6 @@ export type Events = {
    * 所有资源加载完成
    */
   loaded: undefined;
-  /**
-   * 重载剧情内容并加载数据
-   */
-  hotReplaceStory: TranslatedStoryUnit;
 };
 
 export interface BgParams {
