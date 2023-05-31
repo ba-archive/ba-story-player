@@ -162,7 +162,7 @@
         class="dialog"
         :class="{ 'is-menu-show': isUiShow }"
         ref="TextDialog"
-        @click.self="simulateUiClick"
+        @click="simulateUiClick"
       >
         <div class="inner-dialog" id="player__text_inner_dialog">
           <div class="title">
@@ -185,6 +185,7 @@
               :index="String(index)"
               :key="index"
               :text="e"
+              @unit-click="simulateUiClick"
             />
           </div>
           <div class="next-image-btn" v-if="typingComplete">&zwj;</div>
@@ -428,13 +429,13 @@ function handleShowStEvent(e: StText) {
  */
 function handleShowTextEvent(e: ShowText) {
   usePlayerStore().updateLogText(e);
-  updateTextDialogWidth();
   showDialog.value = true;
   e = deepCopyObject(e);
   // 清除上次输入
   dialogText.value = [];
   typingComplete.value = false;
   nextTick(() => {
+    updateTextDialogWidth();
     // 设置昵称
     name.value = e.speaker?.name;
     // 设置次级标题

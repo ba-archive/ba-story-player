@@ -1,6 +1,6 @@
 <template>
   <span
-    @click="onUnitClick"
+    @click.stop="onUnitClick"
     class="unit"
     :style="effectCSS"
     :class="{ ruby: internalSubContent, 'has-tooltip': tooltip }"
@@ -39,14 +39,7 @@ import { BaseTypingEvent, IEventHandlerMap } from "../types";
 import { collapseWhiteSpace, parseTextEffectToCss } from "../utils";
 import TypingEmitter from "../utils/typingEmitter";
 import { Text } from "@/types/common";
-import {
-  Ref,
-  computed,
-  nextTick,
-  onMounted,
-  onUnmounted,
-  ref,
-} from "vue";
+import { Ref, computed, nextTick, onMounted, onUnmounted, ref } from "vue";
 
 const props = withDefaults(defineProps<IProp>(), {
   index: "-1",
@@ -59,7 +52,7 @@ const props = withDefaults(defineProps<IProp>(), {
   instant: false,
   title: false,
 });
-
+const emit = defineEmits<{ (ev: "unitClick"): void }>();
 const TypingContainer = ref<HTMLElement>() as Ref<HTMLElement>;
 const TooltipContainer = ref<HTMLElement>() as Ref<HTMLElement>;
 const TypingTextContainer = ref<HTMLElement>() as Ref<HTMLElement>;
@@ -186,6 +179,7 @@ function skipTyping() {
 
 function onUnitClick(ev: MouseEvent) {
   if (!tooltip) {
+    emit("unitClick");
     return;
   }
   // 开始计算tooltip的具体位置
