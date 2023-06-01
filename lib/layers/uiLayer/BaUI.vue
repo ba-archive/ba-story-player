@@ -31,6 +31,13 @@ let props = defineProps<{
 const selectOptions = ref<ShowOption[]>([]);
 const emitter = defineEmits(["update:fullScreen"]);
 
+watch(
+  () => hiddenSubMenu.value,
+  cur => {
+    eventBus.emit("uiMenuVisibleChange", !cur);
+  }
+);
+
 eventBus.on("hide", () => {
   hiddenSummary.value = true;
   hiddenStoryLog.value = true;
@@ -336,10 +343,10 @@ function getI18n(key: string) {
 
 .baui {
   position: absolute;
+  z-index: $ui-layer-z-index;
   width: 100%;
   height: 100%;
   top: 0;
-  z-index: 100;
   overflow: hidden;
   font-family: "TJL", "Microsoft YaHei", "PingFang SC", -apple-system, system-ui,
     "Segoe UI", Roboto, Ubuntu, Cantarell, "Noto Sans", BlinkMacSystemFont,

@@ -231,6 +231,11 @@ export type Events = {
    * 所有资源加载完成
    */
   loaded: undefined;
+  /**
+   * ui菜单展示 此时text dialog隐藏至ui层下部
+   * true: 显示 false: 隐藏
+   */
+  uiMenuVisibleChange: boolean;
 };
 
 export interface BgParams {
