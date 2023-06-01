@@ -141,28 +141,31 @@ export function getCharacterInfo(krName: string) {
   }
 }
 
-type CustomTagParserFnConfig = {
+type TypedTextEffect<effect extends TextEffectName> = {
+  name: effect;
+} & TextEffect;
+
+type CustomTagParserFnConfig<effect extends TextEffectName> = {
   reg: RegExp;
   fn: (
     rawText: string,
     match: RegExpExecArray
-  ) => { effect?: TextEffect; remain: string } | undefined;
+  ) => { effect?: TypedTextEffect<effect>; remain: string } | undefined;
 } | null;
 
 type ICustomTagParserMap = {
-  [key in TextEffectName]: CustomTagParserFnConfig;
+  [key in TextEffectName]: CustomTagParserFnConfig<key>;
 };
 
 const CustomTagParserMap: ICustomTagParserMap = {
   ruby: {
     reg: /\[ruby=(.+?)](.+)\[\/ruby]/,
     fn(rawText: string, match: RegExpExecArray) {
-      const effect: TextEffect = {
-        name: "ruby",
-        value: [match[1]],
-      };
       return {
-        effect: effect,
+        effect: {
+          name: "ruby",
+          value: [match[1]],
+        },
         remain: rawText
           .replace(`[ruby=${match[1]}]`, "")
           .replace("[/ruby]", ""),
@@ -172,12 +175,11 @@ const CustomTagParserMap: ICustomTagParserMap = {
   color: {
     reg: /\[([A-Fa-f0-9]{6})](.+?)\[-]/,
     fn(rawText: string, match: RegExpExecArray) {
-      const effect: TextEffect = {
-        name: "color",
-        value: [`#${match[1]}`],
-      };
       return {
-        effect: effect,
+        effect: {
+          name: "color",
+          value: [`#${match[1]}`],
+        },
         remain: rawText.replace(`[${match[1]}]`, "").replace("[-]", ""),
       };
     },
@@ -187,6 +189,20 @@ const CustomTagParserMap: ICustomTagParserMap = {
     fn(rawText: string, match: RegExpExecArray) {
       return {
         remain: rawText.replace(`[log=${match[1]}]`, "").replace("[/log]", ""),
+      };
+    },
+  },
+  tooltip: {
+    reg: /\[tooltip=(.+?)](.+)\[\/tooltip]/,
+    fn(rawText: string, match: RegExpExecArray) {
+      return {
+        effect: {
+          name: "tooltip",
+          value: [match[1]],
+        },
+        remain: rawText
+          .replace(`[tooltip=${match[1]}]`, "")
+          .replace("[/tooltip]", ""),
       };
     },
   },
@@ -301,7 +317,7 @@ export function parseCustomTag(rawText: string): Text {
       const parseConfig = Reflect.get(
         CustomTagParserMap,
         key
-      ) as CustomTagParserFnConfig;
+      ) as CustomTagParserFnConfig<never>;
       if (!parseConfig) {
         return undefined;
       }

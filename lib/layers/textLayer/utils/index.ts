@@ -17,6 +17,15 @@ const EffectToCSSMap: IEffectToCSSMap = {
   },
 };
 
+export function collapseWhiteSpace(value: string) {
+  return value.trim().replace(/\s+/g, " ");
+}
+
+export function isElement(e: unknown): e is Element {
+  if (typeof Element === "undefined") return false;
+  return e instanceof Element;
+}
+
 export function parseStEffectToCss(st: StText): PartialCSS {
   const stPos = st.stArgs[0];
   const result: PartialCSS = {

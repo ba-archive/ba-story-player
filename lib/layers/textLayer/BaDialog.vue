@@ -7,7 +7,10 @@
       '--standard-unity-font-size': standardUnityFontSize,
     }"
   >
-    <div class="container-inner">
+    <div
+      class="container-inner"
+      :class="{ 'prevent-interact': preventInteract }"
+    >
       <div class="loading-container absolute-container" v-if="showLoading">
         <img
           class="loading-image"
@@ -82,6 +85,7 @@
           '--st-pos-bounds-x': `${stPositionBounds.width}`,
           '--st-pos-bounds-y': `${stPositionBounds.height}`,
         }"
+        v-if="stText.length > 0"
       >
         <StUnit
           v-for="(e, index) in stText"
@@ -152,10 +156,15 @@
         :style="{
           padding: `0 ${fontSize(8)}rem ${fontSize(3)}rem`,
           height: `${dialogHeight}px`,
+          '--text-dialog-padding-left': `${fontSize(8)}rem`,
+          '--text-dialog-width': textDialogWidth,
         }"
         class="dialog"
+        :class="{ 'is-menu-show': isUiShow }"
+        ref="TextDialog"
+        @click="simulateUiClick"
       >
-        <div class="inner-dialog">
+        <div class="inner-dialog" id="player__text_inner_dialog">
           <div class="title">
             <span :style="{ fontSize: `${fontSize(3.5)}rem` }" class="name">{{
               name ? name : "&emsp;"
@@ -176,6 +185,7 @@
               :index="String(index)"
               :key="index"
               :text="e"
+              @unit-click="simulateUiClick"
             />
           </div>
           <div class="next-image-btn" v-if="typingComplete">&zwj;</div>
@@ -186,8 +196,9 @@
 </template>
 
 <script setup lang="ts">
-import TypingEmitter from "@/layers/textLayer/utils/typingEmitter";
-import TypingUnit from "@/layers/textLayer/components/TypingUnit.vue";
+import { useThrottleFn } from "@vueuse/core";
+import TypingEmitter from "./utils/typingEmitter";
+import TypingUnit from "./components/TypingUnit.vue";
 import {
   Ref,
   computed,
@@ -211,6 +222,8 @@ import gsap from "gsap";
 import VideoBackground from "vue-responsive-video-background-player";
 import StUnit from "@/layers/textLayer/components/StUnit.vue";
 
+const textDialogWidth = ref(0);
+const TextDialog = ref<HTMLElement>() as Ref<HTMLElement>; // 文本框长度, 用于计算tooltip最大位置
 const toBeContinuedBg0 = ref<HTMLElement>(); // to be continued的背景
 const toBeContinuedBg1 = ref<HTMLElement>(); // to be continued的背景
 const toBeContinuedText = ref<HTMLElement>(); // to be continued的字
@@ -234,6 +247,10 @@ const props = withDefaults(defineProps<TextLayerProps>(), {
   playerHeight: 0,
   playerWidth: 0,
 });
+// 当ui层出现时隐藏至下方
+const isUiShow = ref(false);
+// 当出现option之类时阻止dialog的交互
+const preventInteract = ref(false);
 // 副标题
 const subTitleContent = ref<string>("");
 // 标题下的译者信息
@@ -418,6 +435,7 @@ function handleShowTextEvent(e: ShowText) {
   dialogText.value = [];
   typingComplete.value = false;
   nextTick(() => {
+    updateTextDialogWidth();
     // 设置昵称
     name.value = e.speaker?.name;
     // 设置次级标题
@@ -671,7 +689,30 @@ const mapLoadLog = computed(() =>
     .slice(0, 4)
     .map(it => it || { type: "success", resourceName: "" })
 );
+const updateTextDialogWidth = useThrottleFn(() => {
+  if (!TextDialog.value) {
+    return;
+  }
+  const react = TextDialog.value.getBoundingClientRect();
+  textDialogWidth.value = react.width;
+}, 40);
+function doPreventInteract() {
+  preventInteract.value = true;
+}
+function exitPreventInteract() {
+  preventInteract.value = false;
+}
+function onUiVisibleStateChange(state: boolean) {
+  isUiShow.value = state;
+}
+function simulateUiClick() {
+  eventBus.emit("click");
+}
 onMounted(() => {
+  eventBus.on("uiMenuVisibleChange", onUiVisibleStateChange);
+  eventBus.on("option", doPreventInteract);
+  eventBus.on("select", exitPreventInteract);
+  eventBus.on("resize", updateTextDialogWidth);
   eventBus.on("showTitle", handleShowTitle);
   eventBus.on("showPlace", handleShowPlace);
   eventBus.on("showPlaceTranslator", handleShowPlaceTranslator);
@@ -691,6 +732,10 @@ onMounted(() => {
   eventBus.on("loaded", handleEndLoading);
 });
 onUnmounted(() => {
+  eventBus.off("uiMenuVisibleChange", onUiVisibleStateChange);
+  eventBus.off("option", doPreventInteract);
+  eventBus.off("select", exitPreventInteract);
+  eventBus.off("resize", updateTextDialogWidth);
   eventBus.off("showTitle", handleShowTitle);
   eventBus.off("showPlace", handleShowPlace);
   eventBus.off("showPlaceTranslator", handleShowPlaceTranslator);
@@ -752,6 +797,10 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
   color: rgb(156, 218, 240);
 }
 
+.dialog.is-menu-show {
+  z-index: 10;
+}
+
 .dialog {
   width: 100%;
   padding: 3rem 8rem;
@@ -804,7 +853,7 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
   --param-font-size: 64;
   margin-top: 1.5%;
   color: white;
-  :deep(span) {
+  :deep(span.unit) {
     --font-size: max(
       calc(
         (
@@ -826,6 +875,7 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
   position: absolute;
   user-select: none;
   overflow: hidden;
+  pointer-events: none;
 
   hr {
     border: 0.1px rgba(255, 255, 255, 0.666) solid;
@@ -835,6 +885,10 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
     width: 100%;
     height: 100%;
     position: relative;
+    pointer-events: auto;
+  }
+  .container-inner.prevent-interact {
+    pointer-events: none;
   }
 
   .title-container {

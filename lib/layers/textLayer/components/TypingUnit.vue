@@ -1,27 +1,45 @@
 <template>
-  <span class="unit" :style="effectCSS" :class="{ ruby: internalSubContent }"
-    ><span class="body" v-html="internalContent" />
-    <span class="rt" v-if="internalSubContent">{{
-      internalSubContent
-    }}</span></span
+  <span
+    @click.stop="onUnitClick"
+    class="unit"
+    :style="effectCSS"
+    :class="{ ruby: internalSubContent, 'has-tooltip': tooltip }"
+    v-click-outside="onClickOutside"
+    ref="TypingContainer"
   >
+    <span class="body" ref="TypingTextContainer">
+      {{ internalContent }}
+    </span>
+    <span class="rt" v-if="internalSubContent">{{ internalSubContent }}</span>
+  </span>
+  <div
+    class="tooltip"
+    v-if="showTooltip"
+    ref="TooltipContainer"
+    :style="{
+      '--typing-unit-width': selfWidth,
+      '--typing-unit-offset-top': selfOffsetTop,
+      '--typing-unit-offset-left': selfOffsetLeft,
+      '--tooltip-width': tooltipWidth,
+      '--tooltip-height': tooltipHeight,
+      width: `${tooltipInnerWidth}px`,
+    }"
+  >
+    <div class="tooltip-inner" ref="TooltipInner">
+      <span>{{ tooltip }}</span>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { BaseTypingEvent, IEventHandlerMap } from "@/layers/textLayer/types";
-import { parseTextEffectToCss } from "@/layers/textLayer/utils";
-import TypingEmitter from "@/layers/textLayer/utils/typingEmitter";
+import eventBus from "@/eventBus";
+import { useThrottleFn } from "@vueuse/core";
+import { ClickOutside as vClickOutside } from "../utils/clickOutside";
+import { BaseTypingEvent, IEventHandlerMap } from "../types";
+import { collapseWhiteSpace, parseTextEffectToCss } from "../utils";
+import TypingEmitter from "../utils/typingEmitter";
 import { Text } from "@/types/common";
-import {
-  Ref,
-  computed,
-  nextTick,
-  onMounted,
-  onUnmounted,
-  ref,
-  ComputedRef,
-  StyleValue,
-} from "vue";
+import { Ref, computed, nextTick, onMounted, onUnmounted, ref } from "vue";
 
 const props = withDefaults(defineProps<IProp>(), {
   index: "-1",
@@ -34,11 +52,31 @@ const props = withDefaults(defineProps<IProp>(), {
   instant: false,
   title: false,
 });
+const emit = defineEmits<{ (ev: "unitClick"): void }>();
+const TypingContainer = ref<HTMLElement>() as Ref<HTMLElement>;
+const TooltipContainer = ref<HTMLElement>() as Ref<HTMLElement>;
+const TypingTextContainer = ref<HTMLElement>() as Ref<HTMLElement>;
+const TooltipInner = ref<HTMLElement>() as Ref<HTMLElement>;
+const tooltipInnerWidth = ref(200);
+const tooltipWidth = ref(0);
+const tooltipHeight = ref(0);
+const selfWidth = ref(0);
+const selfOffsetTop = ref(0);
+const selfOffsetLeft = ref(0);
+let lineClickCache = 0; // 用于resize时确定tooltip在换行的哪个位置
+
+const showTooltip = ref(false);
 const propText = ref(props.text);
 const currentContent = ref(propText.value.content);
 const filterRuby = props.text.effects.filter(it => it.name === "ruby")[0] || {
   value: [],
 };
+const filterTooltip = props.text.effects.filter(
+  it => it.name === "tooltip"
+)[0] || {
+  value: [],
+};
+const tooltip = collapseWhiteSpace(filterTooltip.value.join(""));
 const currentSubContent = ref(filterRuby.value.join(""));
 // const rubyMode = computed(() => currentSubContent.value !== "");
 const contentPointer = ref(-1);
@@ -67,13 +105,6 @@ const internalContent = computed(() =>
 const internalSubContent = computed(() => {
   return isTypingComplete.value ? currentSubContent.value : "";
 });
-
-// function mapToSpace(str: string) {
-//   return str
-//     .replace(/\w/g, "&ensp;")
-//     .replace(/[\u2E80-\u9FFF]/g, "&emsp;")
-//     .replace(/\s/g, "&emsp;");
-// }
 
 const contentTypingSpeed = [
   0,
@@ -133,6 +164,7 @@ function humanizer(speed = props.speed) {
 
 function typingComplete() {
   isTypingComplete.value = true;
+  calcTooltipLocationParam();
   TypingEmitter.emit("complete", props.index);
 }
 
@@ -143,6 +175,92 @@ function skipTyping() {
   nextTick(() => {
     TypingEmitter.emit("complete", props.index);
   });
+}
+
+function onUnitClick(ev: MouseEvent) {
+  if (!tooltip) {
+    emit("unitClick");
+    return;
+  }
+  // 开始计算tooltip的具体位置
+  showTooltip.value = true;
+  nextTick(() => calcTooltipLocationParam(ev));
+}
+
+function onClickOutside() {
+  showTooltip.value = false;
+}
+
+const onResize = useThrottleFn(() => {
+  tooltipInnerWidth.value = 200;
+  nextTick(() => calcTooltipLocationParam(undefined, true));
+}, 50);
+
+function calcTooltipLocationParam(ev?: MouseEvent, useCache?: boolean) {
+  if (!tooltip || !showTooltip.value) {
+    return;
+  }
+  // 为了好看的width样式, 计算渲染的tooltip内容长度是否达到200px
+  const outer = TooltipInner.value.getBoundingClientRect();
+  const inner = TooltipInner.value.children[0].getBoundingClientRect();
+  const diff = outer.width - inner.width > 10;
+  if (diff) {
+    // 判断有没有换行, 如果内部文字换行说明是中英文混排, 不管了
+    const range = document.createRange();
+    const textNode = TooltipInner.value.children[0].childNodes[0];
+    range.setStart(textNode, 0);
+    range.setEnd(textNode, tooltip.length);
+    if (range.getClientRects().length === 1) {
+      tooltipInnerWidth.value = Math.min(200, inner.width + 1);
+      nextTick(() => calcTooltipLocationParam(ev, useCache));
+      return;
+    }
+  }
+
+  const bounding = TooltipContainer.value.getBoundingClientRect();
+  tooltipWidth.value = bounding.width;
+  tooltipHeight.value = bounding.height;
+
+  const range = document.createRange();
+  range.setStart(TypingTextContainer.value.childNodes[0], 0);
+  range.setEnd(
+    TypingTextContainer.value.childNodes[0],
+    internalContent.value.length
+  );
+  const textBounding = range.getClientRects();
+  // 实际渲染的bounding多于1个, 说明换行了 计算鼠标具体点的哪个行
+  if (textBounding.length > 1) {
+    const dialog = document.querySelector(
+      "#player__text_inner_dialog"
+    ) as HTMLElement;
+    const dialogBounding = dialog.getBoundingClientRect();
+    let actualTextBounding: DOMRect = null as unknown as DOMRect;
+    if (ev) {
+      for (const index in textBounding) {
+        actualTextBounding = textBounding[index];
+        if (
+          actualTextBounding.x < ev.x &&
+          actualTextBounding.y < ev.y &&
+          actualTextBounding.x + actualTextBounding.width > ev.x &&
+          actualTextBounding.y + actualTextBounding.height > ev.y
+        ) {
+          lineClickCache = Number(index);
+          break;
+        }
+      }
+    } else if (useCache) {
+      actualTextBounding = textBounding[lineClickCache] || textBounding[0];
+    } else {
+      actualTextBounding = textBounding[0];
+    }
+    selfWidth.value = actualTextBounding.width;
+    selfOffsetTop.value = actualTextBounding.top - dialogBounding.top;
+    selfOffsetLeft.value = actualTextBounding.left - dialogBounding.left;
+  } else {
+    selfWidth.value = TypingContainer.value.getBoundingClientRect().width;
+    selfOffsetTop.value = TypingContainer.value.offsetTop;
+    selfOffsetLeft.value = TypingContainer.value.offsetLeft;
+  }
 }
 
 const EventHandlerMap: IEventHandlerMap = {
@@ -161,10 +279,12 @@ function eventFilter(type: BaseTypingEvent, index?: string) {
 
 onMounted(() => {
   TypingEmitter.on("*", eventFilter);
+  eventBus.on("resize", onResize);
 });
 
 onUnmounted(() => {
   dispose();
+  eventBus.off("resize", onResize);
 });
 
 function dispose() {
@@ -219,5 +339,87 @@ type IProp = {
   .body {
     display: inline-block;
   }
+}
+.unit.has-tooltip {
+  $padding: 8px;
+  padding: 4px $padding;
+  margin: -$padding;
+  background: linear-gradient(
+    transparent 90%,
+    white 90%,
+    white 95%,
+    transparent 95%,
+    transparent 100%
+  );
+  background-position: $padding 0;
+  background-size: calc(100% - #{$padding} * 2) 100%;
+  background-repeat: no-repeat;
+  z-index: 999;
+}
+.tooltip {
+  $bg: #0a61e5;
+  $padding: 16px;
+  $max-tooltip-padding: 16px;
+  --tooltip-arrow-height: 5px;
+  --left: min(
+    calc(
+      (var(--text-dialog-width) - var(--tooltip-width)) * 1px - #{$max-tooltip-padding} -
+        var(--text-dialog-padding-left)
+    ),
+    max(
+      calc(#{$max-tooltip-padding} - var(--text-dialog-padding-left)),
+      calc(
+        (
+            var(--typing-unit-offset-left) + var(--typing-unit-width) / 2 -
+              var(--tooltip-width) / 2
+          ) * 1px
+      )
+    )
+  );
+  --top: calc(
+    (
+        (var(--tooltip-height) - var(--typing-unit-offset-top)) * 1px + 0.25rem +
+          var(--tooltip-arrow-height)
+      ) * -1
+  );
+  --arrow-left: calc(
+    (var(--typing-unit-offset-left) + var(--typing-unit-width) / 2) * 1px -
+      var(--left) - #{$padding} - var(--tooltip-arrow-height) - 2.07px
+  );
+  width: 200px;
+  left: var(--left);
+  top: var(--top);
+  background: $bg;
+  padding: $padding;
+  position: absolute;
+  z-index: 999;
+  border-radius: 8px;
+  color: white;
+  box-shadow: 0 12px 32px 4px rgba(0, 0, 0, 0.04),
+    0 8px 20px rgba(0, 0, 0, 0.08);
+  .tooltip-inner {
+    position: relative;
+    --fs: max(calc(var(--font-size) * 0.8), 12px);
+    font-size: var(--fs);
+    line-height: calc(var(--fs) * 1.2);
+    &:before {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      content: " ";
+      border-bottom-right-radius: 2px;
+      border: 1px solid $bg;
+      border-top-color: transparent;
+      border-left-color: transparent;
+      background: $bg;
+      left: var(--arrow-left);
+      bottom: calc(-#{$padding} - var(--tooltip-arrow-height));
+      z-index: -1;
+      transform: rotate(45deg);
+    }
+  }
+}
+.tooltip.auto-width {
+  width: auto;
 }
 </style>
