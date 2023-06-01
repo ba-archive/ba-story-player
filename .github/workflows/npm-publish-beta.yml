@@ -1,4 +1,4 @@
-name: Public Npm Beta
+name: Publish Npm Beta
 
 on:
   push:
@@ -23,15 +23,19 @@ jobs:
         with:
           version: 7.21.0
 
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+
       - name: Install and Build
         if: ${{ contains(steps.package-version.outputs.current-version,'beta')}}
         run: |
           pnpm install
-          pnpm run build # 这是我的项目的打包命令，你也可以改成你的
+          pnpm run build
 
       - name: "Publish to the npm registry"
         if: ${{ contains(steps.package-version.outputs.current-version,'beta')}}
-        uses: JS-DevTools/npm-publish@v1
+        uses: JS-DevTools/npm-publish@v2
         with:
           token: ${{ secrets.NPM_TOKEN }}
           tag: "beta"
