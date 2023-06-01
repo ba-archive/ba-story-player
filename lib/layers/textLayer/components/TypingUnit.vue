@@ -39,7 +39,16 @@ import { BaseTypingEvent, IEventHandlerMap } from "../types";
 import { collapseWhiteSpace, parseTextEffectToCss } from "../utils";
 import TypingEmitter from "../utils/typingEmitter";
 import { Text } from "@/types/common";
-import { Ref, computed, nextTick, onMounted, onUnmounted, ref } from "vue";
+import {
+  Ref,
+  computed,
+  nextTick,
+  onMounted,
+  onUnmounted,
+  ref,
+  ComputedRef,
+  StyleValue,
+} from "vue";
 
 const props = withDefaults(defineProps<IProp>(), {
   index: "-1",
