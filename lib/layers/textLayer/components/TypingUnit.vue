@@ -341,7 +341,20 @@ type IProp = {
   }
 }
 .unit.has-tooltip {
-  background: linear-gradient(transparent 95%, white 95%);
+  $padding: 8px;
+  padding: 4px $padding;
+  margin: -$padding;
+  background: linear-gradient(
+    transparent 90%,
+    white 90%,
+    white 95%,
+    transparent 95%,
+    transparent 100%
+  );
+  background-position: $padding 0;
+  background-size: calc(100% - #{$padding} * 2) 100%;
+  background-repeat: no-repeat;
+  z-index: 999;
 }
 .tooltip {
   $bg: #0a61e5;
