@@ -224,4 +224,24 @@ export const l2dConfig: IL2dConfig = {
       },
     },
   },
+  CH0138_home: {
+    name: "CH0138_home",
+    playQue: [
+      {
+        name: "CH0138_home",
+        animation: "Start_Idle_01",
+        fadeTime: 13 / 3,
+        fade: true,
+      },
+      {
+        name: "CH0138_home",
+        animation: "Idle_01",
+      },
+    ],
+    spineSettings: {
+      CH0138_home: {
+        scale: 2.3,
+      },
+    },
+  },
 };
