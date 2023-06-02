@@ -75,9 +75,9 @@ type: `boolean`
 
 ## useSuperSampling
 
-type: `boolean`
+type: `'' | '2' | '4'`
 
-是否使用超分素材, 目前该功能尚未实现, 选项无实际效果.
+是否使用超分素材。请注意目前 '4' 配置项无效果，仅支持 2 倍超分。
 
 # event
 
