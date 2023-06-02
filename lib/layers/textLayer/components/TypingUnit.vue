@@ -366,6 +366,7 @@ type IProp = {
   z-index: 999;
 }
 .tooltip {
+  box-sizing: content-box !important;
   $bg: #0a61e5;
   $padding: 16px;
   $max-tooltip-padding: 16px;
