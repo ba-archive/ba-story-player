@@ -351,6 +351,7 @@ type IProp = {
 }
 .unit.has-tooltip {
   $padding: 8px;
+  cursor: pointer;
   padding: 4px $padding;
   margin: -$padding;
   background: linear-gradient(
