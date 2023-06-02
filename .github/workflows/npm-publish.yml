@@ -1,4 +1,4 @@
-name: Public Npm
+name: Publish Npm
 
 on:
   push:
@@ -17,11 +17,14 @@ jobs:
       - uses: pnpm/action-setup@v2
         with:
           version: 7.21.0
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "18"
       - name: Install and Build
         run: |
           pnpm install
-          pnpm run build # 这是我的项目的打包命令，你也可以改成你的
+          pnpm run build
       - name: "Publish to the npm registry"
-        uses: JS-DevTools/npm-publish@v1
+        uses: JS-DevTools/npm-publish@v2
         with:
           token: ${{ secrets.NPM_TOKEN }}
