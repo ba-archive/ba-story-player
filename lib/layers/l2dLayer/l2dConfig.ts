@@ -230,7 +230,7 @@ export const l2dConfig: IL2dConfig = {
       {
         name: "CH0138_home",
         animation: "Start_Idle_01",
-        fadeTime: 13 / 3,
+        fadeTime: 4.3,
         fade: true,
       },
       {
