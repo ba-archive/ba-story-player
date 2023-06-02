@@ -220,7 +220,7 @@ function calcTooltipLocationParam(ev?: MouseEvent, useCache?: boolean) {
     range.setStart(textNode, 0);
     range.setEnd(textNode, tooltip.length);
     if (range.getClientRects().length === 1) {
-      tooltipInnerWidth.value = Math.min(200, inner.width + 1);
+      tooltipInnerWidth.value = Math.min(200, inner.width);
       nextTick(() => calcTooltipLocationParam(ev, useCache));
       return;
     }
@@ -351,6 +351,7 @@ type IProp = {
 }
 .unit.has-tooltip {
   $padding: 8px;
+  cursor: pointer;
   padding: 4px $padding;
   margin: -$padding;
   background: linear-gradient(
@@ -368,7 +369,7 @@ type IProp = {
 .tooltip {
   box-sizing: content-box !important;
   $bg: #0a61e5;
-  $padding: 16px;
+  $padding: 12px;
   $max-tooltip-padding: 16px;
   --tooltip-arrow-height: 5px;
   --left: min(
