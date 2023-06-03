@@ -4,4 +4,5 @@
 if [ "$(git rev-parse --abbrev-ref HEAD)" = "dev" ]; then
   node ./.husky/addBetaVersion.js && git add .
 fi
-npx lint-staged
+
+pnpx lint-staged
