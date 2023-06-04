@@ -31,12 +31,8 @@ let props = defineProps<{
 const selectOptions = ref<ShowOption[]>([]);
 const emitter = defineEmits(["update:fullScreen"]);
 
-watch(
-  () => [hiddenSubMenu.value, hiddenSummary.value, hiddenStoryLog.value],
-  cur => {
-    // eventBus.emit("uiMenuVisibleChange", !cur);
-    eventBus.emit("uiMenuVisibleChange", !cur.every(i => i));
-  }
+const overrideTextContainer = computed(() =>
+  [hiddenSubMenu, hiddenSummary, hiddenStoryLog].some(it => !it.value)
 );
 
 eventBus.on("hide", () => {
@@ -104,14 +100,14 @@ function handleBtnAutoMode() {
 }
 
 // 计时器：当这个计时器到时间时 -- 回调函数会把 hiddenMenu 设置成 true 来影藏菜单
-let btnMenuTimer: NodeJS.Timeout;
+let btnMenuTimer: number;
 
 function handleBtnMenu() {
   if (hiddenSubMenu.value) {
     hiddenSubMenu.value = false;
     // 一段时间后自动影藏
     clearInterval(btnMenuTimer);
-    btnMenuTimer = setTimeout(() => {
+    btnMenuTimer = window.setTimeout(() => {
       hiddenSubMenu.value = true;
     }, 5555);
   } else {
@@ -124,7 +120,7 @@ const handleBtnMenuDebounced = useThrottleFn(handleBtnMenu, 200);
 function refreshBtnMenuTimer() {
   if (!hiddenSubMenu.value) {
     clearTimeout(btnMenuTimer);
-    btnMenuTimer = setTimeout(() => {
+    btnMenuTimer = window.setTimeout(() => {
       hiddenSubMenu.value = true;
     }, 5555);
   }
@@ -145,7 +141,7 @@ const bauiem = computed(() => {
 // #86 全屏时 UI 层鼠标不可见
 const cursorStyle = ref("auto");
 const hideCursorDelay = 3000;
-let cursorTimer: NodeJS.Timeout = setTimeout(() => {
+let cursorTimer = window.setTimeout(() => {
   cursorStyle.value = "none";
 }, hideCursorDelay);
 
@@ -153,7 +149,7 @@ document.addEventListener("mousemove", ev => {
   cursorStyle.value = "auto";
   clearTimeout(cursorTimer);
   if (hiddenSummary.value && hiddenStoryLog.value && props.fullScreen) {
-    cursorTimer = setTimeout(() => {
+    cursorTimer = window.setTimeout(() => {
       cursorStyle.value = "none";
     }, hideCursorDelay);
   }
@@ -211,6 +207,7 @@ function getI18n(key: string) {
 <template>
   <div
     class="baui"
+    :class="{ 'has-menu': overrideTextContainer }"
     @click.self="handleBaUIClick"
     :style="{ 'font-size': `${bauiem}px`, cursor: cursorStyle }"
     tabindex="0"
