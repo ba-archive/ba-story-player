@@ -288,12 +288,6 @@ onDeactivated(() => {
           id="player__main__canvas"
           :style="{ transform: `scale(${pixiScale})` }"
         ></div>
-        <BaDialog
-          :player-height="playerHeight"
-          :player-width="playerWidth"
-          :style="{ width: `${playerWidth}px` }"
-        >
-        </BaDialog>
         <BaUI
           :height="playerHeight"
           :width="playerWidth"
@@ -301,6 +295,12 @@ onDeactivated(() => {
           v-model:full-screen="fullScreen"
           :language="language"
         />
+        <BaDialog
+          :player-height="playerHeight"
+          :player-width="playerWidth"
+          :style="{ width: `${playerWidth}px` }"
+        >
+        </BaDialog>
       </div>
     </div>
   </div>
@@ -380,5 +380,8 @@ onDeactivated(() => {
       transform: translateX(1px);
     }
   }
+}
+.baui.has-menu + .text-container {
+  z-index: 10;
 }
 </style>

@@ -160,7 +160,6 @@
           '--text-dialog-width': textDialogWidth,
         }"
         class="dialog"
-        :class="{ 'is-menu-show': isUiShow }"
         ref="TextDialog"
         @click="simulateUiClick"
       >
@@ -247,8 +246,6 @@ const props = withDefaults(defineProps<TextLayerProps>(), {
   playerHeight: 0,
   playerWidth: 0,
 });
-// 当ui层出现时隐藏至下方
-const isUiShow = ref(false);
 // 当出现option之类时阻止dialog的交互
 const preventInteract = ref(false);
 // 副标题
@@ -702,14 +699,10 @@ function doPreventInteract() {
 function exitPreventInteract() {
   preventInteract.value = false;
 }
-function onUiVisibleStateChange(state: boolean) {
-  isUiShow.value = state;
-}
 function simulateUiClick() {
   eventBus.emit("click");
 }
 onMounted(() => {
-  eventBus.on("uiMenuVisibleChange", onUiVisibleStateChange);
   eventBus.on("option", doPreventInteract);
   eventBus.on("select", exitPreventInteract);
   eventBus.on("resize", updateTextDialogWidth);
@@ -732,7 +725,6 @@ onMounted(() => {
   eventBus.on("loaded", handleEndLoading);
 });
 onUnmounted(() => {
-  eventBus.off("uiMenuVisibleChange", onUiVisibleStateChange);
   eventBus.off("option", doPreventInteract);
   eventBus.off("select", exitPreventInteract);
   eventBus.off("resize", updateTextDialogWidth);
@@ -795,10 +787,6 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
   margin-left: 10px;
   font-size: 2.5rem;
   color: rgb(156, 218, 240);
-}
-
-.dialog.is-menu-show {
-  z-index: 10;
 }
 
 .dialog {
