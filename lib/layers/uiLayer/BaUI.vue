@@ -32,9 +32,10 @@ const selectOptions = ref<ShowOption[]>([]);
 const emitter = defineEmits(["update:fullScreen"]);
 
 watch(
-  () => hiddenSubMenu.value,
+  () => [hiddenSubMenu.value, hiddenSummary.value, hiddenStoryLog.value],
   cur => {
-    eventBus.emit("uiMenuVisibleChange", !cur);
+    // eventBus.emit("uiMenuVisibleChange", !cur);
+    eventBus.emit("uiMenuVisibleChange", !cur.every(i => i));
   }
 );
 
