@@ -426,6 +426,15 @@ function handleShowStEvent(e: StText) {
  */
 function handleShowTextEvent(e: ShowText) {
   usePlayerStore().updateLogText(e);
+  if (e.text.length === 0) {
+    setTimeout(() => {
+      eventBus.emit("textDone");
+      setTimeout(() => {
+        eventBus.emit("next");
+      }, 200);
+    });
+    return;
+  }
   showDialog.value = true;
   e = deepCopyObject(e);
   // 清除上次输入

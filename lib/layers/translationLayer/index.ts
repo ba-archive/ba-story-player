@@ -140,6 +140,7 @@ const StoryRawUnitParserUnit: IStoryRawUnitParserUnit = {
     reg: /#all;([^;\n]+);?/i,
     fn(match: RegExpExecArray, unit: StoryUnit) {
       if (utils.compareCaseInsensive(match[1], "hide")) {
+        unit.type = "effectOnly";
         unit.hide = "all";
       }
       return unit;
@@ -382,6 +383,17 @@ export function translate(rawStory: TranslatedStoryUnit): StoryUnit[] {
     unit.effect.BGEffect = playerStore.BGEffectExcelTable.get(
       rawStoryUnit.BGEffect
     );
+    // 如果TextJp中有脚本, 也识别成effectOnly类型
+    const scriptInTextJp = Object.keys(StoryRawUnitParserUnit).some(key => {
+      const parseConfig = Reflect.get(
+        StoryRawUnitParserUnit,
+        key
+      ) as IStoryRawUnitParserFn;
+      return parseConfig && parseConfig.reg.exec(rawStoryUnit.TextJp);
+    });
+    if (scriptInTextJp) {
+      unit.type = "effectOnly";
+    }
     //当没有文字时初步判断为effectOnly类型
     if (
       !rawStoryUnit.TextJp ||
