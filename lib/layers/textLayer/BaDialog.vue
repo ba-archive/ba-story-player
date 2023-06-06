@@ -85,6 +85,7 @@
           '--st-pos-bounds-x': `${stPositionBounds.width}`,
           '--st-pos-bounds-y': `${stPositionBounds.height}`,
         }"
+        @click="onStContainerClick"
         v-if="stText.length > 0"
       >
         <StUnit
@@ -165,20 +166,15 @@
       >
         <div class="inner-dialog" id="player__text_inner_dialog">
           <div class="title">
-            <span :style="{ fontSize: `${fontSize(3.5)}rem` }" class="name">{{
+            <span :style="{ '--fs': `${fontSize(3.5)}rem` }" class="name">{{
               name ? name : "&emsp;"
             }}</span>
-            <span
-              :style="{ fontSize: `${fontSize(2)}rem` }"
-              class="department"
-              >{{ nickName }}</span
-            >
+            <span :style="{ '--fs': `${fontSize(2)}rem` }" class="department">{{
+              nickName
+            }}</span>
           </div>
           <hr />
-          <div
-            :style="{ '--font-size': `${standardFontSize}rem` }"
-            class="content"
-          >
+          <div class="content">
             <TypingUnit
               v-for="(e, index) in dialogText"
               :index="String(index)"
@@ -711,6 +707,12 @@ function exitPreventInteract() {
 function simulateUiClick() {
   eventBus.emit("click");
 }
+function onStContainerClick() {
+  // st层和dialog同时出现的情况, 由于st会覆盖到text上面导致点击对话框无法next
+  if (stText.value.length && dialogText.value.length) {
+    simulateUiClick();
+  }
+}
 onMounted(() => {
   eventBus.on("option", doPreventInteract);
   eventBus.on("select", exitPreventInteract);
@@ -786,17 +788,6 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
 * {
   box-sizing: border-box;
 }
-.name {
-  font-size: 3.5rem;
-  color: white;
-  align-self: flex-end;
-}
-
-.department {
-  margin-left: 10px;
-  font-size: 2.5rem;
-  color: rgb(156, 218, 240);
-}
 
 .dialog {
   width: 100%;
@@ -816,6 +807,17 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
     width: 100%;
     height: 100%;
     position: relative;
+    text-shadow: $text-outline;
+    .name {
+      color: white;
+      align-self: flex-end;
+      font-size: max(var(--fs), var(--minimum-fs));
+    }
+    .department {
+      margin-left: 10px;
+      font-size: max(var(--fs), var(--minimum-fs));
+      color: rgb(156, 218, 240);
+    }
   }
 
   .next-image-btn {
@@ -858,11 +860,11 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
               var(--standard-font-size)
           ) * 1rem
       ),
-      12px
+      var(--minimum-fs)
     );
     font-size: var(--font-size);
+    line-height: calc(1.5 * var(--font-size));
   }
-  line-height: calc(1.5 * var(--font-size));
 }
 
 .text-container {
@@ -873,7 +875,7 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
   user-select: none;
   overflow: hidden;
   pointer-events: none;
-
+  --minimum-fs: 14px; // 最小字体大小
   hr {
     border: 0.1px rgba(255, 255, 255, 0.666) solid;
   }

@@ -113,11 +113,14 @@ type IProps = {
 
 <style scoped lang="scss">
 .st-text-container {
-  --font-size: calc(
-    (
-        var(--param-font-size) / var(--standard-unity-font-size) *
-          var(--standard-font-size)
-      ) * 1rem
+  --font-size: max(
+    calc(
+      (
+          var(--param-font-size) / var(--standard-unity-font-size) *
+            var(--standard-font-size)
+        ) * 1rem
+    ),
+    var(--minimum-fs)
   );
   --left: calc(
     (var(--st-width-half) + var(--st-x)) * var(--st-pos-bounds-x) * 1px
