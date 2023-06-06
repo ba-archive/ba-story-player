@@ -41,7 +41,6 @@ function handleDragEnd() {
   });
 }
 
-
 let store = usePlayerStore();
 let chatMesasages = store.logText;
 watch(
@@ -110,7 +109,6 @@ watch(
     margin: 0;
     padding: 0;
     overflow-y: scroll;
-    scroll-behavior: smooth;
     cursor: grab;
 
     // hide scrollbar

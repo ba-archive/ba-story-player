@@ -32,6 +32,10 @@ let props = defineProps<{
 const selectOptions = ref<ShowOption[]>([]);
 const emitter = defineEmits(["update:fullScreen"]);
 
+const overrideTextContainer = computed(() =>
+  [!showSubMenu.value, !showSummary.value, !showStoryLog.value].some(it => !it)
+);
+
 eventBus.on("hide", () => {
   showSummary.value = false;
   showStoryLog.value = false;
@@ -54,7 +58,9 @@ eventBus.on("option", e => (selectOptions.value = [...e]));
 eventBus.on("next", () => {
   // 如果用跳转之类的事件跳过后, 此时关闭显示 选项
   if (!selectOptions.value.length) return;
-  const find = selectOptions.value.find(i => i.index === storyHandler.currentStoryIndex);
+  const find = selectOptions.value.find(
+    i => i.index === storyHandler.currentStoryIndex
+  );
   if (!find) {
     selectOptions.value = [];
   }
@@ -208,7 +214,9 @@ const dict = {
 };
 
 function getI18n(key: string) {
-  return Reflect.get(Reflect.get(dict, props.language.toLowerCase()), key) || key;
+  return (
+    Reflect.get(Reflect.get(dict, props.language.toLowerCase()), key) || key
+  );
 }
 
 // #97 UI层接收到隐藏UI事件后无法操作菜单
@@ -244,8 +252,17 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="baui" :style="{ 'font-size': `${bauiem}px`, cursor: cursorStyle }" tabindex="0">
-    <div class="right-top" :style="{ opacity: showMenu || forceShowMenu ? 1 : 0 }" ref="rightTop">
+  <div
+    class="baui"
+    :class="{ 'has-menu': overrideTextContainer }"
+    :style="{ 'font-size': `${bauiem}px`, cursor: cursorStyle }"
+    tabindex="0"
+  >
+    <div
+      class="right-top"
+      :style="{ opacity: showMenu || forceShowMenu ? 1 : 0 }"
+      ref="rightTop"
+    >
       <div class="baui-button-group">
         <BaButton
           @click="handleBtnAutoMode"
@@ -309,7 +326,13 @@ onMounted(() => {
       v-if="selectOptions.length !== 0"
     />
 
-    <BaDialog id="ba-story-summary" :title="getI18n('summary')" v-model:show="showSummary" width="70%" height="85%">
+    <BaDialog
+      id="ba-story-summary"
+      :title="getI18n('summary')"
+      v-model:show="showSummary"
+      width="70%"
+      height="85%"
+    >
       <div class="ba-story-summary-container">
         <h4 class="ba-story-summary-title">{{ storySummary.chapterName }}</h4>
         <p class="ba-story-summary-text">
@@ -367,7 +390,7 @@ onMounted(() => {
   right: 0;
   padding: 1.5%;
   user-select: none;
-  z-index: 120;
+  z-index: $right-top-menu-z-index;
   transition: opacity 0.3s ease-in-out;
 }
 
@@ -377,9 +400,10 @@ onMounted(() => {
   // height: 100%;
   // top: 0;
   // overflow: hidden;
-  z-index: 100;
-  font-family: "TJL", "Microsoft YaHei", "PingFang SC", -apple-system, system-ui, "Segoe UI", Roboto, Ubuntu, Cantarell,
-    "Noto Sans", BlinkMacSystemFont, "Helvetica Neue", "Hiragino Sans GB", Arial, sans-serif;
+  z-index: $ui-layer-z-index;
+  font-family: "TJL", "Microsoft YaHei", "PingFang SC", -apple-system, system-ui,
+    "Segoe UI", Roboto, Ubuntu, Cantarell, "Noto Sans", BlinkMacSystemFont,
+    "Helvetica Neue", "Hiragino Sans GB", Arial, sans-serif;
 
   .v-enter-active,
   .v-leave-active {
@@ -402,7 +426,8 @@ onMounted(() => {
     }
 
     .ba-button-auto:enabled.activated {
-      background: no-repeat right -17% bottom/contain url(./assets/Common_Btn_Normal_Y_S_Pt.webp) #efe34b;
+      background: no-repeat right -17% bottom/contain url(./assets/Common_Btn_Normal_Y_S_Pt.webp)
+        #efe34b;
     }
 
     .ba-button-menu:enabled.activated {
@@ -442,12 +467,12 @@ onMounted(() => {
 
   #ba-story-log {
     color: #32363c;
-    z-index: 140;
+    z-index: $ba-story-summary-z-index;
   }
 
   #ba-story-summary {
     color: #32363c;
-    z-index: 140;
+    z-index: $ba-story-log-z-index;
 
     .ba-story-summary-container {
       height: 100%;
@@ -498,7 +523,7 @@ onMounted(() => {
 
   #ba-player-setting {
     color: #32363c;
-    z-index: 140;
+    z-index: $ba-player-setting-z-index;
   }
 }
 </style>

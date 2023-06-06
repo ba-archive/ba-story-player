@@ -6,6 +6,7 @@
       '--standard-font-size': standardFontSize,
       '--standard-unity-font-size': standardUnityFontSize,
     }"
+    @click="simulateUiClick"
   >
     <div
       class="container-inner"
@@ -161,7 +162,6 @@
         }"
         class="dialog"
         ref="TextDialog"
-        @click="simulateUiClick"
       >
         <div class="inner-dialog" id="player__text_inner_dialog">
           <div class="title">
