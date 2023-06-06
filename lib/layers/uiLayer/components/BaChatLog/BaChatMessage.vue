@@ -51,13 +51,7 @@ switch (props.chatMessage?.type) {
         class="ba-chat-message-avatar"
         role="img"
         :style="{
-          'background-image':
-            'url(' +
-            props.chatMessage?.avatarUrl +
-            ')' +
-            ', url(' +
-            avatarBGRef +
-            ')',
+          'background-image': 'url(' + props.chatMessage?.avatarUrl + ')' + ', url(' + avatarBGRef + ')',
         }"
       />
     </div>

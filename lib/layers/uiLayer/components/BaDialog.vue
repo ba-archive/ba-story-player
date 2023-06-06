@@ -1,7 +1,4 @@
 <script lang="ts" setup>
-import { watch } from "vue";
-import { onMounted, ref } from "vue";
-import gsap from "gsap";
 import eventBus from "@/eventBus";
 
 const props = defineProps({
@@ -19,63 +16,41 @@ const props = defineProps({
 });
 
 const emit = defineEmits<{
-  (ev: "close", event: PointerEvent): void;
+  (ev: "update:show", event: boolean): void;
 }>();
 
-function handleClose(ev: Event) {
-  emit("close", ev as PointerEvent);
+function handleClose() {
+  emit("update:show", false);
   eventBus.emit("playOtherSounds", "back");
 }
 
-const dialogContainer = ref(null);
-
 // 对话框缓入动画
-watch(
-  () => props.show,
-  newValue => {
-    if (newValue === true) {
-      gsap.from(dialogContainer.value, {
-        opacity: 0,
-        y: "30%",
-        duration: 0.3,
-        ease: "power1.out",
-      });
-    }
-  }
-);
 </script>
 
 <template>
-  <div
-    class="ba-dialog"
-    :style="{ display: show === true ? '' : 'none' }"
-    @click.self="handleClose"
-  >
-    <div
-      class="ba-dialog-container"
-      :style="{ width: props.width, height: props.height }"
-      ref="dialogContainer"
-    >
-      <div class="ba-dialog-header">
-        <h3 class="ba-dialog-title">
-          <span>{{ title }}</span>
-        </h3>
-        <button class="ba-dialog-close button-nostyle" @click="handleClose">
-          <i style="user-select: none">
-            <img
-              src="../assets/close.svg"
-              alt="close dialog"
-              style="width: 1em; height: 1em; vertical-align: -0.15em"
-            />
-          </i>
-        </button>
-      </div>
-
-      <div class="ba-dialog-content-wrapper">
-        <slot></slot>
+  <Transition name="dialog">
+    <div class="ba-dialog" v-if="show" @click.self="handleClose">
+      <div class="ba-dialog-container" :style="{ width: props.width, height: props.height }">
+        <div class="ba-dialog-header">
+          <h3 class="ba-dialog-title">
+            <span>{{ title }}</span>
+          </h3>
+          <button class="ba-dialog-close button-nostyle" @click="handleClose">
+            <i style="user-select: none">
+              <img
+                src="../assets/close.svg"
+                alt="close dialog"
+                style="width: 1em; height: 1em; vertical-align: -0.15em"
+              />
+            </i>
+          </button>
+        </div>
+        <div class="ba-dialog-content-wrapper">
+          <slot></slot>
+        </div>
       </div>
     </div>
-  </div>
+  </Transition>
 </template>
 
 <style lang="scss" scoped>
@@ -84,7 +59,19 @@ watch(
   width: 100%;
   height: 100%;
   background: rgba(63, 63, 63, 0.4);
-  z-index: 120;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  &.dialog-enter-active .ba-dialog-container,
+  &.dialog-leave-active .ba-dialog-container {
+    transition: transform 0.3s ease-out;
+  }
+
+  &.dialog-enter-from .ba-dialog-container,
+  &.dialog-leave-to .ba-dialog-container {
+    transform: translateY(40%);
+  }
 
   .ba-dialog-container {
     display: flex;
@@ -92,22 +79,15 @@ watch(
     background-color: #f0f0f0;
     border-radius: 0.625em;
     position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
     overflow: hidden;
     box-shadow: rgb(56, 56, 56) 0 2px 2px 1px;
+    transition: transform 1s ease-in;
 
     .ba-dialog-header {
       position: relative;
       overflow: hidden;
       background: no-repeat center/contain
-          linear-gradient(
-            58deg,
-            rgba(240, 240, 240, 0.1) 0%,
-            rgba(240, 240, 240, 1) 38%,
-            rgba(240, 240, 240, 1) 100%
-          ),
+          linear-gradient(58deg, rgba(240, 240, 240, 0.1) 0%, rgba(240, 240, 240, 1) 38%, rgba(240, 240, 240, 1) 100%),
         url(../assets/UITex_BGPoliLight_1.svg) rgb(164 216 237);
       background-size: 100%;
       background-position: 0 30%;
@@ -123,6 +103,7 @@ watch(
 
         span {
           display: inline-block;
+
           &::after {
             content: "";
             display: block;
