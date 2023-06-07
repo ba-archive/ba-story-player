@@ -1,6 +1,5 @@
 <script lang="ts" setup>
-import eventBus from "@/eventBus";
-import { computed, ref } from "vue";
+import { computed, ref, withDefaults } from "vue";
 import { ShowOption } from "@/types/events";
 import { useElementSize } from "@vueuse/core";
 import { Text } from "@/types/common";
@@ -21,18 +20,12 @@ const isMouseDown = ref(false);
 const selectorContainerElement = ref<HTMLElement | null>(null);
 const selectorElement = ref<HTMLElement | null>(null);
 
-const { height: selectorContainerHeight } = useElementSize(
-  selectorContainerElement
-);
+const { height: selectorContainerHeight } = useElementSize(selectorContainerElement);
 
 const { height: selectorElementHeight } = useElementSize(selectorElement);
 
 const selectorMarginTop = computed(
-  () =>
-    `${
-      Math.max(0, selectorContainerHeight.value - selectorElementHeight.value) /
-      3
-    }px`
+  () => `${Math.max(0, selectorContainerHeight.value - selectorElementHeight.value) / 3}px`
 );
 
 /**
@@ -71,7 +64,6 @@ function handleSelectMouseLeave() {
 function handleSelect(select: number) {
   selectionCandidate.value = -1;
   selectedOption.value = select;
-  eventBus.emit("playOtherSounds", "select");
 
   setTimeout(() => {
     selectedOption.value = -1;
@@ -97,9 +89,7 @@ function parseTextEffect(_text: Text) {
   const text = deepCopyObject(_text);
   const effects = text.effects;
   // 注解
-  const rt = (
-    effects.filter(effect => effect.name === "ruby")[0] || { value: [] }
-  ).value.join("");
+  const rt = (effects.filter(effect => effect.name === "ruby")[0] || { value: [] }).value.join("");
   const style = effects
     .filter(effect => effect.name !== "ruby")
     .map(effect => {
@@ -112,6 +102,7 @@ function parseTextEffect(_text: Text) {
     })
     .join(";");
   if (rt) {
+    // eslint-disable-next-line max-len
     text.content = `<span style="${style};" class="ruby" data-content="${rt}"><span class="rb">${text.content}</span><span class="rt">${rt}</span></span>`;
   } else {
     text.content = `<span style="${style};">${text.content}</span>`;
@@ -121,16 +112,8 @@ function parseTextEffect(_text: Text) {
 </script>
 
 <template>
-  <div
-    class="ba-selector-container"
-    ref="selectorContainerElement"
-    @mouseup="handleMouseUp"
-  >
-    <div
-      class="ba-selector"
-      ref="selectorElement"
-      :style="{ marginTop: selectorMarginTop }"
-    >
+  <div class="ba-selector-container" ref="selectorContainerElement" @mouseup="handleMouseUp">
+    <div class="ba-selector" ref="selectorElement" :style="{ marginTop: selectorMarginTop }">
       <!-- 没有发生 DOM 顺序的移动，让 vue 使用就地复用策略提高效率，不需要 key -->
       <!-- eslint-disable vue/require-v-for-key -->
       <div
@@ -167,6 +150,7 @@ function parseTextEffect(_text: Text) {
   width: 100%;
   height: 100%;
   user-select: none;
+  z-index: 110;
 
   .ba-selector {
     display: flex;
@@ -190,8 +174,7 @@ function parseTextEffect(_text: Text) {
           rgba(240, 240, 240, 1) 38%,
           rgba(240, 240, 240, 0.1) 100%
         ),
-        center / 100% url("../assets/UITex_BGPoliLight_1.svg") rgb(164 216 237)
-          no-repeat;
+        center / 100% url("../assets/UITex_BGPoliLight_1.svg") rgb(164 216 237) no-repeat;
       transition: all 0.175s ease-in-out;
       -webkit-tap-highlight-color: transparent;
       div {

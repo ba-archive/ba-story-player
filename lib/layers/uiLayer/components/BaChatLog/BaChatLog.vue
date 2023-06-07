@@ -109,7 +109,6 @@ watch(
     margin: 0;
     padding: 0;
     overflow-y: scroll;
-
     cursor: grab;
 
     // hide scrollbar

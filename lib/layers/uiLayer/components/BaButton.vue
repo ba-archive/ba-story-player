@@ -9,6 +9,7 @@ const props = defineProps({
     type: String as PropType<"large" | "middle" | "small">,
     default: "small",
   },
+  disabled: Boolean,
 });
 
 const emit = defineEmits<{
@@ -28,12 +29,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <button
-    :class="['ba-button', size]"
-    ref="button"
-    @click="handleClick"
-    tabindex="-1"
-  >
+  <button :class="['ba-button', size]" ref="button" @click="handleClick" tabindex="-1" :disabled="disabled">
     <slot></slot>
   </button>
 </template>
@@ -76,6 +72,7 @@ onMounted(() => {
         ),
       url(../assets/UITex_BGPoliLight_1.svg) rgb(128, 208, 255);
   }
+
   &.polydark {
     background: no-repeat center/contain
         linear-gradient(
