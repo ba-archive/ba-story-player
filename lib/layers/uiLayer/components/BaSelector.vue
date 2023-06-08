@@ -178,7 +178,7 @@ function parseTextEffect(_text: Text) {
     .ba-selector-item {
       text-align: center;
       padding: 0.5em 1em;
-      font-size: $font-size;
+      font-size: max($font-size, 14px);
       color: #344a6e;
       cursor: pointer;
       border: 1px solid white;

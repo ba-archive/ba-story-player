@@ -807,7 +807,6 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
     width: 100%;
     height: 100%;
     position: relative;
-    text-shadow: $text-outline;
     .name {
       color: white;
       align-self: flex-end;
@@ -815,7 +814,7 @@ $text-outline: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
     }
     .department {
       margin-left: 10px;
-      font-size: max(var(--fs), var(--minimum-fs));
+      font-size: var(--fs);
       color: rgb(156, 218, 240);
     }
   }
