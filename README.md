@@ -1,3 +1,10 @@
+# 重要：仓库已迁移
+
+仓库已经迁移到 [monorepo](https://github.com/ba-archive/blue-archive/)，本仓库不会继续更新。
+
+<details>
+<summary>过时内容</summary>
+
 # 剧情播放器组件仓库
 
 本仓库是剧情播放器组件仓库, 用于播放碧蓝档案游戏剧情.
@@ -92,3 +99,5 @@ type: `boolean`
 # 贡献说明
 
 请参照[贡献指南](./docs/contribute.md)
+
+</details>
